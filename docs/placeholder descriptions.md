@@ -1,0 +1,157 @@
+# Report template placeholders
+
+## Text-based template placeholders
+
+Use these placeholders anywhere in your PowerPoint/Word template. `report-generator` will replace them with their actual value
+
+|Subject| Placeholder | Meaning | Example output |
+|---------|---------|---------|---------|
+| General|SYSTEM_NAME|The name of the system as defined in Sigrid, capitalized|Hadoop|
+| General|CUSTOMER_NAME|The name of the customer as defined in Sigrid, capitalized|Opendemo|
+| General|SYSTEM_LOC|The volume of the system in lines of code|123512|
+| General|SYSTEM_LOC_FORMAT_LOCALE|The volume of the system in lines of code, formatted with thousands separator corresponding with your system locale settings |123,512|
+| General|SYSTEM_LOC_FORMAT_COMMA|The volume of the system in lines of code, formatted with comma's as thousands separator |123,512|
+| General|SYSTEM_LOC_FORMAT_DOT|The volume of the system in lines of code, formatted with dots's as thousands separator |123.512|
+| General|SYSTEM_PY|The volume of the system in person years. 1 decimal|12.1|
+| General|SYSTEM_PM|The volume of the system in person months. 1 decimal|123.1|
+|---------|---------|---------|---------|
+|Maintainability|MAINT_RATING| The 0.5-5.5 star rating provided by SIG's Maintainability Model|3.5|
+|Maintainability|MAINT_STARS| Stars corresponding to the system's Maintainability Rating. To be styled with SIG's "Sigsterren" font|HHHII|
+|Maintainability|MAINT_RELATIVE| Remark of the system's Maintainibility Rating relative to the benchmark|below|
+|Maintainability|MAINT_INDICATION| Indicates whether the maintainability rating is above, below or at market average|above average|
+|Maintainability|MAINT_OBSERVATION| Short description of the worst maintainability metric |high risk in duplication of code|
+|Maintainability|MAINT_MULTIPLE_OBSERVATIONS|Smart Remarks for all maintainability metrics that are either <= 2 stars or >= 4 stars|high risk in duplication of code, low risk in unit sizing| 
+|Maintainability|MAINT_DATE_DAY| The day of the month the latest system snapshot which was analyzed|03|
+|Maintainability|MAINT_DATE_MONTH| The month of the latest system snapshot which was analyzed|11|
+|Maintainability|MAINT_DATE_YEAR| The year of the latest system snapshot which was analyzed|2023|
+|Maintainability|MAINT_SIZE|Description of the system volume | very large|
+|Maintainability|MAINT_RATING_VOLUME|The 0.5-5.5 star rating for this metric | 1.1|
+|Maintainability|STARS_VOLUME|Stars corresponding to this metric rating. To be styled with SIG's "Sigsterren font" | HHIII|
+|Maintainability|MAINT_RATING_DUPLICATION|The 0.5-5.5 star rating for this metric | 1.1|
+|Maintainability|STARS_DUPLICATION|Stars corresponding to this metric rating. To be styled with SIG's "Sigsterren font" | HHIII|
+|Maintainability|MAINT_RATING_UNIT_SIZE|The 0.5-5.5 star rating for this metric | 1.1|
+|Maintainability|STARS_UNIT_SIZE|Stars corresponding to this metric rating. To be styled with SIG's "Sigsterren font" | HHIII|
+|Maintainability|MAINT_RATING_UNIT_COMPLEXITY|The 0.5-5.5 star rating for this metric | 1.1|
+|Maintainability|STARS_UNIT_COMPLEXITY|Stars corresponding to this metric rating. To be styled with SIG's "Sigsterren font" | HHIII|
+|Maintainability|MAINT_RATING_UNIT_INFERFACING|The 0.5-5.5 star rating for this metric | 1.1|
+|Maintainability|STARS_UNIT_INFERFACING|Stars corresponding to this metric rating. To be styled with SIG's "Sigsterren font" | HHIII|
+|Maintainability|MAINT_RATING_MODULE_COUPLING|The 0.5-5.5 star rating for this metric | 1.1|
+|Maintainability|STARS_MODULE_COUPLING|Stars corresponding to this metric rating. To be styled with SIG's "Sigsterren font" | HHIII|
+|Maintainability|MAINT_RATING_COMPONENT_INDEPENDENCE|The 0.5-5.5 star rating for this metric | 1.1|
+|Maintainability|STARS_COMPONENT_INDEPENDENCE|Stars corresponding to this metric rating. To be styloed with SIG's "Sigsterren font" | HHIII|
+|Maintainability|MAINT_RATING_COMPONENT_ENTANGLEMENT|The 0.5-5.5 star rating for this metric | 1.1|
+|Maintainability|STARS_COMPONENT_ENTANGLEMENT|Stars corresponding to this metric rating. To be styled with SIG's "Sigsterren font" | HHIII|
+|---------|---------|---------|---------|
+|Test code|TEST_CODE_RATIO| The test/code ratio of the system. Measured as a ratio of total production code against total test code. No decimals| 76%|
+|Test code|TEST_CODE_RELATIVE| Remark on the system's test/code ratio relative to the industry|below market average|
+|Test code|TEST_CODE_SUMMARY| Remark on the quality of testing in the system indicated by the total test/code ratio observed|This ratio indicates that breaking changes are likely not caught by an automated test at an early stage. This decreases developer velocity and can increase bugs in production. This can be partially compensated by increased manual testing.|
+|---------|---------|---------|---------|
+|Technology|TECH_COMMON_SUMMARY| Remark on how common the technologies used in the system are relative to the industry|The system is built using mostly modern technologies, but also contains older generation technologies that should be considered for replacement: Fortran, Basic.|
+|Technology|TECH_VARIANCE| Remark on how many significant technologies the system contains (threshold: 15% or more)|The system is mainly built using 3 different technologies: C#, Razor, Less|
+|Technology|TECH_1_NAME| Name of the most common technology in the system (if present)|Java|
+|Technology|TECH_1_PY| Volume of the most common technology in the system (if present) in person years. 1 decimal.|13.3|
+|Technology|TECH_1_PM| Volume of the most common technology in the system (if present) in person months. 1 decimal.|13.3|
+|Technology|TECH_1_LOC| Volume of the most common technology in the system (if present) in lines of code. 1 decimal.|134.321|
+|Technology|TECH_1_MAINT_RATING| Maintainability rating of the most common technology in the system (if present)|3.3|
+|Technology|TECH_1_TEST_RATIO|Test code ratio of the most common technology in the system (if present)|0.76|
+|Technology|TECH_1_TECH_RISK| Technology risk rating of the most common technology in the system (if present)|PHASEOUT|
+|Technology|TECH_2_NAME| Name of the second most common technology in the system (if present)|Java|
+|Technology|TECH_2_PY| Volume of the second most common technology in the system (if present) in person years. 1 decimal.|13.3|
+|Technology|TECH_2_LOC| Volume of the second most common technology in the system (if present) in lines of code. 1 decimal.|134.321|
+|Technology|TECH_2_MAINT_RATING| Maintainability rating of the second most common technology in the system (if present)|3.3|
+|Technology|TECH_2_TEST_RATIO|Test code ratio of the second most common technology in the system (if present)|0.76|
+|Technology|TECH_2_TECH_RISK| Technology risk rating of the second most common technology in the system (if present)|PHASEOUT|
+|Technology|TECH_3_NAME| Name of the third most common technology in the system (if present)|Java|
+|Technology|TECH_3_PY| Volume of the third most common technology in the system (if present) in person years. 1 decimal.|13.3|
+|Technology|TECH_3_LOC| Volume of the third most common technology in the system (if present) in lines of code. 1 decimal.|134.321|
+|Technology|TECH_3_MAINT_RATING| Maintainability rating of the third most common technology in the system (if present)|3.3|
+|Technology|TECH_3_TEST_RATIO|Test code ratio of the third most common technology in the system (if present)|0.76|
+|Technology|TECH_3_TECH_RISK| Technology risk rating of the third most common technology in the system (if present)|PHASEOUT|
+|Technology|TECH_4_NAME| Name of the fourth most common technology in the system (if present)|Java|
+|Technology|TECH_4_PY| Volume of the fourth most common technology in the system (if present) in person years. 1 decimal.|13.3|
+|Technology|TECH_4_LOC| Volume of the fourth most common technology in the system (if present) in lines of code. 1 decimal.|134.321|
+|Technology|TECH_4_MAINT_RATING| Maintainability rating of the fourth most common technology in the system (if present)|3.3|
+|Technology|TECH_4_TEST_RATIO|Test code ratio of the fourth most common technology in the system (if present)|0.76|
+|Technology|TECH_4_TECH_RISK| Technology risk rating of the fourth most common technology in the system (if present)|PHASEOUT|
+|Technology|TECH_5_NAME| Name of the fifth most common technology in the system (if present) OR "Other" if the system has more than 5 technologies|Java|
+|Technology|TECH_5_PY| Volume of the fifth most common technology in the system (if present) OR a sum of the rest if the system has more than 5 technologies, In person years. 1 decimal.|13.3|
+|Technology|TECH_5_LOC| Volume of the fifth most common technology in the system (if present) OR a sum of the rest if the system has more than 5 technologies, in lines of code. 1 decimal.|134.321|
+|Technology|TECH_5_MAINT_RATING| Maintainability rating of the fifth most common technology in the system (if present) OR an average of the rest if the system has more than 5 technologies |3.3|
+|Technology|TECH_5_TEST_RATIO|Test code ratio of the fifth most common technology in the system (if present) OR an average of the rest if the system has more than 5 technologies |0.76|
+|Technology|TECH_5_TECH_RISK| Technology risk rating of the fifth most common technology in the system (if present) OR the worst risk of the rest if the system has more than 5 technologies|PHASEOUT|
+|---------|---------|---------|---------|
+|Architecture|ARCH_RATING| The 0.5-5.5 star rating provided by SIG's Architecture Qualtiy Model|2.7|
+|Architecture|ARCH_STARS| Stars corresponding to the system's Architecture Quality Rating. To be styled with SIG's "Sigsterren" font |HHIII|
+|Architecture|ARCH_DATE_DAY| The day of the month the latest system snapshot which was analyzed|03|
+|Architecture|ARCH_DATE_DAY| The month of the latest system snapshot which was analyzed|11|
+|Architecture|ARCH_DATE_DAY| The year of the latest system snapshot which was analyzed|2023|
+|Architecture|ARCH_AT_BELOW| Remark about Architecture Quality being below a certain threshold|at|
+|Architecture|ARCH_WORST_METRIC_REMARK| Remark about the lowest rating metric in the system's Architecture Quality analysis|The system's low score in Component Coupling constrains architecture, constraining evolution and imposing high-impact changes, impeding system adaptability.|
+|Architecture|ARCH_BEST_METRIC_REMARK| Remark about the highest rating metric in the system's Architecture Quality analysis|The system's high score in component coupling means components with fewer dependencies, allowing for greater evolution, and minimizing impact on the system or landscape during interface changes.|
+|Architecture|ARCH_RATING_CODE_BREAKDOWN|The 0.5-5.5 star rating for this metric | 1.1|
+|Architecture|STARS_CODE_BREAKDOWN|Stars corresponding to this metric rating. To be styled with SIG's "Sigsterren font" | HHIII|
+|Architecture|ARCH_RATING_COMPONENT_COUPLING|The 0.5-5.5 star rating for this metric | 1.1|
+|Architecture|STARS_COMPONENT_COUPLING|Stars corresponding to this metric rating. To be styled with SIG's "Sigsterren font" | HHIII|
+|Architecture|ARCH_RATING_COMPONENT_COHESION|The 0.5-5.5 star rating for this metric | 1.1|
+|Architecture|STARS_COMPONENT_COHESION|Stars corresponding to this metric rating. To be styled with SIG's "Sigsterren font" | HHIII|
+|Architecture|ARCH_RATING_CODE_REUSE|The 0.5-5.5 star rating for this metric | 1.1|
+|Architecture|STARS_CODE_REUSE|Stars corresponding to this metric rating. To be styled with SIG's "Sigsterren font" | HHIII|
+|Architecture|ARCH_RATING_COMMUNICATION_CENTRALIZATION|The 0.5-5.5 star rating for this metric | 1.1|
+|Architecture|STARS_COMMUNICATION_CENTRALIZATION|Stars corresponding to this metric rating. To be styled with SIG's "Sigsterren font" | HHIII|
+|Architecture|ARCH_RATING_DATA_COUPLING|The 0.5-5.5 star rating for this metric | 1.1|
+|Architecture|STARS_DATA_COUPLING|Stars corresponding to this metric rating. To be styled with SIG's "Sigsterren font" | HHIII|
+|Architecture|ARCH_RATING_TECHNOLOGY_PREVALENCE|The 0.5-5.5 star rating for this metric | 1.1|
+|Architecture|STARS_TECHNOLOGY_PREVALENCE|Stars corresponding to this metric rating. To be styled with SIG's "Sigsterren font" | HHIII|
+|Architecture|ARCH_RATING_BOUNDED_EVOLUTION|The 0.5-5.5 star rating for this metric | 1.1|
+|Architecture|STARS_BOUNDED_EVOLUTION|Stars corresponding to this metric rating. To be styled with SIG's "Sigsterren font" | HHIII|
+|Architecture|ARCH_RATING_KNOWLEDGE_DISTRIBUTION|The 0.5-5.5 star rating for this metric | 1.1|
+|Architecture|STARS_KNOWLEDGE_DISTRIBUTION|Stars corresponding to this metric rating. To be styled with SIG's "Sigsterren font" | HHIII|
+|Architecture|ARCH_RATING_COMPONENT_FRESHNESS|The 0.5-5.5 star rating for this metric | 1.1|
+|Architecture|STARS_COMPONENT_FRESHNESS|Stars corresponding to this metric rating. To be styled with SIG's "Sigsterren font" | HHIII|
+|Architecture|ARCH_RATING_KNOWLEDGE|The 0.5-5.5 star rating for this subcharacteristic | 1.1|
+|Architecture|STARS_KNOWLEDGE|Stars corresponding to this subcharacteristic rating. To be styled with SIG's "Sigsterren font" | HHIII|
+|Architecture|ARCH_RATING_COMMUNICATION|The 0.5-5.5 star rating for this subcharacteristic | 1.1|
+|Architecture|STARS_COMMUNICATION|Stars corresponding to this subcharacteristic rating. To be styled with SIG's "Sigsterren font" | HHIII|
+|Architecture|ARCH_RATING_DATA_ACCESS|The 0.5-5.5 star rating for this subcharacteristic | 1.1|
+|Architecture|STARS_DATA_ACCESS|Stars corresponding to this subcharacteristic rating. To be styled with SIG's "Sigsterren font" | HHIII|
+|Architecture|ARCH_RATING_EVOLUTION|The 0.5-5.5 star rating for this subcharacteristic | 1.1|
+|Architecture|STARS_EVOLUTION|Stars corresponding to this subcharacteristic rating. To be styled with SIG's "Sigsterren font" | HHIII|
+|Architecture|ARCH_RATING_STRUCTURE|The 0.5-5.5 star rating for this subcharacteristic | 1.1|
+|Architecture|STARS_STRUCTURE|Stars corresponding to this subcharacteristic rating. To be styled with SIG's "Sigsterren font" | HHIII|
+|Architecture|ARCH_RATING_TECHNOLOGY_STACK|The 0.5-5.5 star rating for this subcharacteristic | 1.1|
+|Architecture|STARS_TECHNOLOGY_STACK|Stars corresponding to this subcharacteristic rating. To be styled with SIG's "Sigsterren font" | HHIII|
+|---------|---------|---------|---------|
+|Open-source health|OSH_TOTAL_DEPS|Total number of identified open-source dependencies | 37|
+|Open-source health|OSH_TOTAL_VULN|Number of identified open-source dependencies with a known vulnerability| 37|
+|Open-source health|OSH_DATE_DAY| The day of the month the latest system snapshot which was analyzed|03|
+|Open-source health|OSH_DATE_MONTH| The month of the latest system snapshot which was analyzed|11|
+|Open-source health|OSH_DATE_YEAR| The year of the latest system snapshot which was analyzed|2023|
+|Open-source health|OSH_VULN_SUMMARY|Descriptive summary of open-source issues identified | 15% of libraries (7 in total) used in the system contain one or more known vulnerabilities.|
+|Open-source health|OSH_LEGAL_SUMMARY|Descriptive summary of open-source issues identified |All libraries in the system use relatively liberal open-source licenses.|
+|Open-source health|OSH_FRESHNESS_SUMMARY|Descriptive summary of open-source issues identified |65% of libraries (30 in total) used in the system have not been updated for over a year.|
+|Open-source health|OSH_MANAGEMENT_SUMMARY|Descriptive summary of open-source issues identified | 20% of libraries (9 in total) does not use a package manager but is placed in the codebase directly.|
+|Open-source health|OSH_RISK_SUMMARY|One-sentence summary of main OSH findings|This system has 3 medium/high risk vulnerable libraries and 2 licenses with potential legal risks that should be investigated|
+
+## Chart-based template placeholders
+
+These placeholders, generally placed off-screen, only serve to identify a slide on which a specific chart is placed. If you want to use this chart, be sure to copy both the chart and the placeholder from a standard template and then modify its layout BUT NOT its structure or chart type.
+
+|Subject| Placeholder | Meaning |
+|---------|---------|---------|
+|Technology|TECHNOLOGY_CHART| Chart with volume (in % of person months of code) per technology|
+|Technology|TEST_CODE_RATIO_CHART| Pie chart with volume and % of test code per technology, colored in line with the SIG test code benchmark|
+|Maintainability|GALAXY_SLIDE| Traditional SIG benchmark galaxy chart|
+|Open-source health|OSH_SLIDE| Traditional SIG OSH system-level slide, with risk bar charts for all 6 OSH metrics.|
+
+## Special: Powerpoint
+
+|Subject| Placeholder | Meaning | Example output |
+|---------|---------|---------|---------|
+|Maintainability|MARKER_MAINT_RATING|Used for the rating indicator on SIG metric rating slides. It adds the rating, but also moves the marker to the correct position on the slide|3.3|
+|Architecture|MARKER_ARCH_RATING|Used for the rating indicator on SIG metric rating slides. It adds the rating, but also moves the marker to the correct position on the slide|3.3|
+|Architecture|COLOR_ARCH_RATING_KNOWLEDGE|Fills this rating value, but also colors the shape the placeholder is in to correspond to the correct maintainability rating color (e.g. yellow for 3 stars)|3.3|
+|Architecture|COLOR_ARCH_RATING_COMMUNICATION|Fills this rating value, but also colors the shape the placeholder is in to correspond to the correct maintainability rating color (e.g. yellow for 3 stars)|3.3|
+|Architecture|COLOR_ARCH_RATING_DATA_ACCESS|Fills this rating value, but also colors the shape the placeholder is in to correspond to the correct maintainability rating color (e.g. yellow for 3 stars)|3.3|
+|Architecture|COLOR_ARCH_RATING_EVOLUTION|Fills this rating value, but also colors the shape the placeholder is in to correspond to the correct maintainability rating color (e.g. yellow for 3 stars)|3.3|
+|Architecture|COLOR_ARCH_RATING_STRUCTURE|Fills this rating value, but also colors the shape the placeholder is in to correspond to the correct maintainability rating color (e.g. yellow for 3 stars)|3.3|
+|Architecture|COLOR_ARCH_RATING_TECHNOLOGY_STACK|Fills this rating value, but also colors the shape the placeholder is in to correspond to the correct maintainability rating color (e.g. yellow for 3 stars, deep green for 5)|3.3|

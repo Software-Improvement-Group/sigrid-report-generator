@@ -1,0 +1,12 @@
+component_depth: 1
+languages:
+- name: "Python"
+
+dependencychecker:
+  blocklist: [ ]
+
+architecture:
+  enabled: true
+
+thirdpartyfindings:
+  enabled: true
