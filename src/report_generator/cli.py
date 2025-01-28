@@ -35,11 +35,13 @@ DOCX_LAYOUTS = {
 
 MATOMO_URL = os.environ.get('MATOMO_URL', 'https://sigrid-says.com/usage')
 
+SIGRID_CI_TOKEN = os.environ.get('SIGRID_CI_TOKEN', None)
+
 @click.command()
 @click.option('-d', '--debug', is_flag=True, default=False, help='enable debug messages')
 @click.option('-c', '--customer', required = True, help='Customer name')
 @click.option('-s', '--system', required = True, help='System name')
-@click.option('-t', '--token', required = True, help='Sigrid CI token for this customer')
+@click.option('-t', '--token', default=lambda: os.environ.get('SIGRID_CI_TOKEN'), required = True, help='Sigrid CI token for this customer')
 @click.option('-l', '--layout',  type=click.Choice(REPORT_TYPES), default='default', help='The type of report (e.g. itdd-light, monitor, ...)  (mutually exclusive with the -p/--template option)')
 @click.option('-p', '--template', type=click.File('rb'), help='A custom report template file (mutually exclusive with the -l/--layout option)')
 @click.option('-o', '--out-file', default='out.pptx', help='write output to this file (default out.pptx)')
