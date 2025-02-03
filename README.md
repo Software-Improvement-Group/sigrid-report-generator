@@ -2,7 +2,7 @@
 
 ## Intro
 
-The SIG report generator is a tool/framework designed to generate any kind of report. At this point there is one kind: An ITDD Light PowerPoint report, but it should be capable of producing others in the future, of different export types. Additionally, at some point it could be integrated into Sigrid, so that end-users can download a report/export at the click of a button.
+The SIG report generator is a tool/framework designed to generate any kind of report. The repo only contains one (default) template, but it should be capable of producing others in the future, of different export types. Additionally, at some point it could be integrated into Sigrid, so that end-users can download a report/export at the click of a button.
 
 ![Sample: Management summary](./docs/img/sample-mgmt-summary.png){width=300px}
 ![Sample: Architecture](./docs/img/sample-architecture.png){width=300px}
