@@ -2,19 +2,40 @@
 
 ## Prerequisites
 
-- Have Python 3.9 or later available and set up so that you can install and use Python packages. This should be preinstalled on SIG Macbooks.
+- Have Python 3.9 or later available and set up so that you can install and use Python packages.
 
 ## Install (for end-users)
 
-1. Install the tool itself: `pip3 install -e "git+ssh://git@code.sig.eu/sig/delivery/report-generator.git#egg=report-generator"`. This should complete succesfully.
-   - If this fails with the error "ssh: Could not resolve hostname code.sig.eu", make sure you are connected to SIG internal network (VPN) and can log in to https://code.sig.eu in your browser.
-   - If this fails and somewhere in the output it says "Permission denied (public key)", you need to add your public key to code.sig.eu settings for authentication:
-     - Copy the full contents from the file `~/.ssh/id_rsa.pub` (It should look something like `id-rsa AAAAsdabfkjadsbfsjdaBSFJK... jan@janlaptop`)
-     - in https://code.sig.eu, make sure you are logged in. Click your user icon (top left), go to preferences go to SSH Keys, then Add new key and paste the contents from `id_rsa.pub` in the big box. Leave other settings alone (or delete the expiry date if you don't want to redo this in a year from now) and save by pressing "Add key".
+1. Clone this repository and `cd` into it.
+1. Install the tool itself: `pip3 install -e ./report-generator"`. This should complete succesfully.
    - If this fails with an error message that says something like "error: can't create or remove files in install directory", try adding `--user` to the above command.
    - If this fails with an error message saying something like "error: externally-managed-environment", try installing in a `venv` (Virtual environment). If you don't know how that works, ask for help.
-2. If this is your first time installing python packages/commands: Open up the file called `.zshrc` in your Home directory. If this file does not exist, create it. The file may be hidden in finder. In your terminal you can type: `open ~/.zshrc`. At the bottom, add this on a new line:
-   `export PATH=${HOME}/Library/Python/3.9/bin:${PATH}` and save your changes.
+2. If this is your first time installing Python packages/commands, you may need to add the Python bin directory to your `PATH` environment variable. Here are the steps to do this:
+
+   1. **Determine the Python bin directory**:
+      - The Python bin directory is typically located in the `bin` subdirectory of your Python installation.
+
+   2. **Modify your shell configuration file**:
+      - Open your shell configuration file in a text editor. This file is usually named `.bashrc`, `.zshrc`, `.profile`, or `.bash_profile`.
+      - Add the following line to the file, replacing `/path/to/python/bin` with the actual path to your Python bin directory:
+
+        ```sh
+        export PATH="/path/to/python/bin:$PATH"
+        ```
+
+   3. **Apply the changes**:
+      - Save the file and close the text editor.
+      - Apply the changes by running the following command in your terminal (for Unix-like systems):
+
+        ```sh
+        source ~/.bashrc  # or source ~/.zshrc, or source ~/.profile, depending on the file you edited
+        ```
+
+      - For Windows, you can add the Python bin directory to the `Path` environment variable through the System Properties > Environment Variables interface.
+
+   By following these steps, you ensure that the Python bin directory is included in your `PATH`, allowing you to run Python and its associated tools from any directory.
+
+Alternatively, you can use the docker image: `softwareimprovementgroup/sigrid-integrations`
 
 ## Developer instructions
 

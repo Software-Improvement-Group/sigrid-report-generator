@@ -4,10 +4,10 @@
 
 The SIG report generator is a tool/framework designed to generate any kind of report. The repo only contains one (default) template, but it should be capable of producing others in the future, of different export types. Additionally, at some point it could be integrated into Sigrid, so that end-users can download a report/export at the click of a button.
 
-![Sample: Management summary](./docs/img/sample-mgmt-summary.png){width=300px}
-![Sample: Architecture](./docs/img/sample-architecture.png){width=300px}
-![Sample: Test code ratio](./docs/img/sample-test-code.png){width=300px}
-![Sample: Word](./docs/img/sample-word.png){width=300px}
+<img src="./docs/img/sample-mgmt-summary.png" alt="Sample: Management summary" width="300px">
+<img src="./docs/img/sample-architecture.png" alt="Sample: Architecture" width="300px">
+<img src="./docs/img/sample-test-code.png" alt="Sample: Test code ratio" width="300px">
+<img src="./docs/img/sample-word.png" alt="Sample: Word" width="300px">
 
 ## Status
 
@@ -30,7 +30,7 @@ Before using the system, you need to generate a Sigrid token. Tokens are unique 
 
 ### Run the tool
 
-1. If you want to use a pre-defined built-in report, e.g. `itdd-light`. Use: `report-generator -l "itdd-light" -c <your-customer> -s <your-system> -t <your-sigrid-token>`
+1. For the default report, use: `report-generator -c <your-customer> -s <your-system> -t <your-sigrid-token>`
 2. If you want to provide your own custom report `.pptx` or `.docx` file. Use: `report-generator -p <your-file.pptx> -c <your-customer> -s <your-system> -t <your-sigrid-token>`
 3. For help or an overview of all options use `report-generator --help`
 
