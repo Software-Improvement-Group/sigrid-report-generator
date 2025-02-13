@@ -62,7 +62,7 @@ def require_either_layout_or_template(layout, template):
     if layout == 'default' and template == None:
         logging.info("No layout or template defined. Using default layout")
         return True
-    if layout != None and template != None:
+    if layout != None and layout != 'default' and template != None:
         logging.error("Both a layout and template are defined. Choose either a predefined layout using -l/--layout, or provide your own report template using -p/--template. Not both")
         return False
     return True
