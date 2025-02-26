@@ -52,7 +52,7 @@ class OSHReport:
     
     def aggregate_data(self, input_data):
         data = OSHData()
-        for component in input_data["components"]:
+        for component in input_data.get("components", []):
             data.total_deps += 1
             if(data.date_year == ""):
                 (data.date_year, data.date_month, data.date_day) = OSHReport.format_date(input_data["metadata"]["timestamp"])

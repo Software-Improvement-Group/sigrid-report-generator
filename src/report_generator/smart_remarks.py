@@ -201,7 +201,7 @@ class SmartRemarks:
             if (vulnerability["ratings"][0]["severity"] == "medium") or (vulnerability["ratings"][0]["severity"]=="high") or (vulnerability["ratings"][0]["severity"]=="high"):
                 mentionable_vulnerability_count += 1
         mentionable_license_count = 0
-        for library in libraries["components"]:
+        for library in libraries.get("components", []):
             if (library["properties"][0]["value"] == "CRITICAL") or (library["properties"][0]["value"] == "HIGH") or (library["properties"][0]["value"] == "MEDIUM"):
                 mentionable_license_count += 1
         return f"This system has {mentionable_vulnerability_count} medium or higher risk vulnerable libraries and {mentionable_license_count} licenses with potential legal risks that should be investigated"
