@@ -118,10 +118,13 @@ class Report(ABC):
 
         self.update_placeholder("SYSTEM_PM", round(maint_data["volumeInPersonMonths"], 1))
         self.update_placeholder("SYSTEM_PY", round(maint_data["volumeInPersonMonths"] / 12.0, 1))
-        self.update_placeholder("SYSTEM_LOC", maint_data["volumeInLoc"])
-        self.update_placeholder("SYSTEM_LOC_FORMAT_LOCALE", f"{maint_data['volumeInLoc']:n}")
-        self.update_placeholder("SYSTEM_LOC_FORMAT_COMMA", f"{maint_data['volumeInLoc']:,}")
-        self.update_placeholder("SYSTEM_LOC_FORMAT_DOT", f"{maint_data['volumeInLoc']:,}".replace(",", "."))
+        
+        # Sigrid started recording volumeInLoc mid-2024. Analyses from before that time omit this data field
+        if(maint_data["volumeInLoc"] is not None):
+            self.update_placeholder("SYSTEM_LOC", maint_data["volumeInLoc"])
+            self.update_placeholder("SYSTEM_LOC_FORMAT_LOCALE", f"{maint_data['volumeInLoc']:n}")
+            self.update_placeholder("SYSTEM_LOC_FORMAT_COMMA", f"{maint_data['volumeInLoc']:,}")
+            self.update_placeholder("SYSTEM_LOC_FORMAT_DOT", f"{maint_data['volumeInLoc']:,}".replace(",", "."))
 
         self.update_placeholder("VOLUME_RELATIVE", SmartRemarks.relative_volume(maint_data["volume"]))
         self.fill_technologies(maint_data["technologies"])
@@ -168,7 +171,14 @@ class Report(ABC):
             return 0
         
     def create_architecture_quality(self):
-        architecture_data = self.sigridAPI.get_architecture_findings_for_customer_system(self.customer, self.system)
+        # Make sure architecture analysis returns results. If there is no analysis, we get an HTTP 204 error.
+        try:
+            architecture_data = self.sigridAPI.get_architecture_findings_for_customer_system(self.customer, self.system)
+        except Exception as e:
+            logging.warning(f"Failed to query Architecture API, error: {type(e).__name__}: {e}")
+            logging.warning(f"Architecture part of report is not populated. Make sure an architecture analysis is available")
+            return
+
         self.create_architecture_quality_report_specific(architecture_data)
 
         date = datetime.strptime(architecture_data["analysisDate"], '%Y-%m-%d')
