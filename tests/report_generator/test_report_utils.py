@@ -1,7 +1,7 @@
 from pptx.oxml.text import CT_TextParagraph
 from pptx.text.text import _Paragraph
 
-from src.report_generator import report_utils
+from report_generator import report_utils
 
 
 class TestReportUtils:
