@@ -76,7 +76,6 @@ class PowerpointReport(Report):
 
     def create_maintainability_report_specific(self, maint_data):
 
-        # TODO: Replace volume data maint_data["volumeInPersonMonths"] / 12 once that becomes available through the API
         self.generate_maintainability_galaxy_chart(maint_data["system"].capitalize(), maint_data["maintainability"], maint_data["volumeInPersonMonths"] / 12)
 
         self.update_movable_marker("MARKER_MAINT_RATING", maint_data["maintainability"])
