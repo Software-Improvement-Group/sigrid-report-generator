@@ -1,8 +1,10 @@
-from pptx.text.text import _Paragraph
 from pptx.oxml.text import CT_TextParagraph
-from src.report_generator.slide_utils import SlideUtils
+from pptx.text.text import _Paragraph
 
-class TestSlideUtils:
+from src.report_generator import report_utils
+
+
+class TestReportUtils:
 
     def test_merge_similar_runs(self):
         p = _Paragraph(CT_TextParagraph(), None)
@@ -16,7 +18,7 @@ class TestSlideUtils:
         f2 = r2.font
         f2.bold = True
         
-        SlideUtils.merge_runs_with_same_formatting(p)
+        report_utils.pptx.merge_runs_with_same_formatting(p)
         
         assert len(p.runs) == 1
         assert p.text == "aapnoot"
@@ -32,7 +34,7 @@ class TestSlideUtils:
         f2 = r2.font
         f2.bold = False
         
-        SlideUtils.merge_runs_with_same_formatting(p)
+        report_utils.pptx.merge_runs_with_same_formatting(p)
 
         assert len(p.runs) == 2
         assert p.runs[0].text == "aap"

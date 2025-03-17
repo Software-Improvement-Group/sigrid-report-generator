@@ -1,1 +1,1 @@
-graft src/report_generator/templates
+graft src/presets/templates
