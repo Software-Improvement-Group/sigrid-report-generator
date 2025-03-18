@@ -1,4 +1,4 @@
-# Report generator
+# Report Generator (Beta)
 
 ## Intro
 
@@ -12,15 +12,23 @@ button.
 <img src="./docs/img/sample-test-code.png" alt="Sample: Test code ratio" width="300px">
 <img src="./docs/img/sample-word.png" alt="Sample: Word" width="300px">
 
-## Status
-
-This tool is currently in the proof-of-concept phase. Things may not completely work yet, or break at a given time.
-Usage is at your own risk. Please contact the team working on the tool if you have an urgent need, but that there is no
-official support at this moment.
-
 ## Installation
 
-See [docs/installation.md](docs/installation.md)
+### Prerequisites
+
+- Have Python 3.9 or later available and set up so that you can install and use Python packages.
+
+### Install using pip
+
+1. Clone this repository and `cd` into it.
+2. Install the tool itself: `pip3 install -e ./report-generator"`.
+    - If this fails with an error message that says something like "error: can't create or remove files in install
+      directory", try adding `--user` to the above command.
+    - If this fails with an error message saying something like "error: externally-managed-environment", try installing
+      in a `venv` (Virtual environment). If you don't know how that works, ask for help.
+
+Alternatively, you can use the docker image: `softwareimprovementgroup/sigrid-integrations`
+
 
 ## Usage
 
@@ -161,14 +169,13 @@ generator.generate("out.pptx")
 
 ## Suggestions / feedback
 
-Feedback is welcome! If you have ideas to improve report-generator, please reach out to the team. Currently @jan manages
-this process. If you want to do him a favor, create a ticket in this project, but a Slack message also works. Merge
-requests are also welcome! Potential improvent areas include:
+Feedback is welcome! If you have ideas to improve report-generator, please create a ticket in this project.
+Merge requests are also welcome. Potential improvement areas include:
 
 - Improved standard templates;
 - Request for more Sigrid data exposed through the tool;
 - Bug fixes;
-- Future usecases of this tool;
+- Future use cases of this tool;
 - Easier deployment suggestions or other technical improvements;
 - ...
 
