@@ -19,7 +19,7 @@ from typing import Optional
 import requests
 
 DEFAULT_BASE_URL = "https://sigrid-says.com"
-BASE_ANALYSIS_RESULTS_URL = "analysis-results/api/v1"
+BASE_ANALYSIS_RESULTS_ENDPOINT = "analysis-results/api/v1"
 
 _bearer_token: Optional[str] = None
 _customer: Optional[str] = None
@@ -106,13 +106,13 @@ def make_request(endpoint, **kwargs):
 
 @_sigrid_api_request(with_system=True)
 def get_maintainability_ratings(system, include_tech_stats: bool = True):
-    endpoint = f"{BASE_ANALYSIS_RESULTS_URL}/maintainability/{_customer}/{system}?technologyStats={str(include_tech_stats).lower()}"
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/maintainability/{_customer}/{system}?technologyStats={str(include_tech_stats).lower()}"
     return make_request(endpoint)
 
 
 @_sigrid_api_request(with_system=True)
 def get_maintainability_ratings_components(system):
-    endpoint = f"{BASE_ANALYSIS_RESULTS_URL}/maintainability/{_customer}/{system}/components"
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/maintainability/{_customer}/{system}/components"
     return make_request(endpoint)
 
 
@@ -124,26 +124,26 @@ def get_capabilities(system):
 
 @_sigrid_api_request(with_system=True)
 def get_metadata(system):
-    endpoint = f"{BASE_ANALYSIS_RESULTS_URL}/system-metadata/{_customer}"
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/system-metadata/{_customer}"
     return make_request(endpoint)
 
 
 @_sigrid_api_request(with_system=True)
 def get_osh_findings(system, is_vulnerable=False):
     vulnerable = "true" if is_vulnerable else "false"
-    endpoint = f"{BASE_ANALYSIS_RESULTS_URL}/osh-findings/{_customer}/{system}?vulnerable={vulnerable}"
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/osh-findings/{_customer}/{system}?vulnerable={vulnerable}"
     return make_request(endpoint)
 
 
 @_sigrid_api_request(with_system=True)
 def get_security_findings(system):
-    endpoint = f"{BASE_ANALYSIS_RESULTS_URL}/security-findings/{_customer}/{system}"
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/security-findings/{_customer}/{system}"
     return make_request(endpoint)
 
 
 @_sigrid_api_request(with_system=True)
 def get_architecture_findings(system):
-    endpoint = f"{BASE_ANALYSIS_RESULTS_URL}/architecture-quality/{_customer}/{system}"
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/architecture-quality/{_customer}/{system}"
     return make_request(endpoint)
 
 
