@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import logging
 from dataclasses import dataclass
 from enum import Enum
 from typing import Union
@@ -53,6 +54,7 @@ class Report:
             output_path = f"{output_path}.{self.type.extension}"
 
         self.content.save(output_path)
+        logging.info(f"Generated report saved to {output_path}")
 
     def __str__(self) -> str:
         return f"Report({self.type.value}, {self.content.__class__.__name__})"

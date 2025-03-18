@@ -40,14 +40,14 @@ def _test_sigrid_token(token):
             "Invalid Sigrid token. A token is always longer than 10 characters and starts with 'ey'. You can obtain a token from sigrid-says.com. Note that tokens are customer-specific.")
 
 
-def set_context(bearer_token: str, customer: str, system: str = None, base_url: str = DEFAULT_BASE_URL):
+def set_context(bearer_token: str, customer: str, system: str = None, base_url: Optional[str] = None):
     _test_sigrid_token(bearer_token)
 
     global _bearer_token, _customer, _system, _rest_url
     _bearer_token = bearer_token
     _customer = customer
     _system = system
-    _rest_url = base_url.rstrip('/') + '/rest'
+    _rest_url = (base_url or DEFAULT_BASE_URL).rstrip('/') + '/rest'
 
 
 def _check_context():

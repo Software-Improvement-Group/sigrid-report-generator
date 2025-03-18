@@ -13,5 +13,3 @@
 #  limitations under the License.
 
 from . import docx, pptx
-
-__all__ = ["pptx", "docx"]

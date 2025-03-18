@@ -37,12 +37,12 @@ MATOMO_URL = os.environ.get('MATOMO_URL', 'https://sigrid-says.com/usage')
 @click.option('-p', '--template', type=click.File('rb'),
               help='A custom report template file (mutually exclusive with the -l/--layout option)')
 @click.option('-o', '--out-file', default='out', help='write output to this file (default out.pptx/docx)')
-@click.option('-b', '--base-url', default=None,
+@click.option('-a', '--api-url', default=None,
               help=f'Sigrid API base URL, will default to {sigrid_api.DEFAULT_BASE_URL} if not provided')
 @click.pass_context
-def run(ctx, debug, customer, system, token, layout, template, out_file, base_url):
+def run(ctx, debug, customer, system, token, layout, template, out_file, api_url):
     _configure_logging(debug)
-    _configure_api(customer, system, token, base_url)
+    _configure_api(customer, system, token, api_url)
     _record_usage_statistics()
     if not _require_either_layout_or_template(layout, template):
         return
@@ -54,12 +54,12 @@ def run(ctx, debug, customer, system, token, layout, template, out_file, base_ur
     presets.run(layout, out_file)
 
 
-def _configure_api(customer: str, system: str, token: str, base_url: Optional[str]):
+def _configure_api(customer: str, system: str, token: str, api_url: Optional[str]):
     sigrid_api.set_context(
         bearer_token=token,
         customer=customer,
         system=system,
-        base_url=base_url
+        base_url=api_url
     )
 
 
