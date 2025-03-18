@@ -55,8 +55,7 @@ wherever you specify with the `-o` option.
 #### Troubleshooting
 
 If there is an error and you can't figure out what causes it, run the tool again with the `-d` parameter appended to
-gather additional information. Then (for now) consult the team behind the tool (@jan / @dobrien) and send them the
-output.
+gather additional information. If you find a bug, please create a ticket in this project.
 
 Use `report-generator --help` for an overview of configuration options.
 
