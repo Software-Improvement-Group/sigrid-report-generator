@@ -18,12 +18,13 @@ from typing import Optional
 
 import requests
 
-BASE_URL = "https://sigrid-says.com/rest"
+DEFAULT_BASE_URL = "https://sigrid-says.com"
 BASE_ANALYSIS_RESULTS_URL = "analysis-results/api/v1"
 
 _bearer_token: Optional[str] = None
 _customer: Optional[str] = None
 _system: Optional[str] = None
+_rest_url: Optional[str] = None
 
 
 class SigridAPIRequestFailed(Exception):
@@ -39,17 +40,18 @@ def _test_sigrid_token(token):
             "Invalid Sigrid token. A token is always longer than 10 characters and starts with 'ey'. You can obtain a token from sigrid-says.com. Note that tokens are customer-specific.")
 
 
-def set_context(bearer_token: str, customer: str, system: str = None):
+def set_context(bearer_token: str, customer: str, system: str = None, base_url: str = DEFAULT_BASE_URL):
     _test_sigrid_token(bearer_token)
 
-    global _bearer_token, _customer, _system
+    global _bearer_token, _customer, _system, _rest_url
     _bearer_token = bearer_token
     _customer = customer
     _system = system
+    _rest_url = base_url.rstrip('/') + '/rest'
 
 
 def _check_context():
-    if _bearer_token is None or _customer is None:
+    if _bearer_token is None or _customer is None or _rest_url is None:
         raise ValueError("Context must be set using sigrid_api.set_context() before making API calls.")
 
 
@@ -98,7 +100,7 @@ def _sigrid_api_request(with_system=False):
 
 def make_request(endpoint, **kwargs):
     _check_context()
-    url = f"{BASE_URL}/{endpoint}"
+    url = f"{_rest_url}/{endpoint}"
     return _request(url, **kwargs)
 
 
