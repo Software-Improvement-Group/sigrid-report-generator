@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from report_generator import constants
+from report_generator.generator import constants
 
 ARCH_WORST_METRIC_TEXT = {
     "CODE_BREAKDOWN"              : "The system's low score in Code Breakdown restricts flexibility, hindering parallel work across boundaries, as the codebase lacks clear, well-defined components, impeding efficient collaboration and adaptability.",

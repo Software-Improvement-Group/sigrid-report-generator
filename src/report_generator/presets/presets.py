@@ -16,11 +16,11 @@ from typing import Callable
 
 from importlib_resources import files
 
-from report_generator import ReportGenerator
+from report_generator.generator import ReportGenerator
 
 
 def _generate_report(template_name: str, output_path: str) -> None:
-    template = files("presets.templates").joinpath(template_name)
+    template = files("report_generator.presets.templates").joinpath(template_name)
     report_generator = ReportGenerator(str(template))
     report_generator.generate(output_path)
 

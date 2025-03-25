@@ -19,9 +19,10 @@ from typing import Callable, Type
 from docx import Document
 from pptx.presentation import Presentation
 
-from report_generator import report_utils
-from report_generator.placeholders.base import Placeholder, function_name_to_placeholder_key, ParameterizedPlaceholder, \
-    Parameter, ParameterList
+from report_generator.generator import report_utils
+from report_generator.generator.placeholders.base import Parameter, ParameterList, ParameterizedPlaceholder, \
+    Placeholder, \
+    function_name_to_placeholder_key
 
 
 class _AbstractTextPlaceholder(Placeholder, ABC):

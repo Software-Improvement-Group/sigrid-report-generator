@@ -12,8 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from report_generator.placeholders import placeholders as default_placeholders, PlaceholderCollection
-from report_generator.report import Report
+from report_generator.generator.placeholders import PlaceholderCollection, placeholders as default_placeholders
+from report_generator.generator.report import Report
 
 
 class ReportGenerator:

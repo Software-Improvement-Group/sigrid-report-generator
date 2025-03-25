@@ -17,10 +17,10 @@ from typing import Callable
 
 from pptx import Presentation
 
-from report_generator import constants, report_utils
-from report_generator.data_models import architecture_data, maintainability_data
-from report_generator.formatters import formatters
-from report_generator.placeholders.base import ParameterizedPlaceholder, Parameter
+from report_generator.generator import constants, report_utils
+from report_generator.generator.data_models import architecture_data, maintainability_data
+from report_generator.generator.formatters import formatters
+from report_generator.generator.placeholders.base import Parameter, ParameterizedPlaceholder
 
 
 def _to_json_name(metric):

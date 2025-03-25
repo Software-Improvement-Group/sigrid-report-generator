@@ -14,11 +14,11 @@
 
 from datetime import datetime
 
-from report_generator import constants
-from report_generator.data_models import *
-from report_generator.formatters import smart_remarks
-from report_generator.formatters.formatters import maintainability_round, calculate_stars
-from .base import text_placeholder, parameterized_text_placeholder
+from report_generator.generator import constants
+from report_generator.generator.data_models import *
+from report_generator.generator.formatters import smart_remarks
+from report_generator.generator.formatters.formatters import calculate_stars, maintainability_round
+from .base import parameterized_text_placeholder, text_placeholder
 
 
 def _to_json_name(metric):

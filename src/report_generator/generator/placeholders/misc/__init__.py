@@ -14,7 +14,7 @@
 
 import inspect
 
-from . import category_chart, maintainability_galaxy_chart, maintainability_moveable_marker, osh_slide, color_rating
+from . import category_chart, color_rating, maintainability_galaxy_chart, maintainability_moveable_marker, osh_slide
 
 _all_implementations = {
     **category_chart.__dict__,

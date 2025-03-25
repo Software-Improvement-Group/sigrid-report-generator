@@ -14,12 +14,12 @@
 
 import logging
 import re
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Iterable, Union
 
-from report_generator.report import Report, ReportType
-from report_generator.sigrid_api import SigridAPIRequestFailed
+from report_generator.generator.report import Report, ReportType
+from report_generator.generator.sigrid_api import SigridAPIRequestFailed
 
 Parameter = Union[str, int]
 ParameterList = Iterable[Parameter]

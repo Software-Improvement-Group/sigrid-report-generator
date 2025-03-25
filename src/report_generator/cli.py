@@ -19,8 +19,8 @@ from typing import Optional
 import click
 import requests
 
-import presets
-from report_generator import sigrid_api, ReportGenerator
+from report_generator import presets
+from report_generator.generator import ReportGenerator, sigrid_api
 
 MATOMO_URL = os.environ.get('MATOMO_URL', 'https://sigrid-says.com/usage')
 
@@ -80,7 +80,7 @@ def _record_usage_statistics():
         requests.get(
             f"{MATOMO_URL}matomo.php?idsite=5&rec=1&ca=1&e_c=consultancy&e_a=report-generator&e_n={user}&uid={user}")
     except requests.exceptions.ConnectionError as e:
-        logging.warn(f"Failed to connect to {MATOMO_URL} for registering usage statistics (not harmful).")
+        logging.warning(f"Failed to connect to {MATOMO_URL} for registering usage statistics (not harmful).")
 
 
 def _configure_logging(debug):

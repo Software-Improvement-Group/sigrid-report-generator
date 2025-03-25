@@ -17,10 +17,10 @@ from typing import Callable
 
 from pptx import Presentation
 
-from report_generator import report_utils
-from report_generator.data_models import maintainability_data, architecture_data
-from report_generator.formatters.formatters import maintainability_round
-from report_generator.placeholders import Placeholder
+from report_generator.generator import report_utils
+from report_generator.generator.data_models import architecture_data, maintainability_data
+from report_generator.generator.formatters.formatters import maintainability_round
+from report_generator.generator.placeholders import Placeholder
 
 _RATING_MARKER_MOVE_SIZE = 2200000
 

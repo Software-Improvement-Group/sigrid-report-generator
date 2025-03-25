@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 #  Copyright Software Improvement Group
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import cli
-
-if __name__ == "__main__":
-    cli.run()
+from .architecture import architecture_data
+from .maintainability import maintainability_data
+from .osh import osh_data

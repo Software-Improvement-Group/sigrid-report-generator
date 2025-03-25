@@ -16,7 +16,7 @@ from functools import cached_property
 
 import dateutil.parser
 
-from report_generator import sigrid_api
+from report_generator.generator import sigrid_api
 
 
 class _AnonDataClass:

@@ -18,9 +18,9 @@ from pptx import Presentation
 from pptx.chart.data import ChartData
 from pptx.slide import Slide
 
-from report_generator import report_utils
-from report_generator.data_models import osh_data
-from report_generator.placeholders import Placeholder
+from report_generator.generator import report_utils
+from report_generator.generator.data_models import osh_data
+from report_generator.generator.placeholders import Placeholder
 
 
 def _format_chart_data(data) -> Tuple[ChartData, ChartData]:

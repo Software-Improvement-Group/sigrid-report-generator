@@ -15,7 +15,7 @@
 from datetime import datetime
 from functools import cached_property
 
-from report_generator import sigrid_api
+from report_generator.generator import sigrid_api
 
 
 class ArchitectureData:
