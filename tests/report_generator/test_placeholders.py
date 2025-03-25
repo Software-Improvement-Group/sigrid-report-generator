@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from report_generator.placeholders.text.implementations import _to_json_name
+from report_generator.generator.placeholders.text.implementations import _to_json_name
 
 class TestPlaceholders:
 

@@ -14,7 +14,7 @@
 
 import pytest
 
-import report_generator.sigrid_api as sigrid_api
+import report_generator.generator.sigrid_api as sigrid_api
 
 
 class TestSigridAPI:

@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from report_generator.data_models.maintainability import _sort_and_aggregate_technology_data
+from report_generator.generator.data_models.maintainability import _sort_and_aggregate_technology_data
 
 
 class TestDataModels:
