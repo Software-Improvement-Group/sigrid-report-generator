@@ -12,9 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import setuptools
-import site
-import sys
-site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
-
-setuptools.setup()
+from .architecture import architecture_data
+from .maintainability import maintainability_data
+from .osh import osh_data

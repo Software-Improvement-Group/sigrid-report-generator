@@ -12,9 +12,16 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import setuptools
-import site
-import sys
-site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
+import inspect
 
-setuptools.setup()
+from . import implementations as _all_implementations
+from .base import parameterized_text_placeholder, text_placeholder
+
+_placeholders_map = {
+    name: obj for name, obj in inspect.getmembers(_all_implementations, inspect.isclass)
+    if hasattr(obj, '__placeholder__')
+}
+
+placeholders = set(_placeholders_map.values())
+
+__all__ = list(_placeholders_map.keys())

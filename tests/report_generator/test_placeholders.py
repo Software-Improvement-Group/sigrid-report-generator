@@ -12,9 +12,13 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import setuptools
-import site
-import sys
-site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
+from report_generator.generator.placeholders.text.implementations import _to_json_name
 
-setuptools.setup()
+class TestPlaceholders:
+
+    def test_to_json_name(self):
+        assert _to_json_name("UNIT_SIZE") == "unitSize"
+        assert _to_json_name("DUPLICATION") == "duplication"
+
+        assert _to_json_name("duplication") == "duplication"
+        assert _to_json_name("UnIt_sIze") == "unitSize"

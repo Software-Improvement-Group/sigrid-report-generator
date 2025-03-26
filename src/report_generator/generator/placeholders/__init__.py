@@ -12,9 +12,16 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import setuptools
-import site
-import sys
-site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
+from typing import Set, Type
 
-setuptools.setup()
+from .base import Placeholder
+from .misc import placeholders as misc_placeholders
+from .text import placeholders as text_placeholders
+
+PlaceholderCollection = Set[Type[Placeholder]]
+
+placeholders: PlaceholderCollection = text_placeholders | misc_placeholders
+
+from .text import text_placeholder, parameterized_text_placeholder
+
+__all__ = ['Placeholder', 'text_placeholder', 'parameterized_text_placeholder', 'PlaceholderCollection', 'placeholders']
