@@ -46,7 +46,9 @@ class MaintainabilityGalaxyChartPlaceholder(Placeholder):
         chart_data = XyChartData()
         series = chart_data.add_series("Series 1")
 
-        series.add_data_point(volume, maint_rating)
+        # Correct volume to be at least 0.1, anything lower will not be displayed on the chart
+        corrected_volume = max(volume, 0.1)
+        series.add_data_point(corrected_volume, maint_rating)
 
         for chart in charts:
             chart.replace_data(chart_data)
