@@ -13,7 +13,7 @@
 #  limitations under the License.
 
 import logging
-from functools import cache
+from functools import cache, wraps
 from typing import Optional
 
 import requests
@@ -40,14 +40,47 @@ def _test_sigrid_token(token):
             "Invalid Sigrid token. A token is always longer than 10 characters and starts with 'ey'. You can obtain a token from sigrid-says.com. Note that tokens are customer-specific.")
 
 
-def set_context(bearer_token: str, customer: str, system: str = None, base_url: Optional[str] = None):
-    _test_sigrid_token(bearer_token)
-
+def set_context(
+        bearer_token: Optional[str] = None,
+        customer: Optional[str] = None,
+        system: Optional[str] = None,
+        base_url: Optional[str] = None
+) -> None:
+    """Set the context values. Only updates provided values. Sets base_url to default if not provided."""
     global _bearer_token, _customer, _system, _rest_url
-    _bearer_token = bearer_token
-    _customer = customer
-    _system = system
-    _rest_url = (base_url or DEFAULT_BASE_URL).rstrip('/') + '/rest'
+
+    if bearer_token is not None:
+        _test_sigrid_token(bearer_token)
+        _bearer_token = bearer_token
+
+    if customer is not None:
+        _customer = customer
+
+    if system is not None:
+        _system = system
+
+    _rest_url = f"{base_url or DEFAULT_BASE_URL.rstrip('/')}/rest"
+
+
+def reset_context(
+        reset_bearer_token: bool = False,
+        reset_customer: bool = False,
+        reset_system: bool = False,
+        reset_base_url: bool = False
+) -> None:
+    global _bearer_token, _customer, _system, _rest_url
+
+    if reset_bearer_token:
+        _bearer_token = None
+
+    if reset_customer:
+        _customer = None
+
+    if reset_system:
+        _system = None
+
+    if reset_base_url:
+        _rest_url = f"{DEFAULT_BASE_URL.rstrip('/')}/rest"
 
 
 def _check_context():
@@ -69,9 +102,6 @@ def _request(url):
     except requests.RequestException as e:
         logging.error(f"Failed to make request to Sigrid API endpoint {url}. Error: {e}")
         return None
-
-
-from functools import wraps
 
 
 def _sigrid_api_request(with_system=False):
@@ -98,7 +128,7 @@ def _sigrid_api_request(with_system=False):
     return decorator
 
 
-def make_request(endpoint, **kwargs):
+def _make_request(endpoint, **kwargs):
     _check_context()
     url = f"{_rest_url}/{endpoint}"
     return _request(url, **kwargs)
@@ -107,54 +137,41 @@ def make_request(endpoint, **kwargs):
 @_sigrid_api_request(with_system=True)
 def get_maintainability_ratings(system, include_tech_stats: bool = True):
     endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/maintainability/{_customer}/{system}?technologyStats={str(include_tech_stats).lower()}"
-    return make_request(endpoint)
+    return _make_request(endpoint)
 
 
 @_sigrid_api_request(with_system=True)
 def get_maintainability_ratings_components(system):
     endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/maintainability/{_customer}/{system}/components"
-    return make_request(endpoint)
+    return _make_request(endpoint)
 
 
 @_sigrid_api_request(with_system=True)
 def get_capabilities(system):
     endpoint = f"analysis-results/capabilities/{_customer}/{system}"
-    return make_request(endpoint)
+    return _make_request(endpoint)
 
 
 @_sigrid_api_request(with_system=True)
 def get_metadata(system):
     endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/system-metadata/{_customer}"
-    return make_request(endpoint)
+    return _make_request(endpoint)
 
 
 @_sigrid_api_request(with_system=True)
 def get_osh_findings(system, is_vulnerable=False):
     vulnerable = "true" if is_vulnerable else "false"
     endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/osh-findings/{_customer}/{system}?vulnerable={vulnerable}"
-    return make_request(endpoint)
+    return _make_request(endpoint)
 
 
 @_sigrid_api_request(with_system=True)
 def get_security_findings(system):
     endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/security-findings/{_customer}/{system}"
-    return make_request(endpoint)
+    return _make_request(endpoint)
 
 
 @_sigrid_api_request(with_system=True)
 def get_architecture_findings(system):
     endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/architecture-quality/{_customer}/{system}"
-    return make_request(endpoint)
-
-
-__all__ = [
-    'set_context',
-    'get_maintainability_ratings',
-    'get_maintainability_ratings_components',
-    'get_capabilities',
-    'get_metadata',
-    'get_osh_findings',
-    'get_security_findings',
-    'get_architecture_findings',
-    'SigridAPIRequestFailed'
-]
+    return _make_request(endpoint)
