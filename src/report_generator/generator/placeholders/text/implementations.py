@@ -108,12 +108,16 @@ def test_code_ratio():
 
 @text_placeholder()
 def test_code_relative():
-    return smart_remarks.test_code_relative(maintainability_data.data["testCodeRatio"])
+    if("testCodeRatio" in maintainability_data.data):
+        return smart_remarks.test_code_relative(maintainability_data.data["testCodeRatio"])
+    return ""
 
 
 @text_placeholder()
 def test_code_summary():
-    return smart_remarks.test_code_summary(maintainability_data.data["testCodeRatio"])
+    if("testCodeRatio" in maintainability_data.data):
+        return smart_remarks.test_code_summary(maintainability_data.data["testCodeRatio"])
+    return ""
 
 
 @text_placeholder()
@@ -333,3 +337,20 @@ def osh_legal_summary():
 @text_placeholder()
 def osh_management_summary():
     return osh_data.management_summary
+
+@text_placeholder()
+def osh_relative():
+    return smart_remarks.osh_relative_rating(osh_data.data.ratings["system"])
+
+@parameterized_text_placeholder(custom_key="OSH_RATING_{parameter}",
+                                parameters=constants.OSH_METRICS)
+def osh_rating_param(metric: str):
+    metric_key = _to_json_name(metric)
+    return maintainability_round(osh_data.get_score_for_prop(metric_key))
+
+
+@parameterized_text_placeholder(custom_key="STARS_{parameter}",
+                                parameters=constants.OSH_METRICS)
+def osh_stars_param(metric: str):
+    metric_key = _to_json_name(metric)
+    return calculate_stars(osh_data.get_score_for_prop(metric_key))
