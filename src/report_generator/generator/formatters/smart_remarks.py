@@ -11,39 +11,57 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+from typing import List
 
-from report_generator.generator import constants
+from report_generator.generator.constants import ArchMetric, MaintMetric, MetricEnum
 
-ARCH_WORST_METRIC_TEXT = {
-    "CODE_BREAKDOWN"              : "The system's low score in Code Breakdown restricts flexibility, hindering parallel work across boundaries, as the codebase lacks clear, well-defined components, impeding efficient collaboration and adaptability.",
-    "COMPONENT_COUPLING"          : "The system's low score in Component Coupling constrains architecture, constraining evolution and imposing high-impact changes, impeding system adaptability.",
-    "COMPONENT_COHESION"          : "The system scores poorly in Component Cohesion, constraining evolution and triggering high-impact changes, impeding adaptability across the system or landscape.",
-    "CODE_REUSE"                  : "The system's low score in Code Reuse heightens complexity, fostering coupling through duplicated code. This impedes flexibility and hinders responsibility separation.",
-    "COMMUNICATION_CENTRALIZATION": "The system's low score in Communication Centralization weakens encapsulation, heightening sensitivity to external changes, making updates challenging, and impacting adaptability.",
-    "DATA_COUPLING"               : "The system's low score in Data Coupling constrains flexibility, demanding changes across components with each alteration to the data.py store structure, hindering adaptability and system resilience.",
-    "TECHNOLOGY_PREVALENCE"       : "The system scores poorly in Technology Prevalence, hampering adaptability and risking component abandonment due to misaligned tech knowledge, impacting efficient change implementation.",
-    "BOUNDED_EVOLUTION"           : "The system scores poorly in Bounded Evolution, implying excessive updates, possibly signaling over-dependence, centralization issues, and hindering system stability and adaptability.",
-    "KNOWLEDGE_DISTRIBUTION"      : "The system's low score in Knowledge Distribution risks knowledge loss with a single developer on a large component, hindering adaptability and continuity upon that person's departure.",
-    "COMPONENT_FRESHNESS"         : "The system's low score in Component Freshness impedes adaptability, indicating centralized activity rather than distributed across components, hindering a balanced and responsive system."
+MAINT_BEST_METRIC_TEXT = {
+    MaintMetric.VOLUME                : "The system is small and therefore easier to maintain.",
+    MaintMetric.DUPLICATION           : "The system shows low risk in its duplicated logic.",
+    MaintMetric.UNIT_SIZE             : "The system shows low risk in unit sizing",
+    MaintMetric.UNIT_COMPLEXITY       : "The system shows low risk in unit complexity.",
+    MaintMetric.UNIT_INTERFACING      : "The system shows low risk in unit interfacing",
+    MaintMetric.MODULE_COUPLING       : "The system shows loose coupling across modules",
+    MaintMetric.COMPONENT_INDEPENDENCE: "The system shows low interdependence between components",
+    MaintMetric.COMPONENT_ENTANGLEMENT: "The system shows low entanglement between components"
+}
+
+MAINT_WORST_METRIC_TEXT = {
+    MaintMetric.VOLUME                : "The system's large size hinders its effective maintenance",
+    MaintMetric.DUPLICATION           : "The system shows high risk in duplicated code",
+    MaintMetric.UNIT_SIZE             : "The system has a pattern of oversized units of code",
+    MaintMetric.UNIT_COMPLEXITY       : "The system has a pattern of complex units.",
+    MaintMetric.UNIT_INTERFACING      : "The system shows high risk in units with large interfaces",
+    MaintMetric.MODULE_COUPLING       : "The system shows high risk in its tightly coupled modules",
+    MaintMetric.COMPONENT_INDEPENDENCE: "The system shows high risk where components of the system depend on each other",
+    MaintMetric.COMPONENT_ENTANGLEMENT: "The system shows high risk where components of the system often interact with each other"
 }
 
 ARCH_BEST_METRIC_TEXT = {
-    "CODE_BREAKDOWN"              : "The system scores highly in Code Breakdown resulting in increased flexibility through well-defined components that enable efficient parallel work across functional or technical boundaries.",
-    "COMPONENT_COUPLING"          : "The system's high score in component coupling means components with fewer dependencies, allowing for greater evolution, and minimizing impact on the system or landscape during interface changes.",
-    "COMPONENT_COHESION"          : "The system's high score in Component Cohesion means highly reusable and replaceable components with focused internal logic. This minimizes external dependencies and references from other external components.",
-    "CODE_REUSE"                  : "The system scores highly in Code Reuse, minimizing duplication within and between components. This reduces coupling, preventing implicit dependencies and enhancing system modularity.",
-    "COMMUNICATION_CENTRALIZATION": "The system's high score Communication Centralization reflects high encapsulation. Centralized calls from a component enhance encapsulation, making it less sensitive to external changes and easier to update in response to such modifications.",
-    "DATA_COUPLING"               : "The system scores highly in Data coupling, ensuring high flexibility by limiting components accessing a data.py store, preventing widespread impact from changes to its structure and enhancing system adaptability.",
-    "TECHNOLOGY_PREVALENCE"       : "The system excels in Technology Prevalence, aligning team knowledge and preventing component abandonment due to unfamiliar tech, fostering adaptability in areas requiring changes.",
-    "BOUNDED_EVOLUTION"           : "The system's high score in Bounded Evolution signifies limited updates for components, preventing excessive dependencies and knowledge centralization, and promoting a more balanced and adaptable system.",
-    "KNOWLEDGE_DISTRIBUTION"      : "The system's high score in Knowledge Distribution averts reliance on a single developer, mitigating knowledge loss risks and fostering continuity.",
-    "COMPONENT_FRESHNESS"         : "The system's high score in Component Freshness ensures activity across multiple components, avoiding centralization, fostering balance, and reducing reliance on a single component."
+    ArchMetric.CODE_BREAKDOWN              : "The system scores highly in Code Breakdown resulting in increased flexibility through well-defined components that enable efficient parallel work across functional or technical boundaries.",
+    ArchMetric.COMPONENT_COUPLING          : "The system's high score in component coupling means components with fewer dependencies, allowing for greater evolution, and minimizing impact on the system or landscape during interface changes.",
+    ArchMetric.COMPONENT_COHESION          : "The system's high score in Component Cohesion means highly reusable and replaceable components with focused internal logic. This minimizes external dependencies and references from other external components.",
+    ArchMetric.CODE_REUSE                  : "The system scores highly in Code Reuse, minimizing duplication within and between components. This reduces coupling, preventing implicit dependencies and enhancing system modularity.",
+    ArchMetric.COMMUNICATION_CENTRALIZATION: "The system's high score Communication Centralization reflects high encapsulation. Centralized calls from a component enhance encapsulation, making it less sensitive to external changes and easier to update in response to such modifications.",
+    ArchMetric.DATA_COUPLING               : "The system scores highly in Data coupling, ensuring high flexibility by limiting components accessing a data store, preventing widespread impact from changes to its structure and enhancing system adaptability.",
+    ArchMetric.TECHNOLOGY_PREVALENCE       : "The system excels in Technology Prevalence, aligning team knowledge and preventing component abandonment due to unfamiliar tech, fostering adaptability in areas requiring changes.",
+    ArchMetric.BOUNDED_EVOLUTION           : "The system's high score in Bounded Evolution signifies limited updates for components, preventing excessive dependencies and knowledge centralization, and promoting a more balanced and adaptable system.",
+    ArchMetric.KNOWLEDGE_DISTRIBUTION      : "The system's high score in Knowledge Distribution averts reliance on a single developer, mitigating knowledge loss risks and fostering continuity.",
+    ArchMetric.COMPONENT_FRESHNESS         : "The system's high score in Component Freshness ensures activity across multiple components, avoiding centralization, fostering balance, and reducing reliance on a single component."
 }
 
-
-def _to_json_name(metric):
-    metric = metric.replace("_", " ").title().replace(" ", "")
-    return metric[0].lower() + metric[1:]
+ARCH_WORST_METRIC_TEXT = {
+    ArchMetric.CODE_BREAKDOWN              : "The system's low score in Code Breakdown restricts flexibility, hindering parallel work across boundaries, as the codebase lacks clear, well-defined components, impeding efficient collaboration and adaptability.",
+    ArchMetric.COMPONENT_COUPLING          : "The system's low score in Component Coupling constrains architecture, constraining evolution and imposing high-impact changes, impeding system adaptability.",
+    ArchMetric.COMPONENT_COHESION          : "The system scores poorly in Component Cohesion, constraining evolution and triggering high-impact changes, impeding adaptability across the system or landscape.",
+    ArchMetric.CODE_REUSE                  : "The system's low score in Code Reuse heightens complexity, fostering coupling through duplicated code. This impedes flexibility and hinders responsibility separation.",
+    ArchMetric.COMMUNICATION_CENTRALIZATION: "The system's low score in Communication Centralization weakens encapsulation, heightening sensitivity to external changes, making updates challenging, and impacting adaptability.",
+    ArchMetric.DATA_COUPLING               : "The system's low score in Data Coupling constrains flexibility, demanding changes across components with each alteration to the data store structure, hindering adaptability and system resilience.",
+    ArchMetric.TECHNOLOGY_PREVALENCE       : "The system scores poorly in Technology Prevalence, hampering adaptability and risking component abandonment due to misaligned tech knowledge, impacting efficient change implementation.",
+    ArchMetric.BOUNDED_EVOLUTION           : "The system scores poorly in Bounded Evolution, implying excessive updates, possibly signaling over-dependence, centralization issues, and hindering system stability and adaptability.",
+    ArchMetric.KNOWLEDGE_DISTRIBUTION      : "The system's low score in Knowledge Distribution risks knowledge loss with a single developer on a large component, hindering adaptability and continuity upon that person's departure.",
+    ArchMetric.COMPONENT_FRESHNESS         : "The system's low score in Component Freshness impedes adaptability, indicating centralized activity rather than distributed across components, hindering a balanced and responsive system."
+}
 
 
 def relative_to_market_average(rating):
@@ -79,7 +97,7 @@ def relative_volume(volume_rating):
 
 # Figure out what the lowest scoring metrics are, and say something intelligent about those
 def maint_observation(maintainability_data):
-    sorted_metric_data = sort_metrics(maintainability_data, constants.MAINT_METRICS)
+    sorted_metric_data = sort_metrics(maintainability_data, list(MaintMetric))
 
     worst_metric = sorted_metric_data[0]
     if worst_metric[1] < 2.5:
@@ -87,54 +105,24 @@ def maint_observation(maintainability_data):
 
 
 def maint_observations(maintainability_data):
-    sorted_metric_data = sort_metrics(maintainability_data, constants.MAINT_METRICS)
+    sorted_metric_data = sort_metrics(maintainability_data, list(MaintMetric))
     res = ""
     for sorted_metric in sorted_metric_data:
         if sorted_metric[1] < 2.5:
-            res = res + worst_metric_observation(sorted_metric)
-            res = res + "\n"
+            res += worst_metric_observation(sorted_metric)
+            res += "\n"
         if sorted_metric[1] > 3.5:
-            res = res + best_metric_observation(sorted_metric)
-            res = res + "\n"
+            res += best_metric_observation(sorted_metric)
+            res += "\n"
     return res
 
 
 def best_metric_observation(best_metric):
-    if best_metric[0] == "VOLUME":
-        return "The system is small and therefore easier to maintain."
-    if best_metric[0] == "DUPLICATION":
-        return "The system shows low risk in its duplicated logic."
-    if best_metric[0] == "UNIT_SIZE":
-        return "The system shows low risk in unit sizing"
-    if best_metric[0] == "UNIT_COMPLEXITY":
-        return "The system shows low risk in unit complexity."
-    if best_metric[0] == "UNIT_INTERFACING":
-        return "The system shows low risk in unit interfacing"
-    if best_metric[0] == "MODULE_COUPLING":
-        return "The system shows loose coupling across modules"
-    if best_metric[0] == "COMPONENT_INDEPENDENCE":
-        return "The system shows low interdependence between components"
-    if best_metric[0] == "COMPONENT_ENTANGLEMENT":
-        return "The system shows low entanglement between components"
+    return MAINT_BEST_METRIC_TEXT[best_metric[0]]
 
 
 def worst_metric_observation(worst_metric):
-    if worst_metric[0] == "VOLUME":
-        return "The system's large size hinders its effective maintenance"
-    elif worst_metric[0] == "DUPLICATION":
-        return "The system shows high risk in duplicated code"
-    elif worst_metric[0] == "UNIT_SIZE":
-        return "The system has a pattern of oversized units of code"
-    elif worst_metric[0] == "UNIT_COMPLEXITY":
-        return "The system has a pattern of complex units."
-    elif worst_metric[0] == "UNIT_INTERFACING":
-        return "The system shows high risk in units with large interfaces"
-    elif worst_metric[0] == "MODULE_COUPLING":
-        return "The system shows high risk in its tightly coupled modules"
-    elif worst_metric[0] == "COMPONENT_INDEPENDENCE":
-        return "The system shows high risk where components of the system depend on each other"
-    elif worst_metric[0] == "COMPONENT_ENTANGLEMENT":
-        return "The system shows high risk where components of the system often interact with each other"
+    return MAINT_WORST_METRIC_TEXT[worst_metric[0]]
 
 
 def arch_observation(arch_rating):
@@ -194,7 +182,7 @@ def arch_worst_best_metric(aq_rating, aq_system_properties):
 
 
 def arch_worst_metric_remark(arch_sp_ratings):
-    sorted_metric_data = sort_metrics(arch_sp_ratings, constants.ARCH_METRICS)
+    sorted_metric_data = sort_metrics(arch_sp_ratings, list(ArchMetric))
 
     worst_metric = sorted_metric_data[0]
     if worst_metric[1] < 2.5:
@@ -202,17 +190,17 @@ def arch_worst_metric_remark(arch_sp_ratings):
 
 
 def arch_best_metric_remark(arch_sp_ratings):
-    sorted_metric_data = sort_metrics(arch_sp_ratings, constants.ARCH_METRICS)
+    sorted_metric_data = sort_metrics(arch_sp_ratings, list(ArchMetric))
 
     best_metric = sorted_metric_data[-1]
     if best_metric[1] > 3.5:
         return arch_best_metric_observation(best_metric)
 
 
-def sort_metrics(ratings, metrics):
+def sort_metrics(ratings, metrics: List[MetricEnum]):
     metric_data = {}
     for metric in metrics:
-        value = ratings[_to_json_name(metric)]
+        value = ratings[metric.to_json_name()]
         if value > 0.1:  # If rating is zero, it means that rating is N/A. Ignore
             metric_data[metric] = value
     return sorted(metric_data.items(), key=lambda item: item[1])
@@ -249,6 +237,7 @@ def osh_remark(libraries):
                 library["properties"][0]["value"] == "MEDIUM"):
             mentionable_license_count += 1
     return f"This system has {mentionable_vulnerability_count} medium or higher risk vulnerable libraries and {mentionable_license_count} licenses with potential legal risks that should be investigated"
+
 
 def osh_relative_rating(osh_rating):
     if osh_rating < 2.5:

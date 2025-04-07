@@ -12,13 +12,18 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from report_generator.generator.placeholders.text.implementations import _to_json_name
+from report_generator.generator.constants import MetricEnum
 
 class TestPlaceholders:
 
     def test_to_json_name(self):
-        assert _to_json_name("UNIT_SIZE") == "unitSize"
-        assert _to_json_name("DUPLICATION") == "duplication"
+        class TestMetricEnum(MetricEnum):
+            UNIT_SIZE = "UNIT_SIZE"
+            DUPLICATION = "DUPLICATION"
+            duplication = "duplication"
+            UnIt_sIze = "UnIt_sIze"
 
-        assert _to_json_name("duplication") == "duplication"
-        assert _to_json_name("UnIt_sIze") == "unitSize"
+        assert TestMetricEnum.UNIT_SIZE.to_json_name() == "unitSize"
+        assert TestMetricEnum.DUPLICATION.to_json_name() == "duplication"
+        assert TestMetricEnum.duplication.to_json_name() == "duplication"
+        assert TestMetricEnum.UnIt_sIze.to_json_name() == "unitSize"

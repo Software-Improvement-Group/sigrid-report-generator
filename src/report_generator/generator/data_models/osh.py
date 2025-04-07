@@ -12,18 +12,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import logging
 from functools import cached_property
 
 import dateutil.parser
-import logging
 
 from report_generator.generator import sigrid_api
-from report_generator.generator import constants
+from report_generator.generator.constants import OSHMetric
 
-
-def _to_json_name(metric):
-    metric = metric.replace("_", " ").title().replace(" ", "")
-    return metric[0].lower() + metric[1:]
 
 class _AnonDataClass:
     total_deps = 0
@@ -47,6 +43,7 @@ class _AnonDataClass:
     @property
     def total_vulnerable(self):
         return sum(self.vuln_risks[0:4])
+
 
 class OSHData:
 
@@ -79,19 +76,18 @@ class OSHData:
                               self._find_cyclonedx_property_value(component["properties"], "sigrid:risk:activity"))
 
         try:
-            for prop in constants.OSH_METRICS:
-                data.ratings[prop.lower()] = self.get_rating_from_data(raw_data, _to_json_name(prop))
+            for prop in OSHMetric:
+                data.ratings[prop.value.lower()] = self.get_rating_from_data(raw_data, prop.to_json_name())
         except KeyError as e:
-            logging.warn("No OSH ratings found in API response. Not populating OSH ratings slide")
+            logging.warning("No OSH ratings found in API response. Not populating OSH ratings slide")
 
         return data
-    
+
     def get_rating_from_data(self, raw_data, rating_name):
         for property in raw_data['metadata']['properties']:
             if property["name"] == f"sigrid:ratings:{rating_name}":
                 return float(property["value"])
         return None
-
 
     def get_score_for_prop(self, prop):
         return self.data.ratings[prop] if prop in self.data.ratings else \
