@@ -42,7 +42,7 @@ def _format_chart_data(data) -> Tuple[ChartData, ChartData]:
     chart_data2.add_series("Low risk", [data.freshness_risks[3], data.stability_risks[3], data.mgmt_risks[3],
                                         data.activity_risks[3]])
 
-    return (chart_data, chart_data2)
+    return chart_data, chart_data2
 
 
 def _determine_chart_axis_max():

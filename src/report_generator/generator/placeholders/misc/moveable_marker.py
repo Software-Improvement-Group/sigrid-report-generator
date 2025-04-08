@@ -18,7 +18,7 @@ from typing import Callable
 from pptx import Presentation
 
 from report_generator.generator import report_utils
-from report_generator.generator.data_models import architecture_data, maintainability_data
+from report_generator.generator.data_models import architecture_data, maintainability_data, osh_data
 from report_generator.generator.formatters.formatters import maintainability_round
 from report_generator.generator.placeholders import Placeholder
 
@@ -64,3 +64,11 @@ class ArchitectureMovableMarkerPlaceholder(_AbstractMoveableMarkerPlaceholder):
     @classmethod
     def value(cls, parameter=None):
         return maintainability_round(architecture_data.ratings["architecture"])
+
+
+class OSHMovableMarkerPlaceholder(_AbstractMoveableMarkerPlaceholder):
+    key = "MARKER_OSH_RATING"
+
+    @classmethod
+    def value(cls, parameter=None):
+        return maintainability_round(osh_data.data.ratings["system"])

@@ -14,16 +14,12 @@
 
 from datetime import datetime
 
-from report_generator.generator import constants
+from report_generator.generator.constants import ArchMetric, ArchSubcharacteristic, MaintMetric, MetricEnum, \
+    OSHMetric
 from report_generator.generator.data_models import *
 from report_generator.generator.formatters import smart_remarks
 from report_generator.generator.formatters.formatters import calculate_stars, maintainability_round
 from .base import parameterized_text_placeholder, text_placeholder
-
-
-def _to_json_name(metric):
-    metric = metric.replace("_", " ").title().replace(" ", "")
-    return metric[0].lower() + metric[1:]
 
 
 @text_placeholder()
@@ -108,12 +104,16 @@ def test_code_ratio():
 
 @text_placeholder()
 def test_code_relative():
-    return smart_remarks.test_code_relative(maintainability_data.data["testCodeRatio"])
+    if "testCodeRatio" in maintainability_data.data:
+        return smart_remarks.test_code_relative(maintainability_data.data["testCodeRatio"])
+    return ""
 
 
 @text_placeholder()
 def test_code_summary():
-    return smart_remarks.test_code_summary(maintainability_data.data["testCodeRatio"])
+    if "testCodeRatio" in maintainability_data.data:
+        return smart_remarks.test_code_summary(maintainability_data.data["testCodeRatio"])
+    return ""
 
 
 @text_placeholder()
@@ -209,15 +209,15 @@ def tech_risk(idx: int):
     return maintainability_data.sorted_tech_get_key(idx - 1, 'technologyRisk')
 
 
-@parameterized_text_placeholder(custom_key="MAINT_RATING_{parameter}", parameters=constants.MAINT_METRICS)
-def maint_rating_param(metric: str):
-    metric_key = _to_json_name(metric)
+@parameterized_text_placeholder(custom_key="MAINT_RATING_{parameter}", parameters=list(MaintMetric))
+def maint_rating_param(metric: MaintMetric):
+    metric_key = metric.to_json_name()
     return maintainability_round(maintainability_data.data[metric_key])
 
 
-@parameterized_text_placeholder(custom_key="STARS_{parameter}", parameters=constants.MAINT_METRICS)
-def maint_stars_param(metric: str):
-    metric_key = _to_json_name(metric)
+@parameterized_text_placeholder(custom_key="STARS_{parameter}", parameters=list(MaintMetric))
+def maint_stars_param(metric: MaintMetric):
+    metric_key = metric.to_json_name()
     return calculate_stars(maintainability_data.data[metric_key])
 
 
@@ -272,16 +272,16 @@ def arch_best_metric_remark():
 
 
 @parameterized_text_placeholder(custom_key="ARCH_RATING_{parameter}",
-                                parameters=constants.ARCH_METRICS + constants.ARCH_SUBCHARACTERISTICS)
-def arch_rating_param(metric: str):
-    metric_key = _to_json_name(metric)
+                                parameters=list(ArchMetric) + list(ArchSubcharacteristic))
+def arch_rating_param(metric: MetricEnum):
+    metric_key = metric.to_json_name()
     return maintainability_round(architecture_data.get_score_for_prop_or_subchar(metric_key))
 
 
 @parameterized_text_placeholder(custom_key="STARS_{parameter}",
-                                parameters=constants.ARCH_METRICS + constants.ARCH_SUBCHARACTERISTICS)
-def arch_stars_param(metric: str):
-    metric_key = _to_json_name(metric)
+                                parameters=list(ArchMetric) + list(ArchSubcharacteristic))
+def arch_stars_param(metric: MetricEnum):
+    metric_key = metric.to_json_name()
     return calculate_stars(architecture_data.get_score_for_prop_or_subchar(metric_key))
 
 
@@ -333,3 +333,22 @@ def osh_legal_summary():
 @text_placeholder()
 def osh_management_summary():
     return osh_data.management_summary
+
+
+@text_placeholder()
+def osh_relative():
+    return smart_remarks.osh_relative_rating(osh_data.data.ratings["system"])
+
+
+@parameterized_text_placeholder(custom_key="OSH_RATING_{parameter}",
+                                parameters=list(OSHMetric))
+def osh_rating_param(metric: OSHMetric):
+    metric_key = metric.to_json_name()
+    return maintainability_round(osh_data.get_score_for_prop(metric_key))
+
+
+@parameterized_text_placeholder(custom_key="STARS_{parameter}",
+                                parameters=list(OSHMetric))
+def osh_stars_param(metric: OSHMetric):
+    metric_key = metric.to_json_name()
+    return calculate_stars(osh_data.get_score_for_prop(metric_key))

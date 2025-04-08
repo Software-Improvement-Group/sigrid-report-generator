@@ -16,12 +16,13 @@ import logging
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from enum import Enum
 from typing import Iterable, Union
 
 from report_generator.generator.report import Report, ReportType
 from report_generator.generator.sigrid_api import SigridAPIRequestFailed
 
-Parameter = Union[str, int]
+Parameter = Union[str, int, Enum]
 ParameterList = Iterable[Parameter]
 
 CAMEL_TO_SNAKE_PATTERN = re.compile(r'(?<!^)(?=[A-Z][a-z])|(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])')
