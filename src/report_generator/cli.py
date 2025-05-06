@@ -34,7 +34,7 @@ MATOMO_URL = os.environ.get('MATOMO_URL', 'https://sigrid-says.com/usage')
 @click.option('-l', '--layout', type=click.Choice(presets.ids),
               default='default',
               help='The type of report (mutually exclusive with the -p/--template option)')
-@click.option('-p', '--template', type=click.File('rb'),
+@click.option('-p', '--template', type=click.STRING,
               help='A custom report template file (mutually exclusive with the -l/--layout option)')
 @click.option('-o', '--out-file', default='out', help='write output to this file (default out.pptx/docx)')
 @click.option('-a', '--api-url', default=None,
@@ -75,6 +75,10 @@ def _require_either_layout_or_template(layout, template):
 
 
 def _record_usage_statistics():
+    if os.environ.get('SIGRID_REPORT_GENERATOR_RECORD_USAGE', '1') == '0':
+        logging.info("Not recording usage statistics")
+        return
+
     user = os.environ.get('USER', 'unknown')
     try:
         requests.get(

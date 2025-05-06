@@ -23,7 +23,7 @@ class TestFormatter:
         assert formatters.calculate_stars(4.5) == "★★★★★"
         assert formatters.calculate_stars(7.5) == "★★★★★"
         assert formatters.calculate_stars(-3) == ""
-        
+
         formatters.use_sig_sterren()
         assert formatters.calculate_stars(1.5) == "HHIII"
         assert formatters.calculate_stars(1.499999) == "HIIII"

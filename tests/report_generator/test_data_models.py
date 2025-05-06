@@ -38,7 +38,6 @@ class TestDataModels:
         assert sorted_tech_data[4]["testCodeRatio"] == 26.25
         assert sorted_tech_data[4]["technologyRisk"] == "TOLERATE"
 
-
     def test_aggregate_removes_technologies_with_zero_loc(self):
         mock_data = TestDataModels._mock_tech_data(3)
         mock_data.append(TestDataModels._mock_technology("zeroLoc", 0, 0, 3.0, 0.13, "TARGET"))
@@ -62,11 +61,11 @@ class TestDataModels:
     @staticmethod
     def _mock_technology(name, pm, loc, maint, testRatio, techRisk):
         return {
-            "name": name,
-            "displayName": name,
+            "name"                : name,
+            "displayName"         : name,
             "volumeInPersonMonths": pm,
-            "volumeInLoc": loc,
-            "maintainability": maint,
-            "testCodeRatio": testRatio,
-            "technologyRisk": techRisk
+            "volumeInLoc"         : loc,
+            "maintainability"     : maint,
+            "testCodeRatio"       : testRatio,
+            "technologyRisk"      : techRisk
         }
