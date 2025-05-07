@@ -48,7 +48,7 @@ def run(ctx, debug, customer, system, token, layout, template, out_file, api_url
         return
 
     if template:
-        ReportGenerator(template).generate(out_file)
+        ReportGenerator(template.name).generate(out_file)
         return
 
     presets.run(layout, out_file)
