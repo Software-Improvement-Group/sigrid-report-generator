@@ -34,7 +34,7 @@ MATOMO_URL = os.environ.get('MATOMO_URL', 'https://sigrid-says.com/usage')
 @click.option('-l', '--layout', type=click.Choice(presets.ids),
               default='default',
               help='The type of report (mutually exclusive with the -p/--template option)')
-@click.option('-p', '--template', type=click.STRING,
+@click.option('-p', '--template', type=click.File('rb'),
               help='A custom report template file (mutually exclusive with the -l/--layout option)')
 @click.option('-o', '--out-file', default='out', help='write output to this file (default out.pptx/docx)')
 @click.option('-a', '--api-url', default=None,
