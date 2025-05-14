@@ -75,6 +75,10 @@ def _require_either_layout_or_template(layout, template):
 
 
 def _record_usage_statistics():
+    if os.environ.get('SIGRID_REPORT_GENERATOR_RECORD_USAGE', '1') == '0':
+        logging.info("Not recording usage statistics")
+        return
+
     user = os.environ.get('USER', 'unknown')
     try:
         requests.get(
