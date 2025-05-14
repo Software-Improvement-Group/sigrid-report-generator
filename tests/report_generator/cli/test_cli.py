@@ -18,7 +18,7 @@ from click.testing import CliRunner
 from importlib_resources import files
 
 from report_generator.cli import run as run_cli
-from .list_diffs import compare_pptx
+from tests.report_generator.cli.list_diffs import compare_pptx
 
 
 @pytest.fixture
