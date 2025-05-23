@@ -163,8 +163,8 @@ def get_capabilities(system):
 
 
 @_sigrid_api_request(with_system=True)
-def get_metadata(system):
-    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/system-metadata/{_customer}"
+def get_system_metadata(system):
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/system-metadata/{_customer}/{system}"
     return _make_request(endpoint)
 
 
