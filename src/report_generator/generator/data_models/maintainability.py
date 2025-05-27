@@ -117,10 +117,6 @@ class MaintainabilityData:
         return self.data.get("volumeInLoc", None)
 
     @cached_property
-    def system_name(self):
-        return self.data['system'].capitalize()
-
-    @cached_property
     def customer_name(self):
         return self.data['customer'].capitalize()
 

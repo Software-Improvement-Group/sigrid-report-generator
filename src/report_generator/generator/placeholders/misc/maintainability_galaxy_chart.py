@@ -16,7 +16,7 @@ from pptx import Presentation
 from pptx.chart.data import XyChartData
 
 from report_generator.generator import report_utils
-from report_generator.generator.data_models import maintainability_data
+from report_generator.generator.data_models import maintainability_data, system_metadata
 from report_generator.generator.placeholders import Placeholder
 
 
@@ -41,7 +41,7 @@ class MaintainabilityGalaxyChartPlaceholder(Placeholder):
 
         volume = maintainability_data.system_py
         maint_rating = maintainability_data.maintainability_rating
-        system_name = maintainability_data.system_name
+        system_name = system_metadata.display_name
 
         chart_data = XyChartData()
         series = chart_data.add_series("Series 1")
