@@ -19,6 +19,7 @@ from report_generator.generator.constants import ArchMetric, ArchSubcharacterist
 from report_generator.generator.data_models import *
 from report_generator.generator.formatters import smart_remarks
 from report_generator.generator.formatters.formatters import calculate_stars, maintainability_round
+from report_generator.generator.calculations.modernization import ModernizationScenario
 from .base import parameterized_text_placeholder, text_placeholder
 
 
@@ -219,6 +220,25 @@ def maint_rating_param(metric: MaintMetric):
 def maint_stars_param(metric: MaintMetric):
     metric_key = metric.to_json_name()
     return calculate_stars(maintainability_data.data[metric_key])
+    
+    
+@text_placeholder()
+def maintenance_fte():
+    return f"{maintainability_data.system_py * 0.15:.1f}"
+    
+
+@text_placeholder()
+def technical_debt_py():
+    modernization = ModernizationScenario(maintainability_data)
+    technical_debt = modernization.calculate_technical_debt()
+    return f"{technical_debt:.1f}"
+    
+    
+@text_placeholder()
+def technical_debt_percentage():
+    modernization = ModernizationScenario(maintainability_data)
+    technical_debt = modernization.calculate_technical_debt()
+    return f"{technical_debt * 100.0 / maintainability_data.system_py:.0f}"
 
 
 @text_placeholder()

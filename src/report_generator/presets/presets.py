@@ -35,12 +35,17 @@ def generate_debug_pptx(output_path: str) -> None:
 
 def generate_itdd_light(output_path: str) -> None:
     _generate_report("default-template.pptx", output_path)
+    
+    
+def generate_system_modernization(output_path: str) -> None:
+    _generate_report("system-modernization-template.pptx", output_path)
 
 
 _preset_reports: dict[str, Callable[[str], None]] = {
-    'default'   : generate_itdd_light,
-    'word-debug': generate_debug_docx,
-    'debug'     : generate_debug_pptx
+    'default'              : generate_itdd_light,
+    'word-debug'           : generate_debug_docx,
+    'debug'                : generate_debug_pptx,
+    'system-modernization' : generate_system_modernization
 }
 
 ids = set(_preset_reports.keys())
