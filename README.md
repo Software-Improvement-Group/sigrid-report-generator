@@ -1,24 +1,23 @@
-# Report Generator (Beta)
+# Sigrid Report Generator
 
-## Intro
+The Sigrid Report Generator is a tool/framework designed to generate any kind of report that is based on data
+provided by Sigrid. The Report Generator can be used for two "flavors" of report:
 
-The SIG report generator is a tool/framework designed to generate any kind of report. The repo only contains one (
-default) template, but it should be capable of producing others in the future, of different export types. Additionally,
-at some point it could be integrated into Sigrid, so that end-users can download a report/export at the click of a
-button.
+- Standard reports provided by SIG.
+- Your own custom reports, which use your own Word/PowerPoint templates.
 
 <img src="./docs/img/sample-mgmt-summary.png" alt="Sample: Management summary" width="300px">
 <img src="./docs/img/sample-architecture.png" alt="Sample: Architecture" width="300px">
 <img src="./docs/img/sample-test-code.png" alt="Sample: Test code ratio" width="300px">
 <img src="./docs/img/sample-word.png" alt="Sample: Word" width="300px">
 
-## Installation
+## Prerequisites
 
-### Prerequisites
+- Python 3.9+
+- You need to be able to install and use Python packages
+- You need a [Sigrid API token](https://docs.sigrid-says.com/organization-integration/authentication-tokens.html)
 
-- Have Python 3.9 or later available and set up so that you can install and use Python packages.
-
-### Install using pip
+## Install using pip
 
 1. Clone this repository and `cd` into it.
 2. Install the tool itself: `pip3 install -e ./report-generator"`.
@@ -29,20 +28,7 @@ button.
 
 Alternatively, you can use the docker image: `softwareimprovementgroup/sigrid-integrations`
 
-
 ## Usage
-
-### Create customer-specific access token
-
-Before using the system, you need to generate a Sigrid token. Tokens are unique **per customer**. Create a new token for
-a new customer:
-
-1. Go to Sigrid: `https://sigrid-says.com/<your-customer>`
-2. Go to user settings, via the person icon on the top right
-3. Click "create new token" and create a token with a descriptive name, e.g. `customername-report-generator`.
-4. Save the token somewhere so you don't need to recreate it every time. (Tokens are valid for 1 year)
-
-### Run the tool
 
 1. For the default report, use: `report-generator -c <your-customer> -s <your-system> -t <your-sigrid-token>`
 2. If you want to provide your own custom report `.pptx` or `.docx` file. Use:
@@ -78,6 +64,8 @@ There are roughly two types of items in a template that report-generator deals w
   PowerPoint charts are supported.
 
 ## Create custom placeholders
+
+> For instructions specific to developers, see [docs/developers.md](docs/developers.md)
 
 To use custom placeholders in your own templates outside of this project:
 
@@ -166,21 +154,11 @@ generator.register_additional_placeholders({
 generator.generate("out.pptx")
 ```
 
-## Suggestions / feedback
+## Contact and support
 
-Feedback is welcome! If you have ideas to improve report-generator, please create a ticket in this project.
-Merge requests are also welcome. Potential improvement areas include:
-
-- Improved standard templates;
-- Request for more Sigrid data exposed through the tool;
-- Bug fixes;
-- Future use cases of this tool;
-- Easier deployment suggestions or other technical improvements;
-- ...
-
-## Help developing
-
-For instructions specific to developers, see [docs/developers.md](docs/developers.md)
+Feel free to contact SIG’s [support department](mailto:support@softwareimprovementgroup.com) for any questions or
+issues you may have after reading this document, or when using Sigrid or Sigrid CI. Users in Europe can also
+contact us by phone at +31 20 314 0953.
 
 ## License
 

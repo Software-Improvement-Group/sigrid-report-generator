@@ -144,6 +144,18 @@ def _make_request(endpoint, **kwargs):
     return _request(url, **kwargs)
 
 
+@_sigrid_api_request(with_system=False)
+def get_portfolio_metadata():
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/system-metadata/{_customer}"
+    return _make_request(endpoint)
+
+
+@_sigrid_api_request(with_system=False)
+def get_portfolio_maintainability():
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/maintainability/{_customer}"
+    return _make_request(endpoint)
+
+
 @_sigrid_api_request(with_system=True)
 def get_maintainability_ratings(system, include_tech_stats: bool = True):
     endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/maintainability/{_customer}/{system}?technologyStats={str(include_tech_stats).lower()}"
@@ -184,4 +196,10 @@ def get_security_findings(system):
 @_sigrid_api_request(with_system=True)
 def get_architecture_findings(system):
     endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/architecture-quality/{_customer}/{system}"
+    return _make_request(endpoint)
+
+
+@_sigrid_api_request(with_system=True)
+def get_architecture_graph(system):
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/architecture-quality/{_customer}/{system}/raw"
     return _make_request(endpoint)

@@ -19,7 +19,6 @@ from report_generator.generator.constants import ArchMetric, ArchSubcharacterist
 from report_generator.generator.data_models import *
 from report_generator.generator.formatters import smart_remarks
 from report_generator.generator.formatters.formatters import calculate_stars, maintainability_round
-from report_generator.generator.calculations.modernization import ModernizationScenario
 from .base import parameterized_text_placeholder, text_placeholder
 
 
@@ -220,25 +219,6 @@ def maint_rating_param(metric: MaintMetric):
 def maint_stars_param(metric: MaintMetric):
     metric_key = metric.to_json_name()
     return calculate_stars(maintainability_data.data[metric_key])
-    
-    
-@text_placeholder()
-def maintenance_fte():
-    return f"{maintainability_data.system_py * 0.15:.1f}"
-    
-
-@text_placeholder()
-def technical_debt_py():
-    modernization = ModernizationScenario(maintainability_data)
-    technical_debt = modernization.calculate_technical_debt()
-    return f"{technical_debt:.1f}"
-    
-    
-@text_placeholder()
-def technical_debt_percentage():
-    modernization = ModernizationScenario(maintainability_data)
-    technical_debt = modernization.calculate_technical_debt()
-    return f"{technical_debt * 100.0 / maintainability_data.system_py:.0f}"
 
 
 @text_placeholder()
@@ -372,3 +352,86 @@ def osh_rating_param(metric: OSHMetric):
 def osh_stars_param(metric: OSHMetric):
     metric_key = metric.to_json_name()
     return calculate_stars(osh_data.get_score_for_prop(metric_key))
+
+
+@text_placeholder()
+def maintenance_fte():
+    return f"{maintainability_data.system_py * 0.15:.1f}"
+
+
+@text_placeholder()
+def technical_debt_py():
+    return renovation_effort_py()
+
+
+@text_placeholder()
+def renovation_effort_py():
+    modernization = ModernizationScenario(maintainability_data)
+    technical_debt = modernization.calculate_technical_debt()
+    return f"{technical_debt:.1f}"
+
+
+@text_placeholder()
+def technical_debt_percentage():
+    modernization = ModernizationScenario(maintainability_data)
+    technical_debt = modernization.calculate_technical_debt()
+    return f"{technical_debt * 100.0 / maintainability_data.system_py:.0f}"
+
+
+@parameterized_text_placeholder(custom_key="MODERNIZATION_SYSTEM_{parameter}", parameters=range(1, 11))
+def modernization_system_name(index: int):
+    if index >= len(modernization_data.modernization_candidates):
+        return ""
+    return modernization_data.modernization_candidates[index].display_name
+
+
+@parameterized_text_placeholder(custom_key="MODERNIZATION_BUSINESS_{parameter}", parameters=range(1, 11))
+def modernization_business_criticality(index: int):
+    if index >= len(modernization_data.modernization_candidates):
+        return ""
+    return modernization_data.modernization_candidates[index].business_criticality.title()
+
+
+@parameterized_text_placeholder(custom_key="MODERNIZATION_PY_{parameter}", parameters=range(1, 11))
+def modernization_volume(index: int):
+    if index >= len(modernization_data.modernization_candidates):
+        return ""
+    return f"{modernization_data.modernization_candidates[index].volume_in_py:.1f} PY"
+
+
+@parameterized_text_placeholder(custom_key="MODERNIZATION_SCENARIO_{parameter}", parameters=range(1, 11))
+def modernization_scenario(index: int):
+    if index >= len(modernization_data.modernization_candidates):
+        return ""
+    return modernization_data.modernization_candidates[index].scenario.upper()
+
+
+@parameterized_text_placeholder(custom_key="MODERNIZATION_TECHNICAL_DEBT_{parameter}", parameters=range(1, 11))
+def modernization_technical_debt(index: int):
+    if index >= len(modernization_data.modernization_candidates):
+        return ""
+    return f"+ {modernization_data.modernization_candidates[index].technical_debt_in_py:.1f} PY"
+
+
+@parameterized_text_placeholder(custom_key="MODERNIZATION_CHANGE_SPEED_{parameter}", parameters=range(1, 11))
+def modernization_change_speed(index: int):
+    if index >= len(modernization_data.modernization_candidates):
+        return ""
+    return f"+ {modernization_data.modernization_candidates[index].estimated_change_speed:.0f}%"
+
+
+@parameterized_text_placeholder(custom_key="MODERNIZATION_EFFORT_{parameter}", parameters=range(1, 11))
+def modernization_effort(index: int):
+    if index >= len(modernization_data.modernization_candidates):
+        return ""
+    return f"{modernization_data.modernization_candidates[index].estimated_effort_py:.1f} PY"
+
+
+@text_placeholder()
+def modernization_system_count():
+    return len(modernization_data.possible_candidates)
+
+
+@text_placeholder()
+def modernization_ok_systems():
+    return len(modernization_data.possible_candidates) - len(modernization_data.modernization_candidates)
