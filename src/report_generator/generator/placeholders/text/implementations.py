@@ -410,7 +410,7 @@ def modernization_scenario(index: int):
 def modernization_technical_debt(index: int):
     if index >= len(modernization_data.modernization_candidates):
         return ""
-    return f"+ {modernization_data.modernization_candidates[index].technical_debt_in_py:.1f} PY"
+    return f"{modernization_data.modernization_candidates[index].technical_debt_in_py:.1f} PY"
 
 
 @parameterized_text_placeholder(custom_key="MODERNIZATION_CHANGE_SPEED_{parameter}", parameters=range(1, 11))
