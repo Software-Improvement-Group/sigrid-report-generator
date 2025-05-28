@@ -48,7 +48,7 @@ def run(ctx, debug, customer, system, token, layout, template, out_file, api_url
         return
 
     if template:
-        ReportGenerator(template).generate(out_file)
+        ReportGenerator(template.name).generate(out_file)
         return
 
     presets.run(layout, out_file)
@@ -75,6 +75,10 @@ def _require_either_layout_or_template(layout, template):
 
 
 def _record_usage_statistics():
+    if os.environ.get('SIGRID_REPORT_GENERATOR_RECORD_USAGE', '1') == '0':
+        logging.info("Not recording usage statistics")
+        return
+
     user = os.environ.get('USER', 'unknown')
     try:
         requests.get(

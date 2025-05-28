@@ -57,6 +57,8 @@ class Placeholder(ABC):
             getattr(cls, resolve_method_name)(report, cls.key, cls.value)
         except SigridAPIRequestFailed as e:
             logging.info(f'Failed to resolve {cls.key}: {e}')
+        except (KeyError, AttributeError) as e:
+            logging.warning(f'Failed to resolve {cls.key}: Value not found ({type(e).__name__} on {e})')
 
     @classmethod
     def _determine_resolve_method(cls, report_type: ReportType):

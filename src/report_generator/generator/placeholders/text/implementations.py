@@ -25,7 +25,7 @@ from .base import parameterized_text_placeholder, text_placeholder
 
 @text_placeholder()
 def system_name():
-    return maintainability_data.system_name
+    return system_metadata.display_name
 
 
 @text_placeholder()

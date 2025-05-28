@@ -84,8 +84,18 @@ def reset_context(
 
 
 def _check_context():
-    if _bearer_token is None or _customer is None or _rest_url is None:
-        raise ValueError("Context must be set using sigrid_api.set_context() before making API calls.")
+    missing_values = []
+
+    if _bearer_token is None:
+        missing_values.append('_bearer_token')
+    if _customer is None:
+        missing_values.append('_customer')
+    if _rest_url is None:
+        missing_values.append('_rest_url')
+
+    if missing_values:
+        raise ValueError(f"Context must be set using sigrid_api.set_context() before making API calls. "
+                         f"The following values are not set: {', '.join(missing_values)}")
 
 
 @cache
@@ -153,8 +163,8 @@ def get_capabilities(system):
 
 
 @_sigrid_api_request(with_system=True)
-def get_metadata(system):
-    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/system-metadata/{_customer}"
+def get_system_metadata(system):
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/system-metadata/{_customer}/{system}"
     return _make_request(endpoint)
 
 

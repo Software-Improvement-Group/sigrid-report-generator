@@ -14,6 +14,7 @@
 
 from report_generator.generator.constants import MetricEnum
 
+
 class TestPlaceholders:
 
     def test_to_json_name(self):
@@ -22,6 +23,7 @@ class TestPlaceholders:
             DUPLICATION = "DUPLICATION"
             duplication = "duplication"
             UnIt_sIze = "UnIt_sIze"
+
 
         assert TestMetricEnum.UNIT_SIZE.to_json_name() == "unitSize"
         assert TestMetricEnum.DUPLICATION.to_json_name() == "duplication"
