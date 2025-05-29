@@ -25,10 +25,26 @@ from report_generator.generator.placeholders.base import Parameter, ParameterLis
     function_name_to_placeholder_key
 
 
+class _DocumentAdapter:
+    def __init__(self, find_func, update_func):
+        self.find_text = find_func
+        self.update_paragraphs = update_func
+
+
 class _AbstractTextPlaceholder(Placeholder, ABC):
+    _PPTX_ADAPTER = _DocumentAdapter(
+        report_utils.pptx.find_text_in_presentation,
+        report_utils.pptx.update_many_paragraphs
+    )
+
+    _DOCX_ADAPTER = _DocumentAdapter(
+        report_utils.docx.find_text_in_document,
+        report_utils.docx.update_many_paragraphs
+    )
+
     @staticmethod
-    def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable[[], str]) -> None:
-        paragraphs = report_utils.pptx.find_text_in_presentation(presentation, key)
+    def _resolve_with_adapter(adapter: _DocumentAdapter, document, key: str, value_cb: Callable[[], str]) -> None:
+        paragraphs = adapter.find_text(document, key)
 
         logging.debug(f"Finds for {key}: {len(paragraphs)}")
         if len(paragraphs) == 0:
@@ -38,21 +54,16 @@ class _AbstractTextPlaceholder(Placeholder, ABC):
         if value is None:
             raise ValueError(f"Value for placeholder '{key}' is None")
 
-        report_utils.pptx.update_many_paragraphs(paragraphs, key, value)
+        adapter.update_paragraphs(paragraphs, key, value)
+
+    @staticmethod
+    def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable[[], str]) -> None:
+        _AbstractTextPlaceholder._resolve_with_adapter(_AbstractTextPlaceholder._PPTX_ADAPTER, presentation, key,
+                                                       value_cb)
 
     @staticmethod
     def resolve_docx(document: Document, key: str, value_cb: Callable[[], str]):
-        paragraphs = report_utils.docx.find_text_in_document(document, key)
-
-        logging.debug(f"Finds for {key}: {len(paragraphs)}")
-        if len(paragraphs) == 0:
-            return
-
-        value = value_cb()
-        if value is None:
-            raise ValueError(f"Value for placeholder '{key}' is None")
-
-        report_utils.docx.update_many_paragraphs(paragraphs, key, value)
+        _AbstractTextPlaceholder._resolve_with_adapter(_AbstractTextPlaceholder._DOCX_ADAPTER, document, key, value_cb)
 
 
 def text_placeholder(custom_key: str = None) -> Callable[[Callable[[], str]], Type[Placeholder]]:
