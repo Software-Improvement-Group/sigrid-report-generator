@@ -67,4 +67,4 @@ def test_generate_report(output_file, template, customer_name, system_name, toke
     assert os.path.isfile(output_file), f"Output file {output_file} does not exist"
 
     are_equal, differences = compare_pptx(output_file, reference_file)
-    assert are_equal, f"Output file content is incorrect:\n{''.join(differences)}"
+    assert are_equal, "Output file content is incorrect:" + '\n' + '\n'.join(differences)
