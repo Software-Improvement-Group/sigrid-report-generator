@@ -12,12 +12,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 from functools import cached_property
+from typing import Callable, Dict
 
 from report_generator.generator import sigrid_api
+from report_generator.generator.data_models import maintainability_data
 
 
 class SystemMetadata:
-    _attributes = {
+    _attributes: Dict[str, str] = {
         'display_name'                  : 'displayName',
         'external_display_name'         : 'externalDisplayName',
         'division_name'                 : 'divisionName',
@@ -35,14 +37,23 @@ class SystemMetadata:
         'external_id'                   : 'externalID'
     }
 
+    _fallbacks: Dict[str, Callable[[], str]] = {
+        'display_name': lambda: maintainability_data.system_name
+    }
+
     @cached_property
     def data(self):
         return sigrid_api.get_system_metadata()
 
     def __getattr__(self, name):
-        if name in self._attributes:
-            return self.data[self._attributes[name]]
-        raise AttributeError(name)
+        if name not in self._attributes:
+            raise AttributeError(name)
+
+        value = self.data[self._attributes[name]]
+        if value is None and name in self._fallbacks:
+            return self._fallbacks[name]()
+
+        return value
 
 
 system_metadata = SystemMetadata()

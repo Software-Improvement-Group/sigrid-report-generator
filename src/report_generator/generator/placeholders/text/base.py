@@ -35,6 +35,9 @@ class _AbstractTextPlaceholder(Placeholder, ABC):
             return
 
         value = value_cb()
+        if value is None:
+            raise ValueError(f"Value for placeholder '{key}' is None")
+
         report_utils.pptx.update_many_paragraphs(paragraphs, key, value)
 
     @staticmethod
@@ -46,6 +49,9 @@ class _AbstractTextPlaceholder(Placeholder, ABC):
             return
 
         value = value_cb()
+        if value is None:
+            raise ValueError(f"Value for placeholder '{key}' is None")
+
         report_utils.docx.update_many_paragraphs(paragraphs, key, value)
 
 
