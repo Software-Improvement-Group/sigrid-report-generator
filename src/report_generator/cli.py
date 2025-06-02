@@ -81,7 +81,8 @@ def _record_usage_statistics(layout, customer):
 
     try:
         report_type = layout.replace("-", "") if layout else ""
-        requests.get(f"{MATOMO_URL}/matomo.php?idsite=5&rec=1&ca=1&e_c=reportgenerator&e_a={report_type}&e_n={customer}")
+        requests.get(
+            f"{MATOMO_URL}/matomo.php?idsite=5&rec=1&ca=1&e_c=reportgenerator&e_a={report_type}&e_n={customer}")
     except requests.exceptions.ConnectionError as e:
         logging.warning(f"Failed to connect to {MATOMO_URL} for registering usage statistics (not harmful).")
 

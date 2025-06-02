@@ -11,7 +11,7 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-
+import logging
 from dataclasses import dataclass
 from enum import Enum
 from functools import cached_property
@@ -116,9 +116,15 @@ class ModernizationData:
 
     def to_modernization_candidate(self, system, metadata) -> Optional[ModernizationCandidate]:
         volume_in_py = system["volumeInPersonMonths"] / 12.0
-        architecture_graph = sigrid_api.get_architecture_graph_uncached(system["system"])
 
-        if architecture_graph is None or system.get("maintainability") is None:
+        try:
+            architecture_graph = sigrid_api.get_architecture_graph(system["system"])
+        except sigrid_api.SigridAPIRequestFailed as e:
+            logging.warning("Skipping system %s due to Sigrid API request failure: %s", metadata["systemName"], e)
+            return None
+
+        if system.get("maintainability") is None:
+            logging.warning("Skipping system %s due to missing maintainability data", metadata["systemName"])
             return None
 
         architecture_metrics = architecture_graph["systemElements"][0]["measurementValues"]
