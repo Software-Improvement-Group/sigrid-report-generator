@@ -399,11 +399,18 @@ def modernization_volume(index: int):
     return f"{modernization_data.modernization_candidates[index].volume_in_py:.1f} PY"
 
 
+@parameterized_text_placeholder(custom_key="MODERNIZATION_ACTIVITY_{parameter}", parameters=range(1, 11))
+def modernization_activity(index: int):
+    if index >= len(modernization_data.modernization_candidates):
+        return ""
+    return f"{modernization_data.modernization_candidates[index].activity_in_py:.1f} PY"
+
+
 @parameterized_text_placeholder(custom_key="MODERNIZATION_SCENARIO_{parameter}", parameters=range(1, 11))
 def modernization_scenario(index: int):
     if index >= len(modernization_data.modernization_candidates):
         return ""
-    return modernization_data.modernization_candidates[index].scenario.upper()
+    return modernization_data.modernization_candidates[index].scenario.value.upper()
 
 
 @parameterized_text_placeholder(custom_key="MODERNIZATION_TECHNICAL_DEBT_{parameter}", parameters=range(1, 11))
@@ -427,11 +434,18 @@ def modernization_effort(index: int):
     return f"{modernization_data.modernization_candidates[index].estimated_effort_py:.1f} PY"
 
 
+@parameterized_text_placeholder(custom_key="MODERNIZATION_N_{parameter}", parameters=range(1, 11))
+def modernization_index(index: int):
+    if index >= len(modernization_data.modernization_candidates):
+        return ""
+    return f"{index}."
+
+
 @text_placeholder()
 def modernization_system_count():
     return len(modernization_data.possible_candidates)
 
 
 @text_placeholder()
-def modernization_ok_systems():
-    return len(modernization_data.possible_candidates) - len(modernization_data.modernization_candidates)
+def modernization_customer_name():
+    return modernization_data.possible_candidates[0].metadata["customerName"].title()

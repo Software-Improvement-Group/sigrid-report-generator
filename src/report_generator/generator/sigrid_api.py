@@ -203,3 +203,8 @@ def get_architecture_findings(system):
 def get_architecture_graph(system):
     endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/architecture-quality/{_customer}/{system}/raw"
     return _make_request(endpoint)
+
+
+def get_architecture_graph_uncached(system):
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/architecture-quality/{_customer}/{system}/raw"
+    return _make_request(endpoint)

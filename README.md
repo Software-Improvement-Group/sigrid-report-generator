@@ -38,7 +38,15 @@ Alternatively, you can use the docker image: `softwareimprovementgroup/sigrid-in
 If all goes well, the report should be generated into `out.pptx`/`out.docx` in the folder where you run the command, or
 wherever you specify with the `-o` option.
 
-#### Troubleshooting
+### Generating standard reports
+
+- **ITDD report:** Lightweight report that provides general information on a system, suitable for an ITDD setting.
+  - Example: `report-generator -c <your-customer> -s <your-system> --layout default`.
+- **Modernization report:** Analyses all systems across your portfolio, and provides information on how to prioritize
+  modernization initiatives based on factors such as estimated development speed increase and estimated effort.
+  - Example: `report-generator -c <your-customer> -s modernization --layout modernization`.
+
+### Troubleshooting
 
 If there is an error and you can't figure out what causes it, run the tool again with the `-d` parameter appended to
 gather additional information. If you find a bug, please create a ticket in this project.
