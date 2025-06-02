@@ -37,7 +37,7 @@ def _validate_system_requirement(ctx, param, value):
             f"System is required when using layout '{layout}' "
             f"(required for: {system_presets})"
         )
-    elif not system_required and system_provided:
+    elif layout is not None and not system_required and system_provided:
         raise click.BadParameter(
             f"System is not allowed when using layout '{layout}' "
             f"(only required for: {', '.join(presets.SYSTEM_LEVEL_PRESETS)})"
@@ -51,7 +51,7 @@ def _validate_layout_or_template(ctx, param, value):
         layout = ctx.params.get('layout')
         template = value
 
-        if template and layout != 'default':
+        if template and layout:
             raise click.BadParameter(
                 "Both a layout and template are defined. Choose either a predefined layout using -l/--layout, or provide your own report template using -p/--template. Not both"
             )
