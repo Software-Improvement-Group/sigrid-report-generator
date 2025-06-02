@@ -86,16 +86,16 @@ class ModernizationData:
     MIN_EFFORT = 0.25
 
     BUSINESS_CRITICALITY_FACTOR = {
-        "CRITICAL" : 2.0,
-        "HIGH" : 1.5,
-        "LOW" : 0.0
+        "CRITICAL": 2.0,
+        "HIGH"    : 1.5,
+        "LOW"     : 0.0
     }
 
     PREDETERMINED_SCENARIOS = {
-        "INITIAL" : Scenario.KEEP_AS_IS,
-        "EOL" : Scenario.REBUILD,
-        "EVOLUTION" : Scenario.RENOVATE,
-        "DECOMMISSIONED" : Scenario.REPLACE
+        "INITIAL"       : Scenario.KEEP_AS_IS,
+        "EOL"           : Scenario.REBUILD,
+        "EVOLUTION"     : Scenario.RENOVATE,
+        "DECOMMISSIONED": Scenario.REPLACE
     }
 
     @cached_property
@@ -108,7 +108,8 @@ class ModernizationData:
         systems.sort(key=lambda e: -e.maintainability_data["volumeInPersonMonths"])
         systems = systems[0:self.MAX_SYSTEMS]
 
-        candidates = [self.to_modernization_candidate(system.maintainability_data, system.metadata) for system in systems]
+        candidates = [self.to_modernization_candidate(system.maintainability_data, system.metadata) for system in
+                      systems]
         candidates = [candidate for candidate in candidates if self.is_viable_candidate(candidate)]
         candidates.sort(key=lambda candidate: -candidate.priority)
         return candidates
