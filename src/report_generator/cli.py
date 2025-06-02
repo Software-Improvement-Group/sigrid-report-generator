@@ -43,7 +43,7 @@ MATOMO_URL = os.environ.get('MATOMO_URL', 'https://sigrid-says.com/usage')
 def run(ctx, debug, customer, system, token, layout, template, out_file, api_url):
     _configure_logging(debug)
     _configure_api(customer, system, token, api_url)
-    _record_usage_statistics()
+    _record_usage_statistics(layout, customer)
     if not _require_either_layout_or_template(layout, template):
         return
 
@@ -74,15 +74,14 @@ def _require_either_layout_or_template(layout, template):
     return True
 
 
-def _record_usage_statistics():
+def _record_usage_statistics(layout, customer):
     if os.environ.get('SIGRID_REPORT_GENERATOR_RECORD_USAGE', '1') == '0':
         logging.info("Not recording usage statistics")
         return
 
-    user = os.environ.get('USER', 'unknown')
     try:
-        requests.get(
-            f"{MATOMO_URL}matomo.php?idsite=5&rec=1&ca=1&e_c=consultancy&e_a=report-generator&e_n={user}&uid={user}")
+        report_type = layout.replace("-", "") if layout else ""
+        requests.get(f"{MATOMO_URL}/matomo.php?idsite=5&rec=1&ca=1&e_c=reportgenerator&e_a={report_type}&e_n={customer}")
     except requests.exceptions.ConnectionError as e:
         logging.warning(f"Failed to connect to {MATOMO_URL} for registering usage statistics (not harmful).")
 
