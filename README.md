@@ -44,7 +44,7 @@ wherever you specify with the `-o` option.
   - Example: `report-generator -c <your-customer> -s <your-system> --layout default`.
 - **Modernization report:** Analyses all systems across your portfolio, and provides information on how to prioritize
   modernization initiatives based on factors such as estimated development speed increase and estimated effort.
-  - Example: `report-generator -c <your-customer> -s modernization --layout modernization`.
+  - Example: `report-generator -c <your-customer> --layout modernization`.
 
 ### Troubleshooting
 
