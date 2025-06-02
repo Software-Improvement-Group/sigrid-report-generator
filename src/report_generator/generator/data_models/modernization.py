@@ -149,5 +149,11 @@ class ModernizationData:
         return candidate.estimated_change_speed >= self.MIN_DEV_SPEED_IMPROVEMENT and \
             candidate.estimated_effort_py >= self.MIN_EFFORT
 
+    @cached_property
+    def single_system_candidate(self):
+        maintainability = sigrid_api.get_maintainability_ratings()
+        metadata = sigrid_api.get_system_metadata()
+        return self.to_modernization_candidate(maintainability, metadata)
+
 
 modernization_data = ModernizationData()

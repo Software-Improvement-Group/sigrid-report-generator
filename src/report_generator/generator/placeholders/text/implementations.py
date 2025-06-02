@@ -361,21 +361,19 @@ def maintenance_fte():
 
 @text_placeholder()
 def technical_debt_py():
-    return renovation_effort_py()
+    return f"{modernization_data.single_system_candidate.technical_debt_in_py:.1f}"
 
 
 @text_placeholder()
 def renovation_effort_py():
-    modernization = ModernizationScenario(maintainability_data)
-    technical_debt = modernization.calculate_technical_debt()
-    return f"{technical_debt:.1f}"
+    return f"{modernization_data.single_system_candidate.estimated_effort_py:.1f}"
 
 
 @text_placeholder()
 def technical_debt_percentage():
-    modernization = ModernizationScenario(maintainability_data)
-    technical_debt = modernization.calculate_technical_debt()
-    return f"{technical_debt * 100.0 / maintainability_data.system_py:.0f}"
+    volume_in_py = modernization_data.single_system_candidate.volume_in_py
+    technical_debt_in_py = modernization_data.single_system_candidate.technical_debt_in_py
+    return f"{(technical_debt_in_py * 100.0 / volume_in_py):.0f}"
 
 
 @parameterized_text_placeholder(custom_key="MODERNIZATION_SYSTEM_{parameter}", parameters=range(1, 11))
