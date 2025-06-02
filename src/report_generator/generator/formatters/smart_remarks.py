@@ -187,6 +187,7 @@ def arch_worst_metric_remark(arch_sp_ratings):
     worst_metric = sorted_metric_data[0]
     if worst_metric[1] < 2.5:
         return arch_worst_metric_observation(worst_metric)
+    return ""
 
 
 def arch_best_metric_remark(arch_sp_ratings):
