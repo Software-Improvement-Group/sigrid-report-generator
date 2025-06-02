@@ -25,16 +25,51 @@ from report_generator.generator import ReportGenerator, sigrid_api
 MATOMO_URL = os.environ.get('MATOMO_URL', 'https://sigrid-says.com/usage')
 
 
+def _validate_system_requirement(ctx, param, value):
+    layout = ctx.params.get('layout')
+
+    system_required = layout in presets.SYSTEM_LEVEL_PRESETS
+    system_provided = value is not None
+
+    if system_required and not system_provided:
+        system_presets = ', '.join(presets.SYSTEM_LEVEL_PRESETS)
+        raise click.BadParameter(
+            f"System is required when using layout '{layout}' "
+            f"(required for: {system_presets})"
+        )
+    elif not system_required and system_provided:
+        raise click.BadParameter(
+            f"System is not allowed when using layout '{layout}' "
+            f"(only required for: {', '.join(presets.SYSTEM_LEVEL_PRESETS)})"
+        )
+
+    return value
+
+
+def _validate_layout_or_template(ctx, param, value):
+    if param.name == 'template':
+        layout = ctx.params.get('layout')
+        template = value
+
+        if template and layout != 'default':
+            raise click.BadParameter(
+                "Both a layout and template are defined. Choose either a predefined layout using -l/--layout, or provide your own report template using -p/--template. Not both"
+            )
+
+    return value
+
+
 @click.command()
 @click.option('-d', '--debug', is_flag=True, default=False, help='Enable debug messages')
 @click.option('-c', '--customer', required=True, help='Customer name')
-@click.option('-s', '--system', required=True, help='System name')
+@click.option('-s', '--system', required=False, callback=_validate_system_requirement,
+              help='System name (required for: ' + ', '.join(presets.SYSTEM_LEVEL_PRESETS) + ')')
 @click.option('-t', '--token', default=lambda: os.environ.get('SIGRID_CI_TOKEN'),
               help='Sigrid CI token for this customer')
 @click.option('-l', '--layout', type=click.Choice(presets.ids),
               default='default',
               help='The type of report (mutually exclusive with the -p/--template option)')
-@click.option('-p', '--template', type=click.File('rb'),
+@click.option('-p', '--template', type=click.File('rb'), callback=_validate_layout_or_template,
               help='A custom report template file (mutually exclusive with the -l/--layout option)')
 @click.option('-o', '--out-file', default='out', help='write output to this file (default out.pptx/docx)')
 @click.option('-a', '--api-url', default=None,
@@ -44,8 +79,6 @@ def run(ctx, debug, customer, system, token, layout, template, out_file, api_url
     _configure_logging(debug)
     _configure_api(customer, system, token, api_url)
     _record_usage_statistics(layout, customer)
-    if not _require_either_layout_or_template(layout, template):
-        return
 
     if template:
         ReportGenerator(template.name).generate(out_file)
@@ -61,17 +94,6 @@ def _configure_api(customer: str, system: str, token: str, api_url: Optional[str
         system=system,
         base_url=api_url
     )
-
-
-def _require_either_layout_or_template(layout, template):
-    if layout == 'default' and template is None:
-        logging.info("No layout or template defined. Using default layout")
-        return True
-    if layout is not None and layout != 'default' and template is not None:
-        logging.error(
-            "Both a layout and template are defined. Choose either a predefined layout using -l/--layout, or provide your own report template using -p/--template. Not both")
-        return False
-    return True
 
 
 def _record_usage_statistics(layout, customer):

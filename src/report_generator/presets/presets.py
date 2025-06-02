@@ -53,6 +53,13 @@ _preset_reports: dict[str, Callable[[str], None]] = {
     'modernization'      : generate_modernization_report
 }
 
+SYSTEM_LEVEL_PRESETS = {
+    'default',
+    'word-debug',
+    'debug',
+    'itdd-technical-debt',
+}
+
 ids = set(_preset_reports.keys())
 
 
