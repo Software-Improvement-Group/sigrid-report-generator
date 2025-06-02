@@ -48,6 +48,38 @@ class ModernizationCandidate:
     priority: float
 
 
+def get_renovation_effort(scenario, architecture_metrics, volume_in_py):
+    if scenario in (Scenario.KEEP_AS_IS, Scenario.REPLACE):
+        return 0.0
+    elif scenario == Scenario.REBUILD:
+        return volume_in_py
+    else:
+        return architecture_metrics.get("RENOVATION_EFFORT", 0.0)
+
+
+def get_activity(volume_in_py, architecture_graph):
+    churn = architecture_graph["systemElements"][0]["measurementTimeSeries"].get("YEARLY_CHURN_PERCENTAGE")
+    if churn is None:
+        return None
+    return (churn["averageValue"] / 100.0 * 52) * volume_in_py
+
+
+def get_change_speed(scenario, architecture_metrics):
+    if scenario in (Scenario.KEEP_AS_IS, Scenario.REPLACE):
+        return 0.0
+    return architecture_metrics.get("POTENTIAL_CHANGE_SPEED", 0.0)
+
+
+def fetch_possible_candidates():
+    portfolio_metadata = {metadata["systemName"]: metadata for metadata in sigrid_api.get_portfolio_metadata()}
+    portfolio_maintainability = sigrid_api.get_portfolio_maintainability()
+
+    for system in portfolio_maintainability["systems"]:
+        metadata = portfolio_metadata[system["system"]]
+        if metadata["active"] and not metadata["isDevelopmentOnly"] and system.get("maintainability"):
+            yield CandidateSystem(metadata, system)
+
+
 class ModernizationData:
     MAX_SYSTEMS = 100
     MIN_DEV_SPEED_IMPROVEMENT = 5.0
@@ -68,16 +100,7 @@ class ModernizationData:
 
     @cached_property
     def possible_candidates(self) -> list[CandidateSystem]:
-        return list(self.fetch_possible_candidates())
-
-    def fetch_possible_candidates(self):
-        portfolio_metadata = {metadata["systemName"]: metadata for metadata in sigrid_api.get_portfolio_metadata()}
-        portfolio_maintainability = sigrid_api.get_portfolio_maintainability()
-
-        for system in portfolio_maintainability["systems"]:
-            metadata = portfolio_metadata[system["system"]]
-            if metadata["active"] and not metadata["isDevelopmentOnly"] and system.get("maintainability"):
-                yield CandidateSystem(metadata, system)
+        return list(fetch_possible_candidates())
 
     @cached_property
     def modernization_candidates(self) -> list[ModernizationCandidate]:
@@ -99,14 +122,14 @@ class ModernizationData:
 
         architecture_metrics = architecture_graph["systemElements"][0]["measurementValues"]
         scenario = self.determine_scenario(metadata)
-        change_speed = self.get_change_speed(scenario, architecture_metrics)
-        renovation_effort = self.get_renovation_effort(scenario, architecture_metrics, volume_in_py)
+        change_speed = get_change_speed(scenario, architecture_metrics)
+        renovation_effort = get_renovation_effort(scenario, architecture_metrics, volume_in_py)
 
         return ModernizationCandidate(
             display_name=metadata.get("displayName") or metadata["systemName"],
             business_criticality=metadata.get("businessCriticality") or "unknown",
             volume_in_py=volume_in_py,
-            activity_in_py=self.get_activity(volume_in_py, architecture_graph),
+            activity_in_py=get_activity(volume_in_py, architecture_graph),
             maintainability_rating=system["maintainability"],
             architecture_rating=architecture_metrics["ARCHITECTURE_RATING"],
             technical_debt_in_py=architecture_metrics.get("TECHNICAL_DEBT", 0.0),
@@ -116,28 +139,9 @@ class ModernizationData:
             priority=self.calculate_priority(metadata, volume_in_py, change_speed)
         )
 
-    def get_activity(self, volume_in_py, architecture_graph):
-        churn = architecture_graph["systemElements"][0]["measurementTimeSeries"].get("YEARLY_CHURN_PERCENTAGE")
-        if churn is None:
-            return None
-        return (churn["averageValue"] / 100.0 * 52) * volume_in_py
-
     def determine_scenario(self, metadata):
         lifecycle = metadata.get("lifecyclePhase")
         return self.PREDETERMINED_SCENARIOS.get(lifecycle, Scenario.RENOVATE)
-
-    def get_change_speed(self, scenario, architecture_metrics):
-        if scenario in (Scenario.KEEP_AS_IS, Scenario.REPLACE):
-            return 0.0
-        return architecture_metrics.get("POTENTIAL_CHANGE_SPEED", 0.0)
-
-    def get_renovation_effort(self, scenario, architecture_metrics, volume_in_py):
-        if scenario in (Scenario.KEEP_AS_IS, Scenario.REPLACE):
-            return 0.0
-        elif scenario == Scenario.REBUILD:
-            return volume_in_py
-        else:
-            return architecture_metrics.get("RENOVATION_EFFORT", 0.0)
 
     def calculate_priority(self, metadata, volume_in_py, change_speed):
         business_criticality_factor = self.BUSINESS_CRITICALITY_FACTOR.get(metadata.get("businessCriticality"), 1.0)
