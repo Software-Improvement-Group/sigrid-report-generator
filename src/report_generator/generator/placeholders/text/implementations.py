@@ -74,7 +74,7 @@ def maint_date_day():
 
 @text_placeholder()
 def maint_date_month():
-    return maintainability_data.date.strftime("%b")
+    return maintainability_data.date.strftime("%b").upper()
 
 
 @text_placeholder()
@@ -228,7 +228,7 @@ def arch_date_day():
 
 @text_placeholder()
 def arch_date_month():
-    return architecture_data.date.strftime("%b")
+    return architecture_data.date.strftime("%b").upper()
 
 
 @text_placeholder()

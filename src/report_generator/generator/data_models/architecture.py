@@ -25,7 +25,7 @@ class ArchitectureData:
 
     @cached_property
     def date(self):
-        return datetime.strptime(self.data["analysisDate"], '%Y-%m-%d')
+        return datetime.strptime(self.data["snapshotDate"], '%Y-%m-%d')
 
     @cached_property
     def ratings(self):
