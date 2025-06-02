@@ -15,6 +15,7 @@
 from dataclasses import dataclass
 from enum import Enum
 from functools import cached_property
+from typing import Optional
 
 from report_generator.generator import sigrid_api
 
@@ -75,7 +76,7 @@ class ModernizationData:
 
         for system in portfolio_maintainability["systems"]:
             metadata = portfolio_metadata[system["system"]]
-            if metadata["active"] and not metadata["isDevelopmentOnly"]:
+            if metadata["active"] and not metadata["isDevelopmentOnly"] and system.get("maintainability"):
                 yield CandidateSystem(metadata, system)
 
     @cached_property
@@ -89,11 +90,11 @@ class ModernizationData:
         candidates.sort(key=lambda candidate: -candidate.priority)
         return candidates
 
-    def to_modernization_candidate(self, system, metadata):
+    def to_modernization_candidate(self, system, metadata) -> Optional[ModernizationCandidate]:
         volume_in_py = system["volumeInPersonMonths"] / 12.0
         architecture_graph = sigrid_api.get_architecture_graph_uncached(system["system"])
 
-        if architecture_graph is None:
+        if architecture_graph is None or system.get("maintainability") is None:
             return None
 
         architecture_metrics = architecture_graph["systemElements"][0]["measurementValues"]
