@@ -32,7 +32,7 @@ def _validate_system_requirement(ctx, param, value):
     system_provided = value is not None
 
     if system_required and not system_provided:
-        system_presets = ', '.join(presets.SYSTEM_LEVEL_PRESETS)
+        system_presets = ', '.join(sorted(presets.SYSTEM_LEVEL_PRESETS))
         raise click.BadParameter(
             f"System is required when using layout '{layout}' "
             f"(required for: {system_presets})"
