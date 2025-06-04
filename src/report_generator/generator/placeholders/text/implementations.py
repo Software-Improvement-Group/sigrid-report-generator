@@ -401,7 +401,9 @@ def modernization_volume(index: int):
 def modernization_activity(index: int):
     if index >= len(modernization_data.modernization_candidates):
         return ""
-    return f"{modernization_data.modernization_candidates[index].activity_in_py:.1f} PY"
+
+    activity = modernization_data.modernization_candidates[index].activity_in_py
+    return "Unknown" if activity is None else f"{activity:.1f} PY"
 
 
 @parameterized_text_placeholder(custom_key="MODERNIZATION_SCENARIO_{parameter}", parameters=range(1, 11))

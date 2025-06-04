@@ -83,7 +83,7 @@ def reset_context(
         _rest_url = f"{DEFAULT_BASE_URL.rstrip('/')}/rest"
 
 
-def _check_context():
+def _check_context() -> None:
     missing_values = []
 
     if _bearer_token is None:
@@ -115,18 +115,22 @@ def _request(url):
 
 
 def _sigrid_api_request(with_system=False):
+    """
+    Decorator to create functions that call Sigrid API requests, optionally with a system parameter.
+    If with_system is set to True, the decorator will first look for the system parameter passed to the function when called.
+    If the system parameter is not provided in the function call, it will use the global system value set by set_context.
+    """
+
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
             if with_system:
-                system = kwargs.pop('system', None)
+                system = args[0] if args else kwargs.pop('system', None) or _system
                 if system is None:
-                    if _system is None:
-                        raise ValueError("System not provided and global _system is not set.")
-                    system = _system
-                result = func(system, *args, **kwargs)
+                    raise ValueError("System not provided and global _system is not set.")
+                result = func(system)
             else:
-                result = func(*args, **kwargs)
+                result = func()
 
             if result is None:
                 raise SigridAPIRequestFailed(func.__name__)
@@ -138,19 +142,19 @@ def _sigrid_api_request(with_system=False):
     return decorator
 
 
-def _make_request(endpoint, **kwargs):
+def _make_request(endpoint):
     _check_context()
     url = f"{_rest_url}/{endpoint}"
-    return _request(url, **kwargs)
+    return _request(url)
 
 
-@_sigrid_api_request(with_system=False)
+@_sigrid_api_request()
 def get_portfolio_metadata():
     endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/system-metadata/{_customer}"
     return _make_request(endpoint)
 
 
-@_sigrid_api_request(with_system=False)
+@_sigrid_api_request()
 def get_portfolio_maintainability():
     endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/maintainability/{_customer}"
     return _make_request(endpoint)
@@ -201,10 +205,5 @@ def get_architecture_findings(system):
 
 @_sigrid_api_request(with_system=True)
 def get_architecture_graph(system):
-    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/architecture-quality/{_customer}/{system}/raw"
-    return _make_request(endpoint)
-
-
-def get_architecture_graph_uncached(system):
     endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/architecture-quality/{_customer}/{system}/raw"
     return _make_request(endpoint)
