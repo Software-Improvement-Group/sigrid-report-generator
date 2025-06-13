@@ -19,7 +19,7 @@ from pptx import Presentation
 from pptx.chart.data import CategoryChartData
 
 from report_generator.generator import report_utils
-from report_generator.generator.data_models import maintainability_data
+from report_generator.generator.data_models import maintainability_data, modernization_data
 from report_generator.generator.placeholders import Placeholder
 
 
@@ -119,3 +119,23 @@ class TestCodeRatioCategoryChartPlaceholder(_AbstractCategoryChartPlaceholder):
     @classmethod
     def axis_label(cls):
         return "Volume in Person Months"
+
+
+class TechnicalDebtSystemsChartPlaceholder(_AbstractCategoryChartPlaceholder):
+    key = "TECHNICAL_DEBT_SYSTEMS_CHART"
+
+    @classmethod
+    def labels(cls):
+        candidates = modernization_data.modernization_candidates_by_technical_debt
+        return [candidate.display_name for candidate in candidates]
+
+    @classmethod
+    def series(cls):
+        candidates = modernization_data.modernization_candidates_by_technical_debt
+        technical_debt = [candidate.technical_debt_in_py for candidate in candidates]
+        remaining = [candidate.volume_in_py - candidate.technical_debt_in_py for candidate in candidates]
+        return [technical_debt, remaining]
+
+    @classmethod
+    def axis_label(cls):
+        return "Code volume in person years"

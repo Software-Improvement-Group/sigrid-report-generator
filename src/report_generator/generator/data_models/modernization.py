@@ -139,7 +139,7 @@ class ModernizationData:
             activity_in_py=get_activity(volume_in_py, architecture_graph),
             maintainability_rating=system["maintainability"],
             architecture_rating=architecture_metrics["ARCHITECTURE_RATING"],
-            technical_debt_in_py=architecture_metrics.get("TECHNICAL_DEBT", 0.0),
+            technical_debt_in_py=min(architecture_metrics.get("TECHNICAL_DEBT", 0.0), volume_in_py),
             scenario=scenario,
             estimated_change_speed=change_speed,
             estimated_effort_py=renovation_effort,
@@ -162,10 +162,14 @@ class ModernizationData:
             candidate.estimated_effort_py >= self.MIN_EFFORT
 
     @cached_property
-    def single_system_candidate(self):
+    def single_system_candidate(self) -> ModernizationCandidate:
         maintainability = sigrid_api.get_maintainability_ratings()
         metadata = sigrid_api.get_system_metadata()
         return self.to_modernization_candidate(maintainability, metadata)
+
+    @cached_property
+    def modernization_candidates_by_technical_debt(self) -> list[ModernizationCandidate]:
+        return sorted(self.modernization_candidates, key=lambda candidate: -candidate.technical_debt_in_py)
 
 
 modernization_data = ModernizationData()

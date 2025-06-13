@@ -15,6 +15,7 @@
 import logging
 import re
 
+from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 from pptx.oxml.xmlchemy import OxmlElement
@@ -257,3 +258,12 @@ def test_code_ratio_color(ratio):
         return FOUR_STAR_COLOR
     else:
         return FIVE_STAR_COLOR
+
+
+def gather_charts(presentation: Presentation, key: str):
+    charts = []
+    for slide in identify_specific_slide(presentation, key):
+        for shape in slide.shapes:
+            if shape.has_chart:
+                charts.append(shape.chart)
+    return charts
