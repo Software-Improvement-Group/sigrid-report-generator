@@ -18,11 +18,12 @@ from typing import Callable
 from pptx import Presentation
 
 from report_generator.generator import report_utils
-from report_generator.generator.data_models import architecture_data, maintainability_data, osh_data
+from report_generator.generator.data_models import architecture_data, maintainability_data, modernization_data, osh_data
 from report_generator.generator.formatters.formatters import maintainability_round
 from report_generator.generator.placeholders import Placeholder
 
 _RATING_MARKER_MOVE_SIZE = 2200000
+_MANAGEMENT_SUMMARY_MARKER_RANGE = 4000000
 
 
 def _distance_to_average(rating):
@@ -72,3 +73,53 @@ class OSHMovableMarkerPlaceholder(_AbstractMoveableMarkerPlaceholder):
     @classmethod
     def value(cls, parameter=None):
         return maintainability_round(osh_data.data.ratings["system"])
+
+
+class _ManagementSummaryMarkerPlaceholder(Placeholder, ABC):
+    @staticmethod
+    def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable[[], str]) -> None:
+        for slide in presentation.slides:
+            for marker in report_utils.pptx.find_text_in_slide(slide, key):
+                report_utils.pptx.update_paragraph(marker, key, "")
+                marker._parent._parent.left += int(float(value_cb()) *  _MANAGEMENT_SUMMARY_MARKER_RANGE)
+
+
+class ModernizationVolumeMarkerPlaceholder(_ManagementSummaryMarkerPlaceholder):
+    key = "MARKER_MODERNIZATION_VOLUME"
+
+    @classmethod
+    def value(cls, parameter=None):
+        return modernization_data.total_volume / 5000.0
+
+
+class ModernizationTechnicalDebtMarkerPlaceholder(_ManagementSummaryMarkerPlaceholder):
+    key = "MARKER_MODERNIZATION_TECHNICAL_DEBT"
+
+    @classmethod
+    def value(cls, parameter=None):
+        technical_debt = sum(candidate.technical_debt_in_py for candidate in modernization_data.modernization_candidates)
+        return technical_debt / modernization_data.total_volume
+
+
+class ModernizationSpeedMarkerPlaceholder(_ManagementSummaryMarkerPlaceholder):
+    key = "MARKER_MODERNIZATION_SPEED"
+
+    @classmethod
+    def value(cls, parameter=None):
+        total = 0.0
+        total_weight = 0.0
+
+        for candidate in modernization_data.modernization_candidates:
+            total += candidate.estimated_change_speed * candidate.volume_in_py
+            total_weight += candidate.volume_in_py
+
+        return (total / total_weight) / 100.0 if total_weight > 0.0 else 0.0
+
+
+class ModernizationEffortMarkerPlaceholder(_ManagementSummaryMarkerPlaceholder):
+    key = "MARKER_MODERNIZATION_EFFORT"
+
+    @classmethod
+    def value(cls, parameter=None):
+        effort = sum(candidate.estimated_effort_py for candidate in modernization_data.modernization_candidates)
+        return effort / modernization_data.total_volume
