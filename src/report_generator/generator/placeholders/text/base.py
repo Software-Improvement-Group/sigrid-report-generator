@@ -22,7 +22,7 @@ from pptx.presentation import Presentation
 from report_generator.generator import report_utils
 from report_generator.generator.placeholders.base import Parameter, ParameterList, ParameterizedPlaceholder, \
     Placeholder, \
-    function_name_to_placeholder_key
+    PlaceholderDocType, PlaceholderDocsMetadata, function_name_to_placeholder_key
 
 
 class _DocumentAdapter:
@@ -32,6 +32,8 @@ class _DocumentAdapter:
 
 
 class _AbstractTextPlaceholder(Placeholder, ABC):
+    __doc_metadata__ = PlaceholderDocsMetadata(type=PlaceholderDocType.TEXT)
+
     _PPTX_ADAPTER = _DocumentAdapter(
         report_utils.pptx.find_text_in_presentation,
         report_utils.pptx.update_many_paragraphs
