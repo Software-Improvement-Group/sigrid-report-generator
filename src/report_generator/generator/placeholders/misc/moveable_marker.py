@@ -71,7 +71,7 @@ class OSHMovableMarkerPlaceholder(_AbstractMoveableMarkerPlaceholder):
     key = "MARKER_OSH_RATING"
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls, parameter=None) -> tuple[float, str]:
         return maintainability_round(osh_data.data.ratings["system"])
 
 
@@ -80,32 +80,33 @@ class _ManagementSummaryMarkerPlaceholder(Placeholder, ABC):
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable[[], str]) -> None:
         for slide in presentation.slides:
             for marker in report_utils.pptx.find_text_in_slide(slide, key):
-                report_utils.pptx.update_paragraph(marker, key, "")
-                marker._parent._parent.left += int(float(value_cb()) *  _MANAGEMENT_SUMMARY_MARKER_RANGE)
+                value, label = value_cb()
+                report_utils.pptx.update_paragraph(marker, key, f"{label}\n\n\n\n")
+                marker._parent._parent.left += int(value * _MANAGEMENT_SUMMARY_MARKER_RANGE)
 
 
 class ModernizationVolumeMarkerPlaceholder(_ManagementSummaryMarkerPlaceholder):
     key = "MARKER_MODERNIZATION_VOLUME"
 
     @classmethod
-    def value(cls, parameter=None):
-        return modernization_data.total_volume / 5000.0
+    def value(cls, parameter=None) -> tuple[float, str]:
+        return modernization_data.total_volume / 5000.0, f"{round(modernization_data.total_volume)} PY"
 
 
 class ModernizationTechnicalDebtMarkerPlaceholder(_ManagementSummaryMarkerPlaceholder):
     key = "MARKER_MODERNIZATION_TECHNICAL_DEBT"
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls, parameter=None) -> tuple[float, str]:
         technical_debt = sum(candidate.technical_debt_in_py for candidate in modernization_data.modernization_candidates)
-        return technical_debt / modernization_data.total_volume
+        return technical_debt / modernization_data.total_volume, f"{round(technical_debt)} PY"
 
 
 class ModernizationSpeedMarkerPlaceholder(_ManagementSummaryMarkerPlaceholder):
     key = "MARKER_MODERNIZATION_SPEED"
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls, parameter=None) -> tuple[float, str]:
         total = 0.0
         total_weight = 0.0
 
@@ -113,13 +114,14 @@ class ModernizationSpeedMarkerPlaceholder(_ManagementSummaryMarkerPlaceholder):
             total += candidate.estimated_change_speed * candidate.volume_in_py
             total_weight += candidate.volume_in_py
 
-        return (total / total_weight) / 100.0 if total_weight > 0.0 else 0.0
+        weighted_average = (total / total_weight) / 100.0 if total_weight > 0.0 else 0.0
+        return weighted_average, f"+ {round(weighted_average * 100)}%"
 
 
 class ModernizationEffortMarkerPlaceholder(_ManagementSummaryMarkerPlaceholder):
     key = "MARKER_MODERNIZATION_EFFORT"
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls, parameter=None) -> tuple[float, str]:
         effort = sum(candidate.estimated_effort_py for candidate in modernization_data.modernization_candidates)
-        return effort / modernization_data.total_volume
+        return effort / modernization_data.total_volume, f"{round(effort)} PY"
