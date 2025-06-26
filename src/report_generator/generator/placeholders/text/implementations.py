@@ -158,7 +158,7 @@ def system_loc_format_locale():
 
 @text_placeholder()
 def system_loc_format_comma():
-    """The volume of the system in lines of code, formatted with comma's as thousands separator."""
+    """The volume of the system in lines of code, formatted with commas as thousands separator."""
     return f"{maintainability_data.system_loc:,}" if maintainability_data.system_loc is not None else ""
 
 
