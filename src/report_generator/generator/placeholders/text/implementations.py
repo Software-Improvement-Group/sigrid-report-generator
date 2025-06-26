@@ -54,7 +54,7 @@ def maint_stars():
 
 @text_placeholder()
 def maint_relative():
-    """Remark of the system's Maintainibility Rating relative to the benchmark."""
+    """Remark of the system's Maintainability Rating relative to the benchmark."""
     return smart_remarks.relative_to_market_average(maintainability_data.maintainability_rating)
 
 
