@@ -21,8 +21,7 @@ from pptx.presentation import Presentation
 
 from report_generator.generator import report_utils
 from report_generator.generator.placeholders.base import Parameter, ParameterList, ParameterizedPlaceholder, \
-    Placeholder, \
-    PlaceholderDocType, PlaceholderDocsMetadata, function_name_to_placeholder_key
+    Placeholder, PlaceholderDocType, function_name_to_placeholder_key
 
 
 class _DocumentAdapter:
@@ -32,7 +31,7 @@ class _DocumentAdapter:
 
 
 class _AbstractTextPlaceholder(Placeholder, ABC):
-    __doc_metadata__ = PlaceholderDocsMetadata(type=PlaceholderDocType.TEXT)
+    __doc_type__ = PlaceholderDocType.TEXT
 
     _PPTX_ADAPTER = _DocumentAdapter(
         report_utils.pptx.find_text_in_presentation,
@@ -71,6 +70,7 @@ class _AbstractTextPlaceholder(Placeholder, ABC):
 def text_placeholder(custom_key: str = None) -> Callable[[Callable[[], str]], Type[Placeholder]]:
     def decorator(value_func: Callable[[], str]) -> Type[Placeholder]:
         class TextPlaceholder(_AbstractTextPlaceholder):
+            __doc__ = value_func.__doc__ if value_func.__doc__ else None
             key = custom_key if custom_key else function_name_to_placeholder_key(value_func.__name__)
 
             @classmethod
@@ -91,6 +91,7 @@ def parameterized_text_placeholder(custom_key: str, parameters: ParameterList) -
 
 
         class ParameterizedTextPlaceholder(ParameterizedPlaceholder, _AbstractTextPlaceholder):
+            __doc__ = value_func.__doc__ if value_func.__doc__ else None
             key = custom_key
             allowed_parameters = parameters
 

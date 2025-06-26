@@ -41,18 +41,11 @@ class PlaceholderDocType(Enum):
     CHART = 'Chart'
     OTHER = 'Other'
 
-
-@dataclass
-class PlaceholderDocsMetadata:
-    type: PlaceholderDocType
-    subject: str = None
-    example_output: str = None
-
 @dataclass
 class Placeholder(ABC):
-    __placeholder__ = True
     key: str
-    __doc_metadata__: PlaceholderDocsMetadata = PlaceholderDocsMetadata(type=PlaceholderDocType.OTHER)
+    __doc_type__: PlaceholderDocType = PlaceholderDocType.OTHER
+    __placeholder__ = True
 
     @classmethod
     @abstractmethod

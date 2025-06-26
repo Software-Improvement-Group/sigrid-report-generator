@@ -30,6 +30,7 @@ def _distance_to_average(rating):
 
 
 class _AbstractMoveableMarkerPlaceholder(Placeholder, ABC):
+    """Used for the rating indicator on SIG metric rating slides. It adds the rating, but also moves the marker to the correct position on the slide."""
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable[[], str]) -> None:
         paragraphs = []

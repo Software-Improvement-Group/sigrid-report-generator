@@ -21,11 +21,11 @@ from pptx.chart.data import CategoryChartData
 from report_generator.generator import report_utils
 from report_generator.generator.data_models import maintainability_data, modernization_data
 from report_generator.generator.placeholders import Placeholder
-from report_generator.generator.placeholders.base import PlaceholderDocType, PlaceholderDocsMetadata
+from report_generator.generator.placeholders.base import PlaceholderDocType
 
 
 class _AbstractCategoryChartPlaceholder(Placeholder, ABC):
-    __doc_metadata__ = PlaceholderDocsMetadata(type=PlaceholderDocType.CHART)
+    __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
     @abstractmethod
@@ -86,6 +86,7 @@ class _AbstractCategoryChartPlaceholder(Placeholder, ABC):
 
 
 class TechnologyCategoryChartPlaceholder(_AbstractCategoryChartPlaceholder):
+    """Chart with volume (in % of person months of code) per technology."""
     key = "TECHNOLOGY_CHART"
 
     @classmethod
@@ -103,6 +104,7 @@ class TechnologyCategoryChartPlaceholder(_AbstractCategoryChartPlaceholder):
 
 
 class TestCodeRatioCategoryChartPlaceholder(_AbstractCategoryChartPlaceholder):
+    """Pie chart with volume and % of test code per technology, colored in line with the SIG test code benchmark."""
     key = "TEST_CODE_RATIO_CHART"
 
     @classmethod
