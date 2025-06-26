@@ -21,10 +21,11 @@ from report_generator.generator.placeholders.base import ParameterList, Placehol
 from report_generator.generator.report import ReportType
 
 FILENAME = "docs/placeholder descriptions.md"
-PARAM_RANGE_REPRESENTATIONS ={
+PARAM_RANGE_REPRESENTATIONS = {
     '1, 2, 3, 4, 5'                : '1-5',
     '1, 2, 3, 4, 5, 6, 7, 8, 9, 10': '1-10',
 }
+
 
 class MarkdownElement:
     def __init__(self, content):
@@ -42,6 +43,7 @@ class Header(MarkdownElement):
 class Paragraph(MarkdownElement):
     def __init__(self, content: str):
         super().__init__(content)
+
 
 class Table(MarkdownElement):
     def __init__(self, data: pd.DataFrame):
@@ -63,6 +65,7 @@ class Document:
     def __str__(self):
         return ''.join(str(element) for element in self.elements)
 
+
 def placeholders_to_table(placeholders, skip_columns: Set[str] = None) -> pd.DataFrame:
     data = [get_placeholder_row_data(placeholder, skip_columns) for placeholder in placeholders]
 
@@ -82,6 +85,7 @@ def get_placeholder_doc(placeholder_class: Placeholder) -> Optional[str]:
 
     return None
 
+
 def get_placeholder_row_data(placeholder: Placeholder, skip_columns: Set[str] = None) -> dict:
     if skip_columns is None:
         skip_columns = []
@@ -96,6 +100,7 @@ def get_placeholder_row_data(placeholder: Placeholder, skip_columns: Set[str] = 
 
     return {key: value for key, value in all_data.items() if key not in skip_columns}
 
+
 def parameterlist_to_representation(parameter_list: ParameterList) -> str:
     as_string = ', '.join(str(param) for param in parameter_list)
     return PARAM_RANGE_REPRESENTATIONS.get(as_string, as_string)
@@ -107,9 +112,11 @@ def supports_to_representation(placeholder: Placeholder) -> str:
         ReportType.DOCUMENT    : "DOCX",
     }
 
-    supported_types = [support_mappings[report_type] for report_type in support_mappings if placeholder.supports(report_type)]
+    supported_types = [support_mappings[report_type] for report_type in support_mappings if
+                       placeholder.supports(report_type)]
 
     return ', '.join(supported_types)
+
 
 def generate_documentation():
     doc = Document()
@@ -123,7 +130,8 @@ def generate_documentation():
     doc.add(Table(placeholders_to_table(text_placeholders, skip_columns={"Supports"})))
 
     doc.add(Header("Chart Placeholders"))
-    doc.add(Paragraph("These placeholders, generally placed off-screen, only serve to identify a slide on which a specific chart is placed. If you want to use this chart, be sure to copy both the chart and the placeholder from a standard template and then modify its layout BUT NOT its structure or chart type."))
+    doc.add(Paragraph(
+        "These placeholders, generally placed off-screen, only serve to identify a slide on which a specific chart is placed. If you want to use this chart, be sure to copy both the chart and the placeholder from a standard template and then modify its layout BUT NOT its structure or chart type."))
     chart_placeholders = [placeholder for placeholder in all_placeholders if
                           placeholder.__doc_type__ == PlaceholderDocType.CHART]
     doc.add(Table(placeholders_to_table(chart_placeholders)))
