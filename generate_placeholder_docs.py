@@ -120,7 +120,7 @@ def supports_to_representation(placeholder: Placeholder) -> str:
 
 def generate_documentation():
     doc = Document()
-    doc.add(Header("Report Template Placeholders"))
+    doc.add(Header("Report Template Placeholders", level=1))
 
     doc.add(Header("Text Placeholders"))
     doc.add(Paragraph(
