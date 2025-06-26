@@ -20,7 +20,7 @@ from report_generator.generator.placeholders import Placeholder, placeholders as
 from report_generator.generator.placeholders.base import ParameterList, PlaceholderDocType
 from report_generator.generator.report import ReportType
 
-FILENAME = "docs/placeholder_documentation.md"
+FILENAME = "docs/placeholder descriptions.md"
 PARAM_RANGE_REPRESENTATIONS ={
     '1, 2, 3, 4, 5'                : '1-5',
     '1, 2, 3, 4, 5, 6, 7, 8, 9, 10': '1-10',
