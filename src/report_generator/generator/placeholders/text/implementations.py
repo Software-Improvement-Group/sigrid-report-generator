@@ -54,7 +54,7 @@ def maint_stars():
 
 @text_placeholder()
 def maint_relative():
-    """Remark of the system's Maintainibility Rating relative to the benchmark."""
+    """Remark of the system's Maintainability Rating relative to the benchmark."""
     return smart_remarks.relative_to_market_average(maintainability_data.maintainability_rating)
 
 
@@ -158,13 +158,13 @@ def system_loc_format_locale():
 
 @text_placeholder()
 def system_loc_format_comma():
-    """The volume of the system in lines of code, formatted with comma's as thousands separator."""
+    """The volume of the system in lines of code, formatted with commas as thousands separator."""
     return f"{maintainability_data.system_loc:,}" if maintainability_data.system_loc is not None else ""
 
 
 @text_placeholder()
 def system_loc_format_dot():
-    """The volume of the system in lines of code, formatted with dots's as thousands separator."""
+    """The volume of the system in lines of code, formatted with dots as thousands separator."""
     return f"{maintainability_data.system_loc:,}".replace(",",
                                                           ".") if maintainability_data.system_loc is not None else ""
 
