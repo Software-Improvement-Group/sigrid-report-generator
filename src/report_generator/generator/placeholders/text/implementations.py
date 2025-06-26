@@ -164,7 +164,7 @@ def system_loc_format_comma():
 
 @text_placeholder()
 def system_loc_format_dot():
-    """The volume of the system in lines of code, formatted with dots's as thousands separator."""
+    """The volume of the system in lines of code, formatted with dots as thousands separator."""
     return f"{maintainability_data.system_loc:,}".replace(",",
                                                           ".") if maintainability_data.system_loc is not None else ""
 
