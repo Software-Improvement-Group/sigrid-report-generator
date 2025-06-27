@@ -17,15 +17,16 @@ from pptx.chart.data import BubbleChartData
 from pptx.dml.color import RGBColor
 
 from report_generator.generator import report_utils
-from report_generator.generator.data_models import maintainability_data, modernization_data
+from report_generator.generator.data_models import modernization_data
 from report_generator.generator.placeholders import Placeholder
-
+from report_generator.generator.placeholders.base import PlaceholderDocType
 
 BLUE_GRADIENT = ["003DAB", "2E6BFF", "8DA8FF", "DBE1FF", "8A98A8"]
 
 
 class ModernizationScatterPlotChartPlaceholder(Placeholder):
     key = "MODERNIZATION_SCATTER_PLOT_CHART"
+    __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
     def value(cls, parameter=None):

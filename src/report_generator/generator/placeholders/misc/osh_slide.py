@@ -21,6 +21,7 @@ from pptx.slide import Slide
 from report_generator.generator import report_utils
 from report_generator.generator.data_models import osh_data
 from report_generator.generator.placeholders import Placeholder
+from report_generator.generator.placeholders.base import PlaceholderDocType
 
 
 def _format_chart_data(data) -> Tuple[ChartData, ChartData]:
@@ -67,7 +68,9 @@ def _set_chart_data_and_axis(chart, data, axis_max):
 
 
 class OSHSlidePlaceholder(Placeholder):
+    """Traditional SIG OSH system-level slide, with risk bar charts for all 6 OSH metrics."""
     key = "OSH_SLIDE"
+    __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
     def value(cls, parameter=None):
