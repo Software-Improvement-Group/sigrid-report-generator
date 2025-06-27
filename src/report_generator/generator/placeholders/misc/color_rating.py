@@ -25,6 +25,8 @@ from report_generator.generator.placeholders.base import ParameterizedPlaceholde
 
 
 class _AbstractColorRatingPlaceholder(ParameterizedPlaceholder, ABC):
+    """Fills this rating value, but also colors the shape the placeholder is in to correspond to the correct maintainability rating color (e.g. yellow for 3 stars)."""
+
     @classmethod
     def resolve_pptx(cls, presentation: Presentation, key: str, value_cb: Callable):
         shapes = report_utils.pptx.find_shapes_with_text(presentation, key)

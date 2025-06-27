@@ -36,10 +36,16 @@ def function_name_to_placeholder_key(function_name: str):
     return function_name.upper()
 
 
+class PlaceholderDocType(Enum):
+    TEXT = 'Text'
+    CHART = 'Chart'
+    OTHER = 'Other'
+
 @dataclass
 class Placeholder(ABC):
-    __placeholder__ = True
     key: str
+    __doc_type__: PlaceholderDocType = PlaceholderDocType.OTHER
+    __placeholder__ = True
 
     @classmethod
     @abstractmethod
@@ -72,6 +78,10 @@ class Placeholder(ABC):
     @classmethod
     def supports(cls, report_type: ReportType) -> bool:
         return cls._determine_resolve_method(report_type) is not None
+
+    @classmethod
+    def is_parameterized(cls):
+        return getattr(cls, '__parameterized_placeholder__', False)
 
 
 class ParameterizedPlaceholder(Placeholder, ABC):
