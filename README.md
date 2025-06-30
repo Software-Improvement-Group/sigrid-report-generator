@@ -86,6 +86,10 @@ To use custom placeholders in your own templates outside of this project:
 Note: These instructions are for creating extensions in your own projects. For extending this project itself, please
 refer to the developer documentation in [docs/developers.md](docs/developers.md).
 
+If you introduce new placeholders, you will need to regenerate the documentation. To do this, make sure you first
+[install the Report Generator](#install-using-pip). After that, run `./generate_placeholder_docs.py`, then commit
+the results.
+
 ### Examples
 
 #### Simple text placeholder of current week number

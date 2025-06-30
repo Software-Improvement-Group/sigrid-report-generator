@@ -171,5 +171,9 @@ class ModernizationData:
     def modernization_candidates_by_technical_debt(self) -> list[ModernizationCandidate]:
         return sorted(self.modernization_candidates, key=lambda candidate: -candidate.technical_debt_in_py)
 
+    @cached_property
+    def total_volume(self):
+        return sum(system.maintainability_data["volumeInPersonMonths"] / 12.0 for system in self.possible_candidates)
+
 
 modernization_data = ModernizationData()
