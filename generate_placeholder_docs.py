@@ -105,7 +105,7 @@ def get_placeholder_row_data(placeholder: Placeholder, skip_columns: Set[str] = 
 
 def parameterlist_to_representation(parameter_list: ParameterList) -> str:
     as_string = ', '.join(str(param) for param in parameter_list)
-    if PARAM_RANGE_REPRESENTATIONS.get(as_string):
+    if as_string in PARAM_RANGE_REPRESENTATIONS:
         return PARAM_RANGE_REPRESENTATIONS[as_string]
 
     return f"<details><summary>Show parameters</summary><p>{as_string}</p></details>"
