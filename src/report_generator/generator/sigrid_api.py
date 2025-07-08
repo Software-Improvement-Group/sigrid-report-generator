@@ -18,6 +18,8 @@ from typing import Optional
 
 import requests
 
+from report_generator.generator.constants import MaintMetric
+
 DEFAULT_BASE_URL = "https://sigrid-says.com"
 BASE_ANALYSIS_RESULTS_ENDPOINT = "analysis-results/api/v1"
 
@@ -128,9 +130,9 @@ def _sigrid_api_request(with_system=False):
                 system = args[0] if args else kwargs.pop('system', None) or _system
                 if system is None:
                     raise ValueError("System not provided and global _system is not set.")
-                result = func(system)
+                result = func(system, *args[1:], **kwargs)
             else:
-                result = func()
+                result = func(*args, **kwargs)
 
             if result is None:
                 raise SigridAPIRequestFailed(func.__name__)
@@ -206,4 +208,20 @@ def get_architecture_findings(system):
 @_sigrid_api_request(with_system=True)
 def get_architecture_graph(system):
     endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/architecture-quality/{_customer}/{system}/raw"
+    return _make_request(endpoint)
+
+
+@_sigrid_api_request(with_system=True)
+def get_maintainability_refactoring_candidates(system, system_property: MaintMetric, technology: str = None,
+                                               count: int = None):
+    property_name = system_property.to_json_name()
+
+    query_params = []
+    if technology is not None:
+        query_params.append(f"technology={technology}")
+    if count is not None:
+        query_params.append(f"count={count}")
+    query_string = f"?{'&'.join(query_params)}" if query_params else ""
+
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/refactoring-candidates/{_customer}/{system}/{property_name}{query_string}"
     return _make_request(endpoint)

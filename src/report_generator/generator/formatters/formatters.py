@@ -14,6 +14,9 @@
 
 import math
 
+import yaml
+from importlib_resources import files
+
 _USE_SIG_STERREN = False
 
 
@@ -56,3 +59,16 @@ def maintainability_round(rating) -> str:
         rating = float(rating)
 
     return "N/A" if rating < 0.1 else str(math.floor(rating * 10) / 10)
+
+
+_tech_names = None
+
+
+def technology_name(technology: str) -> str:
+    global _tech_names
+    if not _tech_names:
+        config_path = files(__package__).joinpath("technology_names.yaml")
+        with config_path.open("r", encoding="utf-8") as file:
+            _tech_names = yaml.safe_load(file)
+
+    return _tech_names.get(technology, technology.capitalize())

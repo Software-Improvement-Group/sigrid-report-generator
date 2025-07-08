@@ -12,17 +12,19 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from typing import Set, Type
+import inspect
 
-from .base import Placeholder
-from .misc import placeholders as misc_placeholders
-from .table import placeholders as table_placeholders
-from .text import placeholders as text_placeholders
+from . import refactoring_candidates
 
-PlaceholderCollection = Set[Type[Placeholder]]
+_all_implementations = {
+    **refactoring_candidates.__dict__,
+}
 
-placeholders: PlaceholderCollection = text_placeholders | misc_placeholders | table_placeholders
+_placeholders_map = {
+    name: obj for name, obj in _all_implementations.items()
+    if inspect.isclass(obj) and hasattr(obj, '__placeholder__') and not inspect.isabstract(obj)
+}
 
-from .text import text_placeholder, parameterized_text_placeholder
+placeholders = set(_placeholders_map.values())
 
-__all__ = ['Placeholder', 'text_placeholder', 'parameterized_text_placeholder', 'PlaceholderCollection', 'placeholders']
+__all__ = list(_placeholders_map.keys())

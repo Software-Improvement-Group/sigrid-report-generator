@@ -39,6 +39,7 @@ def function_name_to_placeholder_key(function_name: str):
 class PlaceholderDocType(Enum):
     TEXT = 'Text'
     CHART = 'Chart'
+    TABLE = 'Table'
     OTHER = 'Other'
 
 @dataclass

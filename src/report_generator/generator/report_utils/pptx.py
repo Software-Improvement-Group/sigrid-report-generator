@@ -14,11 +14,13 @@
 
 import logging
 import re
+from typing import Union
 
 from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 from pptx.oxml.xmlchemy import OxmlElement
+from pptx.table import Table
 
 NA_STAR_COLOR = RGBColor(0xb5, 0xb5, 0xb5)
 ONE_STAR_COLOR = RGBColor(0xdb, 0x4a, 0x3d)
@@ -267,3 +269,41 @@ def gather_charts(presentation: Presentation, key: str):
             if shape.has_chart:
                 charts.append(shape.chart)
     return charts
+
+
+def find_tables_in_presentation(presentation: Presentation, key: str):
+    return [
+        shape.table
+        for slide in presentation.slides
+        for shape in slide.shapes
+        if shape.has_table and shape.name == key
+    ]
+
+
+def update_table_in_presentation(table: Table, value: list[list[Union[str, int, float]]]):
+    # Dictionary to store reference runs for each column
+    column_reference_style_runs = {}
+
+    # Second pass: update the table
+    for row_idx, row in enumerate(table.rows):
+        for col_idx, cell in enumerate(row.cells):
+            if row_idx >= len(value) or col_idx >= len(value[row_idx]):
+                return
+
+            paragraph = cell.text_frame.paragraphs[0]
+            if paragraph.runs:
+                column_reference_style_runs[col_idx] = paragraph.runs[0]
+
+            new_text = str(value[row_idx][col_idx])
+
+            run = paragraph.add_run()
+            run.text = new_text
+
+            if col_idx in column_reference_style_runs:
+                ref_run = column_reference_style_runs[col_idx]
+                run.font.name = ref_run.font.name
+                run.font.size = ref_run.font.size
+                run.font.bold = ref_run.font.bold
+                run.font.italic = ref_run.font.italic
+                run.font.color.rgb = ref_run.font.color.rgb
+                # Add other formatting properties as needed
