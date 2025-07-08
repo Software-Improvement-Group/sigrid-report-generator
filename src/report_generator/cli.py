@@ -14,6 +14,8 @@
 
 import logging
 import os
+from datetime import date
+from dateutil.relativedelta import relativedelta
 from typing import Optional
 
 import click
@@ -22,6 +24,9 @@ import requests
 from report_generator import presets
 from report_generator.generator import ReportGenerator, sigrid_api
 
+
+DEFAULT_START_DATE = (date.today() + relativedelta(months=-1)).strftime('%Y-%m-%d')
+DEFAULT_END_DATE = date.today().strftime('%Y-%m-%d')
 MATOMO_URL = os.environ.get('MATOMO_URL', 'https://sigrid-says.com/usage')
 
 
@@ -71,13 +76,14 @@ def _validate_layout_or_template(ctx, param, value):
               help='The type of report (mutually exclusive with the -p/--template option)')
 @click.option('-p', '--template', type=click.File('rb'), callback=_validate_layout_or_template,
               help='A custom report template file (mutually exclusive with the -l/--layout option)')
+@click.option('--start', default=DEFAULT_START_DATE, help='Report start date in yyyy-mm-dd, default is last month.')
 @click.option('-o', '--out-file', default='out', help='write output to this file (default out.pptx/docx)')
 @click.option('-a', '--api-url', default=None,
               help=f'Sigrid API base URL, will default to {sigrid_api.DEFAULT_BASE_URL} if not provided')
 @click.pass_context
-def run(ctx, debug, customer, system, token, layout, template, out_file, api_url):
+def run(ctx, debug, customer, system, token, layout, template, start, out_file, api_url):
     _configure_logging(debug)
-    _configure_api(customer, system, token, api_url)
+    _configure_api(customer, system, token, (start, DEFAULT_END_DATE), api_url)
     _record_usage_statistics(layout, customer)
 
     if template:
@@ -87,11 +93,12 @@ def run(ctx, debug, customer, system, token, layout, template, out_file, api_url
     presets.run(layout, out_file)
 
 
-def _configure_api(customer: str, system: str, token: str, api_url: Optional[str]):
+def _configure_api(customer: str, system: str, token: str, period: tuple[str, str], api_url: Optional[str]):
     sigrid_api.set_context(
         bearer_token=token,
         customer=customer,
         system=system,
+        period=period,
         base_url=api_url
     )
 

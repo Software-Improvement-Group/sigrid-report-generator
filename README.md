@@ -6,10 +6,8 @@ provided by Sigrid. The Report Generator can be used for two "flavors" of report
 - Standard reports provided by SIG.
 - Your own custom reports, which use your own Word/PowerPoint templates.
 
-<img src="./docs/img/sample-mgmt-summary.png" alt="Sample: Management summary" width="300px">
 <img src="./docs/img/sample-architecture.png" alt="Sample: Architecture" width="300px">
 <img src="./docs/img/sample-test-code.png" alt="Sample: Test code ratio" width="300px">
-<img src="./docs/img/sample-word.png" alt="Sample: Word" width="300px">
 
 ## Prerequisites
 
@@ -40,13 +38,26 @@ wherever you specify with the `-o` option.
 
 ### Generating standard reports
 
-- **ITDD report:** Lightweight report that provides general information on a system, suitable for an ITDD setting.
+**ITDD report:** Lightweight report that provides general information on a system, suitable for an ITDD setting.
   - Example: `report-generator -c <your-customer> -s <your-system> --layout default`.
-- **Modernization report:** Analyses all systems across your portfolio, and provides information on how to prioritize
-  modernization initiatives based on factors such as estimated development speed increase and estimated effort.
-  The [Sigrid documentation](https://docs.sigrid-says.com/capabilities/reports/modernization-report.html) contains
-  more information.
+
+<img src="docs/img/sample-mgmt-summary.png" width="300" />
+
+**Modernization report:** Analyses all systems across your portfolio, and provides information on how to prioritize
+modernization initiatives based on factors such as estimated development speed increase and estimated effort.
+The [Sigrid documentation](https://docs.sigrid-says.com/capabilities/reports/modernization-report.html) contains
+more information.
   - Example: `report-generator -c <your-customer> --layout modernization`.
+
+<img src="docs/img/sample-modernization.png" width="500" />
+
+**System maintainability one-pager:** Simple report that focus on a system's maintainability system, both in terms
+of its current state and its progress over time.
+  - Example: `report-generator -c <your-customer> -s <your-system> --layout system-maintainability-one-pager`
+  - The default reporting period is one month. If you want to change the reporting period, you can use the
+    argument `--start 2025-03-01`.
+
+<img src="docs/img/sample-system-maintainability-one-pager.png" width="400" />
 
 ### Troubleshooting
 
