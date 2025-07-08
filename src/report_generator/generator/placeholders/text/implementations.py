@@ -49,7 +49,7 @@ def period_end_date():
 @text_placeholder()
 def report_date():
     """The current date formatted as Month Day, Year."""
-    return "???"
+    return datetime.now().strftime("%B %d, %Y")
 
 
 @text_placeholder()
