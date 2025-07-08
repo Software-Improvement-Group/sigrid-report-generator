@@ -18,7 +18,7 @@ from report_generator.generator.constants import ArchMetric, ArchSubcharacterist
     OSHMetric
 from report_generator.generator.data_models import *
 from report_generator.generator.formatters import smart_remarks
-from report_generator.generator.formatters.formatters import calculate_stars, maintainability_round
+from report_generator.generator.formatters.formatters import calculate_stars, maintainability_round, format_diff
 from .base import parameterized_text_placeholder, text_placeholder
 
 
@@ -35,15 +35,35 @@ def customer_name():
 
 
 @text_placeholder()
+def period_start_date():
+    """The reporting period's start date in yyyy-mm-dd format."""
+    return maintainability_data.period[0]
+
+
+@text_placeholder()
+def period_end_date():
+    """The reporting period's end date in yyyy-mm-dd format."""
+    return maintainability_data.period[1]
+
+
+@text_placeholder()
 def report_date():
     """The current date formatted as Month Day, Year."""
-    return datetime.now().strftime("%B %d, %Y")
+    return "???"
 
 
 @text_placeholder()
 def maint_rating():
     """The 0.5-5.5 star rating provided by SIG's Maintainability Model."""
     return maintainability_round(maintainability_data.maintainability_rating)
+
+
+@text_placeholder()
+def maint_diff():
+    """The maintainability rating diff within the reporting period."""
+    old_rating = maintainability_data.start_snapshot["maintainability"]
+    new_rating = maintainability_data.maintainability_rating
+    return format_diff(old_rating, new_rating)
 
 
 @text_placeholder()
@@ -226,8 +246,9 @@ def tech_lines_of_code(idx: int):
 
 @parameterized_text_placeholder(custom_key="TECH_{parameter}_MAINT_RATING", parameters=range(1, 6))
 def tech_maintainability_rating(idx: int):
-    """Maintainability rating of the technology in the system (if present)."""
-    return maintainability_data.sorted_tech_get_key(idx - 1, 'maintainability')
+    """Maintainability rating of the technology in the system (if present). One decimal."""
+    rating = maintainability_data.sorted_tech_get_key(idx - 1, 'maintainability')
+    return round(rating, 1) if rating else ""
 
 
 @parameterized_text_placeholder(custom_key="TECH_{parameter}_TEST_RATIO", parameters=range(1, 6))
@@ -247,6 +268,14 @@ def maint_rating_param(metric: MaintMetric):
     """The 0.5-5.5 star rating for this metric."""
     metric_key = metric.to_json_name()
     return maintainability_round(maintainability_data.data[metric_key])
+
+
+@parameterized_text_placeholder(custom_key="MAINT_DIFF_{parameter}", parameters=list(MaintMetric))
+def maint_rating_diff_param(metric: MaintMetric):
+    """The rating difference for the specified metric within the reporting period."""
+    old_rating = maintainability_data.start_snapshot[metric.to_json_name()]
+    new_rating = maintainability_data.data[metric.to_json_name()]
+    return format_diff(old_rating, new_rating)
 
 
 @parameterized_text_placeholder(custom_key="STARS_{parameter}", parameters=list(MaintMetric))

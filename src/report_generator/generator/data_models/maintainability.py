@@ -56,6 +56,10 @@ class MaintainabilityData:
         return sigrid_api.get_maintainability_ratings()
 
     @cached_property
+    def period(self):
+        return sigrid_api.get_period()
+
+    @cached_property
     def maintainability_rating(self):
         return self.data['maintainability']
 
@@ -124,6 +128,23 @@ class MaintainabilityData:
     @cached_property
     def customer_name(self):
         return self.data['customer'].capitalize()
+
+    @cached_property
+    def start_snapshot(self):
+        snapshots = list(self.snapshots_in_period)
+        if len(snapshots) == 0:
+            raise Exception(f"There is no usable start snapshot in the reporting period: {self.period}")
+        return snapshots[0]
+
+    @cached_property
+    def snapshots_in_period(self):
+        period_start_date = datetime.strptime(self.period[0], "%Y-%m-%d")
+        period_end_date = datetime.strptime(self.period[1], "%Y-%m-%d")
+
+        for snapshot in reversed(self.data["allRatings"]):
+            snapshot_date = datetime.strptime(snapshot["maintainabilityDate"], "%Y-%m-%d")
+            if snapshot_date >= period_start_date and snapshot_date <= period_end_date:
+                yield snapshot
 
 
 maintainability_data = MaintainabilityData()

@@ -38,3 +38,12 @@ class TestFormatter:
         assert formatters.maintainability_round(5.4) == "5.4"
 
         assert formatters.maintainability_round(3.284) == "3.2"
+
+    def test_format_diff(self):
+        assert formatters.format_diff(None, None) == ""
+        assert formatters.format_diff(None, 1.0) == ""
+        assert formatters.format_diff(1.0, None) == ""
+        assert formatters.format_diff(1.0, 1.0) == "="
+        assert formatters.format_diff(1.0, 1.2) == "+ 0.2"
+        assert formatters.format_diff(1.2, 1.0) == "- 0.2"
+
