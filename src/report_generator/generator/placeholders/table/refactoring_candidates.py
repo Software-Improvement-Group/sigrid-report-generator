@@ -37,7 +37,7 @@ class _AbstractRefactoringCandidatesTablePlaceholder(TablePlaceholder):
     @classmethod
     def value(cls, parameter=None) -> TableMatrix:
         return cls._to_table_matrix(
-            sigrid_api.get_maintainability_refactoring_candidates(system_property=cls.metric).get(
+            sigrid_api.get_maintainability_refactoring_candidates(system_property=cls.metric, count=20).get(
                 'refactoringCandidates', [])
         )
 
@@ -49,16 +49,16 @@ class RefactoringCandidatesTableDuplication(_AbstractRefactoringCandidatesTableP
     def _to_table_matrix(cls, data) -> TableMatrix:
         rows = [['Description', 'Redundant LOC', 'Level', 'Technology']]
 
-        for candidate in data:
-            locs: list = candidate['locations']
+        for finding in data:
+            locs: list = finding['locations']
 
             unique_filenames = {loc['file'].split('/')[-1] for loc in locs}
 
             rows.append([
-                f"{candidate['loc']} lines occurring {len(locs)} times in {', '.join(unique_filenames)}",
-                candidate['loc'] * (len(locs) - 1),
-                "File" if candidate['sameFile'] else "Component" if candidate['sameComponent'] else "System",
-                technology_name(candidate['technology'])
+                f"{finding['loc']} lines occurring {len(locs)} times in {', '.join(unique_filenames)}",
+                finding['loc'] * (len(locs) - 1),
+                "File" if finding['sameFile'] else "Component" if finding['sameComponent'] else "System",
+                technology_name(finding['technology'])
             ])
 
         return rows
@@ -71,14 +71,108 @@ class RefactoringCandidatesTableUnitSize(_AbstractRefactoringCandidatesTablePlac
     def _to_table_matrix(cls, data) -> TableMatrix:
         rows = [['Unit name', 'LOC', 'McCabe', 'Parameters', 'Component', 'Technology']]
 
-        for candidate in data:
+        for finding in data:
             rows.append([
-                candidate["name"],
-                candidate["loc"],
-                candidate.get("mcCabe", "-"),
-                candidate.get("parameters", "-"),
-                candidate["component"],
-                technology_name(candidate['technology'])
+                finding["name"],
+                finding["loc"],
+                finding.get("mcCabe", "-"),
+                finding.get("parameters", "-"),
+                finding["component"],
+                technology_name(finding['technology'])
+            ])
+
+        return rows
+
+
+class RefactoringCandidatesTableUnitComplexity(_AbstractRefactoringCandidatesTablePlaceholder):
+    metric = MaintMetric.UNIT_COMPLEXITY
+
+    @classmethod
+    def _to_table_matrix(cls, data) -> TableMatrix:
+        rows = [['Unit name', 'LOC', 'McCabe', 'Parameters', 'Component', 'Technology']]
+
+        for finding in data:
+            rows.append([
+                finding["name"],
+                finding.get("loc", "-"),
+                finding["mcCabe"],
+                finding.get("parameters", "-"),
+                finding["component"],
+                technology_name(finding['technology'])
+            ])
+
+        return rows
+
+
+class RefactoringCandidatesTableUnitInterfacing(_AbstractRefactoringCandidatesTablePlaceholder):
+    metric = MaintMetric.UNIT_INTERFACING
+
+    @classmethod
+    def _to_table_matrix(cls, data) -> TableMatrix:
+        rows = [['Unit name', 'LOC', 'McCabe', 'Parameters', 'Component', 'Technology']]
+
+        for finding in data:
+            rows.append([
+                finding["name"],
+                finding.get("loc", "-"),
+                finding.get("mcCabe", "-"),
+                finding["parameters"],
+                finding["component"],
+                technology_name(finding['technology'])
+            ])
+
+        return rows
+
+class RefactoringCandidatesTableModuleCoupling(_AbstractRefactoringCandidatesTablePlaceholder):
+    metric = MaintMetric.MODULE_COUPLING
+
+    @classmethod
+    def _to_table_matrix(cls, data) -> TableMatrix:
+        rows = [['File name', 'LOC', 'Fan-in', 'Component', 'Technology']]
+
+        for finding in data:
+            rows.append([
+                finding["file"].split("/")[-1],
+                finding.get("loc", "-"),
+                finding["fanIn"],
+                finding["component"],
+                technology_name(finding['technology'])
+            ])
+
+        return rows
+
+
+class RefactoringCandidatesComponentEntanglement(_AbstractRefactoringCandidatesTablePlaceholder):
+    metric = MaintMetric.COMPONENT_ENTANGLEMENT
+
+    @staticmethod
+    def _generate_description(finding) ->str:
+        entanglement_type = finding["type"]
+
+        if entanglement_type == 'COMMUNICATION_DENSITY':
+            severity = finding["severity"].replace("_", " ").capitalize()
+            component_name = finding["component"]
+            return f"{severity} communication density on {component_name}"
+
+        # Check if type is valid (you'll need to implement this based on your validation logic)
+        special_type_names = {
+            "LAYER_BYPASSING_DEPENDENCY": "transitive dependency",
+        }
+
+        base_description = special_type_names.get(entanglement_type, entanglement_type.replace("_", " ").lower()).capitalize()
+        source_component = finding["sourceComponent"]
+        target_component = finding["targetComponent"]
+
+        return f"{base_description} between {source_component} and {target_component}"
+
+    @classmethod
+    def _to_table_matrix(cls, data) -> TableMatrix:
+        rows = [['Description', 'Weight']]
+
+        for finding in data:
+            rows.append([
+                RefactoringCandidatesComponentEntanglement._generate_description(finding),
+                finding['weight']
             ])
 
         return rows

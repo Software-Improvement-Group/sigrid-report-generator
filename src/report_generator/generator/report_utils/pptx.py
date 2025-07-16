@@ -299,7 +299,8 @@ def update_table(table: Table, value: list[list[Union[str, int, float]]]):
             paragraph.clear()
 
             run: _Run = paragraph.add_run()
-            run.text = str(value[row_idx][col_idx])
+            text_value = value[row_idx][col_idx]
+            run.text = str(text_value) if text_value is not None else ""
 
             if column_fonts[col_idx]:
                 _apply_font_properties(run, column_fonts[col_idx])
