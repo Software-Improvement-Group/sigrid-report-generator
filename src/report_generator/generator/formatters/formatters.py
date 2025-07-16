@@ -72,3 +72,16 @@ def technology_name(technology: str) -> str:
             _tech_names = yaml.safe_load(file)
 
     return _tech_names.get(technology, technology.capitalize())
+
+
+def format_diff(old_rating: float, new_rating: float) -> str:
+    if not old_rating or not new_rating:
+        return ""
+
+    diff = new_rating - old_rating
+    if diff >= 0.1:
+        return f"+ {diff:.1f}"
+    elif diff <= -0.1:
+        return f"- {abs(diff):.1f}"
+    else:
+        return "="

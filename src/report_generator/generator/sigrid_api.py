@@ -26,6 +26,7 @@ BASE_ANALYSIS_RESULTS_ENDPOINT = "analysis-results/api/v1"
 _bearer_token: Optional[str] = None
 _customer: Optional[str] = None
 _system: Optional[str] = None
+_period: Optional[tuple[str, str]] = None
 _rest_url: Optional[str] = None
 
 
@@ -46,10 +47,11 @@ def set_context(
         bearer_token: Optional[str] = None,
         customer: Optional[str] = None,
         system: Optional[str] = None,
+        period: Optional[tuple[str, str]] = None,
         base_url: Optional[str] = None
 ) -> None:
     """Set the context values. Only updates provided values. Sets base_url to default if not provided."""
-    global _bearer_token, _customer, _system, _rest_url
+    global _bearer_token, _customer, _system, _period, _rest_url
 
     if bearer_token is not None:
         _test_sigrid_token(bearer_token)
@@ -60,6 +62,9 @@ def set_context(
 
     if system is not None:
         _system = system
+
+    if period is not None:
+        _period = period
 
     _rest_url = f"{base_url or DEFAULT_BASE_URL.rstrip('/')}/rest"
 
@@ -83,6 +88,12 @@ def reset_context(
 
     if reset_base_url:
         _rest_url = f"{DEFAULT_BASE_URL.rstrip('/')}/rest"
+
+
+def get_period() -> tuple[str, str]:
+    if _period is None:
+        raise Exception("Reporting period not defined")
+    return _period
 
 
 def _check_context() -> None:
