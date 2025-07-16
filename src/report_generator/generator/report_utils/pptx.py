@@ -17,10 +17,12 @@ import re
 from typing import Union
 
 from pptx import Presentation
-from pptx.dml.color import RGBColor
+from pptx.dml.color import ColorFormat, RGBColor, _Color
+from pptx.enum.dml import MSO_THEME_COLOR
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 from pptx.oxml.xmlchemy import OxmlElement
-from pptx.table import Table
+from pptx.table import Table, _Cell
+from pptx.text.text import _Paragraph, _Run
 
 NA_STAR_COLOR = RGBColor(0xb5, 0xb5, 0xb5)
 ONE_STAR_COLOR = RGBColor(0xdb, 0x4a, 0x3d)
@@ -271,7 +273,7 @@ def gather_charts(presentation: Presentation, key: str):
     return charts
 
 
-def find_tables_in_presentation(presentation: Presentation, key: str):
+def find_tables(presentation: Presentation, key: str):
     return [
         shape.table
         for slide in presentation.slides
@@ -279,31 +281,65 @@ def find_tables_in_presentation(presentation: Presentation, key: str):
         if shape.has_table and shape.name == key
     ]
 
-
-def update_table_in_presentation(table: Table, value: list[list[Union[str, int, float]]]):
+"""
+Fills a table with the provided values.
+- The table must have the same number of rows and columns as the value list. @@ make this more flexible
+- The table will override existing content in the cells.
+- If a cell has existing formatting, that formatting will be applied to all consecutive rows in that column.
+- If there is no cell for a column that defines the formatting, some default formatting will be used, which is likely not what you want.
+"""
+def update_table(table: Table, value: list[list[Union[str, int, float]]]):
     # Dictionary to store reference runs for each column
-    column_reference_style_runs = {}
+    column_fonts = {}
 
     # Second pass: update the table
     for row_idx, row in enumerate(table.rows):
         for col_idx, cell in enumerate(row.cells):
             if row_idx >= len(value) or col_idx >= len(value[row_idx]):
+                ## @@TODO add row or column if not present
                 return
 
-            paragraph = cell.text_frame.paragraphs[0]
+            paragraph: _Paragraph = cell.text_frame.paragraphs[0]
             if paragraph.runs:
-                column_reference_style_runs[col_idx] = paragraph.runs[0]
+                column_fonts[col_idx] = _copy_font_properties(paragraph.runs[0])
+            paragraph.clear()
 
             new_text = str(value[row_idx][col_idx])
 
-            run = paragraph.add_run()
+            run: _Run = paragraph.add_run()
             run.text = new_text
 
-            if col_idx in column_reference_style_runs:
-                ref_run = column_reference_style_runs[col_idx]
-                run.font.name = ref_run.font.name
-                run.font.size = ref_run.font.size
-                run.font.bold = ref_run.font.bold
-                run.font.italic = ref_run.font.italic
-                run.font.color.rgb = ref_run.font.color.rgb
-                # Add other formatting properties as needed
+            if column_fonts[col_idx]:
+                _apply_font_properties(run, column_fonts[col_idx])
+
+
+def _copy_font_properties(source_run: _Run):
+    font = source_run.font
+    color: ColorFormat = font.color
+    return {
+        'bold': font.bold,
+        'italic': font.italic,
+        'name': font.name,
+        'size': font.size,
+        'underline': font.underline,
+        'color': {
+            'rgb': color.rgb if hasattr(color, 'rgb') else None,
+            'theme_color': color.theme_color if hasattr(color, 'theme_color') else None,
+            'brightness': color.brightness if hasattr(color, 'brightness') else None,
+        }
+    }
+
+def _apply_font_properties(target_run: _Run, font_properties: dict):
+    target_run.font.bold = font_properties['bold']
+    target_run.font.italic = font_properties['italic']
+    target_run.font.name = font_properties['name']
+    target_run.font.size = font_properties['size']
+    target_run.font.underline = font_properties['underline']
+
+    if font_properties['color']['rgb'] is not None:
+        target_run.font.color.rgb = font_properties['color']['rgb']
+    if font_properties['color']['theme_color'] is not None and font_properties['color']['theme_color'] is not MSO_THEME_COLOR.NOT_THEME_COLOR:
+        print(font_properties['color']['theme_color'])
+        target_run.font.color.theme_color = font_properties['color']['theme_color']
+    if font_properties['color']['brightness'] is not None and target_run.font.color.type is not None:
+        target_run.font.color.brightness = font_properties['color']['brightness']

@@ -18,7 +18,7 @@ from typing import Union
 
 from report_generator.generator.placeholders import Placeholder
 from report_generator.generator.placeholders.base import PlaceholderDocType
-from report_generator.generator.report_utils.pptx import find_tables_in_presentation, update_table_in_presentation
+from report_generator.generator.report_utils.pptx import find_tables, update_table
 
 TableMatrix = list[list[Union[str, int, float]]]
 
@@ -28,7 +28,7 @@ class TablePlaceholder(Placeholder, ABC):
 
     @classmethod
     def resolve_pptx(cls, presentation, key: str, value_cb):
-        tables = find_tables_in_presentation(presentation, key)
+        tables = find_tables(presentation, key)
 
         logging.debug(f"Finds for {key}: {len(tables)}")
         if len(tables) == 0:
@@ -38,4 +38,4 @@ class TablePlaceholder(Placeholder, ABC):
         if value is None:
             raise ValueError(f"Value for placeholder '{key}' is None")
 
-        [update_table_in_presentation(table, value) for table in tables]
+        [update_table(table, value) for table in tables]
