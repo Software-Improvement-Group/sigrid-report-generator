@@ -14,14 +14,14 @@
 
 import logging
 import re
-from typing import Union
+from typing import Iterable, Union
 
 from pptx import Presentation
 from pptx.dml.color import ColorFormat, RGBColor
 from pptx.enum.dml import MSO_THEME_COLOR
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 from pptx.oxml.xmlchemy import OxmlElement
-from pptx.table import Table
+from pptx.table import Table, _Row
 from pptx.text.text import _Paragraph, _Run
 
 NA_STAR_COLOR = RGBColor(0xb5, 0xb5, 0xb5)
@@ -282,6 +282,19 @@ def find_tables(presentation: Presentation, key: str):
     ]
 
 
+def remove_row_from_table(table: Table, row: _Row):
+    tbl = table._tbl
+    tr = row._tr
+    tbl.remove(tr)
+
+def remove_row_numbers_from_table(table: Table, row_numbers: Iterable[int]):
+    reversed_numbers = sorted(row_numbers, reverse=True)
+    for row_number in reversed_numbers:
+        row = table.rows[row_number]
+        remove_row_from_table(table, row)
+
+
+
 def update_table(table: Table, value: list[list[Union[str, int, float]]]):
     """
     Fills a PowerPoint table with provided values. Copies formatting from existing cells and applies it to all laters cells in that column.
@@ -289,8 +302,12 @@ def update_table(table: Table, value: list[list[Union[str, int, float]]]):
     column_fonts = {}
 
     for row_idx, row in enumerate(table.rows):
+        if row_idx >= len(value):
+            remove_row_numbers_from_table(table, range(row_idx, len(table.rows)))
+            continue
+
         for col_idx, cell in enumerate(row.cells):
-            if row_idx >= len(value) or col_idx >= len(value[row_idx]):
+            if col_idx >= len(value[row_idx]):
                 continue
 
             paragraph: _Paragraph = cell.text_frame.paragraphs[0]
