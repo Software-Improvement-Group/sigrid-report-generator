@@ -287,12 +287,12 @@ def remove_row_from_table(table: Table, row: _Row):
     tr = row._tr
     tbl.remove(tr)
 
+
 def remove_row_numbers_from_table(table: Table, row_numbers: Iterable[int]):
     reversed_numbers = sorted(row_numbers, reverse=True)
     for row_number in reversed_numbers:
         row = table.rows[row_number]
         remove_row_from_table(table, row)
-
 
 
 def update_table(table: Table, value: list[list[Union[str, int, float]]]):

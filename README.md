@@ -41,12 +41,12 @@ wherever you specify with the `-o` option.
 ### Generating standard reports
 
 - **ITDD report:** Lightweight report that provides general information on a system, suitable for an ITDD setting.
-  - Example: `report-generator -c <your-customer> -s <your-system> --layout default`.
+    - Example: `report-generator -c <your-customer> -s <your-system> --layout default`.
 - **Modernization report:** Analyses all systems across your portfolio, and provides information on how to prioritize
   modernization initiatives based on factors such as estimated development speed increase and estimated effort.
   The [Sigrid documentation](https://docs.sigrid-says.com/capabilities/reports/modernization-report.html) contains
   more information.
-  - Example: `report-generator -c <your-customer> --layout modernization`.
+    - Example: `report-generator -c <your-customer> --layout modernization`.
 
 ### Troubleshooting
 

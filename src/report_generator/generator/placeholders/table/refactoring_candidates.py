@@ -120,6 +120,7 @@ class RefactoringCandidatesTableUnitInterfacing(_AbstractRefactoringCandidatesTa
 
         return rows
 
+
 class RefactoringCandidatesTableModuleCoupling(_AbstractRefactoringCandidatesTablePlaceholder):
     metric = MaintMetric.MODULE_COUPLING
 
@@ -143,7 +144,7 @@ class RefactoringCandidatesComponentEntanglement(_AbstractRefactoringCandidatesT
     metric = MaintMetric.COMPONENT_ENTANGLEMENT
 
     @staticmethod
-    def _generate_description(finding) ->str:
+    def _generate_description(finding) -> str:
         entanglement_type = finding["type"]
 
         if entanglement_type == 'COMMUNICATION_DENSITY':
@@ -156,7 +157,8 @@ class RefactoringCandidatesComponentEntanglement(_AbstractRefactoringCandidatesT
             "LAYER_BYPASSING_DEPENDENCY": "transitive dependency",
         }
 
-        base_description = special_type_names.get(entanglement_type, entanglement_type.replace("_", " ").lower()).capitalize()
+        base_description = special_type_names.get(entanglement_type,
+                                                  entanglement_type.replace("_", " ").lower()).capitalize()
         source_component = finding["sourceComponent"]
         target_component = finding["targetComponent"]
 
@@ -170,6 +172,24 @@ class RefactoringCandidatesComponentEntanglement(_AbstractRefactoringCandidatesT
             rows.append([
                 RefactoringCandidatesComponentEntanglement._generate_description(finding),
                 finding['weight']
+            ])
+
+        return rows
+
+
+class RefactoringCandidatesComponentIndependence(_AbstractRefactoringCandidatesTablePlaceholder):
+    metric = MaintMetric.COMPONENT_INDEPENDENCE
+
+    @classmethod
+    def _to_table_matrix(cls, data) -> TableMatrix:
+        rows = [['File name', 'LOC', 'Component', 'Technology']]
+
+        for finding in data:
+            rows.append([
+                finding["file"].split("/")[-1],
+                finding.get("loc", "-"),
+                finding["component"],
+                technology_name(finding['technology'])
             ])
 
         return rows

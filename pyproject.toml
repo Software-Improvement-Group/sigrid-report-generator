@@ -1,13 +1,13 @@
 [build-system]
 requires = [
-	"setuptools>=42",
-	"wheel"
+    "setuptools>=42",
+    "wheel"
 ]
 build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
 testpaths = [
-	"tests"
+    "tests"
 ]
 addopts = [
     "--import-mode=importlib",
