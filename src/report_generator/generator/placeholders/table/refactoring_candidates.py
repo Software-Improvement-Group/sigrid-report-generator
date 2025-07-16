@@ -40,6 +40,7 @@ class _AbstractRefactoringCandidatesTablePlaceholder(TablePlaceholder):
 
 
 class RefactoringCandidatesTableDuplication(_AbstractRefactoringCandidatesTablePlaceholder):
+    """Table for refactoring candidates related to code duplication. Headers are: Description, Redundant LOC, Level, Technology."""
     metric = MaintMetric.DUPLICATION
 
     @classmethod
@@ -62,6 +63,7 @@ class RefactoringCandidatesTableDuplication(_AbstractRefactoringCandidatesTableP
 
 
 class RefactoringCandidatesTableUnitSize(_AbstractRefactoringCandidatesTablePlaceholder):
+    """Table for refactoring candidates related to unit size. Headers are: Unit name, LOC, McCabe, Parameters, Component, Technology."""
     metric = MaintMetric.UNIT_SIZE
 
     @classmethod
@@ -82,6 +84,7 @@ class RefactoringCandidatesTableUnitSize(_AbstractRefactoringCandidatesTablePlac
 
 
 class RefactoringCandidatesTableUnitComplexity(_AbstractRefactoringCandidatesTablePlaceholder):
+    """Table for refactoring candidates related to unit complexity. Headers are: Unit name, LOC, McCabe, Parameters, Component, Technology."""
     metric = MaintMetric.UNIT_COMPLEXITY
 
     @classmethod
@@ -102,6 +105,7 @@ class RefactoringCandidatesTableUnitComplexity(_AbstractRefactoringCandidatesTab
 
 
 class RefactoringCandidatesTableUnitInterfacing(_AbstractRefactoringCandidatesTablePlaceholder):
+    """Table for refactoring candidates related to unit interfacing. Headers are: Unit name, LOC, McCabe, Parameters, Component, Technology."""
     metric = MaintMetric.UNIT_INTERFACING
 
     @classmethod
@@ -122,6 +126,7 @@ class RefactoringCandidatesTableUnitInterfacing(_AbstractRefactoringCandidatesTa
 
 
 class RefactoringCandidatesTableModuleCoupling(_AbstractRefactoringCandidatesTablePlaceholder):
+    """Table for refactoring candidates related to module coupling. Headers are: File name, LOC, Fan-in, Component, Technology."""
     metric = MaintMetric.MODULE_COUPLING
 
     @classmethod
@@ -141,6 +146,7 @@ class RefactoringCandidatesTableModuleCoupling(_AbstractRefactoringCandidatesTab
 
 
 class RefactoringCandidatesComponentEntanglement(_AbstractRefactoringCandidatesTablePlaceholder):
+    """Table for refactoring candidates related to component entanglement. Headers are: Description, Weight."""
     metric = MaintMetric.COMPONENT_ENTANGLEMENT
 
     @staticmethod
@@ -178,6 +184,7 @@ class RefactoringCandidatesComponentEntanglement(_AbstractRefactoringCandidatesT
 
 
 class RefactoringCandidatesComponentIndependence(_AbstractRefactoringCandidatesTablePlaceholder):
+    """Table for refactoring candidates related to component independence. Headers are: File name, LOC, Component, Technology."""
     metric = MaintMetric.COMPONENT_INDEPENDENCE
 
     @classmethod
