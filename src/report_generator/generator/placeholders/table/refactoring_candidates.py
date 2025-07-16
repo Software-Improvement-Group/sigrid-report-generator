@@ -14,8 +14,8 @@
 
 from abc import abstractmethod
 
-from report_generator.generator import sigrid_api
 from report_generator.generator.constants import MaintMetric
+from report_generator.generator.data_models import refactoring_candidates_data
 from report_generator.generator.formatters.formatters import technology_name
 from report_generator.generator.placeholders.table.base import TableMatrix, TablePlaceholder
 
@@ -36,10 +36,7 @@ class _AbstractRefactoringCandidatesTablePlaceholder(TablePlaceholder):
 
     @classmethod
     def value(cls, parameter=None) -> TableMatrix:
-        return cls._to_table_matrix(
-            sigrid_api.get_maintainability_refactoring_candidates(system_property=cls.metric, count=20).get(
-                'refactoringCandidates', [])
-        )
+        return cls._to_table_matrix(refactoring_candidates_data.get_candidates(cls.metric))
 
 
 class RefactoringCandidatesTableDuplication(_AbstractRefactoringCandidatesTablePlaceholder):

@@ -11,10 +11,19 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+from functools import lru_cache
 
-from .architecture import architecture_data
-from .maintainability import maintainability_data
-from .modernization import modernization_data
-from .osh import osh_data
-from .refactoring_candidates import refactoring_candidates_data
-from .system_metadata import system_metadata
+from report_generator.generator import sigrid_api
+from report_generator.generator.constants import MaintMetric
+
+
+class RefactoringCandidatesData:
+    def _get_api_data(self, metric: MaintMetric):
+        return sigrid_api.get_maintainability_refactoring_candidates(system_property=metric, count=20)
+
+    @lru_cache()
+    def get_candidates(self, metric: MaintMetric):
+        return self._get_api_data(metric).get('refactoringCandidates', [])
+
+
+refactoring_candidates_data = RefactoringCandidatesData()
