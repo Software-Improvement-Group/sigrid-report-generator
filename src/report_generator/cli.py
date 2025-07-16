@@ -15,15 +15,14 @@
 import logging
 import os
 from datetime import date
-from dateutil.relativedelta import relativedelta
 from typing import Optional
 
 import click
 import requests
+from dateutil.relativedelta import relativedelta
 
 from report_generator import presets
 from report_generator.generator import ReportGenerator, sigrid_api
-
 
 DEFAULT_START_DATE = (date.today() + relativedelta(months=-1)).strftime('%Y-%m-%d')
 DEFAULT_END_DATE = date.today().strftime('%Y-%m-%d')

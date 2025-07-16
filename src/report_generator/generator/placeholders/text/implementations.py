@@ -18,7 +18,7 @@ from report_generator.generator.constants import ArchMetric, ArchSubcharacterist
     OSHMetric
 from report_generator.generator.data_models import *
 from report_generator.generator.formatters import smart_remarks
-from report_generator.generator.formatters.formatters import calculate_stars, maintainability_round, format_diff
+from report_generator.generator.formatters.formatters import calculate_stars, format_diff, maintainability_round
 from .base import parameterized_text_placeholder, text_placeholder
 
 

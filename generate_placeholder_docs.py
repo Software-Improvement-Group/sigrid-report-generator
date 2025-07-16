@@ -147,14 +147,15 @@ def generate_documentation():
                           placeholder.__doc_type__ == PlaceholderDocType.CHART]
     doc.add(Table(placeholders_to_table(chart_placeholders)))
 
-
     doc.add(Header("Dynamic Table Placeholders"))
-    doc.add(Paragraph("These placeholders are used for filling tables with a dynamic number of rows and flexible styles. Currently, they are only supported in PowerPoint templates."))
+    doc.add(Paragraph(
+        "These placeholders are used for filling tables with a dynamic number of rows and flexible styles. Currently, they are only supported in PowerPoint templates."))
     doc.add(Paragraph(
         "To use these placeholders, create a table in your PowerPoint template and rename it in the selection pane (instructions below) to match the placeholder key. Define text styles in the first row of the table."))
-    doc.add(Paragraph("The number of rows of the generated table is minimally the number of rows in the data source and maximally the number of rows in the template table."))
+    doc.add(Paragraph(
+        "The number of rows of the generated table is minimally the number of rows in the data source and maximally the number of rows in the template table."))
     table_placeholders = [placeholder for placeholder in all_placeholders if
-                            placeholder.__doc_type__ == PlaceholderDocType.TABLE]
+                          placeholder.__doc_type__ == PlaceholderDocType.TABLE]
     doc.add(Table(placeholders_to_table(table_placeholders, skip_columns={"Supports"})))
 
     doc.add(Header("Other Placeholders"))
@@ -162,9 +163,9 @@ def generate_documentation():
                           placeholder.__doc_type__ == PlaceholderDocType.OTHER]
     doc.add(Table(placeholders_to_table(other_placeholders)))
 
-
     doc.add(Header("How to: Enter Placeholder Key in Selection Pane"))
-    doc.add(Paragraph("Some placeholders require you to enter their key in the selection pane of PowerPoint. To do this, follow these steps:"))
+    doc.add(Paragraph(
+        "Some placeholders require you to enter their key in the selection pane of PowerPoint. To do this, follow these steps:"))
     doc.add(Steps([
         "Open the selection pane in PowerPoint by going to the 'Home' tab, clicking on 'Select', and then choosing 'Selection Pane'.",
         "In the selection pane, find the object you want to rename (e.g., a chart or table).",
