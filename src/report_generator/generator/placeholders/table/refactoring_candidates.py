@@ -41,13 +41,20 @@ class _AbstractRefactoringCandidatesTablePlaceholder(TablePlaceholder):
                 'refactoringCandidates', [])
         )
 
+    @classmethod
+    def resolve_pptx(cls, presentation, key: str, value_cb):
+        super().resolve_pptx(presentation, key, value_cb)
+
+        # @@TODO: Add logic to decrease size of the table if too long
+
+
 
 class RefactoringCandidatesTableDuplication(_AbstractRefactoringCandidatesTablePlaceholder):
     metric = MaintMetric.DUPLICATION
 
     @classmethod
     def _to_table_matrix(cls, data) -> TableMatrix:
-        rows = [['Description', 'Redundant LOC', 'Same file', 'Same component', 'Technology']]
+        rows = [['Description', 'Redundant LOC', 'Level', 'Technology']]
 
         for candidate in data:
             locs: list = candidate['locations']
@@ -57,8 +64,7 @@ class RefactoringCandidatesTableDuplication(_AbstractRefactoringCandidatesTableP
             rows.append([
                 f"{candidate['loc']} lines occurring {len(locs)} times in {', '.join(unique_filenames)}",
                 candidate['loc'] * (len(locs) - 1),
-                "yes" if candidate['sameFile'] else "no",
-                "yes" if candidate['sameComponent'] else "no",
+                "File" if candidate['sameFile'] else "Component" if candidate['sameComponent'] else "System",
                 technology_name(candidate['technology'])
             ])
 

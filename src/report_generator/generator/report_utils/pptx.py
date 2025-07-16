@@ -281,33 +281,24 @@ def find_tables(presentation: Presentation, key: str):
         if shape.has_table and shape.name == key
     ]
 
-"""
-Fills a table with the provided values.
-- The table must have the same number of rows and columns as the value list. @@ make this more flexible
-- The table will override existing content in the cells.
-- If a cell has existing formatting, that formatting will be applied to all consecutive rows in that column.
-- If there is no cell for a column that defines the formatting, some default formatting will be used, which is likely not what you want.
-"""
 def update_table(table: Table, value: list[list[Union[str, int, float]]]):
-    # Dictionary to store reference runs for each column
+    """
+    Fills a PowerPoint table with provided values. Copies formatting from existing cells and applies it to all laters cells in that column.
+    """
     column_fonts = {}
 
-    # Second pass: update the table
     for row_idx, row in enumerate(table.rows):
         for col_idx, cell in enumerate(row.cells):
             if row_idx >= len(value) or col_idx >= len(value[row_idx]):
-                ## @@TODO add row or column if not present
-                return
+                continue
 
             paragraph: _Paragraph = cell.text_frame.paragraphs[0]
             if paragraph.runs:
                 column_fonts[col_idx] = _copy_font_properties(paragraph.runs[0])
             paragraph.clear()
 
-            new_text = str(value[row_idx][col_idx])
-
             run: _Run = paragraph.add_run()
-            run.text = new_text
+            run.text = str(value[row_idx][col_idx])
 
             if column_fonts[col_idx]:
                 _apply_font_properties(run, column_fonts[col_idx])
@@ -339,7 +330,6 @@ def _apply_font_properties(target_run: _Run, font_properties: dict):
     if font_properties['color']['rgb'] is not None:
         target_run.font.color.rgb = font_properties['color']['rgb']
     if font_properties['color']['theme_color'] is not None and font_properties['color']['theme_color'] is not MSO_THEME_COLOR.NOT_THEME_COLOR:
-        print(font_properties['color']['theme_color'])
         target_run.font.color.theme_color = font_properties['color']['theme_color']
     if font_properties['color']['brightness'] is not None and target_run.font.color.type is not None:
         target_run.font.color.brightness = font_properties['color']['brightness']
