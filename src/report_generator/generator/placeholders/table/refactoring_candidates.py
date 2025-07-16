@@ -62,3 +62,23 @@ class RefactoringCandidatesTableDuplication(_AbstractRefactoringCandidatesTableP
             ])
 
         return rows
+
+
+class RefactoringCandidatesTableUnitSize(_AbstractRefactoringCandidatesTablePlaceholder):
+    metric = MaintMetric.UNIT_SIZE
+
+    @classmethod
+    def _to_table_matrix(cls, data) -> TableMatrix:
+        rows = [['Unit name', 'LOC', 'McCabe', 'Parameters', 'Component', 'Technology']]
+
+        for candidate in data:
+            rows.append([
+                candidate["name"],
+                candidate["loc"],
+                candidate.get("mcCabe", "-"),
+                candidate.get("parameters", "-"),
+                candidate["component"],
+                technology_name(candidate['technology'])
+            ])
+
+        return rows
