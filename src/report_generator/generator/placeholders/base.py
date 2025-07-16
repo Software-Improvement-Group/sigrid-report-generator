@@ -42,6 +42,7 @@ class PlaceholderDocType(Enum):
     TABLE = 'Table'
     OTHER = 'Other'
 
+
 @dataclass
 class Placeholder(ABC):
     key: str

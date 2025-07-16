@@ -32,6 +32,7 @@ def _distance_to_average(rating):
 
 class _AbstractMoveableMarkerPlaceholder(Placeholder, ABC):
     """Used for the rating indicator on SIG metric rating slides. It adds the rating, but also moves the marker to the correct position on the slide."""
+
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable[[], str]) -> None:
         paragraphs = []
@@ -99,7 +100,8 @@ class ModernizationTechnicalDebtMarkerPlaceholder(_ManagementSummaryMarkerPlaceh
 
     @classmethod
     def value(cls, parameter=None) -> tuple[float, str]:
-        technical_debt = sum(candidate.technical_debt_in_py for candidate in modernization_data.modernization_candidates)
+        technical_debt = sum(
+            candidate.technical_debt_in_py for candidate in modernization_data.modernization_candidates)
         return technical_debt / modernization_data.total_volume, f"{round(technical_debt)} PY"
 
 

@@ -41,13 +41,6 @@ class _AbstractRefactoringCandidatesTablePlaceholder(TablePlaceholder):
                 'refactoringCandidates', [])
         )
 
-    @classmethod
-    def resolve_pptx(cls, presentation, key: str, value_cb):
-        super().resolve_pptx(presentation, key, value_cb)
-
-        # @@TODO: Add logic to decrease size of the table if too long
-
-
 
 class RefactoringCandidatesTableDuplication(_AbstractRefactoringCandidatesTablePlaceholder):
     metric = MaintMetric.DUPLICATION

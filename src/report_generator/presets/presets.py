@@ -50,10 +50,10 @@ def generate_refactoring_candidates_report(output_path: str) -> None:
 
 
 _preset_reports: dict[str, Callable[[str], None]] = {
-    'default'            : generate_itdd_light,
-    'word-debug'         : generate_debug_docx,
-    'debug'              : generate_debug_pptx,
-    'itdd-technical-debt': generate_itdd_system_technical_debt_report,
+    'default'               : generate_itdd_light,
+    'word-debug'            : generate_debug_docx,
+    'debug'                 : generate_debug_pptx,
+    'itdd-technical-debt'   : generate_itdd_system_technical_debt_report,
     'modernization'         : generate_modernization_report,
     'refactoring-candidates': generate_refactoring_candidates_report,
 }

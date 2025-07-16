@@ -17,11 +17,11 @@ import re
 from typing import Union
 
 from pptx import Presentation
-from pptx.dml.color import ColorFormat, RGBColor, _Color
+from pptx.dml.color import ColorFormat, RGBColor
 from pptx.enum.dml import MSO_THEME_COLOR
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 from pptx.oxml.xmlchemy import OxmlElement
-from pptx.table import Table, _Cell
+from pptx.table import Table
 from pptx.text.text import _Paragraph, _Run
 
 NA_STAR_COLOR = RGBColor(0xb5, 0xb5, 0xb5)
@@ -281,6 +281,7 @@ def find_tables(presentation: Presentation, key: str):
         if shape.has_table and shape.name == key
     ]
 
+
 def update_table(table: Table, value: list[list[Union[str, int, float]]]):
     """
     Fills a PowerPoint table with provided values. Copies formatting from existing cells and applies it to all laters cells in that column.
@@ -308,17 +309,18 @@ def _copy_font_properties(source_run: _Run):
     font = source_run.font
     color: ColorFormat = font.color
     return {
-        'bold': font.bold,
-        'italic': font.italic,
-        'name': font.name,
-        'size': font.size,
+        'bold'     : font.bold,
+        'italic'   : font.italic,
+        'name'     : font.name,
+        'size'     : font.size,
         'underline': font.underline,
-        'color': {
-            'rgb': color.rgb if hasattr(color, 'rgb') else None,
+        'color'    : {
+            'rgb'        : color.rgb if hasattr(color, 'rgb') else None,
             'theme_color': color.theme_color if hasattr(color, 'theme_color') else None,
-            'brightness': color.brightness if hasattr(color, 'brightness') else None,
+            'brightness' : color.brightness if hasattr(color, 'brightness') else None,
         }
     }
+
 
 def _apply_font_properties(target_run: _Run, font_properties: dict):
     target_run.font.bold = font_properties['bold']
@@ -329,7 +331,8 @@ def _apply_font_properties(target_run: _Run, font_properties: dict):
 
     if font_properties['color']['rgb'] is not None:
         target_run.font.color.rgb = font_properties['color']['rgb']
-    if font_properties['color']['theme_color'] is not None and font_properties['color']['theme_color'] is not MSO_THEME_COLOR.NOT_THEME_COLOR:
+    if font_properties['color']['theme_color'] is not None and font_properties['color'][
+        'theme_color'] is not MSO_THEME_COLOR.NOT_THEME_COLOR:
         target_run.font.color.theme_color = font_properties['color']['theme_color']
     if font_properties['color']['brightness'] is not None and target_run.font.color.type is not None:
         target_run.font.color.brightness = font_properties['color']['brightness']
