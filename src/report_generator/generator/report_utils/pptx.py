@@ -297,7 +297,7 @@ def remove_row_numbers_from_table(table: Table, row_numbers: Iterable[int]):
 
 def update_table(table: Table, value: list[list[Union[str, int, float]]]):
     """
-    Fills a PowerPoint table with provided values. Copies formatting from existing cells and applies it to all laters cells in that column.
+    Fills a PowerPoint table with provided values. Copies formatting from existing cells and applies it to all later cells in that column.
     """
     column_fonts = {}
 
