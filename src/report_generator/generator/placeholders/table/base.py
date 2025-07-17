@@ -38,4 +38,5 @@ class TablePlaceholder(Placeholder, ABC):
         if value is None:
             raise ValueError(f"Value for placeholder '{key}' is None")
 
-        [update_table(table, value) for table in tables]
+        for table in tables:
+            update_table(table, value)
