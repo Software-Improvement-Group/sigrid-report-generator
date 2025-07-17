@@ -12,20 +12,17 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import inspect
+from report_generator.generator.data_models import *
+from .base import text_placeholder
 
-from . import architecture, maintainability, metadata, modernization, osh
-from .base import parameterized_text_placeholder, text_placeholder
 
-_modules_to_scan = [architecture, maintainability, metadata, modernization, osh]
+@text_placeholder()
+def system_name():
+    """The name of the system as defined in Sigrid Metadata, capitalized."""
+    return system_metadata.display_name
 
-_placeholders_map = {}
-for module in _modules_to_scan:
-    module_placeholders = {
-        name: obj for name, obj in inspect.getmembers(module, inspect.isclass)
-        if hasattr(obj, '__placeholder__')
-    }
-    _placeholders_map.update(module_placeholders)
 
-placeholders = set(_placeholders_map.values())
-__all__ = list(_placeholders_map.keys())
+@text_placeholder()
+def customer_name():
+    """The name of the customer as defined in Sigrid, capitalized."""
+    return maintainability_data.customer_name
