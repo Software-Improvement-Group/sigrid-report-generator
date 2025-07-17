@@ -44,7 +44,7 @@ class FontProperties:
     name: Optional[str] = None
     size: Optional[int] = None
     underline: Optional[bool] = None
-    color: FontColor = FontColor()
+    color: FontColor = None
 
 
 def merge_runs_with_same_formatting(paragraph: CommonParagraph):
