@@ -129,10 +129,7 @@ def supports_to_representation(placeholder: Placeholder) -> str:
     return ', '.join(supported_types)
 
 
-def generate_documentation():
-    doc = Document()
-    doc.add(Header("Report Template Placeholders", level=1))
-
+def add_text_placeholders_section(doc: Document):
     doc.add(Header("Text Placeholders"))
     doc.add(Paragraph(
         "Use these placeholders anywhere in your PowerPoint/Word template. `report-generator` will replace them with their actual value."))
@@ -140,6 +137,8 @@ def generate_documentation():
                          placeholder.__doc_type__ == PlaceholderDocType.TEXT]
     doc.add(Table(placeholders_to_table(text_placeholders, skip_columns={"Supports"})))
 
+
+def add_chart_placeholders_section(doc: Document):
     doc.add(Header("Chart Placeholders"))
     doc.add(Paragraph(
         "These placeholders, generally placed off-screen, only serve to identify a slide on which a specific chart is placed. If you want to use this chart, be sure to copy both the chart and the placeholder from a standard template and then modify its layout BUT NOT its structure or chart type."))
@@ -147,6 +146,8 @@ def generate_documentation():
                           placeholder.__doc_type__ == PlaceholderDocType.CHART]
     doc.add(Table(placeholders_to_table(chart_placeholders)))
 
+
+def add_table_placeholders_section(doc: Document):
     doc.add(Header("Dynamic Table Placeholders"))
     doc.add(Paragraph(
         "These placeholders are used for filling tables with a dynamic number of rows and flexible styles. Currently, they are only supported in PowerPoint templates."))
@@ -158,11 +159,15 @@ def generate_documentation():
                           placeholder.__doc_type__ == PlaceholderDocType.TABLE]
     doc.add(Table(placeholders_to_table(table_placeholders, skip_columns={"Supports"})))
 
+
+def add_other_placeholders_section(doc: Document):
     doc.add(Header("Other Placeholders"))
     other_placeholders = [placeholder for placeholder in all_placeholders if
                           placeholder.__doc_type__ == PlaceholderDocType.OTHER]
     doc.add(Table(placeholders_to_table(other_placeholders)))
 
+
+def add_how_to_section(doc: Document):
     doc.add(Header("How to: Enter Placeholder Key in Selection Pane"))
     doc.add(Paragraph(
         "Some placeholders require you to enter their key in the selection pane of PowerPoint. To do this, follow these steps:"))
@@ -173,6 +178,17 @@ def generate_documentation():
         "Enter the placeholder key exactly as specified in the documentation (e.g., 'REFACTORING_CANDIDATES_TABLE_DUPLICATION').",
         "Press Enter to confirm the changes."
     ]))
+
+
+def generate_documentation():
+    doc = Document()
+    doc.add(Header("Report Template Placeholders", level=1))
+
+    add_text_placeholders_section(doc)
+    add_chart_placeholders_section(doc)
+    add_table_placeholders_section(doc)
+    add_other_placeholders_section(doc)
+    add_how_to_section(doc)
 
     return str(doc)
 
