@@ -14,8 +14,6 @@
 
 import math
 
-import yaml
-from importlib_resources import files
 
 _USE_SIG_STERREN = False
 
@@ -61,18 +59,14 @@ def maintainability_round(rating) -> str:
     return "N/A" if rating < 0.1 else str(math.floor(rating * 10) / 10)
 
 
-_tech_names = None
-
 
 def technology_name(technology: str) -> str:
-    global _tech_names
-    if not _tech_names:
-        config_path = files(__package__).joinpath("technology_names.yaml")
-        with config_path.open("r", encoding="utf-8") as file:
-            _tech_names = yaml.safe_load(file)
+    """
+    @@TODO: Implement this function to retrieve technology names from the CI repo and return the name.
+    """
 
-    return _tech_names.get(technology, technology.capitalize())
-
+    # Temporary naive solution
+    return technology.upper() if len(technology) < 3 else technology.title()
 
 def format_diff(old_rating: float, new_rating: float) -> str:
     if not old_rating or not new_rating:
