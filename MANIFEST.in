@@ -1,2 +1,1 @@
 graft src/report_generator/presets/templates
-recursive-include src *.yaml
