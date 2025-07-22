@@ -45,17 +45,22 @@ def generate_modernization_report(output_path: str) -> None:
     _generate_report("modernization.pptx", output_path)
 
 
+def generate_refactoring_candidates_report(output_path: str) -> None:
+    _generate_report("refactoring-candidates.pptx", output_path)
+
+
 def generate_system_maintainability_one_pager(output_path: str) -> None:
     _generate_report("system-maintainability-one-pager.pptx", output_path)
 
 
 _preset_reports: dict[str, Callable[[str], None]] = {
-    'default'                          : generate_itdd_light,
-    'word-debug'                       : generate_debug_docx,
-    'debug'                            : generate_debug_pptx,
-    'itdd-technical-debt'              : generate_itdd_system_technical_debt_report,
-    'modernization'                    : generate_modernization_report,
-    'system-maintainability-one-pager' : generate_system_maintainability_one_pager
+    'default'                         : generate_itdd_light,
+    'word-debug'                      : generate_debug_docx,
+    'debug'                           : generate_debug_pptx,
+    'itdd-technical-debt'             : generate_itdd_system_technical_debt_report,
+    'modernization'                   : generate_modernization_report,
+    'refactoring-candidates'          : generate_refactoring_candidates_report,
+    'system-maintainability-one-pager': generate_system_maintainability_one_pager
 }
 
 SYSTEM_LEVEL_PRESETS = {
@@ -63,6 +68,7 @@ SYSTEM_LEVEL_PRESETS = {
     'word-debug',
     'debug',
     'itdd-technical-debt',
+    'refactoring-candidates',
     'system-maintainability-one-pager'
 }
 

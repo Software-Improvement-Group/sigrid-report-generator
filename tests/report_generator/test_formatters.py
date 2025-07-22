@@ -46,4 +46,3 @@ class TestFormatter:
         assert formatters.format_diff(1.0, 1.0) == "="
         assert formatters.format_diff(1.0, 1.2) == "+ 0.2"
         assert formatters.format_diff(1.2, 1.0) == "- 0.2"
-

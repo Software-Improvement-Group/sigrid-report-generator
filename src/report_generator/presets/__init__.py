@@ -12,6 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from .presets import ids, run, SYSTEM_LEVEL_PRESETS
+from .presets import SYSTEM_LEVEL_PRESETS, ids, run
 
 __all__ = ['ids', 'run', 'SYSTEM_LEVEL_PRESETS']

@@ -14,14 +14,18 @@
 
 import inspect
 
-from . import implementations as _all_implementations
+from . import architecture, maintainability, metadata, modernization, osh
 from .base import parameterized_text_placeholder, text_placeholder
 
-_placeholders_map = {
-    name: obj for name, obj in inspect.getmembers(_all_implementations, inspect.isclass)
-    if hasattr(obj, '__placeholder__')
-}
+_modules_to_scan = [architecture, maintainability, metadata, modernization, osh]
+
+_placeholders_map = {}
+for module in _modules_to_scan:
+    module_placeholders = {
+        name: obj for name, obj in inspect.getmembers(module, inspect.isclass)
+        if hasattr(obj, '__placeholder__')
+    }
+    _placeholders_map.update(module_placeholders)
 
 placeholders = set(_placeholders_map.values())
-
 __all__ = list(_placeholders_map.keys())

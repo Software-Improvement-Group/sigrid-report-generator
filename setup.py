@@ -12,9 +12,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import setuptools
 import site
 import sys
+
+import setuptools
+
 site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
 
 setuptools.setup()

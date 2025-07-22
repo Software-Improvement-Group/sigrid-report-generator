@@ -63,7 +63,7 @@ class _AbstractTextPlaceholder(Placeholder, ABC):
                                                        value_cb)
 
     @staticmethod
-    def resolve_docx(document: Document, key: str, value_cb: Callable[[], str]):
+    def resolve_docx(document: Document, key: str, value_cb: Callable[[], str]) -> None:
         _AbstractTextPlaceholder._resolve_with_adapter(_AbstractTextPlaceholder._DOCX_ADAPTER, document, key, value_cb)
 
 

@@ -14,11 +14,16 @@
 
 import logging
 import re
+from typing import Iterable, Union
 
 from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 from pptx.oxml.xmlchemy import OxmlElement
+from pptx.table import Table, _Row
+from pptx.text.text import _Paragraph, _Run
+
+from .common import FontProperties, apply_font_properties, get_font_properties, merge_runs_with_same_formatting
 
 NA_STAR_COLOR = RGBColor(0xb5, 0xb5, 0xb5)
 ONE_STAR_COLOR = RGBColor(0xdb, 0x4a, 0x3d)
@@ -39,30 +44,26 @@ def print_slide_ids(slide):
         logging.debug('%d [%s] %s' % (shape.shape_id, shape.name, "(This is a chart)" if shape.has_chart else ""))
 
 
-def update_many_paragraphs(paragraphs, placeholder_id, replacement_text, font={}):
+def update_many_paragraphs(paragraphs, placeholder_id, replacement_text, font: FontProperties = None):
     for paragraph in paragraphs:
         update_paragraph(paragraph, placeholder_id, replacement_text, font)
 
 
-def update_paragraph(paragraph, placeholder_id, replacement_text, font={}):
-    if paragraph:
-        # Powerpoint sometimes puts arbitrarily splits up text in runs, even if they have the same formatting.
-        # This sometimes puts one of our placeholders into 2 or more runs (e.g. AAP_NOOT_MIES might be be "AAP_", "NOOT", "_MIES")
-        # Here we stitch those back together so that we can do effective repacement
-        merge_runs_with_same_formatting(paragraph)
+def update_paragraph(paragraph: _Paragraph, placeholder_id, replacement_text, font: FontProperties = None):
+    merge_runs_with_same_formatting(paragraph)
 
-        run_with_placeholder = None
-        if paragraph.runs:
-            for run in paragraph.runs:
-                if placeholder_id in run.text:
-                    run_with_placeholder = run
-                    break
+    try:
+        run_with_placeholder = next(run for run in (paragraph.runs or []) if placeholder_id in run.text)
+    except StopIteration:
+        logging.warning(
+            f"Attempt to update placeholder '{placeholder_id}', but not found in paragraph: {paragraph.text}")
+        return
 
-        if run_with_placeholder:
-            run_with_placeholder.text = run_with_placeholder.text.replace(placeholder_id, str(replacement_text))
-            logging.debug(
-                f"Replacing: {placeholder_id} with \"{replacement_text}\". New text: {run_with_placeholder.text}")
-            update_run_font(run_with_placeholder, font)
+    logging.debug(f"Replacing: {placeholder_id} with \"{replacement_text}\". New text: {run_with_placeholder.text}")
+    run_with_placeholder.text = run_with_placeholder.text.replace(placeholder_id, str(replacement_text))
+
+    if font:
+        apply_font_properties(run_with_placeholder, font)
 
 
 def find_shapes_with_text(presentation, search_text):
@@ -91,32 +92,46 @@ def find_text_in_slide(slide, search_text):
     return paragraphs
 
 
-def find_text_in_shape(shape, search_text):
-    # If the shape is a table, iterate through its cells
-    if "GraphicFrame" in type(shape).__name__:
-        if shape.has_table:
-            for cell in shape.table.iter_cells():
-                if re.match(fr".*\b{search_text}\b.*", cell.text):
-                    return cell.text_frame.paragraphs[0]
-        else:
-            return None
+def find_text_in_table(shape, search_text):
+    if shape.has_table:
+        for cell in shape.table.iter_cells():
+            if re.match(fr".*\b{search_text}\b.*", cell.text):
+                return cell.text_frame.paragraphs[0]
+    return None
 
+
+def find_text_in_text_frame(shape, search_text):
     if shape.has_text_frame:
         for paragraph in shape.text_frame.paragraphs:
             if re.match(fr".*\b{search_text}\b.*", paragraph.text):
                 return paragraph
+    return None
 
-    # If the shape is a group, iterate through its shapes
+
+def find_text_in_group(shape, search_text):
     if shape.shape_type == MSO_SHAPE_TYPE.GROUP:
         for s in shape.shapes:
             result = find_text_in_shape(s, search_text)
             if result:
                 return result
-
     return None
 
 
-def add_content_paragraph(self, text_frame, markers, content, paragraph=None):
+def find_text_in_shape(shape, search_text):
+    if "GraphicFrame" in type(shape).__name__:
+        result = find_text_in_table(shape, search_text)
+        if result:
+            return result
+        return None
+
+    result = find_text_in_text_frame(shape, search_text)
+    if result:
+        return result
+
+    return find_text_in_group(shape, search_text)
+
+
+def add_content_paragraph(text_frame, markers, content, paragraph=None):
     if paragraph is None:
         paragraph = text_frame.add_paragraph()
     for marker in markers:
@@ -137,51 +152,6 @@ def set_sig_marker(paragraph, marker):
         run.font.color.rgb = RGBColor(0xf0, 0xc8, 0x5a)
     if marker == "+":
         run.font.color.rgb = RGBColor(0x77, 0xc6, 0x73)
-
-
-def update_run_font(run, font):
-    if font:
-        for k, v in font.items():
-            if k == "bold" and v:
-                run.font.bold = True
-            if k == "name":
-                run.font.name = v
-            if k == "size":
-                run.font.size = v
-
-
-def merge_runs_with_same_formatting(paragraph):
-    last_run = None
-    for run in paragraph.runs:
-        if last_run is None:
-            last_run = run
-            continue
-        if has_same_formatting(run, last_run):
-            last_run = combine_runs(last_run, run)
-            continue
-        last_run = run
-
-
-def has_same_formatting(run, run_2):
-    font, font_2 = run.font, run_2.font
-    if font.bold != font_2.bold:
-        return False
-    if font.italic != font_2.italic:
-        return False
-    if font.name != font_2.name:
-        return False
-    if font.size != font_2.size:
-        return False
-    if font.underline != font_2.underline:
-        return False
-    return True
-
-
-def combine_runs(base, suffix):
-    base.text = base.text + suffix.text
-    r_to_remove = suffix._r
-    r_to_remove.getparent().remove(r_to_remove)
-    return base
 
 
 def add_xml_element(parent_xml, tag, **attrs):
@@ -267,3 +237,58 @@ def gather_charts(presentation: Presentation, key: str):
             if shape.has_chart:
                 charts.append(shape.chart)
     return charts
+
+
+def find_tables(presentation: Presentation, key: str):
+    return [
+        shape.table
+        for slide in presentation.slides
+        for shape in slide.shapes
+        if shape.has_table and shape.name == key
+    ]
+
+
+def remove_row_from_table(table: Table, row: _Row):
+    tbl = table._tbl
+    tr = row._tr
+    tbl.remove(tr)
+
+
+def remove_rows_from_table(table: Table, row_numbers: Iterable[int]):
+    reversed_numbers = sorted(row_numbers, reverse=True)
+    for row_number in reversed_numbers:
+        row = table.rows[row_number]
+        remove_row_from_table(table, row)
+
+
+def update_table(table: Table, value: list[list[Union[str, int, float]]]):
+    """
+    Fills a PowerPoint table with provided values. Copies formatting from existing cells and applies it to all later cells in that column.
+    """
+    column_fonts = {}
+
+    for row_idx, row in enumerate(table.rows):
+        if row_idx >= len(value):
+            remove_rows_from_table(table, range(row_idx, len(table.rows)))
+            continue
+
+        for col_idx, cell in enumerate(row.cells):
+            if col_idx >= len(value[row_idx]):
+                continue
+
+            paragraph: _Paragraph = cell.text_frame.paragraphs[0]
+            if paragraph.runs:
+                column_fonts[col_idx] = get_font_properties(paragraph.runs[0])
+
+            replace_paragraph_with_text(paragraph, value[row_idx][col_idx], column_fonts.get(col_idx))
+
+
+def replace_paragraph_with_text(paragraph: _Paragraph, text: Union[str, int, float], font: FontProperties = None):
+    paragraph.clear()
+
+    run: _Run = paragraph.add_run()
+    text_value = str(text)
+    run.text = str(text_value) if text_value is not None else ""
+
+    if font:
+        apply_font_properties(run, font)
