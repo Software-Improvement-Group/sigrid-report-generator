@@ -50,7 +50,8 @@ class RefactoringCandidatesTableDuplication(_AbstractRefactoringCandidatesTableP
         for finding in data:
             locs: list = finding['locations']
 
-            unique_filenames = {loc['file'].split('/')[-1] for loc in locs}
+            unique_filenames = list({loc['file'].split('/')[-1] for loc in locs})
+            unique_filenames.sort()
 
             rows.append([
                 f"{finding['loc']} lines occurring {len(locs)} times in {', '.join(unique_filenames)}",
