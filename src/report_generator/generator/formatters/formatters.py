@@ -58,16 +58,6 @@ def maintainability_round(rating) -> str:
 
     return "N/A" if rating < 0.1 else str(math.floor(rating * 10) / 10)
 
-
-
-def technology_name(technology: str) -> str:
-    """
-    @@TODO: Implement this function to retrieve technology names from the CI repo and return the name.
-    """
-
-    # Temporary naive solution
-    return technology.upper() if len(technology) < 3 else technology.title()
-
 def format_diff(old_rating: float, new_rating: float) -> str:
     if not old_rating or not new_rating:
         return ""

@@ -16,7 +16,7 @@ from abc import abstractmethod
 
 from report_generator.generator.constants import MaintMetric
 from report_generator.generator.data_models import refactoring_candidates_data
-from report_generator.generator.formatters.formatters import technology_name
+from report_generator.generator.formatters.technologies import get_technology_name
 from report_generator.generator.placeholders.table.base import TableMatrix, TablePlaceholder
 
 
@@ -50,13 +50,13 @@ class RefactoringCandidatesTableDuplication(_AbstractRefactoringCandidatesTableP
         for finding in data:
             locs: list = finding['locations']
 
-            unique_filenames = {loc['file'].split('/')[-1] for loc in locs}
+            unique_filenames = sorted({loc['file'].split('/')[-1] for loc in locs})
 
             rows.append([
                 f"{finding['loc']} lines occurring {len(locs)} times in {', '.join(unique_filenames)}",
                 finding['loc'] * (len(locs) - 1),
                 "File" if finding['sameFile'] else "Component" if finding['sameComponent'] else "System",
-                technology_name(finding['technology'])
+                get_technology_name(finding['technology'])
             ])
 
         return rows
@@ -77,7 +77,7 @@ class RefactoringCandidatesTableUnitSize(_AbstractRefactoringCandidatesTablePlac
                 finding.get("mcCabe", "-"),
                 finding.get("parameters", "-"),
                 finding["component"],
-                technology_name(finding['technology'])
+                get_technology_name(finding['technology'])
             ])
 
         return rows
@@ -98,7 +98,7 @@ class RefactoringCandidatesTableUnitComplexity(_AbstractRefactoringCandidatesTab
                 finding["mcCabe"],
                 finding.get("parameters", "-"),
                 finding["component"],
-                technology_name(finding['technology'])
+                get_technology_name(finding['technology'])
             ])
 
         return rows
@@ -119,7 +119,7 @@ class RefactoringCandidatesTableUnitInterfacing(_AbstractRefactoringCandidatesTa
                 finding.get("mcCabe", "-"),
                 finding["parameters"],
                 finding["component"],
-                technology_name(finding['technology'])
+                get_technology_name(finding['technology'])
             ])
 
         return rows
@@ -139,7 +139,7 @@ class RefactoringCandidatesTableModuleCoupling(_AbstractRefactoringCandidatesTab
                 finding.get("loc", "-"),
                 finding["fanIn"],
                 finding["component"],
-                technology_name(finding['technology'])
+                get_technology_name(finding['technology'])
             ])
 
         return rows
@@ -196,7 +196,7 @@ class RefactoringCandidatesComponentIndependence(_AbstractRefactoringCandidatesT
                 finding["file"].split("/")[-1],
                 finding.get("loc", "-"),
                 finding["component"],
-                technology_name(finding['technology'])
+                get_technology_name(finding['technology'])
             ])
 
         return rows
