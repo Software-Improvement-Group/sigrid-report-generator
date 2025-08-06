@@ -19,7 +19,7 @@ from pptx import Presentation
 from pptx.chart.data import CategoryChartData
 
 from report_generator.generator import report_utils
-from report_generator.generator.data_models import maintainability_data, modernization_data
+from report_generator.generator.data_models import maintainability_data, modernization_data, objectives_data
 from report_generator.generator.placeholders import Placeholder
 from report_generator.generator.placeholders.base import PlaceholderDocType
 
@@ -144,3 +144,115 @@ class TechnicalDebtSystemsChartPlaceholder(_AbstractCategoryChartPlaceholder):
     @classmethod
     def axis_label(cls):
         return "Code volume in person years"
+
+
+class ObjectivesOverallChartPlaceholder(_AbstractCategoryChartPlaceholder):
+    key = "OBJECTIVES_OVERALL_CHART"
+
+    @classmethod
+    def labels(cls):
+        return [period.start.strftime("%m/%Y") for period in objectives_data.periods]
+
+    @classmethod
+    def series(cls):
+        return objectives_data.get_portfolio_trend_series(None)
+
+    @classmethod
+    def axis_label(cls):
+        return "Percentage of portfolio"
+
+
+class ObjectivesMaintainabilityChartPlaceholder(_AbstractCategoryChartPlaceholder):
+    key = "OBJECTIVES_MAINTAINABILITY_CHART"
+
+    @classmethod
+    def labels(cls):
+        return [period.start.strftime("%m/%Y") for period in objectives_data.periods]
+
+    @classmethod
+    def series(cls):
+        return objectives_data.get_portfolio_trend_series("MAINTAINABILITY")
+
+    @classmethod
+    def axis_label(cls):
+        return "Percentage of portfolio"
+
+
+class ObjectivesArchitectureChartPlaceholder(_AbstractCategoryChartPlaceholder):
+    key = "OBJECTIVES_ARCHITECTURE_CHART"
+
+    @classmethod
+    def labels(cls):
+        return [period.start.strftime("%m/%Y") for period in objectives_data.periods]
+
+    @classmethod
+    def series(cls):
+        return objectives_data.get_portfolio_trend_series("ARCHITECTURE_QUALITY")
+
+    @classmethod
+    def axis_label(cls):
+        return "Percentage of portfolio"
+
+
+class ObjectivesSecurityChartPlaceholder(_AbstractCategoryChartPlaceholder):
+    key = "OBJECTIVES_SECURITY_CHART"
+
+    @classmethod
+    def labels(cls):
+        return [period.start.strftime("%m/%Y") for period in objectives_data.periods]
+
+    @classmethod
+    def series(cls):
+        return objectives_data.get_portfolio_trend_series("SECURITY")
+
+    @classmethod
+    def axis_label(cls):
+        return "Percentage of portfolio"
+
+
+class ObjectivesOpenSourceHealthChartPlaceholder(_AbstractCategoryChartPlaceholder):
+    key = "OBJECTIVES_OSH_CHART"
+
+    @classmethod
+    def labels(cls):
+        return [period.start.strftime("%m/%Y") for period in objectives_data.periods]
+
+    @classmethod
+    def series(cls):
+        return objectives_data.get_portfolio_trend_series("OPEN_SOURCE_HEALTH")
+
+    @classmethod
+    def axis_label(cls):
+        return "Percentage of portfolio"
+
+
+class ObjectivesStatusChartPlaceholder(_AbstractCategoryChartPlaceholder):
+    key = "OBJECTIVES_STATUS_CHART"
+
+    @classmethod
+    def labels(cls):
+        return ["Overall"]
+
+    @classmethod
+    def series(cls):
+        return objectives_data.get_portfolio_status_series()
+
+    @classmethod
+    def axis_label(cls):
+        return "Percentage of portfolio"
+
+
+class ObjectivesTeamChartPlaceholder(_AbstractCategoryChartPlaceholder):
+    key = "OBJECTIVES_TEAM_CHART"
+
+    @classmethod
+    def labels(cls):
+        return list(objectives_data.teams.keys())
+
+    @classmethod
+    def series(cls):
+        return objectives_data.get_team_status_series()
+
+    @classmethod
+    def axis_label(cls):
+        return "Percentage of portfolio"
