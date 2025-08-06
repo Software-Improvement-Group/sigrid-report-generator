@@ -74,6 +74,12 @@ def find_shapes_with_text(presentation, search_text):
         shapes += [paragraph._parent._parent for paragraph in paragraphs]
     return shapes
 
+def find_shapes_with_text_in_slide(slide, search_text):
+    shapes = []
+    paragraphs = find_text_in_slide(slide, search_text)
+    # A paragraph is typically in a TextGroup which is in a Shape, so we call getparent() twice
+    shapes += [paragraph._parent._parent for paragraph in paragraphs]
+    return shapes
 
 def find_text_in_presentation(presentation, search_text):
     paragraphs = []
