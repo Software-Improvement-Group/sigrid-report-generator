@@ -31,9 +31,14 @@ class ObjectiveStatus(Enum):
 
 
 class ObjectivesData:
-    def __init__(self):
-        self.periods = Period.for_last_year_months()
-        self.total_period = Period(self.periods[0].start, self.periods[-1].end)
+    @cached_property
+    def periods(self):
+        return Period.for_last_year_months()
+
+    @cached_property
+    def comparison_period(self):
+        period = sigrid_api.get_period()
+        return Period(period[0], period[1])
 
     @cached_property
     def objectives_evaluation_trend(self):
@@ -41,7 +46,8 @@ class ObjectivesData:
 
     @cached_property
     def objectives_evaluation_status(self):
-        return sigrid_api.get_objectives_evaluation(self.total_period)["systems"]
+        period = self.comparison_period
+        return sigrid_api.get_objectives_evaluation(period)["systems"]
 
     @cached_property
     def teams(self):

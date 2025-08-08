@@ -19,10 +19,10 @@ from .base import parameterized_text_placeholder, text_placeholder
 @text_placeholder()
 def objectives_period_start():
     """The start date of the period on which objectives are being reported."""
-    return objectives_data.periods[0].start.strftime("%B %Y")
+    return objectives_data.comparison_period.start.strftime("%B %Y")
 
 
 @text_placeholder()
 def objectives_period_end():
     """The end date of the period on which objectives are being reported."""
-    return objectives_data.periods[-1].end.strftime("%B %Y")
+    return objectives_data.comparison_period.end.strftime("%B %Y")

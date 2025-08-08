@@ -46,6 +46,7 @@ wherever you specify with the `-o` option.
 **Objectives report:** Reports on progress towards your [Sigrid objectives](https://docs.sigrid-says.com/capabilities/portfolio-objectives.html).
 Includes both the overall trend and a breakdown per team.
   - Example: `report-generator -c <your-customer> --layout objectives`
+  - Optionally, you can use the `--start` argument to configure the reporting period.
 
 <img src="docs/img/sample-objectives.png" width="300" />
 
