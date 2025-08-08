@@ -31,6 +31,9 @@ class ObjectiveStatus(Enum):
 
 
 class ObjectivesData:
+    def __init__(self):
+        self.capabilities = ["ARCHITECTURE_QUALITY", "MAINTAINABILITY", "OPEN_SOURCE_HEALTH", "SECURITY"]
+
     @cached_property
     def periods(self):
         return Period.for_last_year_months()
@@ -79,6 +82,16 @@ class ObjectivesData:
             for team, system_names in self.teams.items():
                 evaluation = self.filter_system_evaluations(self.objectives_evaluation_status, system_names)
                 row.append(self.get_portfolio_percentage(evaluation, None, status))
+            series.append(row)
+        return series
+
+    def get_capability_status_series(self):
+        evaluation = self.objectives_evaluation_status
+        mapper = lambda capability, status: self.get_portfolio_percentage(evaluation, capability, status)
+
+        series = []
+        for status in ObjectiveStatus:
+            row = [mapper(capability, status) for capability in self.capabilities]
             series.append(row)
         return series
 

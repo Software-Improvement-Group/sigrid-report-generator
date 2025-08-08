@@ -256,3 +256,19 @@ class ObjectivesTeamChartPlaceholder(_AbstractCategoryChartPlaceholder):
     @classmethod
     def axis_label(cls):
         return "Percentage of portfolio"
+
+
+class ObjectivesCapabilitiesChartPlaceholder(_AbstractCategoryChartPlaceholder):
+    key = "OBJECTIVES_CAPABILITY_CHART"
+
+    @classmethod
+    def labels(cls):
+        return [capability.title().replace("_", " ") for capability in objectives_data.capabilities]
+
+    @classmethod
+    def series(cls):
+        return objectives_data.get_capability_status_series()
+
+    @classmethod
+    def axis_label(cls):
+        return "Percentage of portfolio"
