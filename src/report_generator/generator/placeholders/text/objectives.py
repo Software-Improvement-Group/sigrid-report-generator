@@ -12,10 +12,17 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from .architecture import architecture_data
-from .objectives import objectives_data
-from .maintainability import maintainability_data
-from .modernization import modernization_data
-from .osh import osh_data
-from .refactoring_candidates import refactoring_candidates_data
-from .system_metadata import system_metadata
+from report_generator.generator.data_models import *
+from .base import parameterized_text_placeholder, text_placeholder
+
+
+@text_placeholder()
+def objectives_period_start():
+    """The start date of the period on which objectives are being reported."""
+    return objectives_data.comparison_period.start.strftime("%B %Y")
+
+
+@text_placeholder()
+def objectives_period_end():
+    """The end date of the period on which objectives are being reported."""
+    return objectives_data.comparison_period.end.strftime("%B %Y")

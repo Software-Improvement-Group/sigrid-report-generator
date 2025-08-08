@@ -19,6 +19,7 @@ from typing import Optional
 import requests
 
 from report_generator.generator.constants import MaintMetric
+from report_generator.generator.report_utils.time_series import Period
 
 DEFAULT_BASE_URL = "https://sigrid-says.com"
 BASE_ANALYSIS_RESULTS_ENDPOINT = "analysis-results/api/v1"
@@ -170,6 +171,14 @@ def get_portfolio_metadata():
 @_sigrid_api_request()
 def get_portfolio_maintainability():
     endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/maintainability/{_customer}"
+    return _make_request(endpoint)
+
+
+@_sigrid_api_request()
+def get_objectives_evaluation(period: Period):
+    start = period.start.strftime("%Y-%m-%d")
+    end = period.end.strftime("%Y-%m-%d")
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/objectives-evaluation/{_customer}?startDate={start}&endDate={end}"
     return _make_request(endpoint)
 
 

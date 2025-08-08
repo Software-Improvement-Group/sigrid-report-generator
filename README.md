@@ -39,15 +39,22 @@ wherever you specify with the `-o` option.
 ### Generating standard reports
 
 **ITDD report:** Lightweight report that provides general information on a system, suitable for an ITDD setting.
-  - Example: `report-generator -c <your-customer> -s <your-system> --layout default`.
+  - Example: `report-generator -c <your-customer> -s <your-system> --layout default`
 
 <img src="docs/img/sample-mgmt-summary.png" width="300" />
+
+**Objectives report:** Reports on progress towards your [Sigrid objectives](https://docs.sigrid-says.com/capabilities/portfolio-objectives.html).
+Includes both the overall trend and a breakdown per team.
+  - Example: `report-generator -c <your-customer> --layout objectives`
+  - Optionally, you can use the `--start` argument to configure the reporting period.
+
+<img src="docs/img/sample-objectives.png" width="300" />
 
 **Modernization report:** Analyses all systems across your portfolio, and provides information on how to prioritize
 modernization initiatives based on factors such as estimated development speed increase and estimated effort.
 The [Sigrid documentation](https://docs.sigrid-says.com/capabilities/reports/modernization-report.html) contains
 more information.
-  - Example: `report-generator -c <your-customer> --layout modernization`.
+  - Example: `report-generator -c <your-customer> --layout modernization`
 
 <img src="docs/img/sample-modernization.png" width="500" />
 

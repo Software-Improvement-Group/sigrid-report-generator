@@ -45,6 +45,10 @@ def generate_modernization_report(output_path: str) -> None:
     _generate_report("modernization.pptx", output_path)
 
 
+def generate_objectives_report(output_path: str) -> None:
+    _generate_report("objectives.pptx", output_path)
+
+
 def generate_refactoring_candidates_report(output_path: str) -> None:
     _generate_report("refactoring-candidates.pptx", output_path)
 
@@ -59,6 +63,7 @@ _preset_reports: dict[str, Callable[[str], None]] = {
     'debug'                           : generate_debug_pptx,
     'itdd-technical-debt'             : generate_itdd_system_technical_debt_report,
     'modernization'                   : generate_modernization_report,
+    'objectives'                      : generate_objectives_report,
     'refactoring-candidates'          : generate_refactoring_candidates_report,
     'system-maintainability-one-pager': generate_system_maintainability_one_pager
 }
