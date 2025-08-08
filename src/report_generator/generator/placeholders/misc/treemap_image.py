@@ -17,7 +17,7 @@ from typing import Callable
 from pptx import Presentation
 
 from report_generator.generator import report_utils
-from report_generator.generator.data_models import maintainability_portfolio_data
+from report_generator.generator.data_models import maintainability_portfolio_data, security_ratings_portfolio_data
 from report_generator.generator.placeholders.base import Placeholder
 import plotly.express as px
 import io
@@ -144,6 +144,25 @@ class TestCodePortfolioTreemapPlaceholder(_AbstractPortfolioPlaceholder):
         for t in portfolio.keys():
             test_code_ratio = portfolio[t]['end_date_data']['testCodeRatio']
             treemap['color_mapping'][t] = str(report_utils.pptx.test_code_ratio_color(float(test_code_ratio))) if test_code_ratio is not None else report_utils.pptx.NA_STAR_COLOR
+
+        treemap['values'] = _AbstractPortfolioPlaceholder.create_treemap_values(portfolio, treemap)
+        return treemap
+    
+    
+class SecurityRatingsPortfolioTreemapPlaceholder(_AbstractPortfolioPlaceholder):
+    """Creates a portfolio treemap where the color is determined by the security rating of the individual systems."""
+
+    key = "PORTFOLIO_PERIOD_SECURITY_RATINGS"
+
+    @classmethod
+    def value(cls, parameter=None):
+        portfolio = _AbstractPortfolioPlaceholder.create_portfolio()
+        treemap = _AbstractPortfolioPlaceholder.create_blank_portfolio_treemap()
+
+        treemap['color_mapping'] = dict.fromkeys(portfolio.keys(), report_utils.pptx.NA_STAR_COLOR)
+        for t in security_ratings_portfolio_data.system_names:
+            security_rating = security_ratings_portfolio_data.end_snapshot(t)['rating']
+            treemap['color_mapping'][t] = str(report_utils.pptx.determine_rating_color(float(security_rating))) if security_rating is not None else report_utils.pptx.NA_STAR_COLOR
 
         treemap['values'] = _AbstractPortfolioPlaceholder.create_treemap_values(portfolio, treemap)
         return treemap

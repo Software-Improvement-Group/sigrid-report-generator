@@ -213,11 +213,35 @@ def get_osh_findings(system, is_vulnerable=False):
     return _make_request(endpoint)
 
 
+@_sigrid_api_request()
+def get_portfolio_osh_findings(is_vulnerable=False):
+    vulnerable = "true" if is_vulnerable else "false"
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/osh-findings/{_customer}?vulnerable={vulnerable}"
+    return _make_request(endpoint)
+
+
 @_sigrid_api_request(with_system=True)
 def get_security_findings(system):
     endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/security-findings/{_customer}/{system}"
     return _make_request(endpoint)
 
+
+@_sigrid_api_request()
+def get_portfolio_security_findings():
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/security-findings/{_customer}"
+    return _make_request(endpoint)
+
+
+@_sigrid_api_request(with_system=True)
+def get_security_ratings(system):
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/model-ratings/{_customer}/{system}?feature=SECURITY"
+    return _make_request(endpoint)
+
+
+@_sigrid_api_request()
+def get_portfolio_security_ratings():
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/model-ratings/{_customer}?feature=SECURITY"
+    return _make_request(endpoint)
 
 @_sigrid_api_request(with_system=True)
 def get_architecture_findings(system):
