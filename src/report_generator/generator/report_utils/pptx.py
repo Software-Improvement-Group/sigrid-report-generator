@@ -31,7 +31,7 @@ TWO_STAR_COLOR = RGBColor(0xef, 0x98, 0x1a)
 THREE_STAR_COLOR = RGBColor(0xf8, 0xc6, 0x40)
 FOUR_STAR_COLOR = RGBColor(0x57, 0xc9, 0x68)
 FIVE_STAR_COLOR = RGBColor(0x2c, 0x96, 0x3f)
-
+SIG_BLUE = "#243549"
 
 def print_slide_ids(slide):
     # Print slide IDs and names for debugging purposes

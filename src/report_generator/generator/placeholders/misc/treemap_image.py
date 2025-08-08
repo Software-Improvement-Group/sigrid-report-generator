@@ -12,7 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from abc import ABC
 from typing import Callable
 
 from pptx import Presentation
@@ -24,46 +23,7 @@ import plotly.express as px
 import io
 from pptx.util import Inches
 
-class _AbstractTreemapPlaceholder(Placeholder, ABC):
-
-    NA_STAR_COLOR = "#b5b5b5"
-    ONE_STAR_COLOR = "#db4a3d"
-    TWO_STAR_COLOR = "#ef981a"
-    THREE_STAR_COLOR = "#f8c640"
-    FOUR_STAR_COLOR = "#57c968"
-    FIVE_STAR_COLOR = "#2c963f"
-    SIG_BLUE = "#243549"
-    
-    def translate_star_rating_to_color(rating):
-        if rating == None:
-            return _AbstractTreemapPlaceholder.NA_STAR_COLOR
-        rating = int(rating*10)/10
-        if rating < 1.5:
-            return _AbstractTreemapPlaceholder.ONE_STAR_COLOR
-        elif rating < 2.5:
-            return _AbstractTreemapPlaceholder.TWO_STAR_COLOR
-        elif rating < 3.5:
-            return _AbstractTreemapPlaceholder.THREE_STAR_COLOR
-        elif rating < 4.5:
-            return _AbstractTreemapPlaceholder.FOUR_STAR_COLOR
-        else:
-            return _AbstractTreemapPlaceholder.FIVE_STAR_COLOR
-    
-    def translate_test_code_ratio_to_color(rating):
-        if rating == None:
-            return _AbstractTreemapPlaceholder.NA_STAR_COLOR
-        rating = float(rating)
-        if rating < 0.01:
-            return _AbstractTreemapPlaceholder.ONE_STAR_COLOR
-        elif rating < 0.15:
-            return _AbstractTreemapPlaceholder.TWO_STAR_COLOR
-        elif rating < 0.50:
-            return _AbstractTreemapPlaceholder.THREE_STAR_COLOR
-        elif rating < 1.50:
-            return _AbstractTreemapPlaceholder.FOUR_STAR_COLOR
-        else:
-            return _AbstractTreemapPlaceholder.FIVE_STAR_COLOR
-
+class _AbstractTreemapPlaceholder(Placeholder):
     @classmethod
     def resolve_pptx(cls, presentation: Presentation, key: str, value_cb: Callable):
         slides = report_utils.pptx.identify_specific_slide(presentation, key)
@@ -129,7 +89,7 @@ class _AbstractPortfolioPlaceholder(_AbstractTreemapPlaceholder):
             if cur_parent == "":
                 values[i] = 0
                 if t not in color_mapping.keys():
-                    color_mapping[t] = _AbstractTreemapPlaceholder.SIG_BLUE
+                    color_mapping[t] = report_utils.pptx.SIG_BLUE
                 continue
             values[i] = portfolio[t]['end_date_data']['volumeInPersonMonths']
         
@@ -164,7 +124,8 @@ class MaintainabilityPortfolioTreemapPlaceholder(_AbstractPortfolioPlaceholder):
 
         color_mapping = {}
         for t in portfolio.keys():
-            color_mapping[t] = _AbstractTreemapPlaceholder.translate_star_rating_to_color(portfolio[t]['end_date_data']['maintainability'])
+            maintainability_rating = portfolio[t]['end_date_data']['maintainability']
+            color_mapping[t] = str(report_utils.pptx.determine_rating_color(maintainability_rating)) if maintainability_rating is not None else report_utils.pptx.NA_STAR_COLOR
 
         data = _AbstractPortfolioPlaceholder.create_treemap(shape, portfolio, treemap, color_mapping)
 
@@ -191,7 +152,8 @@ class TestCodePortfolioTreemapPlaceholder(_AbstractPortfolioPlaceholder):
 
         color_mapping = {}
         for t in portfolio.keys():
-            color_mapping[t] = _AbstractTreemapPlaceholder.translate_test_code_ratio_to_color(portfolio[t]['end_date_data']['testCodeRatio'])
+            test_code_ratio = portfolio[t]['end_date_data']['testCodeRatio']
+            color_mapping[t] = str(report_utils.pptx.test_code_ratio_color(float(test_code_ratio))) if test_code_ratio is not None else report_utils.pptx.NA_STAR_COLOR
 
         data = _AbstractPortfolioPlaceholder.create_treemap(shape, portfolio, treemap, color_mapping)
 
