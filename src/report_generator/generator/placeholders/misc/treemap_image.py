@@ -18,17 +18,13 @@ from typing import Callable
 from pptx import Presentation
 
 from report_generator.generator import report_utils
-# from report_generator.generator.constants import ArchMetric, ArchSubcharacteristic, MaintMetric, MetricEnum
-from report_generator.generator.data_models import architecture_data, maintainability_data, maintainability_portfolio_data
-from report_generator.generator.formatters import formatters
+from report_generator.generator.data_models import maintainability_portfolio_data
 from report_generator.generator.placeholders.base import Placeholder
 import plotly.express as px
 import io
 from pptx.util import Inches
-from functools import cached_property
 
 class _AbstractTreemapPlaceholder(Placeholder, ABC):
-    """Fills this rating value, but also colors the shape the placeholder is in to correspond to the correct maintainability rating color (e.g. yellow for 3 stars)."""
 
     NA_STAR_COLOR = "#b5b5b5"
     ONE_STAR_COLOR = "#db4a3d"
@@ -154,6 +150,8 @@ class _AbstractPortfolioPlaceholder(_AbstractTreemapPlaceholder):
 
 
 class MaintainabilityPortfolioTreemapPlaceholder(_AbstractPortfolioPlaceholder):
+    """Creates a portfolio treemap where the color is determined by the maintainability rating of the individual systems."""
+
     key = "INTERVAL_PORTFOLIO_MAINTAINABILITY"
 
     @classmethod
@@ -179,6 +177,8 @@ class MaintainabilityPortfolioTreemapPlaceholder(_AbstractPortfolioPlaceholder):
         return 0
     
 class TestCodePortfolioTreemapPlaceholder(_AbstractPortfolioPlaceholder):
+    """Creates a portfolio treemap where the color is determined by the test-to-production code ratio of the individual systems."""
+
     key = "INTERVAL_PORTFOLIO_TEST_CODE"
 
     @classmethod
