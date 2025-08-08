@@ -14,7 +14,7 @@
 
 import inspect
 
-from . import category_chart, color_rating, maintainability_galaxy_chart, moveable_marker, osh_slide, scatter_plot_chart
+from . import category_chart, color_rating, maintainability_galaxy_chart, moveable_marker, osh_slide, scatter_plot_chart, treemap_image
 
 _all_implementations = {
     **category_chart.__dict__,
@@ -22,7 +22,8 @@ _all_implementations = {
     **moveable_marker.__dict__,
     **osh_slide.__dict__,
     **color_rating.__dict__,
-    **scatter_plot_chart.__dict__
+    **scatter_plot_chart.__dict__,
+    **treemap_image.__dict__
 }
 
 _placeholders_map = {

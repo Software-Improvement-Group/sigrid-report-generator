@@ -56,6 +56,8 @@ def generate_refactoring_candidates_report(output_path: str) -> None:
 def generate_system_maintainability_one_pager(output_path: str) -> None:
     _generate_report("system-maintainability-one-pager.pptx", output_path)
 
+def generate_sigrid_report(output_path: str) -> None:
+    _generate_report("sigrid-template.pptx", output_path)
 
 _preset_reports: dict[str, Callable[[str], None]] = {
     'default'                         : generate_itdd_light,
@@ -65,7 +67,8 @@ _preset_reports: dict[str, Callable[[str], None]] = {
     'modernization'                   : generate_modernization_report,
     'objectives'                      : generate_objectives_report,
     'refactoring-candidates'          : generate_refactoring_candidates_report,
-    'system-maintainability-one-pager': generate_system_maintainability_one_pager
+    'system-maintainability-one-pager': generate_system_maintainability_one_pager,
+    'sigrid-report'                   : generate_sigrid_report
 }
 
 SYSTEM_LEVEL_PRESETS = {
