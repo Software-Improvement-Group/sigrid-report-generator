@@ -114,7 +114,7 @@ class _AbstractPortfolioPlaceholder(_AbstractTreemapPlaceholder):
 class MaintainabilityPortfolioTreemapPlaceholder(_AbstractPortfolioPlaceholder):
     """Creates a portfolio treemap where the color is determined by the maintainability rating of the individual systems."""
 
-    key = "INTERVAL_PORTFOLIO_MAINTAINABILITY"
+    key = "PORTFOLIO_PERIOD_MAINTAINABILITY"
 
     @classmethod
     def value(cls, parameter=None):
@@ -133,7 +133,7 @@ class MaintainabilityPortfolioTreemapPlaceholder(_AbstractPortfolioPlaceholder):
 class TestCodePortfolioTreemapPlaceholder(_AbstractPortfolioPlaceholder):
     """Creates a portfolio treemap where the color is determined by the test-to-production code ratio of the individual systems."""
 
-    key = "INTERVAL_PORTFOLIO_TEST_CODE"
+    key = "PORTFOLIO_PERIOD_TEST_CODE"
 
     @classmethod
     def value(cls, parameter=None):
