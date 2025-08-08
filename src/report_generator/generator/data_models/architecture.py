@@ -45,3 +45,38 @@ class ArchitectureData:
 
 
 architecture_data = ArchitectureData()
+
+class ArchitecturePortfolioData:
+    @cached_property
+    def data(self):
+        return sigrid_api.get_portfolio_architecture_findings()
+    
+    @cached_property
+    def metadata(self):
+        return sigrid_api.get_portfolio_metadata()
+
+    @cached_property
+    def period(self):
+        return (None, sigrid_api.get_period()[1])
+    
+    @cached_property
+    def system_names(self):
+        return [x['system'] for x in self.data]
+
+    def _find_system(self, system):
+        for s in self.data:
+            if s['system'] == system:
+                return s
+    
+    def find_system_metadata(self, system):
+        for s in self.metadata:
+            if s['systemName'] == system:
+                return s
+    
+    def start_snapshot(self, system):
+        return None
+
+    def end_snapshot(self, system):
+        return self._find_system(system)
+
+architecture_portfolio_data = ArchitecturePortfolioData()

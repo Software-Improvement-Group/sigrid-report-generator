@@ -12,7 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from datetime import datetime
 from functools import cached_property
 
 from report_generator.generator import sigrid_api

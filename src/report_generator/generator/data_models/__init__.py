@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from .architecture import architecture_data
+from .architecture import architecture_data, architecture_portfolio_data
 from .objectives import objectives_data
 from .maintainability import maintainability_data, maintainability_portfolio_data
 from .modernization import modernization_data

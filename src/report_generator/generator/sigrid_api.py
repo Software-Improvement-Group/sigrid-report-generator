@@ -243,9 +243,16 @@ def get_portfolio_security_ratings():
     endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/model-ratings/{_customer}?feature=SECURITY"
     return _make_request(endpoint)
 
+
 @_sigrid_api_request(with_system=True)
 def get_architecture_findings(system):
     endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/architecture-quality/{_customer}/{system}"
+    return _make_request(endpoint)
+
+
+@_sigrid_api_request()
+def get_portfolio_architecture_findings():
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/architecture-quality/{_customer}"
     return _make_request(endpoint)
 
 
