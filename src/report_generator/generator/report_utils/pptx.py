@@ -31,7 +31,12 @@ TWO_STAR_COLOR = RGBColor(0xef, 0x98, 0x1a)
 THREE_STAR_COLOR = RGBColor(0xf8, 0xc6, 0x40)
 FOUR_STAR_COLOR = RGBColor(0x57, 0xc9, 0x68)
 FIVE_STAR_COLOR = RGBColor(0x2c, 0x96, 0x3f)
-SIG_BLUE = "#243549"
+SIG_BLUE = RGBColor(0x24, 0x35, 0x49)
+MAINTAINABILITY_CHANGE_RANGE = [RGBColor(0xCB, 0x55, 0x45),
+                                # RGBColor(0xDA, 0x94, 0x8B),
+                                # RGBColor(0xF8, 0xF8, 0xF8),
+                                # RGBColor(0xA6, 0xDA, 0xA7),
+                                RGBColor(0x57, 0xC9, 0x69)]
 
 def print_slide_ids(slide):
     # Print slide IDs and names for debugging purposes
@@ -298,3 +303,27 @@ def replace_paragraph_with_text(paragraph: _Paragraph, text: Union[str, int, flo
 
     if font:
         apply_font_properties(run, font)
+
+def interpolate_color(colors, t):
+    # Clamp t between 0 and 1
+    t = max(0, min(1, t))
+    
+    # Convert hex colors to RGB tuples
+    # rgb_colors = [tuple(int(c[i:i+2], 16) for i in (1, 3, 5)) for c in colors]
+    
+    # Map t to position in color list
+    position = t * (len(colors) - 1)
+    index = int(position)           # lower bound index
+    frac = position - index         # fraction between colors
+    
+    # If exactly at the last color
+    if index >= len(colors) - 1:
+        return colors[-1]
+    
+    # Interpolate between the two colors
+    r = int(colors[index][0] + (colors[index+1][0] - colors[index][0]) * frac)
+    g = int(colors[index][1] + (colors[index+1][1] - colors[index][1]) * frac)
+    b = int(colors[index][2] + (colors[index+1][2] - colors[index][2]) * frac)
+    
+    # Convert back to hex
+    return RGBColor(r, g, b)
