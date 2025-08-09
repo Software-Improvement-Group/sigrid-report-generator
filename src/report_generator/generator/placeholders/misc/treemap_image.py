@@ -157,18 +157,32 @@ class MaintainabilityChangePortfolioTreemapPlaceholder(_AbstractPortfolioPlaceho
         portfolio = _AbstractPortfolioPlaceholder.create_portfolio()
         treemap = _AbstractPortfolioPlaceholder.create_blank_portfolio_treemap()
 
-        differences = [portfolio[t]['end_date_data']['maintainability']-portfolio[t]['start_date_data']['maintainability'] for t in portfolio.keys()]
-        diff_min = min(differences)
-        diff_max = max(differences)
-        print(f"{differences}")
+        # differences = [portfolio[t]['end_date_data']['maintainability']-portfolio[t]['start_date_data']['maintainability'] for t in portfolio.keys()]
+        differences = {}
+        for t in portfolio.keys():
+            differences[t] = portfolio[t]['end_date_data']['maintainability']-portfolio[t]['start_date_data']['maintainability']
+        diff_min = min(differences.values())
+        diff_max = max(differences.values())
+        print(f"{differences.values()}")
         print(f"{diff_min}")
         print(f"{diff_max}")
 
         treemap['color_mapping'] = {}
-        for i, t in enumerate(portfolio.keys()):
-            t = _AbstractPortfolioPlaceholder.normalize_clamped(diff_min, diff_max, differences[i])
-            print(f"t: {t}")
-            treemap['color_mapping'][t] = _AbstractTreemapPlaceholder.interpolate_color(report_utils.pptx.MAINTAINABILITY_CHANGE_RANGE, t)
+        for i, entry in enumerate(portfolio.keys()):
+            diff = differences[entry]
+            if diff > 0:
+                t = _AbstractPortfolioPlaceholder.normalize_clamped(0, diff_max, diff)
+                # t = _AbstractPortfolioPlaceholder.normalize_clamped(0, 5, diff)
+                treemap['color_mapping'][entry] = _AbstractTreemapPlaceholder.interpolate_color(report_utils.pptx.MAINTAINABILITY_POS_CHANGE_RANGE, t)
+            elif diff < 0:
+                t = _AbstractPortfolioPlaceholder.normalize_clamped(diff_min, 0, diff)
+                # t = _AbstractPortfolioPlaceholder.normalize_clamped(-5, 0, diff)
+                treemap['color_mapping'][entry] = _AbstractTreemapPlaceholder.interpolate_color(report_utils.pptx.MAINTAINABILITY_NEG_CHANGE_RANGE, t)
+            else:
+                treemap['color_mapping'][entry] = _AbstractPortfolioPlaceholder.NA_STAR_COLOR
+            # t = _AbstractPortfolioPlaceholder.normalize_clamped(diff_min, diff_max, differences[entry])
+            # treemap['color_mapping'][entry] = _AbstractTreemapPlaceholder.interpolate_color(report_utils.pptx.MAINTAINABILITY_CHANGE_RANGE, t)
+            print(f"[{i}] t: {t} c: {treemap['color_mapping'][entry]} d:{differences[entry]}")
 
         treemap['values'] = _AbstractPortfolioPlaceholder.create_treemap_values(portfolio, treemap)
         treemap['color'] = treemap['tracking']

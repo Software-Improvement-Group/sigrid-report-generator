@@ -34,9 +34,12 @@ FIVE_STAR_COLOR = RGBColor(0x2c, 0x96, 0x3f)
 SIG_BLUE = RGBColor(0x24, 0x35, 0x49)
 MAINTAINABILITY_CHANGE_RANGE = [RGBColor(0xCB, 0x55, 0x45),
                                 # RGBColor(0xDA, 0x94, 0x8B),
-                                # RGBColor(0xF8, 0xF8, 0xF8),
+                                RGBColor(0xF8, 0xF8, 0xF8),
                                 # RGBColor(0xA6, 0xDA, 0xA7),
                                 RGBColor(0x57, 0xC9, 0x69)]
+MAINTAINABILITY_CHANGE_NEUTRAL = RGBColor(0xF8, 0xF8, 0xF8)
+MAINTAINABILITY_POS_CHANGE_RANGE = [RGBColor(0xD9, 0xEE, 0xDD), FIVE_STAR_COLOR]
+MAINTAINABILITY_NEG_CHANGE_RANGE = [RGBColor(0xF3, 0xDD, 0xD7), ONE_STAR_COLOR]
 
 def print_slide_ids(slide):
     # Print slide IDs and names for debugging purposes
@@ -305,9 +308,6 @@ def replace_paragraph_with_text(paragraph: _Paragraph, text: Union[str, int, flo
         apply_font_properties(run, font)
 
 def interpolate_color(colors, t):
-    # Clamp t between 0 and 1
-    t = max(0, min(1, t))
-    
     # Convert hex colors to RGB tuples
     # rgb_colors = [tuple(int(c[i:i+2], 16) for i in (1, 3, 5)) for c in colors]
     
