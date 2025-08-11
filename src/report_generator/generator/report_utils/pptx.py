@@ -312,13 +312,15 @@ def interpolate_color(colors, t):
     # rgb_colors = [tuple(int(c[i:i+2], 16) for i in (1, 3, 5)) for c in colors]
     
     # Map t to position in color list
-    position = t * (len(colors) - 1)
-    index = int(position)           # lower bound index
-    frac = position - index         # fraction between colors
+    # position = t * (len(colors) - 1)
+    # index = int(position)           # lower bound index
+    # frac = position - index         # fraction between colors
     
     # If exactly at the last color
-    if index >= len(colors) - 1:
-        return colors[-1]
+    # if index >= len(colors) - 1:
+    #     return colors[-1]
+    index = 0
+    frac = t
     
     # Interpolate between the two colors
     r = int(colors[index][0] + (colors[index+1][0] - colors[index][0]) * frac)
