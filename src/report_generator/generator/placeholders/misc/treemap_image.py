@@ -21,6 +21,7 @@ from report_generator.generator.data_models import maintainability_portfolio_dat
 from report_generator.generator.placeholders.base import Placeholder
 import plotly.express as px
 import io
+import logging
 from pptx.util import Inches
 
 class _AbstractTreemapPlaceholder(Placeholder):
@@ -123,6 +124,8 @@ class _AbstractPortfolioPlaceholder(_AbstractTreemapPlaceholder):
                 if t not in treemap_data['color_mapping'].keys():
                     treemap_data['color_mapping'][t] = _AbstractPortfolioPlaceholder.SIG_BLUE
                 continue
+            if portfolio[t]['end_date_data'] is None:
+                values[i] = 0
             values[i] = portfolio[t]['end_date_data']['volumeInPersonMonths']
         return values
 
@@ -216,6 +219,9 @@ class SecurityRatingsPortfolioTreemapPlaceholder(_AbstractPortfolioPlaceholder):
         treemap['color_mapping'] = dict.fromkeys(portfolio.keys(), _AbstractTreemapPlaceholder.NA_STAR_COLOR)
         for t in security_ratings_portfolio_data.system_names:
             security_rating = security_ratings_portfolio_data.end_snapshot(t)['rating']
+            if security_rating is None:
+                logging.debug(f"Cannot find end snapshot for {t}")
+                continue
             treemap['color_mapping'][t] = _AbstractTreemapPlaceholder.determine_rating_color(float(security_rating)) if security_rating is not None else _AbstractTreemapPlaceholder.NA_STAR_COLOR
 
         treemap['values'] = _AbstractPortfolioPlaceholder.create_treemap_values(portfolio, treemap)
@@ -236,6 +242,9 @@ class ArchitecturePortfolioTreemapPlaceholder(_AbstractPortfolioPlaceholder):
         treemap['color_mapping'] = dict.fromkeys(portfolio.keys(), _AbstractTreemapPlaceholder.NA_STAR_COLOR)
         for t in architecture_portfolio_data.system_names:
             architecture_rating = architecture_portfolio_data.end_snapshot(t)['ratings']['architecture']
+            if architecture_rating is None:
+                logging.debug(f"Cannot find end snapshot for {t}")
+                continue
             treemap['color_mapping'][t] = _AbstractTreemapPlaceholder.determine_rating_color(float(architecture_rating)) if architecture_rating is not None else _AbstractTreemapPlaceholder.NA_STAR_COLOR
 
         treemap['values'] = _AbstractPortfolioPlaceholder.create_treemap_values(portfolio, treemap)

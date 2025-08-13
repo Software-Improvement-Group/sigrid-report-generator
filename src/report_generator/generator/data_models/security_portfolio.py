@@ -37,6 +37,7 @@ class SecurityRatingsPortfolioData:
         for s in data:
             if s['systemName'] == system:
                 return s
+        return None
     
     def _find_system(self, system):
         return SecurityRatingsPortfolioData._find_entry_in_data(self.data, system)

@@ -38,11 +38,13 @@ class MaintainabilityPortfolioData:
         for s in self.data['systems']:
             if s['system'] == system:
                 return s
+        return None
     
     def find_system_metadata(self, system):
         for s in self.metadata:
             if s['systemName'] == system:
                 return s
+        return None
 
     def _get_head_entry(system):
         return {

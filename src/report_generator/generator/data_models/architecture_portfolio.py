@@ -38,11 +38,13 @@ class ArchitecturePortfolioData:
         for s in self.data:
             if s['system'] == system:
                 return s
+        return None
     
     def find_system_metadata(self, system):
         for s in self.metadata:
             if s['systemName'] == system:
                 return s
+        return None
     
     def start_snapshot(self, system):
         return None
