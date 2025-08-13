@@ -12,11 +12,13 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from .architecture import architecture_data, architecture_portfolio_data
+from .architecture import architecture_data
+from .architecture_portfolio import architecture_portfolio_data
 from .objectives import objectives_data
-from .maintainability import maintainability_data, maintainability_portfolio_data
+from .maintainability import maintainability_data
+from .maintainability_portfolio import maintainability_portfolio_data
 from .modernization import modernization_data
 from .osh import osh_data
 from .refactoring_candidates import refactoring_candidates_data
 from .system_metadata import system_metadata
-from .security import security_ratings_portfolio_data
+from .security_portfolio import security_ratings_portfolio_data

@@ -17,31 +17,37 @@ from functools import cached_property
 
 from report_generator.generator import sigrid_api
 
-
-class ArchitectureData:
+class ArchitecturePortfolioData:
     @cached_property
     def data(self):
-        return sigrid_api.get_architecture_findings()
+        return sigrid_api.get_portfolio_architecture_findings()
+    
+    @cached_property
+    def metadata(self):
+        return sigrid_api.get_portfolio_metadata()
 
     @cached_property
-    def date(self):
-        return datetime.strptime(self.data["snapshotDate"], '%Y-%m-%d')
-
+    def period(self):
+        return (None, sigrid_api.get_period()[1])
+    
     @cached_property
-    def ratings(self):
-        return self.data['ratings']
+    def system_names(self):
+        return [x['system'] for x in self.data]
 
-    @cached_property
-    def system_properties(self):
-        return self.ratings['systemProperties']
+    def _find_system(self, system):
+        for s in self.data:
+            if s['system'] == system:
+                return s
+    
+    def find_system_metadata(self, system):
+        for s in self.metadata:
+            if s['systemName'] == system:
+                return s
+    
+    def start_snapshot(self, system):
+        return None
 
-    @cached_property
-    def subcharacteristics(self):
-        return self.ratings['subcharacteristics']
+    def end_snapshot(self, system):
+        return self._find_system(system)
 
-    def get_score_for_prop_or_subchar(self, metric_or_subchar):
-        return self.system_properties[metric_or_subchar] if metric_or_subchar in self.system_properties else \
-            self.subcharacteristics[metric_or_subchar]
-
-
-architecture_data = ArchitectureData()
+architecture_portfolio_data = ArchitecturePortfolioData()
