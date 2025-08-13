@@ -46,6 +46,7 @@ class MaintainabilityPortfolioData:
                 return s
         return None
 
+    @staticmethod
     def _get_head_entry(system):
         return {
                 "maintainability": system["maintainability"],
@@ -64,6 +65,7 @@ class MaintainabilityPortfolioData:
                 "maintainabilityDate": system["maintainabilityDate"]
             }
     
+    @staticmethod
     def _get_snapshot_closest_to_date(date, snapshots):
         input_dt = datetime.strptime(date, "%Y-%m-%d")
         return min(
@@ -71,6 +73,7 @@ class MaintainabilityPortfolioData:
             key=lambda x: abs(datetime.strptime(x["maintainabilityDate"], "%Y-%m-%d") - input_dt)
         )
     
+    @staticmethod
     def _return_closest_date(prime_date, date1, date2):
         input_dt = datetime.strptime(prime_date, "%Y-%m-%d")
         abs_date_1 = abs(datetime.strptime(date1["maintainabilityDate"], "%Y-%m-%d") - input_dt)
