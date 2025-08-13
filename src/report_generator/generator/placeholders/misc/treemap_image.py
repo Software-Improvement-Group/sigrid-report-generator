@@ -38,22 +38,27 @@ class _AbstractTreemapPlaceholder(Placeholder):
             shapes = report_utils.pptx.find_shapes_with_text_in_slide(slide, key)
             for shape in shapes:
                 data = value_cb()
-                _AbstractPortfolioTeemapPlaceholder.create_and_add_treemap_image_to_slide(shape, slide, data)
+                cls.create_and_add_treemap_image_to_slide(shape, slide, data)
     
+    @staticmethod
     def determine_rating_color(rating):
         return f"#{report_utils.pptx.determine_rating_color(rating)}"
-    
+
+    @staticmethod    
     def test_code_ratio_color(rating):
         return f"#{report_utils.pptx.test_code_ratio_color(rating)}"
 
+    @staticmethod
     def interpolate_color(colors, t):
         return f"#{report_utils.pptx.interpolate_color(colors, t)}"
     
+    @staticmethod
     def normalize_clamped(min_val, max_val, val):
         if min_val == max_val:
             return 0
         return max(0, min(1, (val - min_val) / (max_val - min_val)))
 
+    @staticmethod
     def create_and_add_treemap_image_to_slide(shape_placeholder, slide, data):
         pos_left = shape_placeholder.left.inches
         pos_top = shape_placeholder.top.inches
@@ -75,6 +80,7 @@ class _AbstractTreemapPlaceholder(Placeholder):
 
 
 class _AbstractPortfolioTeemapPlaceholder(_AbstractTreemapPlaceholder):
+    @staticmethod
     def create_portfolio():
         res = {}
         system_names = maintainability_portfolio_data.system_names
@@ -90,6 +96,7 @@ class _AbstractPortfolioTeemapPlaceholder(_AbstractTreemapPlaceholder):
             }
         return res
     
+    @staticmethod
     def create_blank_portfolio_treemap():
         names = []
         parents = []
@@ -115,6 +122,7 @@ class _AbstractPortfolioTeemapPlaceholder(_AbstractTreemapPlaceholder):
             'tracking' : tracking
         }
     
+    @staticmethod
     def create_treemap_values(portfolio, treemap_data):
         values = [None] * len(treemap_data['tracking'])
         for i, t in enumerate(treemap_data['tracking']):
