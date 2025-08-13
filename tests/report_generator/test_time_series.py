@@ -19,9 +19,9 @@ class TestTimeSeries:
     def test_period_contains(self):
         period = Period("2025-05-01", "2025-06-01")
 
-        assert period.contains("2025-05-01") == True
-        assert period.contains("2025-05-15") == True
-        assert period.contains("2025-05-30") == True
+        assert period.contains("2025-05-01")
+        assert period.contains("2025-05-15")
+        assert period.contains("2025-05-30")
 
         assert period.contains("2025-04-30") == False
         assert period.contains("2025-06-01") == False
