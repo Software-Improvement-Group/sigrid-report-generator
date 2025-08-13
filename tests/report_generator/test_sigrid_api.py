@@ -32,5 +32,5 @@ class TestSigridAPI:
     def test_valid_sigrid_token_is_valid(self):
         try:
             sigrid_api._test_sigrid_token("eyKskfiurkfshiuwhfibvcgi43hf2o3h893hg34")
-        except Exception as ex:
+        except ValueError:
             pytest.fail(f"This token was expected to be valid")

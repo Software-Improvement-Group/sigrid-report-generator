@@ -16,7 +16,7 @@ import logging
 from abc import ABC
 from typing import Callable, Type
 
-from docx import Document
+from docx.document import Document
 from pptx.presentation import Presentation
 
 from report_generator.generator import report_utils

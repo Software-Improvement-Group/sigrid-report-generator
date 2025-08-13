@@ -14,7 +14,6 @@
 
 import math
 
-
 _USE_SIG_STERREN = False
 
 
@@ -57,6 +56,7 @@ def maintainability_round(rating) -> str:
         rating = float(rating)
 
     return "N/A" if rating < 0.1 else str(math.floor(rating * 10) / 10)
+
 
 def format_diff(old_rating: float, new_rating: float) -> str:
     if not old_rating or not new_rating:

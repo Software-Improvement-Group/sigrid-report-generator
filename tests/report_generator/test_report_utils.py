@@ -13,6 +13,7 @@
 #  limitations under the License.
 
 from pptx.oxml.text import CT_TextParagraph
+# noinspection PyProtectedMember
 from pptx.text.text import _Paragraph
 
 from report_generator.generator import report_utils

@@ -14,8 +14,8 @@
 
 from typing import Callable, Tuple
 
-from pptx import Presentation
 from pptx.chart.data import ChartData
+from pptx.presentation import Presentation
 from pptx.slide import Slide
 
 from report_generator.generator import report_utils

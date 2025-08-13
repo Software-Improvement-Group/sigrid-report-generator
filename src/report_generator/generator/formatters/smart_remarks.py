@@ -102,6 +102,7 @@ def maint_observation(maintainability_data):
     worst_metric = sorted_metric_data[0]
     if worst_metric[1] < 2.5:
         return worst_metric_observation(worst_metric)
+    return None
 
 
 def maint_observations(maintainability_data):
@@ -177,10 +178,6 @@ def technology_summary(target_ratio, phaseout_ratio, phaseout_technologies):
             return "The system is almost completely built using older generation technology. Consider moving development of new components to a newer generation."
 
 
-def arch_worst_best_metric(aq_rating, aq_system_properties):
-    pass
-
-
 def arch_worst_metric_remark(arch_sp_ratings):
     sorted_metric_data = sort_metrics(arch_sp_ratings, list(ArchMetric))
 
@@ -196,6 +193,7 @@ def arch_best_metric_remark(arch_sp_ratings):
     best_metric = sorted_metric_data[-1]
     if best_metric[1] > 3.5:
         return arch_best_metric_observation(best_metric)
+    return None
 
 
 def sort_metrics(ratings, metrics: List[MetricEnum]):

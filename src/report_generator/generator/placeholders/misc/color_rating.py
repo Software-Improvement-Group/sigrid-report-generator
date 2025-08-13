@@ -15,7 +15,7 @@
 from abc import ABC
 from typing import Callable
 
-from pptx import Presentation
+from pptx.presentation import Presentation
 
 from report_generator.generator import report_utils
 from report_generator.generator.constants import ArchMetric, ArchSubcharacteristic, MaintMetric, MetricEnum

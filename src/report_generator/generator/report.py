@@ -31,8 +31,6 @@ class ReportType(Enum):
             return "docx"
         elif self == ReportType.PRESENTATION:
             return "pptx"
-        else:
-            return None
 
 
 @dataclass
