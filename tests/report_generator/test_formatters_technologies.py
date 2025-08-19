@@ -18,6 +18,7 @@ import pytest
 import yaml
 from requests.exceptions import RequestException, Timeout
 
+# noinspection PyProtectedMember
 from report_generator.generator.formatters.technologies import (
     _fetch_technologies_yaml, _get_technology_cache, _load_technologies,
     clear_technology_cache, get_cache_info, get_fallback_technology_name,

@@ -87,8 +87,10 @@ def get_placeholder_doc(placeholder_class: Placeholder) -> Optional[str]:
     if doc and not doc.startswith('Placeholder('):
         return doc
 
+    # noinspection PyUnresolvedReferences
     for parent in placeholder_class.__bases__:
         if issubclass(parent, Placeholder):
+            # noinspection PyTypeChecker
             return get_placeholder_doc(parent)
 
     return None
@@ -98,6 +100,7 @@ def get_placeholder_row_data(placeholder: Placeholder, skip_columns: Set[str] = 
     if skip_columns is None:
         skip_columns = []
 
+    # noinspection PyUnresolvedReferences
     all_data = {
         'Key'        : '`' + placeholder.key + '`',
         'Supports'   : supports_to_representation(placeholder),

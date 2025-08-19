@@ -14,7 +14,7 @@
 
 import inspect
 
-from . import architecture, maintainability, objectives, metadata, modernization, osh
+from . import architecture, maintainability, metadata, modernization, objectives, osh
 from .base import parameterized_text_placeholder, text_placeholder
 
 _modules_to_scan = [architecture, maintainability, metadata, modernization, objectives, osh]

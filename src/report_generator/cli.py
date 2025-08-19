@@ -29,7 +29,7 @@ DEFAULT_END_DATE = date.today().strftime('%Y-%m-%d')
 MATOMO_URL = os.environ.get('MATOMO_URL', 'https://sigrid-says.com/usage')
 
 
-def _validate_system_requirement(ctx, param, value):
+def _validate_system_requirement(ctx, _, value):
     layout = ctx.params.get('layout')
 
     system_required = layout in presets.SYSTEM_LEVEL_PRESETS
@@ -79,8 +79,7 @@ def _validate_layout_or_template(ctx, param, value):
 @click.option('-o', '--out-file', default='out', help='write output to this file (default out.pptx/docx)')
 @click.option('-a', '--api-url', default=None,
               help=f'Sigrid API base URL, will default to {sigrid_api.DEFAULT_BASE_URL} if not provided')
-@click.pass_context
-def run(ctx, debug, customer, system, token, layout, template, start, out_file, api_url):
+def run(debug, customer, system, token, layout, template, start, out_file, api_url):
     _configure_logging(debug)
     _configure_api(customer, system, token, (start, DEFAULT_END_DATE), api_url)
     _record_usage_statistics(layout, customer)
@@ -111,7 +110,7 @@ def _record_usage_statistics(layout, customer):
         report_type = layout.replace("-", "") if layout else ""
         requests.get(
             f"{MATOMO_URL}/matomo.php?idsite=5&rec=1&ca=1&e_c=reportgenerator&e_a={report_type}&e_n={customer}")
-    except requests.exceptions.ConnectionError as e:
+    except requests.exceptions.ConnectionError:
         logging.warning(f"Failed to connect to {MATOMO_URL} for registering usage statistics (not harmful).")
 
 

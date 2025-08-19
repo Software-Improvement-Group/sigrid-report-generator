@@ -16,11 +16,13 @@ import logging
 import re
 from typing import Iterable, Union
 
-from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 from pptx.oxml.xmlchemy import OxmlElement
+from pptx.presentation import Presentation
+# noinspection PyProtectedMember
 from pptx.table import Table, _Row
+# noinspection PyProtectedMember
 from pptx.text.text import _Paragraph, _Run
 
 from .common import FontProperties, apply_font_properties, get_font_properties, merge_runs_with_same_formatting
@@ -71,6 +73,7 @@ def find_shapes_with_text(presentation, search_text):
     for slide in presentation.slides:
         paragraphs = find_text_in_slide(slide, search_text)
         # A paragraph is typically in a TextGroup which is in a Shape, so we call getparent() twice
+        # noinspection PyProtectedMember
         shapes += [paragraph._parent._parent for paragraph in paragraphs]
     return shapes
 
@@ -161,37 +164,8 @@ def add_xml_element(parent_xml, tag, **attrs):
     return element
 
 
-# inspired by https://groups.google.com/g/python-pptx/c/UTkdemIZICw
-# TODO: debug the powerpoint and make this work
-def set_cell_border(cell, border_color, border_width, border_style, *border_types):
-    logging.debug(f'setting borders for {border_types}, {border_color=}, {border_style=}, {border_width=}')
-    cell_xml = cell._tc
-    cell_xml_parent = cell_xml.get_or_add_tcPr()
-
-    def fill_line(line, border_color, border_style):
-        line_fill = add_xml_element(line, 'a:solidFill')
-        line_rgb = add_xml_element(line_fill, 'a:srgbClr', val=border_color)
-        line_style = add_xml_element(line, 'a:prstDash', val=border_style)
-        line_round_ = add_xml_element(line, 'a:round')
-        line_headEnd = add_xml_element(line, 'a:headEnd', type='none', w='med', len='med')
-        line_tailEnd = add_xml_element(line, 'a:tailEnd', type='none', w='med', len='med')
-
-    border_type_tag = {
-        'left'  : 'a:lnL',
-        'right' : 'a:lnR',
-        'top'   : 'a:lnT',
-        'bottom': 'a:lnB'
-    }
-
-    for border_type in border_types:
-        tag = border_type_tag[border_type]
-        line = add_xml_element(cell_xml_parent, tag, w=str(border_width), cap='flat', cmpd='sng',
-                               algn='ctr')
-        fill_line(line, border_color, border_style)
-
-
-def set_shape_color(shape, rgbColor):
-    shape.fill.fore_color.rgb = rgbColor
+def set_shape_color(shape, rgb_color):
+    shape.fill.fore_color.rgb = rgb_color
 
 
 def identify_specific_slide(presentation, marker):
@@ -249,7 +223,9 @@ def find_tables(presentation: Presentation, key: str):
 
 
 def remove_row_from_table(table: Table, row: _Row):
+    # noinspection PyProtectedMember
     tbl = table._tbl
+    # noinspection PyProtectedMember
     tr = row._tr
     tbl.remove(tr)
 

@@ -18,7 +18,8 @@ from report_generator.generator.constants import MaintMetric
 
 
 class RefactoringCandidatesData:
-    def _get_api_data(self, metric: MaintMetric):
+    @staticmethod
+    def _get_api_data(metric: MaintMetric):
         return sigrid_api.get_maintainability_refactoring_candidates(system_property=metric, count=20)
 
     @lru_cache()

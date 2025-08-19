@@ -12,9 +12,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from pptx import Presentation
 from pptx.chart.data import BubbleChartData
 from pptx.dml.color import RGBColor
+from pptx.presentation import Presentation
 
 from report_generator.generator import report_utils
 from report_generator.generator.data_models import modernization_data
@@ -33,7 +33,7 @@ class ModernizationScatterPlotChartPlaceholder(Placeholder):
         pass
 
     @staticmethod
-    def resolve_pptx(presentation: Presentation, key: str, value_cb) -> None:
+    def resolve_pptx(presentation: Presentation, key: str, _) -> None:
         charts = report_utils.pptx.gather_charts(presentation, key)
 
         if len(charts) == 0:

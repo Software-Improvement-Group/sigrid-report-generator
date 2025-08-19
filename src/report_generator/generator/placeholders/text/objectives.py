@@ -13,7 +13,7 @@
 #  limitations under the License.
 
 from report_generator.generator.data_models import *
-from .base import parameterized_text_placeholder, text_placeholder
+from .base import text_placeholder
 
 
 @text_placeholder()
