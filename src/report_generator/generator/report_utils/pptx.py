@@ -32,14 +32,10 @@ THREE_STAR_COLOR = RGBColor(0xf8, 0xc6, 0x40)
 FOUR_STAR_COLOR = RGBColor(0x57, 0xc9, 0x68)
 FIVE_STAR_COLOR = RGBColor(0x2c, 0x96, 0x3f)
 SIG_BLUE = RGBColor(0x24, 0x35, 0x49)
-MAINTAINABILITY_CHANGE_RANGE = [RGBColor(0xCB, 0x55, 0x45),
-                                # RGBColor(0xDA, 0x94, 0x8B),
-                                RGBColor(0xF8, 0xF8, 0xF8),
-                                # RGBColor(0xA6, 0xDA, 0xA7),
-                                RGBColor(0x57, 0xC9, 0x69)]
-MAINTAINABILITY_CHANGE_NEUTRAL = RGBColor(0xF8, 0xF8, 0xF8)
 MAINTAINABILITY_POS_CHANGE_RANGE = [RGBColor(0xD9, 0xEE, 0xDD), FIVE_STAR_COLOR]
 MAINTAINABILITY_NEG_CHANGE_RANGE = [RGBColor(0xF3, 0xDD, 0xD7), ONE_STAR_COLOR]
+VOLUME_POS_CHANGE_RANGE = [RGBColor(0xDB, 0xE8, 0xEB), RGBColor(0x71, 0xB6, 0xC9)]
+VOLUME_NEG_CHANGE_RANGE = [RGBColor(0xED, 0xE6, 0xDB), RGBColor(0xE8, 0x99, 0x36)]
 
 def print_slide_ids(slide):
     # Print slide IDs and names for debugging purposes

@@ -194,6 +194,42 @@ class MaintainabilityChangePortfolioTreemapPlaceholder(_AbstractPortfolioTeemapP
         return treemap
     
 
+class VolumeChangePortfolioTreemapPlaceholder(_AbstractPortfolioTeemapPlaceholder):
+    """Creates a portfolio treemap where the color is determined by the change in volume change (effort) of the individual systems during the specified period."""
+
+    key = "PORTFOLIO_PERIOD_VOLUME_CHANGE"
+
+    @classmethod
+    def value(cls, parameter=None):
+        portfolio = _AbstractPortfolioTeemapPlaceholder.create_portfolio()
+        treemap = _AbstractPortfolioTeemapPlaceholder.create_blank_portfolio_treemap()
+
+        differences = {}
+        for entry in portfolio.keys():
+            if portfolio[entry]['start_date_data']['maintainabilityDate'] == portfolio[entry]['end_date_data']['maintainabilityDate']:
+                differences[entry] = None
+            else:
+                differences[entry] = portfolio[entry]['end_date_data']['volumeInPersonMonths']-portfolio[entry]['start_date_data']['volumeInPersonMonths']
+        diff_min = min([x for x in differences.values() if x is not None])
+        diff_max = max([x for x in differences.values() if x is not None])
+
+        treemap['color_mapping'] = {}
+        for i, entry in enumerate(portfolio.keys()):
+            diff = differences[entry]
+            if diff is None:
+                treemap['color_mapping'][entry] = _AbstractPortfolioTeemapPlaceholder.NA_STAR_COLOR
+            elif diff < 0:
+                t = _AbstractPortfolioTeemapPlaceholder.normalize_clamped(0, abs(diff_min), abs(diff))
+                treemap['color_mapping'][entry] = _AbstractTreemapPlaceholder.interpolate_color(report_utils.pptx.VOLUME_NEG_CHANGE_RANGE, t)
+            else:
+                t = _AbstractPortfolioTeemapPlaceholder.normalize_clamped(0, diff_max, diff)
+                treemap['color_mapping'][entry] = _AbstractTreemapPlaceholder.interpolate_color(report_utils.pptx.VOLUME_POS_CHANGE_RANGE, t)
+
+        treemap['values'] = _AbstractPortfolioTeemapPlaceholder.create_treemap_values(portfolio, treemap)
+        treemap['color'] = treemap['tracking']
+        return treemap
+    
+
 class TestCodePortfolioTreemapPlaceholder(_AbstractPortfolioTeemapPlaceholder):
     """Creates a portfolio treemap where the color is determined by the test-to-production code ratio of the individual systems."""
 
