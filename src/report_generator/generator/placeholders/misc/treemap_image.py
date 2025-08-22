@@ -79,7 +79,7 @@ class _AbstractTreemapPlaceholder(Placeholder):
         el.getparent().remove(el)
 
 
-class _AbstractPortfolioTeemapPlaceholder(_AbstractTreemapPlaceholder):
+class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder):
     @staticmethod
     def create_portfolio():
         res = {}
@@ -102,7 +102,7 @@ class _AbstractPortfolioTeemapPlaceholder(_AbstractTreemapPlaceholder):
         parents = []
         tracking = []
 
-        portfolio = _AbstractPortfolioTeemapPlaceholder.create_portfolio()
+        portfolio = _AbstractPortfolioTreemapPlaceholder.create_portfolio()
         for s in portfolio.values():
             m = s['metadata']
             if m['teamNames'][0] not in names:
@@ -130,7 +130,7 @@ class _AbstractPortfolioTeemapPlaceholder(_AbstractTreemapPlaceholder):
             if cur_parent == "":
                 values[i] = 0
                 if t not in treemap_data['color_mapping'].keys():
-                    treemap_data['color_mapping'][t] = _AbstractPortfolioTeemapPlaceholder.SIG_BLUE
+                    treemap_data['color_mapping'][t] = _AbstractPortfolioTreemapPlaceholder.SIG_BLUE
                 continue
             if portfolio[t]['end_date_data'] is None:
                 values[i] = 0
@@ -138,35 +138,35 @@ class _AbstractPortfolioTeemapPlaceholder(_AbstractTreemapPlaceholder):
         return values
 
 
-class MaintainabilityPortfolioTreemapPlaceholder(_AbstractPortfolioTeemapPlaceholder):
+class MaintainabilityPortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder):
     """Creates a portfolio treemap where the color is determined by the maintainability rating of the individual systems."""
 
     key = "PORTFOLIO_PERIOD_MAINTAINABILITY"
 
     @classmethod
     def value(cls, parameter=None):
-        portfolio = _AbstractPortfolioTeemapPlaceholder.create_portfolio()
-        treemap = _AbstractPortfolioTeemapPlaceholder.create_blank_portfolio_treemap()
+        portfolio = _AbstractPortfolioTreemapPlaceholder.create_portfolio()
+        treemap = _AbstractPortfolioTreemapPlaceholder.create_blank_portfolio_treemap()
 
         treemap['color_mapping'] = {}
         for t in portfolio.keys():
             maintainability_rating = portfolio[t]['end_date_data']['maintainability']
             treemap['color_mapping'][t] = _AbstractTreemapPlaceholder.determine_rating_color(maintainability_rating) if maintainability_rating is not None else _AbstractTreemapPlaceholder.NA_STAR_COLOR
 
-        treemap['values'] = _AbstractPortfolioTeemapPlaceholder.create_treemap_values(portfolio, treemap)
+        treemap['values'] = _AbstractPortfolioTreemapPlaceholder.create_treemap_values(portfolio, treemap)
         treemap['color'] = treemap['tracking']
         return treemap
 
     
-class MaintainabilityChangePortfolioTreemapPlaceholder(_AbstractPortfolioTeemapPlaceholder):
+class MaintainabilityChangePortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder):
     """Creates a portfolio treemap where the color is determined by the change in maintainability rating of the individual systems during the specified period."""
 
     key = "PORTFOLIO_PERIOD_MAINTAINABILITY_CHANGE"
 
     @classmethod
     def value(cls, parameter=None):
-        portfolio = _AbstractPortfolioTeemapPlaceholder.create_portfolio()
-        treemap = _AbstractPortfolioTeemapPlaceholder.create_blank_portfolio_treemap()
+        portfolio = _AbstractPortfolioTreemapPlaceholder.create_portfolio()
+        treemap = _AbstractPortfolioTreemapPlaceholder.create_blank_portfolio_treemap()
 
         differences = {}
         for entry in portfolio.keys():
@@ -181,28 +181,28 @@ class MaintainabilityChangePortfolioTreemapPlaceholder(_AbstractPortfolioTeemapP
         for i, entry in enumerate(portfolio.keys()):
             diff = differences[entry]
             if diff is None:
-                treemap['color_mapping'][entry] = _AbstractPortfolioTeemapPlaceholder.NA_STAR_COLOR
+                treemap['color_mapping'][entry] = _AbstractPortfolioTreemapPlaceholder.NA_STAR_COLOR
             elif diff < 0:
-                t = _AbstractPortfolioTeemapPlaceholder.normalize_clamped(0, abs(diff_min), abs(diff))
+                t = _AbstractPortfolioTreemapPlaceholder.normalize_clamped(0, abs(diff_min), abs(diff))
                 treemap['color_mapping'][entry] = _AbstractTreemapPlaceholder.interpolate_color(report_utils.pptx.MAINTAINABILITY_NEG_CHANGE_RANGE, t)
             else:
-                t = _AbstractPortfolioTeemapPlaceholder.normalize_clamped(0, diff_max, diff)
+                t = _AbstractPortfolioTreemapPlaceholder.normalize_clamped(0, diff_max, diff)
                 treemap['color_mapping'][entry] = _AbstractTreemapPlaceholder.interpolate_color(report_utils.pptx.MAINTAINABILITY_POS_CHANGE_RANGE, t)
 
-        treemap['values'] = _AbstractPortfolioTeemapPlaceholder.create_treemap_values(portfolio, treemap)
+        treemap['values'] = _AbstractPortfolioTreemapPlaceholder.create_treemap_values(portfolio, treemap)
         treemap['color'] = treemap['tracking']
         return treemap
     
 
-class VolumeChangePortfolioTreemapPlaceholder(_AbstractPortfolioTeemapPlaceholder):
+class VolumeChangePortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder):
     """Creates a portfolio treemap where the color is determined by the change in volume change (effort) of the individual systems during the specified period."""
 
     key = "PORTFOLIO_PERIOD_VOLUME_CHANGE"
 
     @classmethod
     def value(cls, parameter=None):
-        portfolio = _AbstractPortfolioTeemapPlaceholder.create_portfolio()
-        treemap = _AbstractPortfolioTeemapPlaceholder.create_blank_portfolio_treemap()
+        portfolio = _AbstractPortfolioTreemapPlaceholder.create_portfolio()
+        treemap = _AbstractPortfolioTreemapPlaceholder.create_blank_portfolio_treemap()
 
         differences = {}
         for entry in portfolio.keys():
@@ -217,48 +217,48 @@ class VolumeChangePortfolioTreemapPlaceholder(_AbstractPortfolioTeemapPlaceholde
         for i, entry in enumerate(portfolio.keys()):
             diff = differences[entry]
             if diff is None:
-                treemap['color_mapping'][entry] = _AbstractPortfolioTeemapPlaceholder.NA_STAR_COLOR
+                treemap['color_mapping'][entry] = _AbstractPortfolioTreemapPlaceholder.NA_STAR_COLOR
             elif diff < 0:
-                t = _AbstractPortfolioTeemapPlaceholder.normalize_clamped(0, abs(diff_min), abs(diff))
+                t = _AbstractPortfolioTreemapPlaceholder.normalize_clamped(0, abs(diff_min), abs(diff))
                 treemap['color_mapping'][entry] = _AbstractTreemapPlaceholder.interpolate_color(report_utils.pptx.VOLUME_NEG_CHANGE_RANGE, t)
             else:
-                t = _AbstractPortfolioTeemapPlaceholder.normalize_clamped(0, diff_max, diff)
+                t = _AbstractPortfolioTreemapPlaceholder.normalize_clamped(0, diff_max, diff)
                 treemap['color_mapping'][entry] = _AbstractTreemapPlaceholder.interpolate_color(report_utils.pptx.VOLUME_POS_CHANGE_RANGE, t)
 
-        treemap['values'] = _AbstractPortfolioTeemapPlaceholder.create_treemap_values(portfolio, treemap)
+        treemap['values'] = _AbstractPortfolioTreemapPlaceholder.create_treemap_values(portfolio, treemap)
         treemap['color'] = treemap['tracking']
         return treemap
     
 
-class TestCodePortfolioTreemapPlaceholder(_AbstractPortfolioTeemapPlaceholder):
+class TestCodePortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder):
     """Creates a portfolio treemap where the color is determined by the test-to-production code ratio of the individual systems."""
 
     key = "PORTFOLIO_PERIOD_TEST_CODE"
 
     @classmethod
     def value(cls, parameter=None):
-        portfolio = _AbstractPortfolioTeemapPlaceholder.create_portfolio()
-        treemap = _AbstractPortfolioTeemapPlaceholder.create_blank_portfolio_treemap()
+        portfolio = _AbstractPortfolioTreemapPlaceholder.create_portfolio()
+        treemap = _AbstractPortfolioTreemapPlaceholder.create_blank_portfolio_treemap()
 
         treemap['color_mapping'] = {}
         for t in portfolio.keys():
             test_code_ratio = portfolio[t]['end_date_data']['testCodeRatio']
             treemap['color_mapping'][t] = _AbstractTreemapPlaceholder.test_code_ratio_color(float(test_code_ratio)) if test_code_ratio is not None else _AbstractTreemapPlaceholder.NA_STAR_COLOR
 
-        treemap['values'] = _AbstractPortfolioTeemapPlaceholder.create_treemap_values(portfolio, treemap)
+        treemap['values'] = _AbstractPortfolioTreemapPlaceholder.create_treemap_values(portfolio, treemap)
         treemap['color'] = treemap['tracking']
         return treemap
     
     
-class SecurityRatingsPortfolioTreemapPlaceholder(_AbstractPortfolioTeemapPlaceholder):
+class SecurityRatingsPortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder):
     """Creates a portfolio treemap where the color is determined by the security rating of the individual systems."""
 
     key = "PORTFOLIO_PERIOD_SECURITY_RATINGS"
 
     @classmethod
     def value(cls, parameter=None):
-        portfolio = _AbstractPortfolioTeemapPlaceholder.create_portfolio()
-        treemap = _AbstractPortfolioTeemapPlaceholder.create_blank_portfolio_treemap()
+        portfolio = _AbstractPortfolioTreemapPlaceholder.create_portfolio()
+        treemap = _AbstractPortfolioTreemapPlaceholder.create_blank_portfolio_treemap()
 
         treemap['color_mapping'] = dict.fromkeys(portfolio.keys(), _AbstractTreemapPlaceholder.NA_STAR_COLOR)
         for t in security_ratings_portfolio_data.system_names:
@@ -268,20 +268,20 @@ class SecurityRatingsPortfolioTreemapPlaceholder(_AbstractPortfolioTeemapPlaceho
                 continue
             treemap['color_mapping'][t] = _AbstractTreemapPlaceholder.determine_rating_color(float(security_rating)) if security_rating is not None else _AbstractTreemapPlaceholder.NA_STAR_COLOR
 
-        treemap['values'] = _AbstractPortfolioTeemapPlaceholder.create_treemap_values(portfolio, treemap)
+        treemap['values'] = _AbstractPortfolioTreemapPlaceholder.create_treemap_values(portfolio, treemap)
         treemap['color'] = treemap['tracking']
         return treemap
 
 
-class ArchitecturePortfolioTreemapPlaceholder(_AbstractPortfolioTeemapPlaceholder):
+class ArchitecturePortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder):
     """Creates a portfolio treemap where the color is determined by the architecture quality rating of the individual systems."""
 
     key = "PORTFOLIO_PERIOD_ARCHITECTURE"
 
     @classmethod
     def value(cls, parameter=None):
-        portfolio = _AbstractPortfolioTeemapPlaceholder.create_portfolio()
-        treemap = _AbstractPortfolioTeemapPlaceholder.create_blank_portfolio_treemap()
+        portfolio = _AbstractPortfolioTreemapPlaceholder.create_portfolio()
+        treemap = _AbstractPortfolioTreemapPlaceholder.create_blank_portfolio_treemap()
 
         treemap['color_mapping'] = dict.fromkeys(portfolio.keys(), _AbstractTreemapPlaceholder.NA_STAR_COLOR)
         for t in architecture_portfolio_data.system_names:
@@ -291,6 +291,6 @@ class ArchitecturePortfolioTreemapPlaceholder(_AbstractPortfolioTeemapPlaceholde
                 continue
             treemap['color_mapping'][t] = _AbstractTreemapPlaceholder.determine_rating_color(float(architecture_rating)) if architecture_rating is not None else _AbstractTreemapPlaceholder.NA_STAR_COLOR
 
-        treemap['values'] = _AbstractPortfolioTeemapPlaceholder.create_treemap_values(portfolio, treemap)
+        treemap['values'] = _AbstractPortfolioTreemapPlaceholder.create_treemap_values(portfolio, treemap)
         treemap['color'] = treemap['tracking']
         return treemap
