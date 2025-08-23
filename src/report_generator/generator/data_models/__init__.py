@@ -20,5 +20,6 @@ from .maintainability_portfolio import maintainability_portfolio_data
 from .modernization import modernization_data
 from .osh import osh_data
 from .refactoring_candidates import refactoring_candidates_data
+from .security_dashboard_findings_portfolio import security_dashboard_findings_portfolio_data
 from .system_metadata import system_metadata
 from .security_portfolio import security_ratings_portfolio_data

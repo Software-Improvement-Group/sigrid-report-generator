@@ -14,10 +14,11 @@
 
 import inspect
 
-from . import category_chart, color_rating, maintainability_galaxy_chart, moveable_marker, osh_slide, scatter_plot_chart, treemap_image
+from . import category_chart, chart_image, color_rating, maintainability_galaxy_chart, moveable_marker, osh_slide, scatter_plot_chart, treemap_image
 
 _all_implementations = {
     **category_chart.__dict__,
+    **chart_image.__dict__,
     **maintainability_galaxy_chart.__dict__,
     **moveable_marker.__dict__,
     **osh_slide.__dict__,

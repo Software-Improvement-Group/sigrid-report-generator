@@ -233,6 +233,34 @@ def get_portfolio_security_findings():
 
 
 @_sigrid_api_request(with_system=True)
+def get_security_dashboard_findings(system):
+    argument = f"&endDate={_period[1]}" if _period else ""
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/finding-ratios/{_customer}/{system}?feature=security{argument}"
+    return _make_request(endpoint)
+
+
+@_sigrid_api_request()
+def get_portfolio_security_dashboard_findings():
+    argument = f"&endDate={_period[1]}" if _period else ""
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/finding-ratios/{_customer}?feature=security{argument}"
+    return _make_request(endpoint)
+
+
+@_sigrid_api_request(with_system=True)
+def get_security_resolution_time_findings(system):
+    argument = f"&endDate={_period[1]}" if _period else ""
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/resolution-times/{_customer}/{system}?feature=security{argument}"
+    return _make_request(endpoint)
+
+
+@_sigrid_api_request()
+def get_portfolio_security_resolution_time_findings():
+    argument = f"&endDate={_period[1]}" if _period else ""
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/resolution-times/{_customer}?feature=security{argument}"
+    return _make_request(endpoint)
+
+
+@_sigrid_api_request(with_system=True)
 def get_security_ratings(system):
     endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/model-ratings/{_customer}/{system}?feature=SECURITY"
     return _make_request(endpoint)

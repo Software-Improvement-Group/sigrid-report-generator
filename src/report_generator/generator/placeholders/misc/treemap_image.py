@@ -25,7 +25,7 @@ import logging
 from pptx.util import Inches
 
 class _AbstractTreemapPlaceholder(Placeholder):
-    SIG_BLUE = f"#{report_utils.pptx.SIG_BLUE}"
+    SIG_BLUE_COLOR = f"#{report_utils.pptx.SIG_BLUE_COLOR}"
     NA_STAR_COLOR = f"#{report_utils.pptx.NA_STAR_COLOR}"
 
     @classmethod
@@ -67,9 +67,13 @@ class _AbstractTreemapPlaceholder(Placeholder):
 
         fig = px.treemap(names=data['names'], parents=data['parents'], values=data['values'], color=data['color'], color_discrete_map=data['color_mapping'])
         fig.update_traces(root_color='rgba(250, 250, 250, 1)')
-        fig.update_layout(margin = dict(t=0, l=0, r=0, b=0))
+        fig.update_layout(
+            margin = dict(t=0, l=0, r=0, b=0),
+            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor="rgba(0,0,0,0)"
+        )
         
-        img_bytes = fig.to_image(format="jpg", width=pos_width*2*96, height=pos_height*2*96)
+        img_bytes = fig.to_image(format="png", width=pos_width*2*96, height=pos_height*2*96)
         
         slide.shapes.add_picture(io.BytesIO(img_bytes),
             left=Inches(pos_left), top=Inches(pos_top),
@@ -130,7 +134,7 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder):
             if cur_parent == "":
                 values[i] = 0
                 if t not in treemap_data['color_mapping'].keys():
-                    treemap_data['color_mapping'][t] = _AbstractPortfolioTreemapPlaceholder.SIG_BLUE
+                    treemap_data['color_mapping'][t] = _AbstractPortfolioTreemapPlaceholder.SIG_BLUE_COLOR
                 continue
             if portfolio[t]['end_date_data'] is None:
                 values[i] = 0
@@ -184,10 +188,10 @@ class MaintainabilityChangePortfolioTreemapPlaceholder(_AbstractPortfolioTreemap
                 treemap['color_mapping'][entry] = _AbstractPortfolioTreemapPlaceholder.NA_STAR_COLOR
             elif diff < 0:
                 t = _AbstractPortfolioTreemapPlaceholder.normalize_clamped(0, abs(diff_min), abs(diff))
-                treemap['color_mapping'][entry] = _AbstractTreemapPlaceholder.interpolate_color(report_utils.pptx.MAINTAINABILITY_NEG_CHANGE_RANGE, t)
+                treemap['color_mapping'][entry] = _AbstractTreemapPlaceholder.interpolate_color(report_utils.pptx.MAINTAINABILITY_NEG_CHANGE_RANGE_COLORS, t)
             else:
                 t = _AbstractPortfolioTreemapPlaceholder.normalize_clamped(0, diff_max, diff)
-                treemap['color_mapping'][entry] = _AbstractTreemapPlaceholder.interpolate_color(report_utils.pptx.MAINTAINABILITY_POS_CHANGE_RANGE, t)
+                treemap['color_mapping'][entry] = _AbstractTreemapPlaceholder.interpolate_color(report_utils.pptx.MAINTAINABILITY_POS_CHANGE_RANGE_COLORS, t)
 
         treemap['values'] = _AbstractPortfolioTreemapPlaceholder.create_treemap_values(portfolio, treemap)
         treemap['color'] = treemap['tracking']
@@ -220,10 +224,10 @@ class VolumeChangePortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlacehold
                 treemap['color_mapping'][entry] = _AbstractPortfolioTreemapPlaceholder.NA_STAR_COLOR
             elif diff < 0:
                 t = _AbstractPortfolioTreemapPlaceholder.normalize_clamped(0, abs(diff_min), abs(diff))
-                treemap['color_mapping'][entry] = _AbstractTreemapPlaceholder.interpolate_color(report_utils.pptx.VOLUME_NEG_CHANGE_RANGE, t)
+                treemap['color_mapping'][entry] = _AbstractTreemapPlaceholder.interpolate_color(report_utils.pptx.VOLUME_NEG_CHANGE_RANGE_COLORS, t)
             else:
                 t = _AbstractPortfolioTreemapPlaceholder.normalize_clamped(0, diff_max, diff)
-                treemap['color_mapping'][entry] = _AbstractTreemapPlaceholder.interpolate_color(report_utils.pptx.VOLUME_POS_CHANGE_RANGE, t)
+                treemap['color_mapping'][entry] = _AbstractTreemapPlaceholder.interpolate_color(report_utils.pptx.VOLUME_POS_CHANGE_RANGE_COLORS, t)
 
         treemap['values'] = _AbstractPortfolioTreemapPlaceholder.create_treemap_values(portfolio, treemap)
         treemap['color'] = treemap['tracking']

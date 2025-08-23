@@ -1,0 +1,198 @@
+#  Copyright Software Improvement Group
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
+from typing import Callable
+
+from pptx import Presentation
+
+from report_generator.generator import report_utils
+from report_generator.generator.data_models import security_dashboard_findings_portfolio_data, maintainability_portfolio_data
+from report_generator.generator.placeholders.base import Placeholder
+import plotly.graph_objects as go
+import io
+import logging
+from pptx.util import Inches
+
+class _AbstractChartImagePlaceholder(Placeholder):
+    SIG_BLUE_COLOR = f"#{report_utils.pptx.SIG_BLUE_COLOR}"
+    NA_STAR_COLOR = f"#{report_utils.pptx.NA_STAR_COLOR}"
+
+    DASHBOARD_EXISTING_FINDINGS_COLOR = f"#{report_utils.pptx.DASHBOARD_EXISTING_FINDINGS_COLOR}"
+    DASHBOARD_NEW_FINDINGS_COLOR = f"#{report_utils.pptx.DASHBOARD_NEW_FINDINGS_COLOR}"
+    DASHBOARD_RESOLVED_FINDINGS_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLVED_FINDINGS_COLOR}"
+
+    DASHBOARD_RESOLUTION_QUICK_COLOR = DASHBOARD_EXISTING_FINDINGS_COLOR
+    DASHBOARD_RESOLUTION_SLOW_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLUTION_SLOW_COLOR}"
+    DASHBOARD_RESOLUTION_LONG_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLUTION_LONG_COLOR}"
+    DASHBOARD_RESOLUTION_LONGEST_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLUTION_LONGEST_COLOR}"
+
+    @classmethod
+    def resolve_pptx(cls, presentation: Presentation, key: str, value_cb: Callable):
+        slides = report_utils.pptx.identify_specific_slide(presentation, key)
+        if len(slides) == 0:
+            return
+
+        for slide in slides:
+            shapes = report_utils.pptx.find_shapes_with_text_in_slide(slide, key)
+            for shape in shapes:
+                data = value_cb()
+                cls.create_and_add_treemap_image_to_slide(shape, slide, data)
+    
+    @staticmethod
+    def create_and_add_treemap_image_to_slide(shape_placeholder, slide, data):
+        pos_left = shape_placeholder.left.inches
+        pos_top = shape_placeholder.top.inches
+        pos_width = shape_placeholder.width.inches
+        pos_height = shape_placeholder.height.inches
+
+        fig = data['fig']
+        # fig = px.treemap(names=data['names'], parents=data['parents'], values=data['values'], color=data['color'], color_discrete_map=data['color_mapping'])
+        # fig.update_traces(root_color='rgba(250, 250, 250, 1)')
+        fig.update_layout(
+            margin = dict(t=0, l=0, r=0, b=0),
+            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor="rgba(0,0,0,0)"
+        )
+        
+        img_bytes = fig.to_image(format="png", width=pos_width*2*96, height=pos_height*2*96)
+        
+        slide.shapes.add_picture(io.BytesIO(img_bytes),
+            left=Inches(pos_left), top=Inches(pos_top),
+            width=Inches(pos_width), height=Inches(pos_height))
+
+        el = shape_placeholder.element
+        el.getparent().remove(el)
+
+class _AbstractSecurityDashboardFindingsPlaceholder(_AbstractChartImagePlaceholder):
+    @staticmethod
+    def create_portfolio():
+        res = {"CRITICAL" : {}, "HIGH" : {}, "MEDIUM" : {}, "LOW" : {}}
+
+        # system_names = maintainability_portfolio_data.system_names
+        # for system_name in system_names:
+        #     md = maintainability_portfolio_data.find_system_metadata(system_name)
+        #     if not md['active'] or md['isDevelopmentOnly']:
+        #         continue
+
+        processed = 0
+        for system in security_dashboard_findings_portfolio_data.data['systems']:
+            # print(f"Processing: {system['system']}")
+            md = maintainability_portfolio_data.find_system_metadata(system['system'])
+            # print(md)
+            if not md or not md['active'] or md['isDevelopmentOnly']:
+                continue
+            for ratio in system['findingRatio']:
+                month = ratio['month']
+                for severity in res.keys():
+                    if month not in res[severity].keys():
+                        res[severity][month] = {"resolved": 0, "existing": 0, "new": 0}
+                    for status in res[severity][month].keys():
+                        res[severity][month][status] += ratio['severities'][severity][status]
+            processed += 1
+        print(f"Number of systems: {len(security_dashboard_findings_portfolio_data.data['systems'])}")
+        print(f"Number of processed systems: {processed}")
+        return res
+
+    # @staticmethod
+    # def create_portfolio():
+    #     res = {}
+    #     for system in security_dashboard_findings_portfolio_data.data['systems']:
+    #         for ratio in system['findingRatio']:
+    #             month = ratio['month']
+    #             if month not in res.keys():
+    #                 res[month] = {
+    #                     "CRITICAL": {"resolved": 0, "existing": 0, "new": 0},
+    #                     "HIGH": {"resolved": 0, "existing": 0, "new": 0},
+    #                     "MEDIUM": {"resolved": 0, "existing": 0, "new": 0},
+    #                     "LOW": {"resolved": 0, "existing": 0, "new": 0}
+    #                 }
+    #             for severity in res[month].keys():
+    #                 for status in res[month][severity].keys():
+    #                     res[month][severity][status] += ratio['severities'][severity][status]
+    #     return res
+
+class SecurityDashboardCriticalFindingsPlaceholder(_AbstractSecurityDashboardFindingsPlaceholder):
+    """Creates a portfolio treemap where the color is determined by the maintainability rating of the individual systems."""
+
+    key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_FINDINGS"
+
+    @classmethod
+    def value(cls, parameter=None):
+        portfolio = _AbstractSecurityDashboardFindingsPlaceholder.create_portfolio()['CRITICAL']
+
+        y_values_new = [portfolio[k]['new'] for k in portfolio.keys()]
+        y_values_existing = [portfolio[k]['existing'] for k in portfolio.keys()]
+        y_values_resolved = [portfolio[k]['resolved'] for k in portfolio.keys()]
+        open_findings_text_values = [x + y for x, y in zip(y_values_new, y_values_existing)]
+        print(f"New: {y_values_new}")
+        print(f"Existing: {y_values_existing}")
+        print(f"{open_findings_text_values}")
+        data = [
+            go.Bar(
+                x=list(portfolio.keys()),
+                y=y_values_new,
+                name="New",
+                marker_color=_AbstractChartImagePlaceholder.DASHBOARD_NEW_FINDINGS_COLOR,
+                offsetgroup="open"
+            ),
+            go.Bar(
+                x=list(portfolio.keys()),
+                y=y_values_existing,
+                name="Existing",
+                marker_color=_AbstractChartImagePlaceholder.DASHBOARD_EXISTING_FINDINGS_COLOR,
+                offsetgroup="open",
+                textposition="outside",
+                text=open_findings_text_values
+            ),
+            go.Bar(
+                x=list(portfolio.keys()),
+                y=y_values_resolved,
+                name="Resolved",
+                marker_color=_AbstractChartImagePlaceholder.DASHBOARD_RESOLVED_FINDINGS_COLOR,
+                offsetgroup="closed",
+                textposition="outside",
+                text=y_values_resolved
+            ),
+        ]
+
+        layout = go.Layout(
+            # title={
+            #     'text': 'Are you keeping pace with security findings?'
+            # },
+            xaxis={
+                'showline' : True,
+                'linewidth' : 2,
+                'linecolor' : '#6E7078'
+
+                # 'title': {
+                #     'text': 'Month'
+                # }
+            },
+            yaxis={
+                'showgrid' : True,
+                'gridwidth' : 2,
+                'gridcolor' : '#E0E4EF'
+            },
+            legend={
+                'orientation' : 'h',
+                'yanchor' : 'top',
+                'xanchor' : 'center',
+                'y' : -0.02,
+                'x' : 0.5
+            },
+            barmode='stack'
+        )
+
+        fig = go.Figure(data=data, layout=layout)
+        return {'fig':fig}
