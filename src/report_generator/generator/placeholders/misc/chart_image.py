@@ -23,6 +23,7 @@ import plotly.graph_objects as go
 import io
 import logging
 from pptx.util import Inches
+from datetime import datetime
 
 class _AbstractChartImagePlaceholder(Placeholder):
     SIG_BLUE_COLOR = f"#{report_utils.pptx.SIG_BLUE_COLOR}"
@@ -74,18 +75,43 @@ class _AbstractChartImagePlaceholder(Placeholder):
         el = shape_placeholder.element
         el.getparent().remove(el)
 
-class _AbstractSecurityDashboardFindingsPlaceholder(_AbstractChartImagePlaceholder):
+
+class _AbstractSecurityDashboardPlaceholder(_AbstractChartImagePlaceholder):
+    LAYOUT = go.Layout(
+        xaxis={
+            'showline' : True,
+            'linewidth' : 2,
+            'linecolor' : '#6E7078',
+            'type': 'category',
+            'categoryorder': 'array',
+            'tickmode' : 'array'
+            # 'title': {
+            #     'text': 'Month'
+            # }
+        },
+        yaxis={
+            'showgrid' : True,
+            'gridwidth' : 2,
+            'gridcolor' : '#E0E4EF'
+        },
+        legend={
+            'orientation' : 'h',
+            'yanchor' : 'top',
+            'xanchor' : 'center',
+            'y' : -0.02,
+            'x' : 0.5
+        },
+        barmode='stack'
+    )
+
+    @staticmethod
+    def transform_date_labels_to_months(dates):
+        return [datetime.strptime(x, "%Y-%m-%d").strftime("%b") for x in dates]
+
+class _AbstractSecurityDashboardFindingsPlaceholder(_AbstractSecurityDashboardPlaceholder):
     @staticmethod
     def create_portfolio():
         res = {"CRITICAL" : {}, "HIGH" : {}, "MEDIUM" : {}, "LOW" : {}}
-
-        # system_names = maintainability_portfolio_data.system_names
-        # for system_name in system_names:
-        #     md = maintainability_portfolio_data.find_system_metadata(system_name)
-        #     if not md['active'] or md['isDevelopmentOnly']:
-        #         continue
-
-        processed = 0
         for system in security_dashboard_findings_portfolio_data.data['systems']:
             # print(f"Processing: {system['system']}")
             md = maintainability_portfolio_data.find_system_metadata(system['system'])
@@ -99,28 +125,8 @@ class _AbstractSecurityDashboardFindingsPlaceholder(_AbstractChartImagePlacehold
                         res[severity][month] = {"resolved": 0, "existing": 0, "new": 0}
                     for status in res[severity][month].keys():
                         res[severity][month][status] += ratio['severities'][severity][status]
-            processed += 1
-        print(f"Number of systems: {len(security_dashboard_findings_portfolio_data.data['systems'])}")
-        print(f"Number of processed systems: {processed}")
         return res
 
-    # @staticmethod
-    # def create_portfolio():
-    #     res = {}
-    #     for system in security_dashboard_findings_portfolio_data.data['systems']:
-    #         for ratio in system['findingRatio']:
-    #             month = ratio['month']
-    #             if month not in res.keys():
-    #                 res[month] = {
-    #                     "CRITICAL": {"resolved": 0, "existing": 0, "new": 0},
-    #                     "HIGH": {"resolved": 0, "existing": 0, "new": 0},
-    #                     "MEDIUM": {"resolved": 0, "existing": 0, "new": 0},
-    #                     "LOW": {"resolved": 0, "existing": 0, "new": 0}
-    #                 }
-    #             for severity in res[month].keys():
-    #                 for status in res[month][severity].keys():
-    #                     res[month][severity][status] += ratio['severities'][severity][status]
-    #     return res
 
 class SecurityDashboardCriticalFindingsPlaceholder(_AbstractSecurityDashboardFindingsPlaceholder):
     """Creates a portfolio treemap where the color is determined by the maintainability rating of the individual systems."""
@@ -135,9 +141,6 @@ class SecurityDashboardCriticalFindingsPlaceholder(_AbstractSecurityDashboardFin
         y_values_existing = [portfolio[k]['existing'] for k in portfolio.keys()]
         y_values_resolved = [portfolio[k]['resolved'] for k in portfolio.keys()]
         open_findings_text_values = [x + y for x, y in zip(y_values_new, y_values_existing)]
-        print(f"New: {y_values_new}")
-        print(f"Existing: {y_values_existing}")
-        print(f"{open_findings_text_values}")
         data = [
             go.Bar(
                 x=list(portfolio.keys()),
@@ -166,33 +169,12 @@ class SecurityDashboardCriticalFindingsPlaceholder(_AbstractSecurityDashboardFin
             ),
         ]
 
-        layout = go.Layout(
-            # title={
-            #     'text': 'Are you keeping pace with security findings?'
-            # },
-            xaxis={
-                'showline' : True,
-                'linewidth' : 2,
-                'linecolor' : '#6E7078'
+        layout = cls.LAYOUT
+        layout.xaxis.update({
+            'categoryarray' : list(portfolio.keys()),
+            'tickvals' : list(portfolio.keys()),
+            'ticktext' : _AbstractSecurityDashboardPlaceholder.transform_date_labels_to_months(portfolio.keys())
+        })
 
-                # 'title': {
-                #     'text': 'Month'
-                # }
-            },
-            yaxis={
-                'showgrid' : True,
-                'gridwidth' : 2,
-                'gridcolor' : '#E0E4EF'
-            },
-            legend={
-                'orientation' : 'h',
-                'yanchor' : 'top',
-                'xanchor' : 'center',
-                'y' : -0.02,
-                'x' : 0.5
-            },
-            barmode='stack'
-        )
-
-        fig = go.Figure(data=data, layout=layout)
+        fig = go.Figure(data=data, layout=cls.LAYOUT)
         return {'fig':fig}
