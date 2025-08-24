@@ -85,10 +85,12 @@ class MaintainabilityPortfolioData:
 
     def get_closest_snapshot(self, system, snapshot_date, ignore_head_entry=False):
         s = self._find_system(system)
+        head_entry = MaintainabilityPortfolioData._get_head_entry(s)
+        if not s['allRatings']:
+            return head_entry
         snapshot = MaintainabilityPortfolioData._get_snapshot_closest_to_date(snapshot_date, s['allRatings'])
         if ignore_head_entry:
             return snapshot
-        head_entry = MaintainabilityPortfolioData._get_head_entry(s)
         snapshot = MaintainabilityPortfolioData._return_closest_date(snapshot_date, snapshot, head_entry)
         return snapshot
 

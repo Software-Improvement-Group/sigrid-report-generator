@@ -109,15 +109,23 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder):
         portfolio = _AbstractPortfolioTreemapPlaceholder.create_portfolio()
         for s in portfolio.values():
             m = s['metadata']
-            if m['teamNames'][0] not in names:
-                names.append(m['teamNames'][0])
+            team_name = "Unset"
+            if m['teamNames']:
+                if len(m['teamNames']) > 1:
+                    team_name = "Multiple teams"
+                else:
+                    team_name = m['teamNames'][0]
+            if team_name not in names:
+                names.append(team_name)
                 parents.append("")
                 tracking.append("")
-            if m['displayName'] is not None:
-                names.append(m['displayName'])
-            else:
-                names.append(m['systemName'])
-            parents.append(m['teamNames'][0])
+            name = m['displayName']
+            if name and name in names:
+                name = f"{name} " # A workaround if, for example, a team name is the same as a system name
+            elif not name:
+                name = m['systemName']
+            names.append(name)
+            parents.append(team_name)
             tracking.append(m['systemName'])
 
         return {
