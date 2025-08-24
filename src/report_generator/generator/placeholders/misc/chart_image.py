@@ -17,7 +17,9 @@ from typing import Callable
 from pptx import Presentation
 
 from report_generator.generator import report_utils
-from report_generator.generator.data_models import security_dashboard_findings_portfolio_data, maintainability_portfolio_data
+from report_generator.generator.data_models import security_dashboard_findings_portfolio_data
+from report_generator.generator.data_models import security_dashboard_resolution_times_portfolio_data
+from report_generator.generator.data_models import maintainability_portfolio_data
 from report_generator.generator.placeholders.base import Placeholder
 import plotly.graph_objects as go
 import io
@@ -33,10 +35,10 @@ class _AbstractChartImagePlaceholder(Placeholder):
     DASHBOARD_NEW_FINDINGS_COLOR = f"#{report_utils.pptx.DASHBOARD_NEW_FINDINGS_COLOR}"
     DASHBOARD_RESOLVED_FINDINGS_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLVED_FINDINGS_COLOR}"
 
-    DASHBOARD_RESOLUTION_QUICK_COLOR = DASHBOARD_EXISTING_FINDINGS_COLOR
-    DASHBOARD_RESOLUTION_SLOW_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLUTION_SLOW_COLOR}"
-    DASHBOARD_RESOLUTION_LONG_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLUTION_LONG_COLOR}"
-    DASHBOARD_RESOLUTION_LONGEST_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLUTION_LONGEST_COLOR}"
+    DASHBOARD_RESOLUTION_NO_RISK_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLUTION_NO_RISK_COLOR}"
+    DASHBOARD_RESOLUTION_LOW_RISK_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLUTION_LOW_RISK_COLOR}"
+    DASHBOARD_RESOLUTION_MEDIUM_RISK_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLUTION_MEDIUM_RISK_COLOR}"
+    DASHBOARD_RESOLUTION_HIGH_RISK_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLUTION_HIGH_RISK_COLOR}"
 
     @classmethod
     def resolve_pptx(cls, presentation: Presentation, key: str, value_cb: Callable):
@@ -57,8 +59,6 @@ class _AbstractChartImagePlaceholder(Placeholder):
         pos_width = shape_placeholder.width.inches
         pos_height = shape_placeholder.height.inches
 
-        # fig = px.treemap(names=data['names'], parents=data['parents'], values=data['values'], color=data['color'], color_discrete_map=data['color_mapping'])
-        # fig.update_traces(root_color='rgba(250, 250, 250, 1)')
         fig.update_layout(
             margin = dict(t=0, l=0, r=0, b=0),
             plot_bgcolor="rgba(0,0,0,0)",
@@ -84,9 +84,6 @@ class _AbstractSecurityDashboardPlaceholder(_AbstractChartImagePlaceholder):
             'type': 'category',
             'categoryorder': 'array',
             'tickmode' : 'array'
-            # 'title': {
-            #     'text': 'Month'
-            # }
         },
         yaxis={
             'showgrid' : True,
@@ -97,8 +94,9 @@ class _AbstractSecurityDashboardPlaceholder(_AbstractChartImagePlaceholder):
             'orientation' : 'h',
             'yanchor' : 'top',
             'xanchor' : 'center',
-            'y' : -0.02,
-            'x' : 0.5
+            'y' : -0.05,
+            'x' : 0.5,
+            'traceorder' : 'normal'
         },
         barmode='stack'
     )
@@ -168,10 +166,84 @@ class _AbstractSecurityDashboardFindingsPlaceholder(_AbstractSecurityDashboardPl
         })
 
         return go.Figure(data=data, layout=layout)
+    
+
+class _AbstractSecurityDashboardResolutionTimesPlaceholder(_AbstractSecurityDashboardPlaceholder):
+    LEGEND_ENTRIES_PER_SEVERITY = {
+        "CRITICAL" : {'noRisk' : "at most 7 days", "lowRisk" : "between 7-14 days", "mediumRisk" : "between 14-30 days", "highRisk" : "at least 30 days"},
+        "HIGH" : {'noRisk' : "at most 14 days", "lowRisk" : "between 14-30 days", "mediumRisk" : "between 30-180 days", "highRisk" : "at least 180 days"},
+        "MEDIUM" : {'noRisk' : "at most 30 days", "lowRisk" : "between 30-180 days", "mediumRisk" : "between 180-365 days", "highRisk" : "at least 365 days"},
+        "LOW" : {'noRisk' : "at most 180 days", "lowRisk" : "between 180-365 days", "mediumRisk" : "between 1-2 years", "highRisk" : "at least 2 years"}
+    }
+    @staticmethod
+    def create_portfolio():
+        res = {"CRITICAL" : {}, "HIGH" : {}, "MEDIUM" : {}, "LOW" : {}}
+        for system in security_dashboard_resolution_times_portfolio_data.data['systems']:
+            md = maintainability_portfolio_data.find_system_metadata(system['system'])
+            if not md or not md['active'] or md['isDevelopmentOnly']:
+                continue
+            for ratio in system['resolutionTimes']:
+                month = ratio['month']
+                for severity in res.keys():
+                    if month not in res[severity].keys():
+                        res[severity][month] = {"noRisk": 0, "lowRisk": 0, "mediumRisk": 0, "highRisk" : 0}
+                    for status in res[severity][month].keys():
+                        res[severity][month][status] += ratio['severities'][severity][status]
+        return res
+    
+    @staticmethod
+    def create_dashboard_with_severity(severity):
+        portfolio = _AbstractSecurityDashboardResolutionTimesPlaceholder.create_portfolio()[severity]
+        legend_entries = _AbstractSecurityDashboardResolutionTimesPlaceholder.LEGEND_ENTRIES_PER_SEVERITY[severity]
+
+        y_values_no_risk = [portfolio[k]['noRisk'] for k in portfolio.keys()]
+        y_values_low_risk = [portfolio[k]['lowRisk'] for k in portfolio.keys()]
+        y_values_medium_risk = [portfolio[k]['mediumRisk'] for k in portfolio.keys()]
+        y_values_high_risk = [portfolio[k]['highRisk'] for k in portfolio.keys()]
+        text_values = [x + y for x, y in zip(y_values_no_risk, y_values_low_risk)]
+        text_values = [x + y for x, y in zip(text_values, y_values_medium_risk)]
+        text_values = [x + y for x, y in zip(text_values, y_values_high_risk)]
+        data = [
+            go.Bar(
+                x=list(portfolio.keys()),
+                y=y_values_no_risk,
+                name=legend_entries['noRisk'],
+                marker_color=_AbstractChartImagePlaceholder.DASHBOARD_RESOLUTION_NO_RISK_COLOR
+            ),
+            go.Bar(
+                x=list(portfolio.keys()),
+                y=y_values_low_risk,
+                name=legend_entries['lowRisk'],
+                marker_color=_AbstractChartImagePlaceholder.DASHBOARD_RESOLUTION_LOW_RISK_COLOR
+            ),
+            go.Bar(
+                x=list(portfolio.keys()),
+                y=y_values_medium_risk,
+                name=legend_entries['mediumRisk'],
+                marker_color=_AbstractChartImagePlaceholder.DASHBOARD_RESOLUTION_MEDIUM_RISK_COLOR
+            ),
+            go.Bar(
+                x=list(portfolio.keys()),
+                y=y_values_high_risk,
+                name=legend_entries['highRisk'],
+                marker_color=_AbstractChartImagePlaceholder.DASHBOARD_RESOLUTION_HIGH_RISK_COLOR,
+                textposition="outside",
+                text=text_values
+            ),
+        ]
+
+        layout = _AbstractSecurityDashboardPlaceholder.LAYOUT
+        layout.xaxis.update({
+            'categoryarray' : list(portfolio.keys()),
+            'tickvals' : list(portfolio.keys()),
+            'ticktext' : _AbstractSecurityDashboardPlaceholder.transform_date_labels_to_months(portfolio.keys())
+        })
+
+        return go.Figure(data=data, layout=layout)
 
 
 class SecurityDashboardCriticalFindingsPlaceholder(_AbstractSecurityDashboardFindingsPlaceholder):
-    """Creates a portfolio treemap where the color is determined by the maintainability rating of the individual systems."""
+    """Creates a portfolio bar chart depicting the number of new, existing, and resolved critical security findings of the last 12 months (counting back from the <end_date>)"""
 
     key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_CRITICAL_FINDINGS"
 
@@ -181,7 +253,7 @@ class SecurityDashboardCriticalFindingsPlaceholder(_AbstractSecurityDashboardFin
 
 
 class SecurityDashboardHighFindingsPlaceholder(_AbstractSecurityDashboardFindingsPlaceholder):
-    """Creates a portfolio treemap where the color is determined by the maintainability rating of the individual systems."""
+    """Creates a portfolio bar chart depicting the number of new, existing, and resolved high security findings of the last 12 months (counting back from the <end_date>)"""
 
     key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_HIGH_FINDINGS"
 
@@ -191,10 +263,40 @@ class SecurityDashboardHighFindingsPlaceholder(_AbstractSecurityDashboardFinding
 
 
 class SecurityDashboardMediumFindingsPlaceholder(_AbstractSecurityDashboardFindingsPlaceholder):
-    """Creates a portfolio treemap where the color is determined by the maintainability rating of the individual systems."""
+    """Creates a portfolio bar chart depicting the number of new, existing, and resolved medium security findings of the last 12 months (counting back from the <end_date>)"""
 
     key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_MEDIUM_FINDINGS"
 
     @classmethod
     def value(cls, parameter=None):
         return _AbstractSecurityDashboardFindingsPlaceholder.create_dashboard_with_severity("MEDIUM")
+    
+
+class SecurityDashboardCriticalResolutionTimesPlaceholder(_AbstractSecurityDashboardResolutionTimesPlaceholder):
+    """Creates a portfolio bar chart depicting the resolution times of critical security findings of the last 12 months (counting back from the <end_date>)"""
+
+    key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_CRITICAL_RESOLUTION_TIMES"
+
+    @classmethod
+    def value(cls, parameter=None):
+        return _AbstractSecurityDashboardResolutionTimesPlaceholder.create_dashboard_with_severity("CRITICAL")
+    
+
+class SecurityDashboardHighResolutionTimesPlaceholder(_AbstractSecurityDashboardResolutionTimesPlaceholder):
+    """Creates a portfolio bar chart depicting the resolution times of high security findings of the last 12 months (counting back from the <end_date>)"""
+
+    key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_HIGH_RESOLUTION_TIMES"
+
+    @classmethod
+    def value(cls, parameter=None):
+        return _AbstractSecurityDashboardResolutionTimesPlaceholder.create_dashboard_with_severity("HIGH")
+    
+
+class SecurityDashboardMediumResolutionTimesPlaceholder(_AbstractSecurityDashboardResolutionTimesPlaceholder):
+    """Creates a portfolio bar chart depicting the resolution times of medium security findings of the last 12 months (counting back from the <end_date>)"""
+
+    key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_MEDIUM_RESOLUTION_TIMES"
+
+    @classmethod
+    def value(cls, parameter=None):
+        return _AbstractSecurityDashboardResolutionTimesPlaceholder.create_dashboard_with_severity("MEDIUM")
