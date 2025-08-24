@@ -47,17 +47,16 @@ class _AbstractChartImagePlaceholder(Placeholder):
         for slide in slides:
             shapes = report_utils.pptx.find_shapes_with_text_in_slide(slide, key)
             for shape in shapes:
-                data = value_cb()
-                cls.create_and_add_treemap_image_to_slide(shape, slide, data)
+                fig = value_cb()
+                cls.create_and_add_treemap_image_to_slide(shape, slide, fig)
     
     @staticmethod
-    def create_and_add_treemap_image_to_slide(shape_placeholder, slide, data):
+    def create_and_add_treemap_image_to_slide(shape_placeholder, slide, fig):
         pos_left = shape_placeholder.left.inches
         pos_top = shape_placeholder.top.inches
         pos_width = shape_placeholder.width.inches
         pos_height = shape_placeholder.height.inches
 
-        fig = data['fig']
         # fig = px.treemap(names=data['names'], parents=data['parents'], values=data['values'], color=data['color'], color_discrete_map=data['color_mapping'])
         # fig.update_traces(root_color='rgba(250, 250, 250, 1)')
         fig.update_layout(
@@ -113,9 +112,7 @@ class _AbstractSecurityDashboardFindingsPlaceholder(_AbstractSecurityDashboardPl
     def create_portfolio():
         res = {"CRITICAL" : {}, "HIGH" : {}, "MEDIUM" : {}, "LOW" : {}}
         for system in security_dashboard_findings_portfolio_data.data['systems']:
-            # print(f"Processing: {system['system']}")
             md = maintainability_portfolio_data.find_system_metadata(system['system'])
-            # print(md)
             if not md or not md['active'] or md['isDevelopmentOnly']:
                 continue
             for ratio in system['findingRatio']:
@@ -126,16 +123,10 @@ class _AbstractSecurityDashboardFindingsPlaceholder(_AbstractSecurityDashboardPl
                     for status in res[severity][month].keys():
                         res[severity][month][status] += ratio['severities'][severity][status]
         return res
-
-
-class SecurityDashboardCriticalFindingsPlaceholder(_AbstractSecurityDashboardFindingsPlaceholder):
-    """Creates a portfolio treemap where the color is determined by the maintainability rating of the individual systems."""
-
-    key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_FINDINGS"
-
-    @classmethod
-    def value(cls, parameter=None):
-        portfolio = _AbstractSecurityDashboardFindingsPlaceholder.create_portfolio()['CRITICAL']
+    
+    @staticmethod
+    def create_dashboard_with_severity(severity):
+        portfolio = _AbstractSecurityDashboardFindingsPlaceholder.create_portfolio()[severity]
 
         y_values_new = [portfolio[k]['new'] for k in portfolio.keys()]
         y_values_existing = [portfolio[k]['existing'] for k in portfolio.keys()]
@@ -169,12 +160,41 @@ class SecurityDashboardCriticalFindingsPlaceholder(_AbstractSecurityDashboardFin
             ),
         ]
 
-        layout = cls.LAYOUT
+        layout = _AbstractSecurityDashboardPlaceholder.LAYOUT
         layout.xaxis.update({
             'categoryarray' : list(portfolio.keys()),
             'tickvals' : list(portfolio.keys()),
             'ticktext' : _AbstractSecurityDashboardPlaceholder.transform_date_labels_to_months(portfolio.keys())
         })
 
-        fig = go.Figure(data=data, layout=cls.LAYOUT)
-        return {'fig':fig}
+        return go.Figure(data=data, layout=layout)
+
+
+class SecurityDashboardCriticalFindingsPlaceholder(_AbstractSecurityDashboardFindingsPlaceholder):
+    """Creates a portfolio treemap where the color is determined by the maintainability rating of the individual systems."""
+
+    key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_CRITICAL_FINDINGS"
+
+    @classmethod
+    def value(cls, parameter=None):
+        return _AbstractSecurityDashboardFindingsPlaceholder.create_dashboard_with_severity("CRITICAL")
+
+
+class SecurityDashboardHighFindingsPlaceholder(_AbstractSecurityDashboardFindingsPlaceholder):
+    """Creates a portfolio treemap where the color is determined by the maintainability rating of the individual systems."""
+
+    key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_HIGH_FINDINGS"
+
+    @classmethod
+    def value(cls, parameter=None):
+        return _AbstractSecurityDashboardFindingsPlaceholder.create_dashboard_with_severity("HIGH")
+
+
+class SecurityDashboardMediumFindingsPlaceholder(_AbstractSecurityDashboardFindingsPlaceholder):
+    """Creates a portfolio treemap where the color is determined by the maintainability rating of the individual systems."""
+
+    key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_MEDIUM_FINDINGS"
+
+    @classmethod
+    def value(cls, parameter=None):
+        return _AbstractSecurityDashboardFindingsPlaceholder.create_dashboard_with_severity("MEDIUM")
