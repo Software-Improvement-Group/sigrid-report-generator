@@ -21,6 +21,7 @@ from docx.text.paragraph import Paragraph as DocxParagraph
 from docx.text.run import Font as DocxFont, Run as DocxRun
 from pptx.dml.color import RGBColor as PptxRGBColor
 from pptx.enum.dml import MSO_THEME_COLOR as MSO_THEME_COLOR_PPTX
+# noinspection PyProtectedMember
 from pptx.text.text import Font as PptxFont, _Paragraph as _PptxParagraph, _Run as _PptxRun
 
 CommonParagraph = Union[_PptxParagraph, DocxParagraph]
@@ -123,6 +124,7 @@ def apply_font_properties(run: CommonRun, font_props: FontProperties):
 
 def combine_runs(base: CommonRun, suffix: CommonRun):
     base.text = base.text + suffix.text
+    # noinspection PyProtectedMember
     r_to_remove = suffix._r
     r_to_remove.getparent().remove(r_to_remove)
     return

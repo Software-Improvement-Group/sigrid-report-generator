@@ -12,8 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from pptx import Presentation
 from pptx.chart.data import XyChartData
+from pptx.presentation import Presentation
 
 from report_generator.generator import report_utils
 from report_generator.generator.data_models import maintainability_data, system_metadata
@@ -31,7 +31,7 @@ class MaintainabilityGalaxyChartPlaceholder(Placeholder):
         pass
 
     @staticmethod
-    def resolve_pptx(presentation: Presentation, key: str, value_cb) -> None:
+    def resolve_pptx(presentation: Presentation, key: str, _) -> None:
         charts = []
 
         for slide in report_utils.pptx.identify_specific_slide(presentation, key):

@@ -15,8 +15,8 @@
 from abc import ABC, abstractmethod
 from typing import Callable
 
-from pptx import Presentation
 from pptx.chart.data import CategoryChartData
+from pptx.presentation import Presentation
 
 from report_generator.generator import report_utils
 from report_generator.generator.data_models import maintainability_data, modernization_data, objectives_data

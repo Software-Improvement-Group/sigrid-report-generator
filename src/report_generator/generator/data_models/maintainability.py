@@ -143,7 +143,7 @@ class MaintainabilityData:
 
         for snapshot in reversed(self.data["allRatings"]):
             snapshot_date = datetime.strptime(snapshot["maintainabilityDate"], "%Y-%m-%d")
-            if snapshot_date >= period_start_date and snapshot_date <= period_end_date:
+            if period_start_date <= snapshot_date <= period_end_date:
                 yield snapshot
 
 

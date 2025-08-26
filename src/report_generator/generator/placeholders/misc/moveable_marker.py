@@ -15,7 +15,7 @@
 from abc import ABC
 from typing import Callable
 
-from pptx import Presentation
+from pptx.presentation import Presentation
 
 from report_generator.generator import report_utils
 from report_generator.generator.data_models import architecture_data, maintainability_data, modernization_data, osh_data
@@ -73,7 +73,7 @@ class OSHMovableMarkerPlaceholder(_AbstractMoveableMarkerPlaceholder):
     key = "MARKER_OSH_RATING"
 
     @classmethod
-    def value(cls, parameter=None) -> tuple[float, str]:
+    def value(cls, parameter=None) -> str:
         return maintainability_round(osh_data.data.ratings["system"])
 
 
@@ -84,6 +84,7 @@ class _ManagementSummaryMarkerPlaceholder(Placeholder, ABC):
             for marker in report_utils.pptx.find_text_in_slide(slide, key):
                 value, label = value_cb()
                 report_utils.pptx.update_paragraph(marker, key, f"{label}\n\n\n\n")
+                # noinspection PyProtectedMember
                 marker._parent._parent.left += int(value * _MANAGEMENT_SUMMARY_MARKER_RANGE)
 
 

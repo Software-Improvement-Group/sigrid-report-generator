@@ -13,10 +13,12 @@
 #  limitations under the License.
 
 from datetime import datetime
+
 from dateutil.relativedelta import relativedelta
+from typing_extensions import Union
 
 
-def parse_date(date):
+def parse_date(date: Union[str, datetime]) -> datetime:
     if isinstance(date, datetime):
         return date
     return datetime.strptime(date[0:10], "%Y-%m-%d")
@@ -25,7 +27,7 @@ def parse_date(date):
 class Period:
     """Represents a time period between the start date (inclusive) and end date (exclusive)."""
 
-    def __init__(self, start, end):
+    def __init__(self, start: Union[str, datetime], end: Union[str, datetime]):
         self.start = parse_date(start)
         self.end = parse_date(end)
 
@@ -33,16 +35,17 @@ class Period:
         if not date:
             return False
         date = parse_date(date)
-        return date >= self.start and date < self.end
+        return self.start <= date < self.end
 
     def __str__(self):
         return f"{self.start.strftime('%Y-%m-%d')} to {self.end.strftime('%Y-%m-%d')}"
 
     @staticmethod
-    def for_months(start, end):
+    def for_months(start: Union[str, datetime], end: Union[str, datetime]):
         period_start = parse_date(start).replace(day=1)
+        period_end = parse_date(end)
         months = []
-        while period_start < parse_date(end):
+        while period_start < period_end:
             period = Period(period_start, period_start + relativedelta(months=1))
             period_start = period.end
             months.append(period)

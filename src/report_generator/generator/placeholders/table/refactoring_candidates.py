@@ -21,13 +21,7 @@ from report_generator.generator.placeholders.table.base import TableMatrix, Tabl
 
 
 class _AbstractRefactoringCandidatesTablePlaceholder(TablePlaceholder):
-    _key_pattern = "REFACTORING_CANDIDATES_TABLE_[metric]"
     metric: MaintMetric
-
-    @classmethod
-    @property
-    def key(cls):
-        return cls._key_pattern.replace('[metric]', str(cls.metric))
 
     @classmethod
     @abstractmethod
@@ -42,6 +36,7 @@ class _AbstractRefactoringCandidatesTablePlaceholder(TablePlaceholder):
 class RefactoringCandidatesTableDuplication(_AbstractRefactoringCandidatesTablePlaceholder):
     """Table for refactoring candidates related to code duplication. Headers are: Description, Redundant LOC, Level, Technology."""
     metric = MaintMetric.DUPLICATION
+    key = 'REFACTORING_CANDIDATES_TABLE_DUPLICATION'
 
     @classmethod
     def _to_table_matrix(cls, data) -> TableMatrix:
@@ -65,6 +60,7 @@ class RefactoringCandidatesTableDuplication(_AbstractRefactoringCandidatesTableP
 class RefactoringCandidatesTableUnitSize(_AbstractRefactoringCandidatesTablePlaceholder):
     """Table for refactoring candidates related to unit size. Headers are: Unit name, LOC, McCabe, Parameters, Component, Technology."""
     metric = MaintMetric.UNIT_SIZE
+    key = 'REFACTORING_CANDIDATES_TABLE_UNIT_SIZE'
 
     @classmethod
     def _to_table_matrix(cls, data) -> TableMatrix:
@@ -86,6 +82,7 @@ class RefactoringCandidatesTableUnitSize(_AbstractRefactoringCandidatesTablePlac
 class RefactoringCandidatesTableUnitComplexity(_AbstractRefactoringCandidatesTablePlaceholder):
     """Table for refactoring candidates related to unit complexity. Headers are: Unit name, LOC, McCabe, Parameters, Component, Technology."""
     metric = MaintMetric.UNIT_COMPLEXITY
+    key = 'REFACTORING_CANDIDATES_TABLE_UNIT_COMPLEXITY'
 
     @classmethod
     def _to_table_matrix(cls, data) -> TableMatrix:
@@ -107,6 +104,7 @@ class RefactoringCandidatesTableUnitComplexity(_AbstractRefactoringCandidatesTab
 class RefactoringCandidatesTableUnitInterfacing(_AbstractRefactoringCandidatesTablePlaceholder):
     """Table for refactoring candidates related to unit interfacing. Headers are: Unit name, LOC, McCabe, Parameters, Component, Technology."""
     metric = MaintMetric.UNIT_INTERFACING
+    key = 'REFACTORING_CANDIDATES_TABLE_UNIT_INTERFACING'
 
     @classmethod
     def _to_table_matrix(cls, data) -> TableMatrix:
@@ -128,6 +126,7 @@ class RefactoringCandidatesTableUnitInterfacing(_AbstractRefactoringCandidatesTa
 class RefactoringCandidatesTableModuleCoupling(_AbstractRefactoringCandidatesTablePlaceholder):
     """Table for refactoring candidates related to module coupling. Headers are: File name, LOC, Fan-in, Component, Technology."""
     metric = MaintMetric.MODULE_COUPLING
+    key = 'REFACTORING_CANDIDATES_TABLE_MODULE_COUPLING'
 
     @classmethod
     def _to_table_matrix(cls, data) -> TableMatrix:
@@ -145,9 +144,10 @@ class RefactoringCandidatesTableModuleCoupling(_AbstractRefactoringCandidatesTab
         return rows
 
 
-class RefactoringCandidatesComponentEntanglement(_AbstractRefactoringCandidatesTablePlaceholder):
+class RefactoringCandidatesTableComponentEntanglement(_AbstractRefactoringCandidatesTablePlaceholder):
     """Table for refactoring candidates related to component entanglement. Headers are: Description, Weight."""
     metric = MaintMetric.COMPONENT_ENTANGLEMENT
+    key = 'REFACTORING_CANDIDATES_TABLE_COMPONENT_ENTANGLEMENT'
 
     @staticmethod
     def _generate_description(finding) -> str:
@@ -176,16 +176,17 @@ class RefactoringCandidatesComponentEntanglement(_AbstractRefactoringCandidatesT
 
         for finding in data:
             rows.append([
-                RefactoringCandidatesComponentEntanglement._generate_description(finding),
+                RefactoringCandidatesTableComponentEntanglement._generate_description(finding),
                 finding['weight']
             ])
 
         return rows
 
 
-class RefactoringCandidatesComponentIndependence(_AbstractRefactoringCandidatesTablePlaceholder):
+class RefactoringCandidatesTableComponentIndependence(_AbstractRefactoringCandidatesTablePlaceholder):
     """Table for refactoring candidates related to component independence. Headers are: File name, LOC, Component, Technology."""
     metric = MaintMetric.COMPONENT_INDEPENDENCE
+    key = 'REFACTORING_CANDIDATES_TABLE_COMPONENT_INDEPENDENCE'
 
     @classmethod
     def _to_table_matrix(cls, data) -> TableMatrix:

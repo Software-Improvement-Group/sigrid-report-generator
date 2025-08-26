@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+# noinspection PyProtectedMember
 from report_generator.generator.data_models.maintainability import _sort_and_aggregate_technology_data
 
 
@@ -59,13 +60,13 @@ class TestDataModels:
         return mock_data[0:size]
 
     @staticmethod
-    def _mock_technology(name, pm, loc, maint, testRatio, techRisk):
+    def _mock_technology(name, pm, loc, maint, test_ratio, tech_risk):
         return {
             "name"                : name,
             "displayName"         : name,
             "volumeInPersonMonths": pm,
             "volumeInLoc"         : loc,
             "maintainability"     : maint,
-            "testCodeRatio"       : testRatio,
-            "technologyRisk"      : techRisk
+            "testCodeRatio"       : test_ratio,
+            "technologyRisk"      : tech_risk
         }

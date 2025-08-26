@@ -13,8 +13,6 @@
 #  limitations under the License.
 
 from collections import defaultdict
-from dataclasses import dataclass
-from datetime import datetime
 from enum import Enum
 from functools import cached_property
 
@@ -87,7 +85,8 @@ class ObjectivesData:
 
     def get_capability_status_series(self):
         evaluation = self.objectives_evaluation_status
-        mapper = lambda capability, status: self.get_portfolio_percentage(evaluation, capability, status)
+        mapper = lambda capability, current_status: self.get_portfolio_percentage(evaluation, capability,
+                                                                                  current_status)
 
         series = []
         for status in ObjectiveStatus:
@@ -108,7 +107,8 @@ class ObjectivesData:
 
         return with_status * 100.0 / total if total > 0 else 0
 
-    def determine_system_status(self, objective_evaluation):
+    @staticmethod
+    def determine_system_status(objective_evaluation):
         if objective_evaluation["targetMetAtEnd"] == "UNKNOWN":
             return ObjectiveStatus.UNKNOWN
         elif objective_evaluation["targetMetAtEnd"] == "MET":
@@ -122,7 +122,8 @@ class ObjectivesData:
         else:
             return ObjectiveStatus.UNKNOWN
 
-    def filter_system_evaluations(self, evaluation, system_names):
+    @staticmethod
+    def filter_system_evaluations(evaluation, system_names):
         return [system for system in evaluation if system["systemName"] in system_names]
 
 
