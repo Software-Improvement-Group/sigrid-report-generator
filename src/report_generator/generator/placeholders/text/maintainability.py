@@ -34,18 +34,6 @@ def period_end_date():
 
 
 @text_placeholder()
-def portfolio_period_start_date():
-    """The portfolio reporting period's start date in yyyy-mm-dd format."""
-    return maintainability_portfolio_data.period[0]
-
-
-@text_placeholder()
-def portfolio_period_end_date():
-    """The portfolio reporting period's end date in yyyy-mm-dd format."""
-    return maintainability_portfolio_data.period[1]
-
-
-@text_placeholder()
 def report_date():
     """The current date formatted as Month Day, Year."""
     return datetime.now().strftime("%B %d, %Y")
