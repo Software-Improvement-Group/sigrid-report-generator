@@ -16,7 +16,6 @@ from datetime import datetime
 
 from report_generator.generator.data_models import maintainability_portfolio_data
 from .base import text_placeholder
-from statistics import fmean
 
 
 def _format_percentage(percentage):
@@ -26,12 +25,12 @@ def _format_percentage(percentage):
 
 
 def _format_maintainability_statement(amount, number_of_systems, postfix):
-    perc = _format_percentage(int(100*(amount)/number_of_systems))
+    perc = _format_percentage(int(100*amount/number_of_systems))
     return f"There {'are' if amount > 1 else 'is'} {amount} ({perc}) {'systems' if amount > 1 else 'system'} that {'score' if amount > 1 else 'scores'} {postfix}."
 
 
 def _format_short_maintainability_statement(amount, number_of_systems, postfix):
-    perc = _format_percentage(int(100*(amount)/number_of_systems))
+    perc = _format_percentage(int(100*amount/number_of_systems))
     return f"About {amount} ({perc}) {'systems' if amount > 1 else 'system'} {'score' if amount > 1 else 'scores'} {postfix}"
 
 
@@ -42,7 +41,6 @@ def _get_maintainability_stats(stats):
         md = maintainability_portfolio_data.find_system_metadata(system_name)
         if not md['active'] or md['isDevelopmentOnly']:
             continue
-        start_snapshot = maintainability_portfolio_data.start_snapshot(system_name)
         end_snapshot = maintainability_portfolio_data.end_snapshot(system_name)
         if end_snapshot['maintainability'] < 1.5:
             stats['maintainability']['1-star'] += 1
