@@ -66,7 +66,7 @@ class _AbstractTreemapPlaceholder(Placeholder):
         pos_height = shape_placeholder.height.inches
 
         fig = px.treemap(names=data['names'], parents=data['parents'], values=data['values'], color=data['color'], color_discrete_map=data['color_mapping'])
-        fig.update_traces(root_color='rgba(250, 250, 250, 1)')
+        fig.update_traces(root_color='rgba(250, 250, 250, 1)', textposition="middle center")
         fig.update_layout(
             margin = dict(t=0, l=0, r=0, b=0),
             plot_bgcolor="rgba(0,0,0,0)",

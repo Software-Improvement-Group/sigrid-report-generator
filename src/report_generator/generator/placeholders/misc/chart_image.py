@@ -23,7 +23,6 @@ from report_generator.generator.data_models import maintainability_portfolio_dat
 from report_generator.generator.placeholders.base import Placeholder
 import plotly.graph_objects as go
 import io
-import logging
 from pptx.util import Inches
 from datetime import datetime
 
