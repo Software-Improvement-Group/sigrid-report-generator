@@ -81,7 +81,7 @@ def _validate_layout_or_template(ctx, param, value):
 @click.option('-a', '--api-url', default=None,
               help=f'Sigrid API base URL, will default to {sigrid_api.DEFAULT_BASE_URL} if not provided')
 @click.pass_context
-def run(debug, customer, system, token, layout, template, start, end, out_file, api_url):
+def run(ctx, debug, customer, system, token, layout, template, start, end, out_file, api_url):
     _configure_logging(debug)
     _configure_api(customer, system, token, (start, end), api_url)
     _record_usage_statistics(layout, customer)
