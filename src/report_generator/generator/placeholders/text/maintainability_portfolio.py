@@ -15,6 +15,7 @@
 from datetime import datetime
 
 from report_generator.generator.data_models import maintainability_portfolio_data
+from report_generator.generator.formatters.formatters import calculate_star_rating_integer
 from .base import text_placeholder
 
 
@@ -41,17 +42,8 @@ def _get_maintainability_stats(stats):
         md = maintainability_portfolio_data.find_system_metadata(system_name)
         if not md['active'] or md['isDevelopmentOnly']:
             continue
-        end_snapshot = maintainability_portfolio_data.end_snapshot(system_name)
-        if end_snapshot['maintainability'] < 1.5:
-            stats['maintainability']['1-star'] += 1
-        elif end_snapshot['maintainability'] < 2.5:
-            stats['maintainability']['2-star'] += 1
-        elif end_snapshot['maintainability'] < 3.5:
-            stats['maintainability']['3-star'] += 1
-        elif end_snapshot['maintainability'] < 4.5:
-            stats['maintainability']['4-star'] += 1
-        else:
-            stats['maintainability']['5-star'] += 1
+        star_rating_integer = calculate_star_rating_integer(maintainability_portfolio_data.end_snapshot(system_name)['maintainability'])
+        stats['maintainability'][f"{star_rating_integer}-star"] += 1
         stats['maintainability']['number-of-systems'] += 1
 
 

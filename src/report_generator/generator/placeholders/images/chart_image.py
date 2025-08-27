@@ -33,17 +33,18 @@ class _AbstractChartImagePlaceholder(_AbstractImagePlaceholder):
 
 class _AbstractSecurityDashboardPlaceholder(_AbstractChartImagePlaceholder):
     LAYOUT = go.Layout(
-        xaxis={
-            'showline' : True, 'linewidth' : 2, 'linecolor' : '#6E7078',
-            'type': 'category', 'categoryorder': 'array', 'tickmode' : 'array'
-        },
-        yaxis={ 'showgrid' : True, 'gridwidth' : 2, 'gridcolor' : '#E0E4EF' },
-        legend={
-            'orientation' : 'h', 'yanchor' : 'top', 'xanchor' : 'center',
-            'y' : -0.05, 'x' : 0.5, 'traceorder' : 'normal'
-        },
+        xaxis={'showline' : True, 'linewidth' : 2, 'linecolor' : '#6E7078', 'type': 'category', 'categoryorder': 'array', 'tickmode' : 'array'},
+        yaxis={'showgrid' : True, 'gridwidth' : 2, 'gridcolor' : '#E0E4EF' },
+        legend={'orientation' : 'h', 'yanchor' : 'top', 'xanchor' : 'center', 'y' : -0.05, 'x' : 0.5, 'traceorder' : 'normal'},
         barmode='stack'
     )
+
+
+    @staticmethod
+    def get_layout(keys):
+        layout = _AbstractSecurityDashboardPlaceholder.LAYOUT
+        layout.xaxis.update({'categoryarray' : list(keys), 'tickvals' : list(keys), 'ticktext' : _AbstractSecurityDashboardPlaceholder.transform_date_labels_to_months(keys)})
+        return layout
 
 
     @staticmethod
@@ -57,7 +58,7 @@ class _AbstractSecurityDashboardPlaceholder(_AbstractChartImagePlaceholder):
                 month = ratio['month']
                 for severity in res.keys():
                     if month not in res[severity].keys():
-                        res[severity][month] = initial_dict.copy()#{"resolved": 0, "existing": 0, "new": 0}
+                        res[severity][month] = initial_dict.copy()
                     for status in res[severity][month].keys():
                         res[severity][month][status] += ratio['severities'][severity][status]
         return res
@@ -83,41 +84,11 @@ class _AbstractSecurityDashboardFindingsPlaceholder(_AbstractSecurityDashboardPl
         y_values_resolved = [portfolio[k]['resolved'] for k in portfolio.keys()]
         open_findings_text_values = [x + y for x, y in zip(y_values_new, y_values_existing)]
         data = [
-            go.Bar(
-                x=list(portfolio.keys()),
-                y=y_values_new,
-                name="New",
-                marker_color=_AbstractChartImagePlaceholder.DASHBOARD_NEW_FINDINGS_COLOR,
-                offsetgroup="open"
-            ),
-            go.Bar(
-                x=list(portfolio.keys()),
-                y=y_values_existing,
-                name="Existing",
-                marker_color=_AbstractChartImagePlaceholder.DASHBOARD_EXISTING_FINDINGS_COLOR,
-                offsetgroup="open",
-                textposition="outside",
-                text=open_findings_text_values
-            ),
-            go.Bar(
-                x=list(portfolio.keys()),
-                y=y_values_resolved,
-                name="Resolved",
-                marker_color=_AbstractChartImagePlaceholder.DASHBOARD_RESOLVED_FINDINGS_COLOR,
-                offsetgroup="closed",
-                textposition="outside",
-                text=y_values_resolved
-            ),
+            go.Bar(x=list(portfolio.keys()), y=y_values_new, name="New", marker_color=_AbstractChartImagePlaceholder.DASHBOARD_NEW_FINDINGS_COLOR, offsetgroup="open"),
+            go.Bar(x=list(portfolio.keys()), y=y_values_existing, name="Existing", marker_color=_AbstractChartImagePlaceholder.DASHBOARD_EXISTING_FINDINGS_COLOR, offsetgroup="open", textposition="outside", text=open_findings_text_values),
+            go.Bar(x=list(portfolio.keys()), y=y_values_resolved, name="Resolved", marker_color=_AbstractChartImagePlaceholder.DASHBOARD_RESOLVED_FINDINGS_COLOR, offsetgroup="closed", textposition="outside", text=y_values_resolved),
         ]
-
-        layout = _AbstractSecurityDashboardPlaceholder.LAYOUT
-        layout.xaxis.update({
-            'categoryarray' : list(portfolio.keys()),
-            'tickvals' : list(portfolio.keys()),
-            'ticktext' : _AbstractSecurityDashboardPlaceholder.transform_date_labels_to_months(portfolio.keys())
-        })
-
-        return go.Figure(data=data, layout=layout)
+        return go.Figure(data=data, layout=_AbstractSecurityDashboardPlaceholder.get_layout(portfolio.keys()))
     
 
 class _AbstractSecurityDashboardResolutionTimesPlaceholder(_AbstractSecurityDashboardPlaceholder):
@@ -139,50 +110,19 @@ class _AbstractSecurityDashboardResolutionTimesPlaceholder(_AbstractSecurityDash
         portfolio = _AbstractSecurityDashboardResolutionTimesPlaceholder.create_portfolio()[severity]
         legend_entries = _AbstractSecurityDashboardResolutionTimesPlaceholder.LEGEND_ENTRIES_PER_SEVERITY[severity]
 
-        y_values_no_risk = [portfolio[k]['noRisk'] for k in portfolio.keys()]
-        y_values_low_risk = [portfolio[k]['lowRisk'] for k in portfolio.keys()]
-        y_values_medium_risk = [portfolio[k]['mediumRisk'] for k in portfolio.keys()]
-        y_values_high_risk = [portfolio[k]['highRisk'] for k in portfolio.keys()]
-        text_values = [x + y for x, y in zip(y_values_no_risk, y_values_low_risk)]
-        text_values = [x + y for x, y in zip(text_values, y_values_medium_risk)]
-        text_values = [x + y for x, y in zip(text_values, y_values_high_risk)]
+        def get_risk_values(portfolio, risk_levels):
+            return {risk: [portfolio[k][risk] for k in portfolio] for risk in risk_levels}
+        
+        risk_levels = ['noRisk', 'lowRisk', 'mediumRisk', 'highRisk']
+        y_values = get_risk_values(portfolio, risk_levels)
+        text_values = [sum(y_values[risk][i] for risk in risk_levels) for i in range(len(portfolio))]
         data = [
-            go.Bar(
-                x=list(portfolio.keys()),
-                y=y_values_no_risk,
-                name=legend_entries['noRisk'],
-                marker_color=_AbstractChartImagePlaceholder.DASHBOARD_RESOLUTION_NO_RISK_COLOR
-            ),
-            go.Bar(
-                x=list(portfolio.keys()),
-                y=y_values_low_risk,
-                name=legend_entries['lowRisk'],
-                marker_color=_AbstractChartImagePlaceholder.DASHBOARD_RESOLUTION_LOW_RISK_COLOR
-            ),
-            go.Bar(
-                x=list(portfolio.keys()),
-                y=y_values_medium_risk,
-                name=legend_entries['mediumRisk'],
-                marker_color=_AbstractChartImagePlaceholder.DASHBOARD_RESOLUTION_MEDIUM_RISK_COLOR
-            ),
-            go.Bar(
-                x=list(portfolio.keys()),
-                y=y_values_high_risk,
-                name=legend_entries['highRisk'],
-                marker_color=_AbstractChartImagePlaceholder.DASHBOARD_RESOLUTION_HIGH_RISK_COLOR,
-                textposition="outside",
-                text=text_values
-            ),
+            go.Bar(x=list(portfolio.keys()), y=y_values['noRisk'], name=legend_entries['noRisk'], marker_color=_AbstractChartImagePlaceholder.DASHBOARD_RESOLUTION_NO_RISK_COLOR),
+            go.Bar(x=list(portfolio.keys()), y=y_values['lowRisk'], name=legend_entries['lowRisk'], marker_color=_AbstractChartImagePlaceholder.DASHBOARD_RESOLUTION_LOW_RISK_COLOR),
+            go.Bar(x=list(portfolio.keys()), y=y_values['mediumRisk'], name=legend_entries['mediumRisk'], marker_color=_AbstractChartImagePlaceholder.DASHBOARD_RESOLUTION_MEDIUM_RISK_COLOR),
+            go.Bar(x=list(portfolio.keys()), y=y_values['highRisk'], name=legend_entries['highRisk'], marker_color=_AbstractChartImagePlaceholder.DASHBOARD_RESOLUTION_HIGH_RISK_COLOR, textposition="outside", text=text_values),
         ]
-
-        layout = _AbstractSecurityDashboardPlaceholder.LAYOUT
-        layout.xaxis.update({
-            'categoryarray' : list(portfolio.keys()),
-            'tickvals' : list(portfolio.keys()),
-            'ticktext' : _AbstractSecurityDashboardPlaceholder.transform_date_labels_to_months(portfolio.keys())
-        })
-
-        return go.Figure(data=data, layout=layout)
+        return go.Figure(data=data, layout=_AbstractSecurityDashboardPlaceholder.get_layout(portfolio.keys()))
 
 
 class SecurityDashboardCriticalFindingsPlaceholder(_AbstractSecurityDashboardFindingsPlaceholder):

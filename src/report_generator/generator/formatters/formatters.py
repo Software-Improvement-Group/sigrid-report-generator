@@ -31,6 +31,10 @@ def use_sig_sterren(enabled: bool = True) -> None:
     _USE_SIG_STERREN = enabled
 
 
+def calculate_star_rating_integer(rating):
+    return min(5, max(1, int(rating + 0.5)))
+
+
 def calculate_stars(maintainability_rating: float) -> str:
     sig_sterren_ratings = ("HIIII", "HHIII", "HHHII", "HHHHI", "HHHHH")
     star_ratings = ("★☆☆☆☆", "★★☆☆☆", "★★★☆☆", "★★★★☆", "★★★★★")
@@ -39,16 +43,8 @@ def calculate_stars(maintainability_rating: float) -> str:
 
     if maintainability_rating < 0.1:
         return ""
-    elif maintainability_rating < 1.5:
-        return ratings[0]
-    elif maintainability_rating < 2.5:
-        return ratings[1]
-    elif maintainability_rating < 3.5:
-        return ratings[2]
-    elif maintainability_rating < 4.5:
-        return ratings[3]
-    else:
-        return ratings[4]
+    star_rating = calculate_star_rating_integer(maintainability_rating)
+    return ratings[star_rating-1]
 
 
 def maintainability_round(rating) -> str:
