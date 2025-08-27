@@ -141,7 +141,7 @@ class PeriodPortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder):
     def _calculate_differences(portfolio, metric):
         differences = {}
         for entry in portfolio.keys():
-            if portfolio[entry]['start_date_data']['maintainabilityDate'] == portfolio[entry]['end_date_data']['maintainabilityDate']:
+            if portfolio[entry]['start_date_data']['maintainabilityDate'] == portfolio[entry]['end_date_data']['maintainabilityDate'] or not portfolio[entry]['end_date_data'][metric] or not portfolio[entry]['start_date_data'][metric]:
                 differences[entry] = None
             else:
                 differences[entry] = portfolio[entry]['end_date_data'][metric]-portfolio[entry]['start_date_data'][metric]
