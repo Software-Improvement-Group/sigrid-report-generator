@@ -137,7 +137,7 @@ def portfolio_period_maint_short_summary():
     }
     postfixes = {
         'above-market-average' : "above market average on maintainability",
-        'market-average' : "above market average on maintainability",
+        'market-average' : "market average on maintainability",
         'below-market-average' : "below market average on maintainability"
     }
     key = max(processed_stats, key=processed_stats.get)

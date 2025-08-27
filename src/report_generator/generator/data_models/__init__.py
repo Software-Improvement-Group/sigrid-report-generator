@@ -18,7 +18,6 @@ from .objectives import objectives_data
 from .maintainability import maintainability_data
 from .maintainability_portfolio import maintainability_portfolio_data
 from .modernization import modernization_data
-from .objectives import objectives_data
 from .osh import osh_data
 from .refactoring_candidates import refactoring_candidates_data
 from .security_dashboard_findings_portfolio import security_dashboard_findings_portfolio_data

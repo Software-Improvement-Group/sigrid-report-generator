@@ -31,10 +31,6 @@ class MaintainabilityPortfolioData:
         return sigrid_api.get_period()
 
     @cached_property
-    def period(self):
-        return sigrid_api.get_period()
-    
-    @cached_property
     def system_names(self):
         return [x['system'] for x in self.data['systems']]
     
