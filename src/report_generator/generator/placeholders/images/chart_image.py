@@ -12,24 +12,15 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from typing import Callable
-
-from pptx import Presentation
-
 from report_generator.generator import report_utils
 from report_generator.generator.data_models import security_dashboard_findings_portfolio_data
 from report_generator.generator.data_models import security_dashboard_resolution_times_portfolio_data
 from report_generator.generator.data_models import maintainability_portfolio_data
-from report_generator.generator.placeholders.base import Placeholder
 import plotly.graph_objects as go
-import io
-from pptx.util import Inches
 from datetime import datetime
+from .base import _AbstractImagePlaceholder
 
-class _AbstractChartImagePlaceholder(Placeholder):
-    SIG_BLUE_COLOR = f"#{report_utils.pptx.SIG_BLUE_COLOR}"
-    NA_STAR_COLOR = f"#{report_utils.pptx.NA_STAR_COLOR}"
-
+class _AbstractChartImagePlaceholder(_AbstractImagePlaceholder):
     DASHBOARD_EXISTING_FINDINGS_COLOR = f"#{report_utils.pptx.DASHBOARD_EXISTING_FINDINGS_COLOR}"
     DASHBOARD_NEW_FINDINGS_COLOR = f"#{report_utils.pptx.DASHBOARD_NEW_FINDINGS_COLOR}"
     DASHBOARD_RESOLVED_FINDINGS_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLVED_FINDINGS_COLOR}"
@@ -38,40 +29,6 @@ class _AbstractChartImagePlaceholder(Placeholder):
     DASHBOARD_RESOLUTION_LOW_RISK_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLUTION_LOW_RISK_COLOR}"
     DASHBOARD_RESOLUTION_MEDIUM_RISK_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLUTION_MEDIUM_RISK_COLOR}"
     DASHBOARD_RESOLUTION_HIGH_RISK_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLUTION_HIGH_RISK_COLOR}"
-
-    @classmethod
-    def resolve_pptx(cls, presentation: Presentation, key: str, value_cb: Callable):
-        slides = report_utils.pptx.identify_specific_slide(presentation, key)
-        if len(slides) == 0:
-            return
-
-        for slide in slides:
-            shapes = report_utils.pptx.find_shapes_with_text_in_slide(slide, key)
-            for shape in shapes:
-                fig = value_cb()
-                cls.create_and_add_treemap_image_to_slide(shape, slide, fig)
-    
-    @staticmethod
-    def create_and_add_treemap_image_to_slide(shape_placeholder, slide, fig):
-        pos_left = shape_placeholder.left.inches
-        pos_top = shape_placeholder.top.inches
-        pos_width = shape_placeholder.width.inches
-        pos_height = shape_placeholder.height.inches
-
-        fig.update_layout(
-            margin = dict(t=0, l=0, r=0, b=0),
-            plot_bgcolor="rgba(0,0,0,0)",
-            paper_bgcolor="rgba(0,0,0,0)"
-        )
-        
-        img_bytes = fig.to_image(format="png", width=pos_width*2*96, height=pos_height*2*96)
-        
-        slide.shapes.add_picture(io.BytesIO(img_bytes),
-            left=Inches(pos_left), top=Inches(pos_top),
-            width=Inches(pos_width), height=Inches(pos_height))
-
-        el = shape_placeholder.element
-        el.getparent().remove(el)
 
 
 class _AbstractSecurityDashboardPlaceholder(_AbstractChartImagePlaceholder):

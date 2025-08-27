@@ -12,34 +12,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from typing import Callable
-
-from pptx import Presentation
-
 from report_generator.generator import report_utils
 from report_generator.generator.data_models import maintainability_portfolio_data, security_ratings_portfolio_data, architecture_portfolio_data
-from report_generator.generator.placeholders.base import Placeholder
 import plotly.express as px
-import io
 import logging
-from pptx.util import Inches
+from .base import _AbstractImagePlaceholder
 
-class _AbstractTreemapPlaceholder(Placeholder):
-    SIG_BLUE_COLOR = f"#{report_utils.pptx.SIG_BLUE_COLOR}"
-    NA_STAR_COLOR = f"#{report_utils.pptx.NA_STAR_COLOR}"
 
-    @classmethod
-    def resolve_pptx(cls, presentation: Presentation, key: str, value_cb: Callable):
-        slides = report_utils.pptx.identify_specific_slide(presentation, key)
-        if len(slides) == 0:
-            return
-
-        for slide in slides:
-            shapes = report_utils.pptx.find_shapes_with_text_in_slide(slide, key)
-            for shape in shapes:
-                data = value_cb()
-                cls.create_and_add_treemap_image_to_slide(shape, slide, data)
-    
+class _AbstractTreemapPlaceholder(_AbstractImagePlaceholder):
     @staticmethod
     def determine_rating_color(rating):
         return f"#{report_utils.pptx.determine_rating_color(rating)}"
@@ -57,30 +37,6 @@ class _AbstractTreemapPlaceholder(Placeholder):
         if min_val == max_val:
             return 0
         return max(0, min(1, (val - min_val) / (max_val - min_val)))
-
-    @staticmethod
-    def create_and_add_treemap_image_to_slide(shape_placeholder, slide, data):
-        pos_left = shape_placeholder.left.inches
-        pos_top = shape_placeholder.top.inches
-        pos_width = shape_placeholder.width.inches
-        pos_height = shape_placeholder.height.inches
-
-        fig = px.treemap(names=data['names'], parents=data['parents'], values=data['values'], color=data['color'], color_discrete_map=data['color_mapping'])
-        fig.update_traces(root_color='rgba(250, 250, 250, 1)', textposition="middle center")
-        fig.update_layout(
-            margin = dict(t=0, l=0, r=0, b=0),
-            plot_bgcolor="rgba(0,0,0,0)",
-            paper_bgcolor="rgba(0,0,0,0)"
-        )
-        
-        img_bytes = fig.to_image(format="png", width=pos_width*2*96, height=pos_height*2*96)
-        
-        slide.shapes.add_picture(io.BytesIO(img_bytes),
-            left=Inches(pos_left), top=Inches(pos_top),
-            width=Inches(pos_width), height=Inches(pos_height))
-
-        el = shape_placeholder.element
-        el.getparent().remove(el)
 
 
 class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder):
@@ -149,6 +105,13 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder):
             values[i] = portfolio[t]['end_date_data']['volumeInPersonMonths']
         return values
 
+    
+    @staticmethod
+    def create_treemap_figure(data):
+        fig = px.treemap(names=data['names'], parents=data['parents'], values=data['values'], color=data['color'], color_discrete_map=data['color_mapping'])
+        fig.update_traces(root_color='rgba(250, 250, 250, 1)', textposition="middle center")
+        return fig
+
 
 class MaintainabilityPortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder):
     """Creates a portfolio treemap where the color is determined by the maintainability rating of the individual systems."""
@@ -167,7 +130,7 @@ class MaintainabilityPortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceh
 
         treemap['values'] = _AbstractPortfolioTreemapPlaceholder.create_treemap_values(portfolio, treemap)
         treemap['color'] = treemap['tracking']
-        return treemap
+        return cls.create_treemap_figure(treemap)
 
     
 class MaintainabilityChangePortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder):
@@ -203,8 +166,8 @@ class MaintainabilityChangePortfolioTreemapPlaceholder(_AbstractPortfolioTreemap
 
         treemap['values'] = _AbstractPortfolioTreemapPlaceholder.create_treemap_values(portfolio, treemap)
         treemap['color'] = treemap['tracking']
-        return treemap
-    
+        return cls.create_treemap_figure(treemap)
+
 
 class VolumeChangePortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder):
     """Creates a portfolio treemap where the color is determined by the change in volume change (effort) of the individual systems during the specified period."""
@@ -239,7 +202,7 @@ class VolumeChangePortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlacehold
 
         treemap['values'] = _AbstractPortfolioTreemapPlaceholder.create_treemap_values(portfolio, treemap)
         treemap['color'] = treemap['tracking']
-        return treemap
+        return cls.create_treemap_figure(treemap)
     
 
 class TestCodePortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder):
@@ -259,7 +222,7 @@ class TestCodePortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder):
 
         treemap['values'] = _AbstractPortfolioTreemapPlaceholder.create_treemap_values(portfolio, treemap)
         treemap['color'] = treemap['tracking']
-        return treemap
+        return cls.create_treemap_figure(treemap)
     
     
 class SecurityRatingsPortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder):
@@ -282,7 +245,7 @@ class SecurityRatingsPortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceh
 
         treemap['values'] = _AbstractPortfolioTreemapPlaceholder.create_treemap_values(portfolio, treemap)
         treemap['color'] = treemap['tracking']
-        return treemap
+        return cls.create_treemap_figure(treemap)
 
 
 class ArchitecturePortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder):
@@ -305,4 +268,4 @@ class ArchitecturePortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlacehold
 
         treemap['values'] = _AbstractPortfolioTreemapPlaceholder.create_treemap_values(portfolio, treemap)
         treemap['color'] = treemap['tracking']
-        return treemap
+        return cls.create_treemap_figure(treemap)
