@@ -34,50 +34,46 @@ class _AbstractChartImagePlaceholder(_AbstractImagePlaceholder):
 class _AbstractSecurityDashboardPlaceholder(_AbstractChartImagePlaceholder):
     LAYOUT = go.Layout(
         xaxis={
-            'showline' : True,
-            'linewidth' : 2,
-            'linecolor' : '#6E7078',
-            'type': 'category',
-            'categoryorder': 'array',
-            'tickmode' : 'array'
+            'showline' : True, 'linewidth' : 2, 'linecolor' : '#6E7078',
+            'type': 'category', 'categoryorder': 'array', 'tickmode' : 'array'
         },
-        yaxis={
-            'showgrid' : True,
-            'gridwidth' : 2,
-            'gridcolor' : '#E0E4EF'
-        },
+        yaxis={ 'showgrid' : True, 'gridwidth' : 2, 'gridcolor' : '#E0E4EF' },
         legend={
-            'orientation' : 'h',
-            'yanchor' : 'top',
-            'xanchor' : 'center',
-            'y' : -0.05,
-            'x' : 0.5,
-            'traceorder' : 'normal'
+            'orientation' : 'h', 'yanchor' : 'top', 'xanchor' : 'center',
+            'y' : -0.05, 'x' : 0.5, 'traceorder' : 'normal'
         },
         barmode='stack'
     )
+
+
+    @staticmethod
+    def create_portfolio(data_source, metric, initial_dict):
+        res = {"CRITICAL" : {}, "HIGH" : {}, "MEDIUM" : {}, "LOW" : {}}
+        for system in data_source.data['systems']:
+            md = maintainability_portfolio_data.find_system_metadata(system['system'])
+            if not md or not md['active'] or md['isDevelopmentOnly']:
+                continue
+            for ratio in system[metric]:
+                month = ratio['month']
+                for severity in res.keys():
+                    if month not in res[severity].keys():
+                        res[severity][month] = initial_dict.copy()#{"resolved": 0, "existing": 0, "new": 0}
+                    for status in res[severity][month].keys():
+                        res[severity][month][status] += ratio['severities'][severity][status]
+        return res
+
 
     @staticmethod
     def transform_date_labels_to_months(dates):
         return [datetime.strptime(x, "%Y-%m-%d").strftime("%b") for x in dates]
 
+
 class _AbstractSecurityDashboardFindingsPlaceholder(_AbstractSecurityDashboardPlaceholder):
     @staticmethod
     def create_portfolio():
-        res = {"CRITICAL" : {}, "HIGH" : {}, "MEDIUM" : {}, "LOW" : {}}
-        for system in security_dashboard_findings_portfolio_data.data['systems']:
-            md = maintainability_portfolio_data.find_system_metadata(system['system'])
-            if not md or not md['active'] or md['isDevelopmentOnly']:
-                continue
-            for ratio in system['findingRatio']:
-                month = ratio['month']
-                for severity in res.keys():
-                    if month not in res[severity].keys():
-                        res[severity][month] = {"resolved": 0, "existing": 0, "new": 0}
-                    for status in res[severity][month].keys():
-                        res[severity][month][status] += ratio['severities'][severity][status]
-        return res
+        return _AbstractSecurityDashboardPlaceholder.create_portfolio(security_dashboard_findings_portfolio_data, 'findingRatio', {"resolved": 0, "existing": 0, "new": 0}) 
     
+
     @staticmethod
     def create_dashboard_with_severity(severity):
         portfolio = _AbstractSecurityDashboardFindingsPlaceholder.create_portfolio()[severity]
@@ -131,21 +127,12 @@ class _AbstractSecurityDashboardResolutionTimesPlaceholder(_AbstractSecurityDash
         "MEDIUM" : {'noRisk' : "at most 30 days", "lowRisk" : "between 30-180 days", "mediumRisk" : "between 180-365 days", "highRisk" : "at least 365 days"},
         "LOW" : {'noRisk' : "at most 180 days", "lowRisk" : "between 180-365 days", "mediumRisk" : "between 1-2 years", "highRisk" : "at least 2 years"}
     }
+
+
     @staticmethod
     def create_portfolio():
-        res = {"CRITICAL" : {}, "HIGH" : {}, "MEDIUM" : {}, "LOW" : {}}
-        for system in security_dashboard_resolution_times_portfolio_data.data['systems']:
-            md = maintainability_portfolio_data.find_system_metadata(system['system'])
-            if not md or not md['active'] or md['isDevelopmentOnly']:
-                continue
-            for ratio in system['resolutionTimes']:
-                month = ratio['month']
-                for severity in res.keys():
-                    if month not in res[severity].keys():
-                        res[severity][month] = {"noRisk": 0, "lowRisk": 0, "mediumRisk": 0, "highRisk" : 0}
-                    for status in res[severity][month].keys():
-                        res[severity][month][status] += ratio['severities'][severity][status]
-        return res
+        return _AbstractSecurityDashboardPlaceholder.create_portfolio(security_dashboard_resolution_times_portfolio_data, 'resolutionTimes', {"noRisk": 0, "lowRisk": 0, "mediumRisk": 0, "highRisk" : 0}) 
+    
     
     @staticmethod
     def create_dashboard_with_severity(severity):
