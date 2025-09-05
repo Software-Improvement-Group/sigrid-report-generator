@@ -20,7 +20,10 @@ from report_generator.generator import sigrid_api
 class MaintainabilityPortfolioData:
     @cached_property
     def data(self):
-        return sigrid_api.get_portfolio_maintainability()
+        data = sigrid_api.get_portfolio_maintainability()
+        filtered_data = data
+        filtered_data['systems'] = [system for system in data['systems'] if 'maintainability' in system]
+        return filtered_data
     
     @cached_property
     def metadata(self):
