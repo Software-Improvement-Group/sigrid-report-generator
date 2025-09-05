@@ -88,6 +88,8 @@ def __get_maintainability_average_stats(stats):
             start_volumes.append(start_snapshot['volumeInPersonMonths'])
         end_maintainability_ratings.append(end_snapshot['maintainability'])
         end_volumes.append(end_snapshot['volumeInPersonMonths'])
+    if not start_volumes:
+        start_volumes = [0.0000001]
     stats['maintainability']['start-average'] = sum(x * y for x, y in zip(start_maintainability_ratings, start_volumes)) / sum(start_volumes) 
     stats['maintainability']['end-average'] = sum(x * y for x, y in zip(end_maintainability_ratings, end_volumes)) / sum(end_volumes) 
 
