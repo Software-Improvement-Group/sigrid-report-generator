@@ -77,13 +77,15 @@ def _validate_layout_or_template(ctx, param, value):
               help='A custom report template file (mutually exclusive with the -l/--layout option)')
 @click.option('--start', default=DEFAULT_START_DATE, help='Report start date in yyyy-mm-dd, default is last month.')
 @click.option('--end', default=DEFAULT_END_DATE, help='Report end date in yyyy-mm-dd, default is last month.')
+@click.option('--team', multiple=True, help='Select one or more teams.')
+@click.option('--division', multiple=True, help='Select one or more divisions.')
 @click.option('-o', '--out-file', default='out', help='write output to this file (default out.pptx/docx)')
 @click.option('-a', '--api-url', default=None,
               help=f'Sigrid API base URL, will default to {sigrid_api.DEFAULT_BASE_URL} if not provided')
 @click.pass_context
-def run(ctx, debug, customer, system, token, layout, template, start, end, out_file, api_url):
+def run(ctx, debug, customer, system, token, layout, template, start, end, team, division, out_file, api_url):
     _configure_logging(debug)
-    _configure_api(customer, system, token, (start, end), api_url)
+    _configure_api(customer, system, token, (start, end), api_url, team, division)
     _record_usage_statistics(layout, customer)
 
     if template:
@@ -93,13 +95,15 @@ def run(ctx, debug, customer, system, token, layout, template, start, end, out_f
     presets.run(layout, out_file)
 
 
-def _configure_api(customer: str, system: str, token: str, period: tuple[str, str], api_url: Optional[str]):
+def _configure_api(customer: str, system: str, token: str, period: tuple[str, str], api_url: Optional[str], team: Optional[list[str]], division: Optional[list[str]]):
     sigrid_api.set_context(
         bearer_token=token,
         customer=customer,
         system=system,
         period=period,
-        base_url=api_url
+        base_url=api_url,
+        team=team,
+        division=division
     )
 
 

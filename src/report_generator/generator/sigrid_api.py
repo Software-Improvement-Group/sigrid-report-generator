@@ -29,7 +29,8 @@ _customer: Optional[str] = None
 _system: Optional[str] = None
 _period: Optional[tuple[str, str]] = None
 _rest_url: Optional[str] = None
-
+_team: Optional[list[str]] = None
+_division: Optional[list[str]] = None
 
 class SigridAPIRequestFailed(Exception):
     def __init__(self, function_name, message="API request failed"):
@@ -49,10 +50,12 @@ def set_context(
         customer: Optional[str] = None,
         system: Optional[str] = None,
         period: Optional[tuple[str, str]] = None,
-        base_url: Optional[str] = None
+        base_url: Optional[str] = None,
+        team: Optional[list[str]] = None,
+        division: Optional[list[str]] = None
 ) -> None:
     """Set the context values. Only updates provided values. Sets base_url to default if not provided."""
-    global _bearer_token, _customer, _system, _period, _rest_url
+    global _bearer_token, _customer, _system, _period, _rest_url, _team, _division
 
     if bearer_token is not None:
         _test_sigrid_token(bearer_token)
@@ -68,6 +71,12 @@ def set_context(
         _period = period
 
     _rest_url = f"{base_url or DEFAULT_BASE_URL.rstrip('/')}/rest"
+
+    if team is not None:
+        _team = team
+
+    if division is not None:
+        _division = division
 
 
 def reset_context(
@@ -110,6 +119,25 @@ def _check_context() -> None:
     if missing_values:
         raise ValueError(f"Context must be set using sigrid_api.set_context() before making API calls. "
                          f"The following values are not set: {', '.join(missing_values)}")
+
+def _check_if_system_matches_metadata_criteria(system_name, portfolio_metadata):
+    global _team, _division
+    for md in portfolio_metadata:
+        if system_name == md['systemName']:
+            in_team = False
+            if len(_team) == 0:
+                in_team = True
+            elif md['teamNames'] is not None:
+                for team_name in md['teamNames']:
+                    if team_name in _team:
+                        in_team = True
+                        break
+            
+            in_division = False
+            if len(_division) == 0 or (len(_division) > 0 and md['divisionName'] is not None and md['divisionName'] in _division):
+                in_division = True
+            return in_team & in_division
+    return False
 
 
 @cache
