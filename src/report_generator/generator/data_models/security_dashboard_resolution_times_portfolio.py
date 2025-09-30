@@ -15,21 +15,13 @@
 from functools import cached_property
 
 from report_generator.generator import sigrid_api
-# from .security_dashboard_findings_portfolio import _check_if_system_matches_metadata_criteria
-from report_generator.generator.sigrid_api import _check_if_system_matches_metadata_criteria
+from .security_dashboard_findings_portfolio import _filter_systems_based_on_metadata
 
 class SecurityDashboardResolutionTimesPortfolioData:
     @cached_property
     def data(self):
         raw_data = sigrid_api.get_portfolio_security_resolution_time_findings()
-        md = sigrid_api.get_portfolio_metadata()
-        filtered_data = {'systems' : []}
-
-        for entry in raw_data['systems']:
-            if _check_if_system_matches_metadata_criteria(entry['system'], md):
-                filtered_data['systems'].append(entry)
-
-        return filtered_data
+        return _filter_systems_based_on_metadata(raw_data)
     
     @cached_property
     def system_names(self):

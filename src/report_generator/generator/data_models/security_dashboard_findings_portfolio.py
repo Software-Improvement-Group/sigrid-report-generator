@@ -21,14 +21,7 @@ class SecurityDashboardFindingsPortfolioData:
     @cached_property
     def data(self):
         raw_data = sigrid_api.get_portfolio_security_dashboard_findings()
-        md = sigrid_api.get_portfolio_metadata()
-        filtered_data = {'systems' : []}
-
-        for entry in raw_data['systems']:
-            if _check_if_system_matches_metadata_criteria(entry['system'], md):
-                filtered_data['systems'].append(entry)
-
-        return filtered_data
+        return _filter_systems_based_on_metadata(raw_data)
     
     @cached_property
     def system_names(self):
@@ -39,5 +32,17 @@ class SecurityDashboardFindingsPortfolioData:
             if s['system'] == system:
                 return s
         return None
+
+
+def _filter_systems_based_on_metadata(data):
+    md = sigrid_api.get_portfolio_metadata()
+    filtered_data = {'systems' : []}
+
+    for entry in data['systems']:
+        if _check_if_system_matches_metadata_criteria(entry['system'], md):
+            filtered_data['systems'].append(entry)
+
+    return filtered_data
+
 
 security_dashboard_findings_portfolio_data = SecurityDashboardFindingsPortfolioData()
