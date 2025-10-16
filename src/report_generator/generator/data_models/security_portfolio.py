@@ -15,41 +15,28 @@
 from functools import cached_property
 
 from report_generator.generator import sigrid_api
+from .base import BasePortfolioModel
 
-class SecurityRatingsPortfolioData:
+class SecurityRatingsPortfolioData(BasePortfolioModel):
     @cached_property
     def data(self):
         return sigrid_api.get_portfolio_security_ratings()
     
     @cached_property
-    def metadata(self):
-        return sigrid_api.get_portfolio_metadata()
-
-    @cached_property
     def period(self):
         return (None, sigrid_api.get_period()[1])
     
+    def _find_system(self, system):
+        return BasePortfolioModel._find_system_helper(system, self.data, 'systemName')
+    
     @cached_property
     def system_names(self):
-        return [x['systemName'] for x in self.data]
+        return BasePortfolioModel._system_names_helper(self.data, 'systemName')
     
-    @staticmethod
-    def _find_entry_in_data(data, system):
-        for s in data:
-            if s['systemName'] == system:
-                return s
-        return None
-    
-    def _find_system(self, system):
-        return SecurityRatingsPortfolioData._find_entry_in_data(self.data, system)
-    
-    def find_system_metadata(self, system):
-        return SecurityRatingsPortfolioData._find_entry_in_data(self.metadata, system)
-    
-    def start_snapshot(self, system):
-        return None
+    # def start_snapshot(self, system):
+    #     return None
 
-    def end_snapshot(self, system):
-        return self._find_system(system)
+    # def end_snapshot(self, system):
+    #     return self._find_system(system)
 
 security_ratings_portfolio_data = SecurityRatingsPortfolioData()

@@ -17,41 +17,25 @@ from functools import cached_property
 from typing import Tuple, Optional
 
 from report_generator.generator import sigrid_api
-from .security_dashboard_findings_portfolio import _filter_systems_based_on_metadata
 from report_generator.generator.formatters.formatters import calculate_star_rating_integer
 
-class MaintainabilityPortfolioData:
+from .base import BasePortfolioModel
+
+class MaintainabilityPortfolioData(BasePortfolioModel):
     @cached_property
     def data(self):
         data = sigrid_api.get_portfolio_maintainability()
         filtered_data = data
         filtered_data['systems'] = [system for system in data['systems'] if 'maintainability' in system]
-        return _filter_systems_based_on_metadata(filtered_data)
+        return filtered_data
     
-    @cached_property
-    def metadata(self):
-        return sigrid_api.get_portfolio_metadata()
-    
-    @cached_property
-    def period(self):
-        return sigrid_api.get_period()
-
     @cached_property
     def system_names(self):
-        return [x['system'] for x in self.data['systems']]
+        return BasePortfolioModel._system_names_helper(self.data['systems'], 'system')
     
     def _find_system(self, system):
-        for s in self.data['systems']:
-            if s['system'] == system:
-                return s
-        return None
+        return BasePortfolioModel._find_system_helper(system, self.data['systems'], 'system')
     
-    def find_system_metadata(self, system):
-        for s in self.metadata:
-            if s['systemName'] == system:
-                return s
-        return None
-
     @staticmethod
     def _get_head_entry(system):
         return {

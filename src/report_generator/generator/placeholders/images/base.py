@@ -13,6 +13,7 @@
 #  limitations under the License.
 
 from typing import Callable
+from abc import ABC
 
 from pptx import Presentation
 

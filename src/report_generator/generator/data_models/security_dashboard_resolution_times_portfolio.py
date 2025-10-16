@@ -15,22 +15,18 @@
 from functools import cached_property
 
 from report_generator.generator import sigrid_api
-from .security_dashboard_findings_portfolio import _filter_systems_based_on_metadata
+from .base import BasePortfolioModel
 
-class SecurityDashboardResolutionTimesPortfolioData:
+class SecurityDashboardResolutionTimesPortfolioData(BasePortfolioModel):
     @cached_property
     def data(self):
-        raw_data = sigrid_api.get_portfolio_security_resolution_time_findings()
-        return _filter_systems_based_on_metadata(raw_data)
+        return sigrid_api.get_portfolio_security_resolution_time_findings()
     
     @cached_property
     def system_names(self):
-        return [x['system'] for x in self.data['systems']]
+        return BasePortfolioModel._system_names_helper(self.data['systems'], 'system')
     
     def _find_system(self, system):
-        for s in self.data['systems']:
-            if s['system'] == system:
-                return s
-        return None
+        return BasePortfolioModel._find_system_helper(system, self.data['systems'], 'system')
     
 security_dashboard_resolution_times_portfolio_data = SecurityDashboardResolutionTimesPortfolioData()
