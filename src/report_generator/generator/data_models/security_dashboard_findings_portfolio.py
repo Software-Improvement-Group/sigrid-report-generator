@@ -28,9 +28,5 @@ class SecurityDashboardFindingsPortfolioData(BasePortfolioModel):
     
     def _find_system(self, system):
         return BasePortfolioModel._find_system_helper(system, self.data['systems'], 'system')
-        # for s in self.data['systems']:
-        #     if s['system'] == system:
-        #         return s
-        # return None
 
 security_dashboard_findings_portfolio_data = SecurityDashboardFindingsPortfolioData()

@@ -33,10 +33,4 @@ class SecurityRatingsPortfolioData(BasePortfolioModel):
     def system_names(self):
         return BasePortfolioModel._system_names_helper(self.data, 'systemName')
     
-    # def start_snapshot(self, system):
-    #     return None
-
-    # def end_snapshot(self, system):
-    #     return self._find_system(system)
-
 security_ratings_portfolio_data = SecurityRatingsPortfolioData()
