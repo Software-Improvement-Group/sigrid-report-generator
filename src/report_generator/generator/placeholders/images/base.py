@@ -29,18 +29,16 @@ class _AbstractImagePlaceholder(Placeholder):
 
     @classmethod
     def resolve_pptx(cls, presentation: Presentation, key: str, value_cb: Callable):
-        slides = report_utils.pptx.identify_specific_slide(presentation, key)
-        if len(slides) == 0:
+        shapes = report_utils.pptx.find_shapes(presentation, key)
+        if len(shapes) == 0:
             return
 
-        for slide in slides:
-            shapes = report_utils.pptx.find_shapes_with_text_in_slide(slide, key)
-            for shape in shapes:
-                fig = value_cb()
-                cls.create_and_add_image_to_slide(shape, slide, fig)
+        fig = value_cb()
+        for shape in shapes:
+            cls.create_and_add_image_to_slide(shape, fig)
     
     @staticmethod
-    def create_and_add_image_to_slide(shape_placeholder, slide, fig):
+    def create_and_add_image_to_slide(shape_placeholder, fig):
         pos_left = shape_placeholder.left.inches
         pos_top = shape_placeholder.top.inches
         pos_width = shape_placeholder.width.inches
@@ -54,7 +52,7 @@ class _AbstractImagePlaceholder(Placeholder):
         
         img_bytes = fig.to_image(format="png", width=pos_width*2*96, height=pos_height*2*96)
         
-        slide.shapes.add_picture(io.BytesIO(img_bytes),
+        shape_placeholder.part.slide.shapes.add_picture(io.BytesIO(img_bytes),
             left=Inches(pos_left), top=Inches(pos_top),
             width=Inches(pos_width), height=Inches(pos_height))
 

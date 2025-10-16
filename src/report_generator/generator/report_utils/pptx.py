@@ -245,6 +245,15 @@ def find_tables(presentation: Presentation, key: str):
     ]
 
 
+def find_shapes(presentation: Presentation, key: str):
+    return [
+        shape
+        for slide in presentation.slides
+        for shape in slide.shapes
+        if find_text_in_shape(shape, key)
+    ]
+
+
 def remove_row_from_table(table: Table, row: _Row):
     # noinspection PyProtectedMember
     tbl = table._tbl
