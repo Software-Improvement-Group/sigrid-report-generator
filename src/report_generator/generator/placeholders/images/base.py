@@ -23,7 +23,7 @@ import io
 from pptx.util import Inches
 
 class _AbstractImagePlaceholder(Placeholder):
-    SIG_BLUE_COLOR = f"#{report_utils.pptx.SIG_BLUE_COLOR}"
+    BUNDLE_COLOR = f"#{report_utils.pptx.SIG_GREY_COLOR}"
     NA_STAR_COLOR = f"#{report_utils.pptx.NA_STAR_COLOR}"
 
     @classmethod

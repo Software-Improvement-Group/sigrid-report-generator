@@ -16,6 +16,7 @@ from datetime import datetime
 from functools import cached_property
 
 from report_generator.generator import sigrid_api
+from .security_dashboard_findings_portfolio import _filter_systems_based_on_metadata
 
 class MaintainabilityPortfolioData:
     @cached_property
@@ -23,7 +24,7 @@ class MaintainabilityPortfolioData:
         data = sigrid_api.get_portfolio_maintainability()
         filtered_data = data
         filtered_data['systems'] = [system for system in data['systems'] if 'maintainability' in system]
-        return filtered_data
+        return _filter_systems_based_on_metadata(filtered_data)
     
     @cached_property
     def metadata(self):

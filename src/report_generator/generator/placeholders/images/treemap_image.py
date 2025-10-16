@@ -98,7 +98,7 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder):
             if cur_parent == "":
                 values[i] = 0
                 if t not in treemap_data['color_mapping'].keys():
-                    treemap_data['color_mapping'][t] = _AbstractPortfolioTreemapPlaceholder.SIG_BLUE_COLOR
+                    treemap_data['color_mapping'][t] = _AbstractPortfolioTreemapPlaceholder.BUNDLE_COLOR
                 continue
             if portfolio[t]['end_date_data'] is None:
                 values[i] = 0
