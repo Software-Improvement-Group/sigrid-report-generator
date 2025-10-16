@@ -12,8 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from datetime import datetime
-
 from report_generator.generator.data_models import maintainability_portfolio_data
 from .base import text_placeholder
 

@@ -15,7 +15,7 @@
 from typing import Callable
 from abc import ABC
 
-from pptx import Presentation
+from pptx.presentation import Presentation
 
 from report_generator.generator.placeholders.base import Placeholder
 from report_generator.generator import report_utils
@@ -23,7 +23,7 @@ from report_generator.generator import report_utils
 import io
 from pptx.util import Inches
 
-class _AbstractImagePlaceholder(Placeholder):
+class _AbstractImagePlaceholder(Placeholder, ABC):
     BUNDLE_COLOR = f"#{report_utils.pptx.SIG_GREY_COLOR}"
     NA_STAR_COLOR = f"#{report_utils.pptx.NA_STAR_COLOR}"
 

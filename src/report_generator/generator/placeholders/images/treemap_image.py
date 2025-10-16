@@ -11,6 +11,9 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+from abc import ABC
+from typing import Tuple
+import plotly.graph_objs as go
 
 from report_generator.generator import report_utils
 from report_generator.generator.data_models import maintainability_portfolio_data, security_ratings_portfolio_data, architecture_portfolio_data
@@ -19,7 +22,7 @@ import logging
 from .base import _AbstractImagePlaceholder
 
 
-class _AbstractTreemapPlaceholder(_AbstractImagePlaceholder):
+class _AbstractTreemapPlaceholder(_AbstractImagePlaceholder, ABC):
     @staticmethod
     def determine_rating_color(rating):
         return f"#{report_utils.pptx.determine_rating_color(rating)}"
@@ -39,7 +42,7 @@ class _AbstractTreemapPlaceholder(_AbstractImagePlaceholder):
         return max(0, min(1, (val - min_val) / (max_val - min_val)))
 
 
-class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder):
+class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
     @staticmethod
     def create_portfolio():
         res = {}
@@ -92,22 +95,26 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder):
     
     @staticmethod
     def create_treemap_values(portfolio, treemap_data):
-        values = [None] * len(treemap_data['tracking'])
-        for i, t in enumerate(treemap_data['tracking']):
-            cur_parent = treemap_data['parents'][i]
-            if cur_parent == "":
-                values[i] = 0
-                if t not in treemap_data['color_mapping'].keys():
-                    treemap_data['color_mapping'][t] = _AbstractPortfolioTreemapPlaceholder.BUNDLE_COLOR
+        tracking = treemap_data.get("tracking", [])
+        parents = treemap_data.get("parents", [])
+        color_mapping = treemap_data.setdefault("color_mapping", {})
+
+        values: list[int] = []
+        for t, parent in zip(tracking, parents):
+            if parent == "":
+                values.append(0)
+                color_mapping.setdefault(t, _AbstractPortfolioTreemapPlaceholder.BUNDLE_COLOR)
                 continue
-            if portfolio[t]['end_date_data'] is None:
-                values[i] = 0
-            values[i] = portfolio[t]['end_date_data']['volumeInPersonMonths']
+
+            end = portfolio.get(t, {}).get("end_date_data")
+            value = 0 if not end else end.get("volumeInPersonMonths", 0)
+            values.append(value)
+
         return values
 
-    
+
     @staticmethod
-    def create_treemap_figure(portfolio, treemap):
+    def create_treemap_figure(portfolio, treemap) -> go.Figure:
         treemap['values'] = _AbstractPortfolioTreemapPlaceholder.create_treemap_values(portfolio, treemap)
         fig = px.treemap(names=treemap['names'], parents=treemap['parents'], values=treemap['values'], color=treemap['color'], color_discrete_map=treemap['color_mapping'])
         fig.update_traces(root_color='rgba(250, 250, 250, 1)', textposition="middle center")
@@ -115,14 +122,14 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder):
 
 
     @staticmethod
-    def prepare_portfolio_and_treemap():
+    def prepare_portfolio_and_treemap() -> Tuple[dict,dict]:
         portfolio = _AbstractPortfolioTreemapPlaceholder.create_portfolio()
         treemap = _AbstractPortfolioTreemapPlaceholder.create_blank_portfolio_treemap()
         treemap['color'] = treemap['tracking']
         return portfolio, treemap
 
 
-class EndDatePortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder):
+class EndDatePortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder, ABC):
     @staticmethod
     def create_end_date_portfolio_treemap(system_names, rating_func, determine_color_function):
         portfolio, treemap = _AbstractPortfolioTreemapPlaceholder.prepare_portfolio_and_treemap()
@@ -136,7 +143,7 @@ class EndDatePortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder):
         return _AbstractPortfolioTreemapPlaceholder.create_treemap_figure(portfolio, treemap)
 
 
-class PeriodPortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder):
+class PeriodPortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder, ABC):
     @staticmethod
     def _calculate_differences(portfolio, metric):
         differences = {}

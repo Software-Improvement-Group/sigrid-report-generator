@@ -132,8 +132,10 @@ class MaintainabilityPortfolioData(BasePortfolioModel):
 
         # Largest increase/decrease
         if best_dec[0] is not None and best_dec[1] < 0:
+            # noinspection PyTypeChecker - Weirdness
             statistics["maintainability-change"]["decrease"] = {best_dec[0]: best_dec[1]}
         if best_inc[0] is not None and best_inc[1] > 0:
+            # noinspection PyTypeChecker - Weirdness
             statistics["maintainability-change"]["increase"] = {best_inc[0]: best_inc[1]}
         
         statistics['maintainability']['start-average'] = MaintainabilityPortfolioData._weighted_avg(start_maintainability_ratings, start_volumes)

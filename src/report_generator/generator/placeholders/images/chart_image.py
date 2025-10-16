@@ -11,6 +11,7 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+from abc import ABC
 
 from report_generator.generator import report_utils
 from report_generator.generator.data_models import security_dashboard_findings_portfolio_data
@@ -20,7 +21,7 @@ import plotly.graph_objects as go
 from datetime import datetime
 from .base import _AbstractImagePlaceholder
 
-class _AbstractChartImagePlaceholder(_AbstractImagePlaceholder):
+class _AbstractChartImagePlaceholder(_AbstractImagePlaceholder, ABC):
     DASHBOARD_EXISTING_FINDINGS_COLOR = f"#{report_utils.pptx.DASHBOARD_EXISTING_FINDINGS_COLOR}"
     DASHBOARD_NEW_FINDINGS_COLOR = f"#{report_utils.pptx.DASHBOARD_NEW_FINDINGS_COLOR}"
     DASHBOARD_RESOLVED_FINDINGS_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLVED_FINDINGS_COLOR}"
@@ -31,7 +32,7 @@ class _AbstractChartImagePlaceholder(_AbstractImagePlaceholder):
     DASHBOARD_RESOLUTION_HIGH_RISK_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLUTION_HIGH_RISK_COLOR}"
 
 
-class _AbstractSecurityDashboardPlaceholder(_AbstractChartImagePlaceholder):
+class _AbstractSecurityDashboardPlaceholder(_AbstractChartImagePlaceholder, ABC):
     LAYOUT = go.Layout(
         xaxis={'showline' : True, 'linewidth' : 2, 'linecolor' : '#6E7078', 'type': 'category', 'categoryorder': 'array', 'tickmode' : 'array'},
         yaxis={'showgrid' : True, 'gridwidth' : 2, 'gridcolor' : '#E0E4EF' },
@@ -48,7 +49,7 @@ class _AbstractSecurityDashboardPlaceholder(_AbstractChartImagePlaceholder):
 
 
     @staticmethod
-    def create_portfolio(data_source, metric, initial_dict):
+    def create_portfolio_helper(data_source, metric, initial_dict):
         res = {"CRITICAL" : {}, "HIGH" : {}, "MEDIUM" : {}, "LOW" : {}}
         for system in data_source.data['systems']:
             md = maintainability_portfolio_data.find_system_metadata(system['system'])
@@ -69,12 +70,12 @@ class _AbstractSecurityDashboardPlaceholder(_AbstractChartImagePlaceholder):
         return [datetime.strptime(x, "%Y-%m-%d").strftime("%b") for x in dates]
 
 
-class _AbstractSecurityDashboardFindingsPlaceholder(_AbstractSecurityDashboardPlaceholder):
+class _AbstractSecurityDashboardFindingsPlaceholder(_AbstractSecurityDashboardPlaceholder, ABC):
     @staticmethod
     def create_portfolio():
-        return _AbstractSecurityDashboardPlaceholder.create_portfolio(security_dashboard_findings_portfolio_data, 'findingRatio', {"resolved": 0, "existing": 0, "new": 0}) 
-    
+        return _AbstractSecurityDashboardPlaceholder.create_portfolio_helper(security_dashboard_findings_portfolio_data, 'findingRatio', {"resolved": 0, "existing": 0, "new": 0})
 
+    # noinspection PyTypeChecker - TK: It only works with strings
     @staticmethod
     def create_dashboard_with_severity(severity):
         portfolio = _AbstractSecurityDashboardFindingsPlaceholder.create_portfolio()[severity]
@@ -91,7 +92,7 @@ class _AbstractSecurityDashboardFindingsPlaceholder(_AbstractSecurityDashboardPl
         return go.Figure(data=data, layout=_AbstractSecurityDashboardPlaceholder.get_layout(portfolio.keys()))
     
 
-class _AbstractSecurityDashboardResolutionTimesPlaceholder(_AbstractSecurityDashboardPlaceholder):
+class _AbstractSecurityDashboardResolutionTimesPlaceholder(_AbstractSecurityDashboardPlaceholder, ABC):
     LEGEND_ENTRIES_PER_SEVERITY = {
         "CRITICAL" : {'noRisk' : "at most 7 days", "lowRisk" : "between 7-14 days", "mediumRisk" : "between 14-30 days", "highRisk" : "at least 30 days"},
         "HIGH" : {'noRisk' : "at most 14 days", "lowRisk" : "between 14-30 days", "mediumRisk" : "between 30-180 days", "highRisk" : "at least 180 days"},
@@ -102,16 +103,16 @@ class _AbstractSecurityDashboardResolutionTimesPlaceholder(_AbstractSecurityDash
 
     @staticmethod
     def create_portfolio():
-        return _AbstractSecurityDashboardPlaceholder.create_portfolio(security_dashboard_resolution_times_portfolio_data, 'resolutionTimes', {"noRisk": 0, "lowRisk": 0, "mediumRisk": 0, "highRisk" : 0}) 
-    
-    
+        return _AbstractSecurityDashboardPlaceholder.create_portfolio_helper(security_dashboard_resolution_times_portfolio_data, 'resolutionTimes', {"noRisk": 0, "lowRisk": 0, "mediumRisk": 0, "highRisk" : 0})
+
+    # noinspection PyTypeChecker
     @staticmethod
     def create_dashboard_with_severity(severity):
         portfolio = _AbstractSecurityDashboardResolutionTimesPlaceholder.create_portfolio()[severity]
         legend_entries = _AbstractSecurityDashboardResolutionTimesPlaceholder.LEGEND_ENTRIES_PER_SEVERITY[severity]
 
-        def get_risk_values(portfolio, risk_levels):
-            return {risk: [portfolio[k][risk] for k in portfolio] for risk in risk_levels}
+        def get_risk_values(pf, levels):
+            return {risk: [pf[k][risk] for k in pf] for risk in levels}
         
         risk_levels = ['noRisk', 'lowRisk', 'mediumRisk', 'highRisk']
         y_values = get_risk_values(portfolio, risk_levels)

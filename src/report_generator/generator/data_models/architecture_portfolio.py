@@ -12,7 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from datetime import datetime
 from functools import cached_property
 
 from report_generator.generator import sigrid_api
@@ -25,7 +24,7 @@ class ArchitecturePortfolioData(BasePortfolioModel):
 
     @cached_property
     def period(self):
-        return (None, sigrid_api.get_period()[1])
+        return None, sigrid_api.get_period()[1]
     
     @cached_property
     def system_names(self):
