@@ -141,6 +141,8 @@ class EndDatePortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder, A
             if rating is None:
                 logging.debug(f"Cannot find end snapshot for {t}")
                 continue
+            if t not in treemap['color']:
+                continue
             treemap['color_mapping'][t] = determine_color_function(rating) if rating is not None else _AbstractTreemapPlaceholder.NA_STAR_COLOR
             idx = treemap['color'].index(t)
             treemap['names'][idx] = f"{treemap['names'][idx].strip()}<br>{formatters.maintainability_round(rating)}"
@@ -182,6 +184,9 @@ class PeriodPortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder, AB
         processed_vals = [x for x in differences.values() if x is not None]
         treemap['color_mapping'] = PeriodPortfolioTreemapPlaceholder._create_color_mapping(differences, min(processed_vals), max(processed_vals),
                                                                                            positive_color_range, negative_color_range)
+        for i, system_name in treemap['color']:
+            if differences[system_name]:
+                treemap['names'][i] = f"{treemap['names'][i].strip()}<br>{differences[system_name]}"
         return _AbstractPortfolioTreemapPlaceholder.create_treemap_figure(portfolio, treemap)
 
     
@@ -246,7 +251,7 @@ class SecurityRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlacehol
 
     @classmethod
     def value(cls, param=None):
-        f = lambda t: security_ratings_portfolio_data.end_snapshot(t)['rating']
+        f = lambda t: security_ratings_portfolio_data.end_snapshot(t)['rating'] if security_ratings_portfolio_data.end_snapshot(t) else 0
         return cls.create_end_date_portfolio_treemap(security_ratings_portfolio_data.system_names, f, cls.determine_rating_color)
 
 
@@ -257,7 +262,7 @@ class ArchitecturePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder
 
     @classmethod
     def value(cls, param=None):
-        f = lambda t: architecture_portfolio_data.end_snapshot(t)['ratings']['architecture']
+        f = lambda t: architecture_portfolio_data.end_snapshot(t)['ratings']['architecture'] if architecture_portfolio_data.end_snapshot(t) else 0
         return cls.create_end_date_portfolio_treemap(architecture_portfolio_data.system_names, f, cls.determine_rating_color)
     
 
