@@ -24,10 +24,10 @@ class _AbstractMaintainabilityDeltaQualityPortfolioData(BasePortfolioModel, ABC)
     @cached_property
     def data(self):
         result = {}
-        type = self.get_type()
+        t = self.get_type()
         for system in maintainability_portfolio_data.system_names:
             try:
-                temp = sigrid_api.get_maintainability_delta_quality(system, type)
+                temp = sigrid_api.get_maintainability_delta_quality(system, t)
             except sigrid_api.SigridAPIRequestFailed as e:
                 temp = None
             except Exception as e:
