@@ -300,6 +300,13 @@ def get_architecture_graph(system):
 
 
 @_sigrid_api_request(with_system=True)
+def get_maintainability_delta_quality(system, type="NEW_AND_CHANGED_CODE"):
+    start, end = get_period()
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/delta-quality/{_customer}/{system}?type={type}&startDate={start}&endDate={end}"
+    return _make_request(endpoint)
+
+
+@_sigrid_api_request(with_system=True)
 def get_maintainability_refactoring_candidates(system, system_property: MaintMetric, technology: str = None,
                                                count: int = None):
     property_name = system_property.to_json_name()

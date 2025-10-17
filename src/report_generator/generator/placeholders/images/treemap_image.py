@@ -17,6 +17,7 @@ import plotly.graph_objs as go
 
 from report_generator.generator import report_utils
 from report_generator.generator.data_models import maintainability_portfolio_data, security_ratings_portfolio_data, architecture_portfolio_data
+from report_generator.generator.data_models import maintainability_delta_quality_new_code, maintainability_delta_quality_changed_code, maintainability_delta_quality_new_and_changed_code
 import plotly.express as px
 import logging
 from .base import _AbstractImagePlaceholder
@@ -255,3 +256,36 @@ class ArchitecturePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder
     def value(cls, param=None):
         f = lambda t: architecture_portfolio_data.end_snapshot(t)['ratings']['architecture']
         return cls.create_end_date_portfolio_treemap(architecture_portfolio_data.system_names, f, cls.determine_rating_color)
+    
+
+class MaintainabilityDeltaQualityNewCodePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
+    """Creates a portfolio treemap where the color is determined by the delta quality of maintainability rating (new code) of the individual systems."""
+
+    key = "PORTFOLIO_PERIOD_MAINTAINABILITY_DELTA_QUALITY_NEW_CODE"
+
+    @classmethod
+    def value(cls, param=None):
+        f = lambda t: maintainability_delta_quality_new_code.data[t]['filesRatingAtEnd'] if maintainability_delta_quality_new_code.data[t] else 0
+        return cls.create_end_date_portfolio_treemap(maintainability_delta_quality_new_code.system_names, f, cls.determine_rating_color)
+    
+
+class MaintainabilityDeltaQualityChangedCodePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
+    """Creates a portfolio treemap where the color is determined by the delta quality of maintainability rating (changed code) of the individual systems."""
+
+    key = "PORTFOLIO_PERIOD_MAINTAINABILITY_DELTA_QUALITY_CHANGED_CODE"
+
+    @classmethod
+    def value(cls, param=None):
+        f = lambda t: maintainability_delta_quality_changed_code.data[t]['filesRatingAtEnd'] if maintainability_delta_quality_changed_code.data[t] else 0
+        return cls.create_end_date_portfolio_treemap(maintainability_delta_quality_changed_code.system_names, f, cls.determine_rating_color)
+    
+
+class MaintainabilityDeltaQualityNewAndChangedCodePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
+    """Creates a portfolio treemap where the color is determined by the delta quality of maintainability rating (new and changed code) of the individual systems."""
+
+    key = "PORTFOLIO_PERIOD_MAINTAINABILITY_DELTA_QUALITY_NEW_AND_CHANGED_CODE"
+
+    @classmethod
+    def value(cls, param=None):
+        f = lambda t: maintainability_delta_quality_new_and_changed_code.data[t]['filesRatingAtEnd'] if maintainability_delta_quality_new_and_changed_code.data[t] else 0
+        return cls.create_end_date_portfolio_treemap(maintainability_delta_quality_new_and_changed_code.system_names, f, cls.determine_rating_color)

@@ -16,6 +16,7 @@ from .architecture import architecture_data
 from .architecture_portfolio import architecture_portfolio_data
 from .objectives import objectives_data
 from .maintainability import maintainability_data
+from .maintainability_delta_quality_portfolio import maintainability_delta_quality_changed_code, maintainability_delta_quality_new_code, maintainability_delta_quality_new_and_changed_code
 from .maintainability_portfolio import maintainability_portfolio_data
 from .modernization import modernization_data
 from .osh import osh_data
