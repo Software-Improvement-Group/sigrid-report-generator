@@ -188,7 +188,7 @@ class PeriodPortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder, AB
             if system_name not in treemap['color']:
                 continue
             idx = treemap['color'].index(system_name)
-            treemap['names'][idx] = f"{treemap['names'][idx].strip()}<br>{round(differences[system_name], 2) if differences[system_name] else "N/A"}"
+            treemap['names'][idx] = f"{treemap['names'][idx].strip()}<br>{round(differences[system_name], 2) if differences[system_name] else 'N/A'}"
         return _AbstractPortfolioTreemapPlaceholder.create_treemap_figure(portfolio, treemap)
 
     
