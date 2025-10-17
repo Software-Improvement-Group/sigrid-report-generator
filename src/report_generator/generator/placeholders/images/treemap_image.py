@@ -299,7 +299,7 @@ class OSHRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
     @classmethod
     def value(cls, param=None):
         def rating_function(system_name):
-            system = osh_ratings_portfolio_data._find_system(system_name)
+            system = osh_ratings_portfolio_data.find_system(system_name)
             props = system.get("sbom", {}).get("metadata", {}).get("properties", [])
             return next(
                 (float(p["value"]) for p in props if p["name"] == "sigrid:ratings:system"),

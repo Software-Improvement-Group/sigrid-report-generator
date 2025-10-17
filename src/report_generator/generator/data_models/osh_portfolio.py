@@ -29,6 +29,9 @@ class OSHRatingsPortfolioData(BasePortfolioModel):
     def _find_system(self, system):
         return BasePortfolioModel._find_system_helper(system, self.data['systems'], 'systemName')
     
+    def find_system(self, system):
+        return self._find_system(system)
+
     @cached_property
     def system_names(self):
         return BasePortfolioModel._system_names_helper(self.data['systems'], 'systemName')
