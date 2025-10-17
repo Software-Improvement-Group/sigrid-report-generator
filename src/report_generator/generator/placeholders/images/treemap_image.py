@@ -184,9 +184,11 @@ class PeriodPortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder, AB
         processed_vals = [x for x in differences.values() if x is not None]
         treemap['color_mapping'] = PeriodPortfolioTreemapPlaceholder._create_color_mapping(differences, min(processed_vals), max(processed_vals),
                                                                                            positive_color_range, negative_color_range)
-        for i, system_name in treemap['color']:
-            if differences[system_name]:
-                treemap['names'][i] = f"{treemap['names'][i].strip()}<br>{differences[system_name]}"
+        for system_name in portfolio.keys():
+            if system_name not in treemap['color']:
+                continue
+            idx = treemap['color'].index(system_name)
+            treemap['names'][idx] = f"{treemap['names'][idx].strip()}<br>{round(differences[system_name], 2) if differences[system_name] else "N/A"}"
         return _AbstractPortfolioTreemapPlaceholder.create_treemap_figure(portfolio, treemap)
 
     
