@@ -16,7 +16,7 @@ from typing import Tuple
 import plotly.graph_objs as go
 
 from report_generator.generator import report_utils
-from report_generator.generator.data_models import maintainability_portfolio_data, security_ratings_portfolio_data, architecture_portfolio_data
+from report_generator.generator.data_models import maintainability_portfolio_data, security_ratings_portfolio_data, architecture_portfolio_data, osh_ratings_portfolio_data
 from report_generator.generator.data_models import maintainability_delta_quality_new_code, maintainability_delta_quality_changed_code, maintainability_delta_quality_new_and_changed_code
 import plotly.express as px
 import logging
@@ -289,3 +289,20 @@ class MaintainabilityDeltaQualityNewAndChangedCodePortfolioTreemapPlaceholder(En
     def value(cls, param=None):
         f = lambda t: maintainability_delta_quality_new_and_changed_code.data[t]['filesRatingAtEnd'] if maintainability_delta_quality_new_and_changed_code.data[t] else 0
         return cls.create_end_date_portfolio_treemap(maintainability_delta_quality_new_and_changed_code.system_names, f, cls.determine_rating_color)
+    
+    
+class OSHRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
+    """Creates a portfolio treemap where the color is determined by the open-source health rating of the individual systems."""
+
+    key = "PORTFOLIO_PERIOD_OSH_RATINGS"
+
+    @classmethod
+    def value(cls, param=None):
+        def rating_function(system_name):
+            system = osh_ratings_portfolio_data._find_system(system_name)
+            props = system.get("sbom", {}).get("metadata", {}).get("properties", [])
+            return next(
+                (float(p["value"]) for p in props if p["name"] == "sigrid:ratings:system"),
+                0.0
+            )
+        return cls.create_end_date_portfolio_treemap(osh_ratings_portfolio_data.system_names, rating_function, cls.determine_rating_color)

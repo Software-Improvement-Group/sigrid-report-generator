@@ -20,6 +20,7 @@ from .maintainability_delta_quality_portfolio import maintainability_delta_quali
 from .maintainability_portfolio import maintainability_portfolio_data
 from .modernization import modernization_data
 from .osh import osh_data
+from .osh_portfolio import osh_ratings_portfolio_data
 from .refactoring_candidates import refactoring_candidates_data
 from .security_dashboard_findings_portfolio import security_dashboard_findings_portfolio_data
 from .security_dashboard_resolution_times_portfolio import security_dashboard_resolution_times_portfolio_data
