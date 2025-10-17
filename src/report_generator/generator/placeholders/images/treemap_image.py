@@ -16,6 +16,7 @@ from typing import Tuple
 import plotly.graph_objs as go
 
 from report_generator.generator import report_utils
+from report_generator.generator.formatters import formatters
 from report_generator.generator.data_models import maintainability_portfolio_data, security_ratings_portfolio_data, architecture_portfolio_data, osh_ratings_portfolio_data
 from report_generator.generator.data_models import maintainability_delta_quality_new_code, maintainability_delta_quality_changed_code, maintainability_delta_quality_new_and_changed_code
 import plotly.express as px
@@ -141,6 +142,8 @@ class EndDatePortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder, A
                 logging.debug(f"Cannot find end snapshot for {t}")
                 continue
             treemap['color_mapping'][t] = determine_color_function(rating) if rating is not None else _AbstractTreemapPlaceholder.NA_STAR_COLOR
+            idx = treemap['color'].index(t)
+            treemap['names'][idx] = f"{treemap['names'][idx].strip()}<br>{formatters.maintainability_round(rating)}"
         return _AbstractPortfolioTreemapPlaceholder.create_treemap_figure(portfolio, treemap)
 
 
