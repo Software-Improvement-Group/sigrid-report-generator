@@ -52,7 +52,13 @@ def maintainability_round(rating) -> str:
         rating = float(rating)
 
     return "N/A" if rating < 0.1 else str(math.floor(rating * 10) / 10)
-    
+
+
+def ratio_to_percentage(ratio) -> str:
+    if isinstance(ratio, str):
+        ratio = float(ratio)
+
+    return f"{round(ratio*100, 1)}%" if ratio < 1 else f"{int(ratio*100)}%"
 
 
 def format_diff(old_rating: float, new_rating: float) -> str:
