@@ -15,22 +15,18 @@
 from functools import cached_property
 
 from report_generator.generator import sigrid_api
-from .base import BasePortfolioModel
+from report_generator.generator.data_models.portfolio.base import AbstractPortfolioModel
 
-class SecurityRatingsPortfolioData(BasePortfolioModel):
+class SecurityDashboardResolutionTimesPortfolioData(AbstractPortfolioModel):
     @cached_property
     def data(self):
-        return sigrid_api.get_portfolio_security_ratings()
-    
-    @cached_property
-    def period(self):
-        return None, sigrid_api.get_period()[1]
-    
-    def _find_system(self, system):
-        return BasePortfolioModel._find_system_helper(system, self.data, 'systemName')
+        return sigrid_api.get_portfolio_security_resolution_time_findings()
     
     @cached_property
     def system_names(self):
-        return BasePortfolioModel._system_names_helper(self.data, 'systemName')
+        return AbstractPortfolioModel._system_names_helper(self.data['systems'], 'system')
     
-security_ratings_portfolio_data = SecurityRatingsPortfolioData()
+    def _get_system(self, system):
+        return AbstractPortfolioModel._get_system_helper(system, self.data['systems'], 'system')
+    
+security_dashboard_resolution_times_portfolio_data = SecurityDashboardResolutionTimesPortfolioData()

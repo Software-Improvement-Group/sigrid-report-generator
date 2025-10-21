@@ -15,22 +15,25 @@
 from functools import cached_property
 
 from report_generator.generator import sigrid_api
-from .base import BasePortfolioModel
+from report_generator.generator.data_models.portfolio.base import AbstractPortfolioModel
 
-class ArchitecturePortfolioData(BasePortfolioModel):
+class OSHRatingsPortfolioData(AbstractPortfolioModel):
     @cached_property
     def data(self):
-        return sigrid_api.get_portfolio_architecture_findings()
-
+        return sigrid_api.get_portfolio_osh_findings()
+    
     @cached_property
     def period(self):
         return None, sigrid_api.get_period()[1]
     
+    def _get_system(self, system):
+        return AbstractPortfolioModel._get_system_helper(system, self.data['systems'], 'systemName')
+    
+    def find_system(self, system):
+        return self._get_system(system)
+
     @cached_property
     def system_names(self):
-        return BasePortfolioModel._system_names_helper(self.data, 'system')
-
-    def _find_system(self, system):
-        return BasePortfolioModel._find_system_helper(system, self.data, 'system')
-
-architecture_portfolio_data = ArchitecturePortfolioData()
+        return AbstractPortfolioModel._system_names_helper(self.data['systems'], 'systemName')
+    
+osh_ratings_portfolio_data = OSHRatingsPortfolioData()

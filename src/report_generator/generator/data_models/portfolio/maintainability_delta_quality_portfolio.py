@@ -17,10 +17,10 @@ from abc import ABC, abstractmethod
 import logging
 
 from report_generator.generator import sigrid_api
-from .base import BasePortfolioModel
-from .maintainability_portfolio import maintainability_portfolio_data
+from report_generator.generator.data_models.portfolio.base import AbstractPortfolioModel
+from report_generator.generator.data_models.portfolio.maintainability_portfolio import maintainability_portfolio_data
 
-class _AbstractMaintainabilityDeltaQualityPortfolioData(BasePortfolioModel, ABC):
+class _AbstractMaintainabilityDeltaQualityPortfolioData(AbstractPortfolioModel, ABC):
     @cached_property
     def data(self):
         result = {}
@@ -40,7 +40,7 @@ class _AbstractMaintainabilityDeltaQualityPortfolioData(BasePortfolioModel, ABC)
     def get_type(self):
         pass
 
-    def _find_system(self, system):
+    def _get_system(self, system):
         return self.data.get(system)
     
     @cached_property

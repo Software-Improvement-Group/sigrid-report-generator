@@ -17,7 +17,7 @@ from functools import cached_property
 
 from report_generator.generator import sigrid_api
 
-class BasePortfolioModel(ABC):
+class AbstractPortfolioModel(ABC):
     @cached_property
     @abstractmethod
     def data(self):
@@ -41,17 +41,17 @@ class BasePortfolioModel(ABC):
         return sigrid_api.get_period()
 
     @staticmethod
-    def _find_system_helper(system, data, tag):
+    def _get_system_helper(system, data, tag):
         for s in data:
             if s[tag] == system:
                 return s
         return None
     
     @abstractmethod
-    def _find_system(self, system):
+    def _get_system(self, system):
         pass
 
-    def find_system_metadata(self, system):
+    def get_system_metadata(self, system):
         for s in self.metadata:
             if s['systemName'] == system:
                 return s
@@ -61,4 +61,4 @@ class BasePortfolioModel(ABC):
         return None
 
     def end_snapshot(self, system):
-        return self._find_system(system)
+        return self._get_system(system)

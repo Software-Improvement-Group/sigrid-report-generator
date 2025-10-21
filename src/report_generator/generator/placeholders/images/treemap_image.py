@@ -50,7 +50,7 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
         res = {}
         system_names = maintainability_portfolio_data.system_names
         for system_name in system_names:
-            md = maintainability_portfolio_data.find_system_metadata(system_name)
+            md = maintainability_portfolio_data.get_system_metadata(system_name)
             if not md['active'] or md['isDevelopmentOnly']:
                 continue
 

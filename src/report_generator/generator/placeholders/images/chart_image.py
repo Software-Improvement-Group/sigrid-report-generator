@@ -52,7 +52,7 @@ class _AbstractSecurityDashboardPlaceholder(_AbstractChartImagePlaceholder, ABC)
     def create_portfolio_helper(data_source, metric, initial_dict):
         res = {"CRITICAL" : {}, "HIGH" : {}, "MEDIUM" : {}, "LOW" : {}}
         for system in data_source.data['systems']:
-            md = maintainability_portfolio_data.find_system_metadata(system['system'])
+            md = maintainability_portfolio_data.get_system_metadata(system['system'])
             if not md or not md['active'] or md['isDevelopmentOnly']:
                 continue
             for ratio in system[metric]:

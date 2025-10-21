@@ -19,9 +19,9 @@ from typing import Tuple, Optional
 from report_generator.generator import sigrid_api
 from report_generator.generator.formatters.formatters import calculate_star_rating_integer
 
-from .base import BasePortfolioModel
+from report_generator.generator.data_models.portfolio.base import AbstractPortfolioModel
 
-class MaintainabilityPortfolioData(BasePortfolioModel):
+class MaintainabilityPortfolioData(AbstractPortfolioModel):
     @cached_property
     def data(self):
         data = sigrid_api.get_portfolio_maintainability()
@@ -31,10 +31,10 @@ class MaintainabilityPortfolioData(BasePortfolioModel):
     
     @cached_property
     def system_names(self):
-        return BasePortfolioModel._system_names_helper(self.data['systems'], 'system')
+        return AbstractPortfolioModel._system_names_helper(self.data['systems'], 'system')
     
-    def _find_system(self, system):
-        return BasePortfolioModel._find_system_helper(system, self.data['systems'], 'system')
+    def _get_system(self, system):
+        return AbstractPortfolioModel._get_system_helper(system, self.data['systems'], 'system')
     
     @staticmethod
     def _get_head_entry(system):
@@ -74,7 +74,7 @@ class MaintainabilityPortfolioData(BasePortfolioModel):
             return date2
 
     def get_closest_snapshot(self, system, snapshot_date, ignore_head_entry=False):
-        s = self._find_system(system)
+        s = self._get_system(system)
         head_entry = MaintainabilityPortfolioData._get_head_entry(s)
         if not s['allRatings']:
             return head_entry
@@ -102,7 +102,7 @@ class MaintainabilityPortfolioData(BasePortfolioModel):
         start_volumes, end_volumes = [], []
 
         for system_name in self.system_names:
-            md = self.find_system_metadata(system_name)
+            md = self.get_system_metadata(system_name)
             if not md['active'] or md['isDevelopmentOnly']:
                 continue
             start_snapshot = maintainability_portfolio_data.start_snapshot(system_name)
