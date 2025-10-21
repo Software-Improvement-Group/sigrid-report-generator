@@ -18,4 +18,5 @@ from .modernization import modernization_data
 from .objectives import objectives_data
 from .osh import osh_data
 from .refactoring_candidates import refactoring_candidates_data
+from .security import security_data
 from .system_metadata import system_metadata
