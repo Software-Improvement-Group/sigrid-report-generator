@@ -40,6 +40,7 @@ class PlaceholderDocType(Enum):
     TEXT = 'Text'
     CHART = 'Chart'
     TABLE = 'Table'
+    IMAGE = 'Image'
     OTHER = 'Other'
 
 

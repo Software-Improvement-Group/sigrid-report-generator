@@ -26,7 +26,7 @@ class SecurityDashboardResolutionTimesPortfolioData(AbstractPortfolioModel):
     def system_names(self):
         return AbstractPortfolioModel._system_names_helper(self.data['systems'], 'system')
     
-    def _get_system(self, system):
+    def get_system(self, system):
         return AbstractPortfolioModel._get_system_helper(system, self.data['systems'], 'system')
     
 security_dashboard_resolution_times_portfolio_data = SecurityDashboardResolutionTimesPortfolioData()

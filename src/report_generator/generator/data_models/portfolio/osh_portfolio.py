@@ -26,11 +26,11 @@ class OSHRatingsPortfolioData(AbstractPortfolioModel):
     def period(self):
         return None, sigrid_api.get_period()[1]
     
-    def _get_system(self, system):
+    def get_system(self, system):
         return AbstractPortfolioModel._get_system_helper(system, self.data['systems'], 'systemName')
     
     def find_system(self, system):
-        return self._get_system(system)
+        return self.get_system(system)
 
     @cached_property
     def system_names(self):

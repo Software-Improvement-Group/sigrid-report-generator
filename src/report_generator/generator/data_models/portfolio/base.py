@@ -48,7 +48,7 @@ class AbstractPortfolioModel(ABC):
         return None
     
     @abstractmethod
-    def _get_system(self, system):
+    def get_system(self, system):
         pass
 
     def get_system_metadata(self, system):
@@ -56,9 +56,6 @@ class AbstractPortfolioModel(ABC):
             if s['systemName'] == system:
                 return s
         return None
-    
-    def start_snapshot(self, system):
-        return None
 
     def end_snapshot(self, system):
-        return self._get_system(system)
+        return self.get_system(system)

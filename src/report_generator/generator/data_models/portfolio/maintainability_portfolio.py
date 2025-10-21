@@ -21,6 +21,70 @@ from report_generator.generator.formatters.formatters import calculate_star_rati
 
 from report_generator.generator.data_models.portfolio.base import AbstractPortfolioModel
 
+def _initialize_statistics():
+    return {
+        'maintainability': {
+            '1-star': 0, '2-star': 0, '3-star': 0, '4-star': 0, '5-star': 0,
+            'number-of-systems': 0
+        },
+        'maintainability-change': {'increase': {}, 'decrease': {}}
+    }
+
+
+def _is_system_active(metadata):
+    return metadata['active'] and not metadata['isDevelopmentOnly']
+
+
+def _update_star_statistics(statistics, end_snapshot):
+    star_rating_integer = calculate_star_rating_integer(end_snapshot['maintainability'])
+    statistics['maintainability'][f"{star_rating_integer}-star"] += 1
+    statistics['maintainability']['number-of-systems'] += 1
+
+
+def _update_best_changes(system_name, start_snapshot, end_snapshot, start_date,
+                        end_date, period_start, best_inc, best_dec):
+    if start_date != end_date and start_date >= period_start:
+        diff = end_snapshot["maintainability"] - start_snapshot["maintainability"]
+        if diff > best_inc[1]:
+            best_inc = (system_name, diff)
+        if diff < best_dec[1]:
+            best_dec = (system_name, diff)
+    return best_inc, best_dec
+
+
+def _collect_averages_data(start_snapshot, end_snapshot, start_date, period_start,
+                          start_maintainability_ratings, end_maintainability_ratings,
+                          start_volumes, end_volumes):
+    if start_date < period_start:
+        start_maintainability_ratings.append(start_snapshot['maintainability'])
+        start_volumes.append(start_snapshot['volumeInPersonMonths'])
+    end_maintainability_ratings.append(end_snapshot['maintainability'])
+    end_volumes.append(end_snapshot['volumeInPersonMonths'])
+
+
+def _finalize_change_statistics(statistics, best_inc, best_dec):
+    if best_dec[0] is not None and best_dec[1] < 0:
+        statistics["maintainability-change"]["decrease"] = {best_dec[0]: best_dec[1]}
+    if best_inc[0] is not None and best_inc[1] > 0:
+        statistics["maintainability-change"]["increase"] = {best_inc[0]: best_inc[1]}
+
+
+def _calculate_averages(statistics, start_maintainability_ratings, end_maintainability_ratings,
+                       start_volumes, end_volumes):
+    statistics['maintainability']['start-average'] = _weighted_avg(
+        start_maintainability_ratings, start_volumes
+    )
+    statistics['maintainability']['end-average'] = _weighted_avg(
+        end_maintainability_ratings, end_volumes
+    )
+
+def _weighted_avg(values, weights):
+    tw = sum(weights)
+    return (sum(v * w for v, w in zip(values, weights)) / tw) if tw else 0.000001
+
+def _parse_date(s):
+    return datetime.strptime(s, "%Y-%m-%d")
+
 class MaintainabilityPortfolioData(AbstractPortfolioModel):
     @cached_property
     def data(self):
@@ -33,7 +97,7 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
     def system_names(self):
         return AbstractPortfolioModel._system_names_helper(self.data['systems'], 'system')
     
-    def _get_system(self, system):
+    def get_system(self, system):
         return AbstractPortfolioModel._get_system_helper(system, self.data['systems'], 'system')
     
     @staticmethod
@@ -74,7 +138,7 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
             return date2
 
     def get_closest_snapshot(self, system, snapshot_date, ignore_head_entry=False):
-        s = self._get_system(system)
+        s = self.get_system(system)
         head_entry = MaintainabilityPortfolioData._get_head_entry(s)
         if not s['allRatings']:
             return head_entry
@@ -89,13 +153,11 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
 
     def end_snapshot(self, system):
         return self.get_closest_snapshot(system, self.period[1])
-    
+
     def get_statistics(self):
-        statistics = {
-            'maintainability' : {'1-star' : 0, '2-star' : 0, '3-star' : 0, '4-star' : 0, '5-star' : 0, 'number-of-systems' : 0},
-            'maintainability-change' : {'increase' : {}, 'decrease' : {}}
-        }
-        period_start = MaintainabilityPortfolioData._parse_date(maintainability_portfolio_data.period[0])
+        statistics = _initialize_statistics()
+        period_start = _parse_date(maintainability_portfolio_data.period[0])
+
         best_inc: Tuple[Optional[str], float] = (None, float("-inf"))
         best_dec: Tuple[Optional[str], float] = (None, float("inf"))
         start_maintainability_ratings, end_maintainability_ratings = [], []
@@ -103,52 +165,31 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
 
         for system_name in self.system_names:
             md = self.get_system_metadata(system_name)
-            if not md['active'] or md['isDevelopmentOnly']:
+            if not _is_system_active(md):
                 continue
+
             start_snapshot = maintainability_portfolio_data.start_snapshot(system_name)
             end_snapshot = maintainability_portfolio_data.end_snapshot(system_name)
-            start_date = MaintainabilityPortfolioData._parse_date(start_snapshot["maintainabilityDate"])
-            end_date = MaintainabilityPortfolioData._parse_date(end_snapshot["maintainabilityDate"])
+            start_date = _parse_date(start_snapshot["maintainabilityDate"])
+            end_date = _parse_date(end_snapshot["maintainabilityDate"])
 
-            # Star-related statistics
-            star_rating_integer = calculate_star_rating_integer(end_snapshot['maintainability'])
-            statistics['maintainability'][f"{star_rating_integer}-star"] += 1
-            statistics['maintainability']['number-of-systems'] += 1
-            
-            # Change in maintainability
-            if start_date != end_date and start_date >= period_start:
-                diff = end_snapshot["maintainability"] - start_snapshot["maintainability"]
-                if diff > best_inc[1]:
-                    best_inc = (system_name, diff)
-                if diff < best_dec[1]:
-                    best_dec = (system_name, diff)
-            
-            # Averages
-            if start_date < period_start:
-                start_maintainability_ratings.append(start_snapshot['maintainability'])
-                start_volumes.append(start_snapshot['volumeInPersonMonths'])
-            end_maintainability_ratings.append(end_snapshot['maintainability'])
-            end_volumes.append(end_snapshot['volumeInPersonMonths'])
+            _update_star_statistics(statistics, end_snapshot)
+            best_inc, best_dec = _update_best_changes(
+                system_name, start_snapshot, end_snapshot, start_date, end_date,
+                period_start, best_inc, best_dec
+            )
+            _collect_averages_data(
+                start_snapshot, end_snapshot, start_date, period_start,
+                start_maintainability_ratings, end_maintainability_ratings,
+                start_volumes, end_volumes
+            )
 
-        # Largest increase/decrease
-        if best_dec[0] is not None and best_dec[1] < 0:
-            # noinspection PyTypeChecker - Weirdness
-            statistics["maintainability-change"]["decrease"] = {best_dec[0]: best_dec[1]}
-        if best_inc[0] is not None and best_inc[1] > 0:
-            # noinspection PyTypeChecker - Weirdness
-            statistics["maintainability-change"]["increase"] = {best_inc[0]: best_inc[1]}
-        
-        statistics['maintainability']['start-average'] = MaintainabilityPortfolioData._weighted_avg(start_maintainability_ratings, start_volumes)
-        statistics['maintainability']['end-average'] = MaintainabilityPortfolioData._weighted_avg(end_maintainability_ratings, end_volumes)
+        _finalize_change_statistics(statistics, best_inc, best_dec)
+        _calculate_averages(
+            statistics, start_maintainability_ratings, end_maintainability_ratings,
+            start_volumes, end_volumes
+        )
+
         return statistics
-
-    @staticmethod
-    def _parse_date(s):
-        return datetime.strptime(s, "%Y-%m-%d")
-
-    @staticmethod
-    def _weighted_avg(values, weights):
-        tw = sum(weights)
-        return (sum(v * w for v, w in zip(values, weights)) / tw) if tw else 0.000001
 
 maintainability_portfolio_data = MaintainabilityPortfolioData()

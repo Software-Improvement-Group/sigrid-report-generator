@@ -26,7 +26,7 @@ class SecurityRatingsPortfolioData(AbstractPortfolioModel):
     def period(self):
         return None, sigrid_api.get_period()[1]
     
-    def _get_system(self, system):
+    def get_system(self, system):
         return AbstractPortfolioModel._get_system_helper(system, self.data, 'systemName')
     
     @cached_property

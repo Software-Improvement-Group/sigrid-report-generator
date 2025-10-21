@@ -40,7 +40,7 @@ class _AbstractMaintainabilityDeltaQualityPortfolioData(AbstractPortfolioModel, 
     def get_type(self):
         pass
 
-    def _get_system(self, system):
+    def get_system(self, system):
         return self.data.get(system)
     
     @cached_property

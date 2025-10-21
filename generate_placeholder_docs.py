@@ -163,6 +163,14 @@ def add_table_placeholders_section(doc: Document):
     doc.add(Table(placeholders_to_table(table_placeholders, skip_columns={"Supports"})))
 
 
+def add_image_placeholders_section(doc: Document):
+    doc.add(Header("Image Placeholders"))
+    doc.add(Paragraph("@@ TODO"))
+    image_placeholders = [placeholder for placeholder in all_placeholders if
+                          placeholder.__doc_type__ == PlaceholderDocType.IMAGE]
+    doc.add(Table(placeholders_to_table(image_placeholders)))
+
+
 def add_other_placeholders_section(doc: Document):
     doc.add(Header("Other Placeholders"))
     other_placeholders = [placeholder for placeholder in all_placeholders if
@@ -190,6 +198,7 @@ def generate_documentation():
     add_text_placeholders_section(doc)
     add_chart_placeholders_section(doc)
     add_table_placeholders_section(doc)
+    add_image_placeholders_section(doc)
     add_other_placeholders_section(doc)
     add_how_to_section(doc)
 
