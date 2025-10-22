@@ -127,7 +127,11 @@ class MaintainabilityData:
 
     @cached_property
     def customer_name(self):
-        return self.data['customer'].capitalize()
+        try:
+            return self.data['customer'].capitalize()
+        except ValueError:
+            # TODO: Temporary fix; this will be retrieved from an endpoint in the future.
+            return sigrid_api._customer.capitalize() if len(sigrid_api._customer) > 3 else sigrid_api._customer.upper()
 
     @cached_property
     def start_snapshot(self):
