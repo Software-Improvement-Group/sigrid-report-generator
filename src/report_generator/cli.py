@@ -95,15 +95,13 @@ def run(_, debug, customer, system, token, layout, template, start, end, team, d
     presets.run(layout, out_file)
 
 
-def _configure_api(customer: str, system: str, token: str, period: tuple[str, str], api_url: Optional[str], team: Optional[list[str]], division: Optional[list[str]]):
+def _configure_api(customer: str, system: str, token: str, period: tuple[str, str], api_url: Optional[str]):
     sigrid_api.set_context(
         bearer_token=token,
         customer=customer,
         system=system,
         period=period,
         base_url=api_url,
-        team=team,
-        division=division
     )
 
 
