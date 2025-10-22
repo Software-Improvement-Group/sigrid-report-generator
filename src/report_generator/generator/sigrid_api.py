@@ -220,6 +220,12 @@ def get_security_findings(system):
 
 
 @_sigrid_api_request(with_system=True)
+def get_security_ratings(system):
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/model-ratings/{_customer}/{system}?feature=SECURITY"
+    return _make_request(endpoint)
+
+
+@_sigrid_api_request(with_system=True)
 def get_architecture_findings(system):
     endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/architecture-quality/{_customer}/{system}"
     return _make_request(endpoint)
