@@ -18,7 +18,8 @@ from typing import Callable
 from pptx.presentation import Presentation
 
 from report_generator.generator import report_utils
-from report_generator.generator.data_models import architecture_data, maintainability_data, modernization_data, osh_data
+from report_generator.generator.data_models import architecture_data, maintainability_data, modernization_data, \
+    osh_data, security_data
 from report_generator.generator.formatters.formatters import maintainability_round
 from report_generator.generator.placeholders import Placeholder
 
@@ -75,6 +76,14 @@ class OSHMovableMarkerPlaceholder(_AbstractMoveableMarkerPlaceholder):
     @classmethod
     def value(cls, parameter=None) -> str:
         return maintainability_round(osh_data.data.ratings["system"])
+
+
+class SecurityMovableMarkerPlaceholder(_AbstractMoveableMarkerPlaceholder):
+    key = "MARKER_SECURITY_RATING"
+
+    @classmethod
+    def value(cls, parameter=None) -> str:
+        return maintainability_round(security_data.security_rating)
 
 
 class _ManagementSummaryMarkerPlaceholder(Placeholder, ABC):
