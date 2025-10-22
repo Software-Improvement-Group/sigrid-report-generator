@@ -18,10 +18,11 @@ from .base import Placeholder
 from .misc import placeholders as misc_placeholders
 from .table import placeholders as table_placeholders
 from .text import placeholders as text_placeholders
+from .images import placeholders as image_placeholders
 
 PlaceholderCollection = Set[Type[Placeholder]]
 
-placeholders: PlaceholderCollection = text_placeholders | misc_placeholders | table_placeholders
+placeholders: PlaceholderCollection = text_placeholders | misc_placeholders | table_placeholders | image_placeholders
 
 from .text import text_placeholder, parameterized_text_placeholder
 

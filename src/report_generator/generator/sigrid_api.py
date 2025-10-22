@@ -29,7 +29,8 @@ _customer: Optional[str] = None
 _system: Optional[str] = None
 _period: Optional[tuple[str, str]] = None
 _rest_url: Optional[str] = None
-
+_team: Optional[list[str]] = None
+_division: Optional[list[str]] = None
 
 class SigridAPIRequestFailed(Exception):
     def __init__(self, function_name, message="API request failed"):
@@ -49,10 +50,12 @@ def set_context(
         customer: Optional[str] = None,
         system: Optional[str] = None,
         period: Optional[tuple[str, str]] = None,
-        base_url: Optional[str] = None
+        base_url: Optional[str] = None,
+        team: Optional[list[str]] = None,
+        division: Optional[list[str]] = None
 ) -> None:
     """Set the context values. Only updates provided values. Sets base_url to default if not provided."""
-    global _bearer_token, _customer, _system, _period, _rest_url
+    global _bearer_token, _customer, _system, _period, _rest_url, _team, _division
 
     if bearer_token is not None:
         _test_sigrid_token(bearer_token)
@@ -68,6 +71,12 @@ def set_context(
         _period = period
 
     _rest_url = f"{base_url or DEFAULT_BASE_URL.rstrip('/')}/rest"
+
+    if team is not None:
+        _team = team
+
+    if division is not None:
+        _division = division
 
 
 def reset_context(
@@ -213,9 +222,62 @@ def get_osh_findings(system, is_vulnerable=False):
     return _make_request(endpoint)
 
 
+@_sigrid_api_request()
+def get_portfolio_osh_findings(is_vulnerable=False):
+    vulnerable = "true" if is_vulnerable else "false"
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/osh-findings/{_customer}?vulnerable={vulnerable}"
+    return _make_request(endpoint)
+
+
 @_sigrid_api_request(with_system=True)
 def get_security_findings(system):
     endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/security-findings/{_customer}/{system}"
+    return _make_request(endpoint)
+
+
+@_sigrid_api_request()
+def get_portfolio_security_findings():
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/security-findings/{_customer}"
+    return _make_request(endpoint)
+
+
+@_sigrid_api_request(with_system=True)
+def get_security_dashboard_findings(system):
+    argument = f"&endDate={_period[1]}" if _period else ""
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/finding-ratios/{_customer}/{system}?feature=security{argument}"
+    return _make_request(endpoint)
+
+
+@_sigrid_api_request()
+def get_portfolio_security_dashboard_findings():
+    argument = f"&endDate={_period[1]}" if _period else ""
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/finding-ratios/{_customer}?feature=security{argument}"
+    return _make_request(endpoint)
+
+
+@_sigrid_api_request(with_system=True)
+def get_security_resolution_time_findings(system):
+    argument = f"&endDate={_period[1]}" if _period else ""
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/resolution-times/{_customer}/{system}?feature=security{argument}"
+    return _make_request(endpoint)
+
+
+@_sigrid_api_request()
+def get_portfolio_security_resolution_time_findings():
+    argument = f"&endDate={_period[1]}" if _period else ""
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/resolution-times/{_customer}?feature=security{argument}"
+    return _make_request(endpoint)
+
+
+@_sigrid_api_request(with_system=True)
+def get_security_ratings(system):
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/model-ratings/{_customer}/{system}?feature=SECURITY"
+    return _make_request(endpoint)
+
+
+@_sigrid_api_request()
+def get_portfolio_security_ratings():
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/model-ratings/{_customer}?feature=SECURITY"
     return _make_request(endpoint)
 
 
@@ -231,9 +293,22 @@ def get_architecture_findings(system):
     return _make_request(endpoint)
 
 
+@_sigrid_api_request()
+def get_portfolio_architecture_findings():
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/architecture-quality/{_customer}"
+    return _make_request(endpoint)
+
+
 @_sigrid_api_request(with_system=True)
 def get_architecture_graph(system):
     endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/architecture-quality/{_customer}/{system}/raw"
+    return _make_request(endpoint)
+
+
+@_sigrid_api_request(with_system=True)
+def get_maintainability_delta_quality(system, delta_type="NEW_AND_CHANGED_CODE"):
+    start, end = get_period()
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/delta-quality/{_customer}/{system}?type={delta_type}&startDate={start}&endDate={end}"
     return _make_request(endpoint)
 
 

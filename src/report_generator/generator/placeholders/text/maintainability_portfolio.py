@@ -1,0 +1,105 @@
+#  Copyright Software Improvement Group
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
+from report_generator.generator.data_models import maintainability_portfolio_data
+from .base import text_placeholder
+
+
+def _format_percentage(percentage):
+    if percentage < 1:
+        percentage = "<1"
+    return f"{percentage}%"
+
+
+def _format_maintainability_statement(amount, number_of_systems, postfix):
+    perc = _format_percentage(int(100*amount/number_of_systems))
+    return f"There {'are' if amount > 1 else 'is'} {amount} ({perc}) {'systems' if amount > 1 else 'system'} that {'score' if amount > 1 else 'scores'} {postfix}."
+
+
+def _format_short_maintainability_statement(amount, number_of_systems, postfix):
+    perc = _format_percentage(int(100*amount/number_of_systems))
+    return f"About {amount} ({perc}) {'systems' if amount > 1 else 'system'} {'score' if amount > 1 else 'scores'} {postfix}"
+
+
+@text_placeholder()
+def portfolio_period_start_date():
+    """The portfolio reporting period's start date in yyyy-mm-dd format."""
+    return maintainability_portfolio_data.period[0]
+
+
+@text_placeholder()
+def portfolio_period_end_date():
+    """The portfolio reporting period's end date in yyyy-mm-dd format."""
+    return maintainability_portfolio_data.period[1]
+
+
+@text_placeholder()
+def portfolio_period_maint_summary():
+    """The portfolio maintainability summary at the period's end date."""
+    stats = maintainability_portfolio_data.get_statistics()
+    res = []
+    if stats['maintainability']['5-star'] + stats['maintainability']['4-star'] > 0:
+        res.append(_format_maintainability_statement(stats['maintainability']['5-star'] + stats['maintainability']['4-star'], stats['maintainability']['number-of-systems'], "above market average (≥ 4 stars)"))
+    if stats['maintainability']['3-star'] > 0:
+        res.append(_format_maintainability_statement(stats['maintainability']['3-star'], stats['maintainability']['number-of-systems'], "market average (3 stars)"))
+    if stats['maintainability']['2-star'] + stats['maintainability']['1-star'] > 0:
+        res.append(_format_maintainability_statement(stats['maintainability']['2-star']+stats['maintainability']['1-star'], stats['maintainability']['number-of-systems'], "below market average (≤ 2 stars)"))
+    return "\n".join(res)
+
+
+@text_placeholder()
+def portfolio_period_maint_short_summary():
+    """The portfolio maintainability short summary at the period's end date."""
+    stats = maintainability_portfolio_data.get_statistics()
+    processed_stats = {
+        'above-market-average' : stats['maintainability']['5-star'] + stats['maintainability']['4-star'],
+        'market-average' : stats['maintainability']['3-star'],
+        'below-market-average' : stats['maintainability']['2-star'] + stats['maintainability']['1-star']
+    }
+    postfixes = {
+        'above-market-average' : "above market average on maintainability",
+        'market-average' : "market average on maintainability",
+        'below-market-average' : "below market average on maintainability"
+    }
+    key = max(processed_stats, key=processed_stats.get)
+    res = _format_short_maintainability_statement(processed_stats[key], stats['maintainability']['number-of-systems'], postfixes[key])
+    return res
+
+
+@text_placeholder()
+def portfolio_period_maint_change_summary():
+    """The portfolio maintainability change summary, given the period's start and end dates."""
+    stats = maintainability_portfolio_data.get_statistics()
+    res = []
+    if stats['maintainability-change']['increase']:
+        key = next(iter(stats['maintainability-change']['increase']))
+        res.append(f"The largest increase in maintainability rating was experienced by {key} ({int(10*stats['maintainability-change']['increase'][key])/10}).")
+    if stats['maintainability-change']['decrease']:
+        key = next(iter(stats['maintainability-change']['decrease']))
+        res.append(f"The largest decrease in maintainability rating was experienced by {key} ({int(10*stats['maintainability-change']['decrease'][key])/10}).")
+    if res:
+        return "\n".join(res)
+    return "The portfolio remained stable during the measured period."
+
+
+@text_placeholder()
+def portfolio_period_maint_change_short_summary():
+    """The portfolio maintainability change short summary, given the period's start and end dates."""
+    stats = maintainability_portfolio_data.get_statistics()
+    start_avg = int(stats['maintainability']['start-average']*10)/10
+    end_avg = int(stats['maintainability']['end-average']*10)/10
+    diff = int((end_avg-start_avg)*10)/10
+    if abs(diff) < 0.01:
+        return f"The portfolio remained stable ({end_avg}) during the measured period"
+    return f"The portfolio's maintainability has {'increased' if start_avg<end_avg else 'decreased'} (with {diff} to {end_avg}) during the measured period"

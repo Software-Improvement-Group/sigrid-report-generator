@@ -27,13 +27,30 @@ from pptx.text.text import _Paragraph, _Run
 
 from .common import FontProperties, apply_font_properties, get_font_properties, merge_runs_with_same_formatting
 
-NA_STAR_COLOR = RGBColor(0xb5, 0xb5, 0xb5)
-ONE_STAR_COLOR = RGBColor(0xdb, 0x4a, 0x3d)
-TWO_STAR_COLOR = RGBColor(0xef, 0x98, 0x1a)
-THREE_STAR_COLOR = RGBColor(0xf8, 0xc6, 0x40)
-FOUR_STAR_COLOR = RGBColor(0x57, 0xc9, 0x68)
-FIVE_STAR_COLOR = RGBColor(0x2c, 0x96, 0x3f)
+NA_STAR_COLOR = RGBColor(0x91, 0x90, 0x92)
+ONE_STAR_COLOR = RGBColor(0xE0, 0x6C, 0x4F)
+TWO_STAR_COLOR = RGBColor(0xE8, 0x99, 0x36)
+THREE_STAR_COLOR = RGBColor(0xE9, 0xC3, 0x43)
+FOUR_STAR_COLOR = RGBColor(0x68, 0xC0, 0x6B)
+FIVE_STAR_COLOR = RGBColor(0x3C, 0x88, 0x42)
 
+SIG_BLUE_COLOR = RGBColor(0x24, 0x35, 0x49)
+SIG_GREY_COLOR = RGBColor(0xDF, 0xE2, 0xE7)
+
+MAINTAINABILITY_POS_CHANGE_RANGE_COLORS = [RGBColor(0xD9, 0xEE, 0xDD), FIVE_STAR_COLOR]
+MAINTAINABILITY_NEG_CHANGE_RANGE_COLORS = [RGBColor(0xF3, 0xDD, 0xD7), ONE_STAR_COLOR]
+
+VOLUME_POS_CHANGE_RANGE_COLORS = [RGBColor(0xEB, 0xF3, 0xF5), RGBColor(0x71, 0xB6, 0xC9)]
+VOLUME_NEG_CHANGE_RANGE_COLORS = [RGBColor(0xFA, 0xF1, 0xE1), RGBColor(0xE8, 0x99, 0x36)]
+
+DASHBOARD_EXISTING_FINDINGS_COLOR = RGBColor(0xB5, 0xC4, 0xFF)
+DASHBOARD_NEW_FINDINGS_COLOR = RGBColor(0x2E, 0x6B, 0xFF)
+DASHBOARD_RESOLVED_FINDINGS_COLOR = RGBColor(0x40, 0xC3, 0x60)
+
+DASHBOARD_RESOLUTION_NO_RISK_COLOR = DASHBOARD_RESOLVED_FINDINGS_COLOR
+DASHBOARD_RESOLUTION_LOW_RISK_COLOR = RGBColor(0x3A, 0xA4, 0x98)
+DASHBOARD_RESOLUTION_MEDIUM_RISK_COLOR = RGBColor(0x34, 0x8A, 0xC7)
+DASHBOARD_RESOLUTION_HIGH_RISK_COLOR = DASHBOARD_NEW_FINDINGS_COLOR
 
 def print_slide_ids(slide):
     # Print slide IDs and names for debugging purposes
@@ -77,6 +94,12 @@ def find_shapes_with_text(presentation, search_text):
         shapes += [paragraph._parent._parent for paragraph in paragraphs]
     return shapes
 
+def find_shapes_with_text_in_slide(slide, search_text):
+    shapes = []
+    paragraphs = find_text_in_slide(slide, search_text)
+    # A paragraph is typically in a TextGroup which is in a Shape, so we call getparent() twice
+    shapes += [paragraph._parent._parent for paragraph in paragraphs]
+    return shapes
 
 def find_text_in_presentation(presentation, search_text):
     paragraphs = []
@@ -222,6 +245,15 @@ def find_tables(presentation: Presentation, key: str):
     ]
 
 
+def find_shapes(presentation: Presentation, key: str):
+    return [
+        shape
+        for slide in presentation.slides
+        for shape in slide.shapes
+        if find_text_in_shape(shape, key)
+    ]
+
+
 def remove_row_from_table(table: Table, row: _Row):
     # noinspection PyProtectedMember
     tbl = table._tbl
@@ -268,3 +300,21 @@ def replace_paragraph_with_text(paragraph: _Paragraph, text: Union[str, int, flo
 
     if font:
         apply_font_properties(run, font)
+
+def interpolate_color(colors, t):
+    # Map t to position in color list
+    position = t * (len(colors) - 1)
+    index = int(position)           # lower bound index
+    frac = position - index         # fraction between colors
+    
+    # If exactly at the last color
+    if index >= len(colors) - 1:
+        return colors[-1]
+    
+    # Interpolate between the two colors
+    r = int(colors[index][0] + (colors[index+1][0] - colors[index][0]) * frac)
+    g = int(colors[index][1] + (colors[index+1][1] - colors[index][1]) * frac)
+    b = int(colors[index][2] + (colors[index+1][2] - colors[index][2]) * frac)
+    
+    # Convert back to hex
+    return RGBColor(r, g, b)

@@ -12,36 +12,25 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from datetime import datetime
 from functools import cached_property
 
 from report_generator.generator import sigrid_api
+from report_generator.generator.data_models.portfolio.base import AbstractPortfolioModel
 
-
-class ArchitectureData:
+class ArchitecturePortfolioData(AbstractPortfolioModel):
     @cached_property
     def data(self):
-        return sigrid_api.get_architecture_findings()
+        return sigrid_api.get_portfolio_architecture_findings()
 
     @cached_property
-    def date(self):
-        return datetime.strptime(self.data["snapshotDate"], '%Y-%m-%d')
-
+    def period(self):
+        return None, sigrid_api.get_period()[1]
+    
     @cached_property
-    def ratings(self):
-        return self.data['ratings']
+    def system_names(self):
+        return AbstractPortfolioModel._system_names_helper(self.data, 'system')
 
-    @cached_property
-    def system_properties(self):
-        return self.ratings['systemProperties']
+    def get_system(self, system):
+        return AbstractPortfolioModel._get_system_helper(system, self.data, 'system')
 
-    @cached_property
-    def subcharacteristics(self):
-        return self.ratings['subcharacteristics']
-
-    def get_score_for_prop_or_subchar(self, metric_or_subchar):
-        return self.system_properties[metric_or_subchar] if metric_or_subchar in self.system_properties else \
-            self.subcharacteristics[metric_or_subchar]
-
-
-architecture_data = ArchitectureData()
+architecture_portfolio_data = ArchitecturePortfolioData()

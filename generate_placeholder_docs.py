@@ -163,6 +163,16 @@ def add_table_placeholders_section(doc: Document):
     doc.add(Table(placeholders_to_table(table_placeholders, skip_columns={"Supports"})))
 
 
+def add_image_placeholders_section(doc: Document):
+    doc.add(Header("Image Placeholders"))
+    doc.add(Paragraph("Image placeholders allow automatic image generation within your presentation. These placeholders act as designated areas where images will be inserted once generated."))
+    doc.add(Paragraph("Currently, this feature is only available for PowerPoint templates. Image generation is not yet supported in other document formats."))
+    doc.add(Paragraph("To create an image placeholder, add a shape to the slide in the position and size where you want the image to appear, ie.: the shape defines the dimensions and location of the generated image. Do NOT group the shape with other objects or combine it with text or images. Each placeholder must be an independent shape on the slide to ensure proper image generation."))
+    image_placeholders = [placeholder for placeholder in all_placeholders if
+                          placeholder.__doc_type__ == PlaceholderDocType.IMAGE]
+    doc.add(Table(placeholders_to_table(image_placeholders)))
+
+
 def add_other_placeholders_section(doc: Document):
     doc.add(Header("Other Placeholders"))
     other_placeholders = [placeholder for placeholder in all_placeholders if
@@ -190,6 +200,7 @@ def generate_documentation():
     add_text_placeholders_section(doc)
     add_chart_placeholders_section(doc)
     add_table_placeholders_section(doc)
+    add_image_placeholders_section(doc)
     add_other_placeholders_section(doc)
     add_how_to_section(doc)
 

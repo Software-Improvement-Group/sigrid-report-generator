@@ -14,10 +14,10 @@
 
 import inspect
 
-from . import architecture, maintainability, metadata, modernization, objectives, osh, security
+from . import architecture, maintainability, maintainability_portfolio, objectives, metadata, modernization, osh, security
 from .base import parameterized_text_placeholder, text_placeholder
 
-_modules_to_scan = [architecture, maintainability, metadata, modernization, objectives, osh, security]
+_modules_to_scan = [architecture, maintainability, maintainability_portfolio, metadata, modernization, objectives, osh, security]
 
 _placeholders_map = {}
 for module in _modules_to_scan:
