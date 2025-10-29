@@ -29,8 +29,6 @@ _customer: Optional[str] = None
 _system: Optional[str] = None
 _period: Optional[tuple[str, str]] = None
 _rest_url: Optional[str] = None
-_team: Optional[list[str]] = None
-_division: Optional[list[str]] = None
 
 class SigridAPIRequestFailed(Exception):
     def __init__(self, function_name, message="API request failed"):
@@ -50,12 +48,10 @@ def set_context(
         customer: Optional[str] = None,
         system: Optional[str] = None,
         period: Optional[tuple[str, str]] = None,
-        base_url: Optional[str] = None,
-        team: Optional[list[str]] = None,
-        division: Optional[list[str]] = None
+        base_url: Optional[str] = None
 ) -> None:
     """Set the context values. Only updates provided values. Sets base_url to default if not provided."""
-    global _bearer_token, _customer, _system, _period, _rest_url, _team, _division
+    global _bearer_token, _customer, _system, _period, _rest_url
 
     if bearer_token is not None:
         _test_sigrid_token(bearer_token)
@@ -71,12 +67,6 @@ def set_context(
         _period = period
 
     _rest_url = f"{base_url or DEFAULT_BASE_URL.rstrip('/')}/rest"
-
-    if team is not None:
-        _team = team
-
-    if division is not None:
-        _division = division
 
 
 def reset_context(

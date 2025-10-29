@@ -17,8 +17,11 @@ from functools import cached_property
 from report_generator.generator import sigrid_api
 from report_generator.generator.data_models.portfolio.base import AbstractPortfolioModel
 
+from report_generator.generator.data_models.portfolio.portfolio_arguments import filter_data_on_portfolio_arguments
+
 class SecurityRatingsPortfolioData(AbstractPortfolioModel):
     @cached_property
+    @filter_data_on_portfolio_arguments(system_tag="systemName")
     def data(self):
         return sigrid_api.get_portfolio_security_ratings()
     

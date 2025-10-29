@@ -21,6 +21,8 @@ from report_generator.generator.formatters.formatters import calculate_star_rati
 
 from report_generator.generator.data_models.portfolio.base import AbstractPortfolioModel
 
+from report_generator.generator.data_models.portfolio.portfolio_arguments import filter_data_on_portfolio_arguments
+
 def _initialize_statistics():
     return {
         'maintainability': {
@@ -87,6 +89,7 @@ def _parse_date(s):
 
 class MaintainabilityPortfolioData(AbstractPortfolioModel):
     @cached_property
+    @filter_data_on_portfolio_arguments(data_tag="systems", system_tag="system")
     def data(self):
         data = sigrid_api.get_portfolio_maintainability()
         filtered_data = data
