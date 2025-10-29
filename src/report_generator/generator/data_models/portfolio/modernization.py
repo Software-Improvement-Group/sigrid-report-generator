@@ -20,6 +20,7 @@ from typing import Optional
 
 from report_generator.generator import sigrid_api
 
+from report_generator.generator.data_models.portfolio.portfolio_arguments import filter_data_on_portfolio_arguments
 
 @dataclass
 class CandidateSystem:
@@ -73,7 +74,11 @@ def get_change_speed(scenario, architecture_metrics):
 
 def fetch_possible_candidates():
     portfolio_metadata = {metadata["systemName"]: metadata for metadata in sigrid_api.get_portfolio_metadata()}
-    portfolio_maintainability = sigrid_api.get_portfolio_maintainability()
+
+    @filter_data_on_portfolio_arguments(data_tag="systems", system_tag="system")
+    def get_data():
+        return sigrid_api.get_portfolio_maintainability()
+    portfolio_maintainability = get_data()
 
     for system in portfolio_maintainability["systems"]:
         metadata = portfolio_metadata[system["system"]]
