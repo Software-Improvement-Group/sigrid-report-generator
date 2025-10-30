@@ -12,6 +12,7 @@ provided by Sigrid. The Report Generator can be used for two "flavors" of report
 ## Prerequisites
 
 - Python 3.9+
+- Google Chrome (for treemap generation)
 - You need to be able to install and use Python packages
 - You need a [Sigrid API token](https://docs.sigrid-says.com/organization-integration/authentication-tokens.html)
 
@@ -66,6 +67,16 @@ of its current state and its progress over time.
 
 <img src="docs/img/sample-system-maintainability-one-pager.png" width="400" />
 
+**Portfolio overview:** Report that visualizes capability and objectives trends using treemaps and bar charts for
+a specified period in time.
+  - Example: `report-generator -c <your-customer> --layout portfolio-overview`.
+  - The default reporting period is one month. If you want to change the reporting period, you can use the
+  arguments `--start 2025-03-01` and `--end 2025-05-21`.
+  - Team and division filters are also available. Multiple teams/divisions can be specified
+  using the `--team` and/or `--division` flags, for example: `--team aap --team noot`.
+
+<img src="docs/img/sample-portfolio-overview.png" width="400">
+
 ### Troubleshooting
 
 If there is an error, and you can't figure out what causes it, run the tool again with the `-d` parameter appended to
@@ -90,6 +101,7 @@ There are roughly two types of items in a template that report-generator deals w
   templates, but you cannot change their structure. If you think a chart with a different structure is clearly needed,
   or better than the current visualization, reach out to the report-generator team. At the time of writing, only several
   PowerPoint charts are supported.
+- **Images:** The generator currently support the creation of treemaps (ie.: dashboard capabilities) and certain bar charts (ie.: security findings and resolution times). For a full overview, see [docs/placeholder descriptions.md](docs/placeholder%20descriptions.md#image-placeholders)
 
 ## Create custom placeholders
 
