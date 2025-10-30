@@ -54,9 +54,17 @@ def portfolio_arguments_command():
 
 def filter_data_on_portfolio_arguments(data_tag=None, system_tag=None):
     """
-    Decorator to create functions that call Sigrid API requests, optionally with a system parameter.
-    If with_system is set to True, the decorator will first look for the system parameter passed to the function when called.
-    If the system parameter is not provided in the function call, it will use the global system value set by set_context.
+    This decorator integrates with the Sigrid API to apply portfolio-aware filtering logic to the data returned by the decorated function.
+    It ensures that at least one of `data_tag` or `system_tag` is specified to define the filtering context.
+
+    Parameters
+    ----------
+    data_tag : str, optional
+        Tag indicating where system entries are stored in the Sigrid API JSON response.
+        E.g.: In `maintainability_portfolio_data`, system entries are available in `maintainability_portfolio_data['systems']`, hence `data_tag='systems'`.
+    system_tag : str, optional
+        Tag indicating where the system entry's name can be found.
+        E.g.: System entries are available in `maintainability_portfolio_data['systems']`, and their system name can be found in `maintainability_portfolio_data['systems']['system']`. Hence: `system_tag='system'`.
     """
 
     def decorator(func):
