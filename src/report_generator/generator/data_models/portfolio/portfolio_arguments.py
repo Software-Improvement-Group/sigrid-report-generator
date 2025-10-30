@@ -74,6 +74,10 @@ def filter_data_on_portfolio_arguments(data_tag=None, system_tag=None):
                 raise PlaceholderArgumentException(func.__name__)
             
             data = func(*args, **kwargs)
+
+            if not _are_filters_set():
+                return data
+
             pmd = sigrid_api.get_portfolio_metadata()
 
             if data_tag:
@@ -110,6 +114,8 @@ def _include(system_name, portfolio_medadata):
     
     return False
 
+def _are_filters_set():
+    return _team is not None or _division is not None
 
 def _find_system_metadata(system_name, portfolio_metadata):
     for s in portfolio_metadata:

@@ -24,7 +24,6 @@ from dateutil.relativedelta import relativedelta
 from report_generator import presets
 from report_generator.generator import ReportGenerator, sigrid_api
 from report_generator.generator.data_models import portfolio_arguments_command
-from report_generator.generator.data_models import get_portfolio_context
 
 DEFAULT_START_DATE = (date.today() + relativedelta(months=-1)).strftime('%Y-%m-%d')
 DEFAULT_END_DATE = date.today().strftime('%Y-%m-%d')
@@ -88,8 +87,6 @@ def run(_, debug, customer, system, token, layout, template, start, end, out_fil
     _configure_logging(debug)
     _configure_api(customer, system, token, (start, end), api_url)
     _record_usage_statistics(layout, customer)
-
-    print(f"Context: {get_portfolio_context()}")
 
     if template:
         ReportGenerator(template.name).generate(out_file)
