@@ -99,7 +99,6 @@ def _without_data_tag(data, portfolio_metadata, system_tag):
 def _include(system_name, portfolio_medadata):
     md = _find_system_metadata(system_name=system_name, portfolio_metadata=portfolio_medadata)
     if md is None:
-        # raise PlaceholderArgumentException(function_name=__name__, message=f"Could not find metadata of {system_name}")
         return False
     
     if _team is not None:
