@@ -88,30 +88,33 @@ def filter_data_on_portfolio_arguments(data_tag=None, system_tag=None):
     return decorator
 
 def _with_data_tag(data, portfolio_metadata, data_tag, system_tag):
-    systems = [entry for entry in data[data_tag] if _include(system_name=entry[system_tag], portfolio_medadata=portfolio_metadata)]
+    systems = [entry for entry in data[data_tag] if _include(system_name=entry[system_tag], portfolio_metadata=portfolio_metadata)]
     data[data_tag] = systems
     return data
 
 def _without_data_tag(data, portfolio_metadata, system_tag):
-    systems = [entry for entry in data if _include(system_name=entry[system_tag], portfolio_medadata=portfolio_metadata)]
+    systems = [entry for entry in data if _include(system_name=entry[system_tag], portfolio_metadata=portfolio_metadata)]
     return systems
 
-def _include(system_name, portfolio_medadata):
-    md = _find_system_metadata(system_name=system_name, portfolio_metadata=portfolio_medadata)
+def _include(system_name, portfolio_metadata):
+    global _team, _division
+    md = _find_system_metadata(system_name=system_name, portfolio_metadata=portfolio_metadata)
     if md is None:
         return False
     
-    if _team is not None:
-        for t in _team:
-            if t in md['teamNames']:
-                return True
+    # if _team is not None:
+    #     for t in _team:
+    #         if t in md['teamNames']:
+    #             return True
     
-    if _division is not None:
-        for d in _division:
-            if d == md['divisionName']:
-                return True
-    
-    return False
+    # if _division is not None:
+    #     for d in _division:
+    #         if d == md['divisionName']:
+    #             return True
+    team_match = _team is not None and any(t in md['teamNames'] for t in _team)
+    division_match = _division is not None and any(d == md['divisionName'] for d in _division)
+
+    return team_match or division_match
 
 def _are_filters_set():
     return _team is not None or _division is not None
