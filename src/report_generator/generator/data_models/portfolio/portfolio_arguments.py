@@ -102,15 +102,6 @@ def _include(system_name, portfolio_metadata):
     if md is None:
         return False
     
-    # if _team is not None:
-    #     for t in _team:
-    #         if t in md['teamNames']:
-    #             return True
-    
-    # if _division is not None:
-    #     for d in _division:
-    #         if d == md['divisionName']:
-    #             return True
     team_match = _team is not None and any(t in md['teamNames'] for t in _team)
     division_match = _division is not None and any(d == md['divisionName'] for d in _division)
 
