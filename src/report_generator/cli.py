@@ -125,6 +125,7 @@ def _configure_logging(debug):
         logger.setLevel(logging.INFO)
         logging.getLogger('kaleido').setLevel(logging.WARNING)
         logging.getLogger('choreographer').setLevel(logging.WARNING)
+        logging.getLogger('matplotlib').setLevel(logging.WARNING)
 
     ch = logging.StreamHandler()
     ch.setLevel(logging.DEBUG)

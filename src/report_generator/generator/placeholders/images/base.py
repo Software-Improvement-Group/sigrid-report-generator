@@ -23,6 +23,10 @@ from report_generator.generator import report_utils
 import io
 from pptx.util import Inches
 
+import pandas as pd
+import matplotlib.pyplot as plt
+import mpl_extra.treemap as tr
+
 class _AbstractImagePlaceholder(Placeholder, ABC):
     __doc_type__ = PlaceholderDocType.IMAGE
     BUNDLE_COLOR = f"#{report_utils.pptx.SIG_GREY_COLOR}"
@@ -39,23 +43,35 @@ class _AbstractImagePlaceholder(Placeholder, ABC):
             cls.create_and_add_image_to_slide(shape, fig)
     
     @staticmethod
-    def create_and_add_image_to_slide(shape_placeholder, fig):
+    def create_and_add_image_to_slide(shape_placeholder, fig_data):
         pos_left = shape_placeholder.left.inches
         pos_top = shape_placeholder.top.inches
         pos_width = shape_placeholder.width.inches
         pos_height = shape_placeholder.height.inches
 
-        fig.update_layout(
-            margin = {'t':0, 'l':0, 'r':0, 'b':0},
-            plot_bgcolor="rgba(0,0,0,0)",
-            paper_bgcolor="rgba(0,0,0,0)"
-        )
+        fig, ax = plt.subplots(figsize=(pos_width,pos_height), dpi=200)
+        subkeys = ["system_names", "volumes", "labels", "roots"]
+        df = pd.DataFrame({k: fig_data[k] for k in subkeys})
+        trc = tr.treemap(axes=ax, data=df, area="volumes", levels=["roots", "system_names"], top=True,
+                     fill="system_names", cmap=fig_data['color_mapping'], labels="labels",
+                     rectprops=dict(ec='w', pad=(0,0,0,2)),
+                     textprops=dict(fontfamily='sans-serif', reflow=True, place='center', grow=True,
+                        max_fontsize=4, color='k', pady=1, padx=1), # Text inside squares
+                     subgroup_rectprops={'roots':dict(ec='w', fc=_AbstractImagePlaceholder.BUNDLE_COLOR)},
+                     subgroup_textprops={'roots':dict(place='top center', max_fontsize=3, pady=5,
+                                  fontfamily='sans-serif', color='k')})
+        ax.axis("off")
+
+        buf = io.BytesIO()
+        fig.savefig(buf, dpi='figure', bbox_inches='tight')
+        buf.seek(0)
         
-        img_bytes = fig.to_image(format="png", width=pos_width*2*96, height=pos_height*2*96)
-        
-        shape_placeholder.part.slide.shapes.add_picture(io.BytesIO(img_bytes),
+        shape_placeholder.part.slide.shapes.add_picture(io.BytesIO(buf.getvalue()),
             left=Inches(pos_left), top=Inches(pos_top),
             width=Inches(pos_width), height=Inches(pos_height))
 
         el = shape_placeholder.element
         el.getparent().remove(el)
+
+        buf.close()
+        plt.close(fig)

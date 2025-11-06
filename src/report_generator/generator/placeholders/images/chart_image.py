@@ -126,61 +126,61 @@ class _AbstractSecurityDashboardResolutionTimesPlaceholder(_AbstractSecurityDash
         return go.Figure(data=data, layout=_AbstractSecurityDashboardPlaceholder.get_layout(portfolio.keys()))
 
 
-class SecurityDashboardCriticalFindingsPlaceholder(_AbstractSecurityDashboardFindingsPlaceholder):
-    """Creates a portfolio bar chart depicting the number of new, existing, and resolved critical security findings of the last 12 months (counting back from the <end_date>)"""
+# class SecurityDashboardCriticalFindingsPlaceholder(_AbstractSecurityDashboardFindingsPlaceholder):
+#     """Creates a portfolio bar chart depicting the number of new, existing, and resolved critical security findings of the last 12 months (counting back from the <end_date>)"""
 
-    key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_CRITICAL_FINDINGS"
+#     key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_CRITICAL_FINDINGS"
 
-    @classmethod
-    def value(cls, parameter=None):
-        return _AbstractSecurityDashboardFindingsPlaceholder.create_dashboard_with_severity("CRITICAL")
-
-
-class SecurityDashboardHighFindingsPlaceholder(_AbstractSecurityDashboardFindingsPlaceholder):
-    """Creates a portfolio bar chart depicting the number of new, existing, and resolved high security findings of the last 12 months (counting back from the <end_date>)"""
-
-    key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_HIGH_FINDINGS"
-
-    @classmethod
-    def value(cls, parameter=None):
-        return _AbstractSecurityDashboardFindingsPlaceholder.create_dashboard_with_severity("HIGH")
+#     @classmethod
+#     def value(cls, parameter=None):
+#         return _AbstractSecurityDashboardFindingsPlaceholder.create_dashboard_with_severity("CRITICAL")
 
 
-class SecurityDashboardMediumFindingsPlaceholder(_AbstractSecurityDashboardFindingsPlaceholder):
-    """Creates a portfolio bar chart depicting the number of new, existing, and resolved medium security findings of the last 12 months (counting back from the <end_date>)"""
+# class SecurityDashboardHighFindingsPlaceholder(_AbstractSecurityDashboardFindingsPlaceholder):
+#     """Creates a portfolio bar chart depicting the number of new, existing, and resolved high security findings of the last 12 months (counting back from the <end_date>)"""
 
-    key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_MEDIUM_FINDINGS"
+#     key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_HIGH_FINDINGS"
 
-    @classmethod
-    def value(cls, parameter=None):
-        return _AbstractSecurityDashboardFindingsPlaceholder.create_dashboard_with_severity("MEDIUM")
+#     @classmethod
+#     def value(cls, parameter=None):
+#         return _AbstractSecurityDashboardFindingsPlaceholder.create_dashboard_with_severity("HIGH")
+
+
+# class SecurityDashboardMediumFindingsPlaceholder(_AbstractSecurityDashboardFindingsPlaceholder):
+#     """Creates a portfolio bar chart depicting the number of new, existing, and resolved medium security findings of the last 12 months (counting back from the <end_date>)"""
+
+#     key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_MEDIUM_FINDINGS"
+
+#     @classmethod
+#     def value(cls, parameter=None):
+#         return _AbstractSecurityDashboardFindingsPlaceholder.create_dashboard_with_severity("MEDIUM")
     
 
-class SecurityDashboardCriticalResolutionTimesPlaceholder(_AbstractSecurityDashboardResolutionTimesPlaceholder):
-    """Creates a portfolio bar chart depicting the resolution times of critical security findings of the last 12 months (counting back from the <end_date>)"""
+# class SecurityDashboardCriticalResolutionTimesPlaceholder(_AbstractSecurityDashboardResolutionTimesPlaceholder):
+#     """Creates a portfolio bar chart depicting the resolution times of critical security findings of the last 12 months (counting back from the <end_date>)"""
 
-    key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_CRITICAL_RESOLUTION_TIMES"
+#     key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_CRITICAL_RESOLUTION_TIMES"
 
-    @classmethod
-    def value(cls, parameter=None):
-        return _AbstractSecurityDashboardResolutionTimesPlaceholder.create_dashboard_with_severity("CRITICAL")
+#     @classmethod
+#     def value(cls, parameter=None):
+#         return _AbstractSecurityDashboardResolutionTimesPlaceholder.create_dashboard_with_severity("CRITICAL")
     
 
-class SecurityDashboardHighResolutionTimesPlaceholder(_AbstractSecurityDashboardResolutionTimesPlaceholder):
-    """Creates a portfolio bar chart depicting the resolution times of high security findings of the last 12 months (counting back from the <end_date>)"""
+# class SecurityDashboardHighResolutionTimesPlaceholder(_AbstractSecurityDashboardResolutionTimesPlaceholder):
+#     """Creates a portfolio bar chart depicting the resolution times of high security findings of the last 12 months (counting back from the <end_date>)"""
 
-    key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_HIGH_RESOLUTION_TIMES"
+#     key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_HIGH_RESOLUTION_TIMES"
 
-    @classmethod
-    def value(cls, parameter=None):
-        return _AbstractSecurityDashboardResolutionTimesPlaceholder.create_dashboard_with_severity("HIGH")
+#     @classmethod
+#     def value(cls, parameter=None):
+#         return _AbstractSecurityDashboardResolutionTimesPlaceholder.create_dashboard_with_severity("HIGH")
     
 
-class SecurityDashboardMediumResolutionTimesPlaceholder(_AbstractSecurityDashboardResolutionTimesPlaceholder):
-    """Creates a portfolio bar chart depicting the resolution times of medium security findings of the last 12 months (counting back from the <end_date>)"""
+# class SecurityDashboardMediumResolutionTimesPlaceholder(_AbstractSecurityDashboardResolutionTimesPlaceholder):
+#     """Creates a portfolio bar chart depicting the resolution times of medium security findings of the last 12 months (counting back from the <end_date>)"""
 
-    key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_MEDIUM_RESOLUTION_TIMES"
+#     key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_MEDIUM_RESOLUTION_TIMES"
 
-    @classmethod
-    def value(cls, parameter=None):
-        return _AbstractSecurityDashboardResolutionTimesPlaceholder.create_dashboard_with_severity("MEDIUM")
+#     @classmethod
+#     def value(cls, parameter=None):
+#         return _AbstractSecurityDashboardResolutionTimesPlaceholder.create_dashboard_with_severity("MEDIUM")
