@@ -91,8 +91,14 @@ def maint_date_day():
 
 @text_placeholder()
 def maint_date_month():
-    """The month of the latest system snapshot which was analyzed."""
+    """The month of the latest system snapshot which was analyzed, abbreviated and uppercased."""
     return maintainability_data.date.strftime("%b").upper()
+
+
+@text_placeholder()
+def maint_date_month_full():
+    """The month of the latest system snapshot which was analyzed, full name."""
+    return maintainability_data.date.strftime("%B")
 
 
 @text_placeholder()
