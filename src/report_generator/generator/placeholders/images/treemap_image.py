@@ -112,7 +112,8 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
             'roots' : treemap['parent_names'],
             'volumes' : values,
             'color_names' : treemap['system_names'],
-            'color_mapping' : treemap['color_mapping']
+            'color_mapping' : treemap['color_mapping'],
+            'figure_type': 'treemap'
         }
 
 
