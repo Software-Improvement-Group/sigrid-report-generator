@@ -38,18 +38,16 @@ class _AbstractImagePlaceholder(Placeholder, ABC):
         if len(shapes) == 0:
             return
 
-        fig_data = value_cb()
         for shape in shapes:
-            cls.create_and_add_image_to_slide(shape, fig_data)
+            fig = value_cb(param={'height':shape.height.inches, 'width':shape.width.inches})
+            cls.create_and_add_image_to_slide(shape, fig)
     
     @staticmethod
-    def create_and_add_image_to_slide(shape_placeholder, fig_data):
+    def create_and_add_image_to_slide(shape_placeholder, fig):
         pos_left = shape_placeholder.left.inches
         pos_top = shape_placeholder.top.inches
         pos_width = shape_placeholder.width.inches
         pos_height = shape_placeholder.height.inches
-
-        fig = _AbstractImagePlaceholder.MAPPER[fig_data['figure_type']](pos_width, pos_height, fig_data)
 
         buf = io.BytesIO()
         fig.savefig(buf, dpi='figure', bbox_inches='tight')
@@ -63,30 +61,3 @@ class _AbstractImagePlaceholder(Placeholder, ABC):
         el.getparent().remove(el)
 
         buf.close()
-        plt.close(fig)
-
-    @staticmethod
-    def _draw_treemap(width, height, fig_data):
-        fig, ax = plt.subplots(figsize=(width,height), dpi=200)
-        subkeys = ["system_names", "volumes", "labels", "roots"]
-        df = pd.DataFrame({k: fig_data[k] for k in subkeys})
-        tr.treemap(axes=ax, data=df, area="volumes", levels=["roots", "system_names"], top=True,
-                fill="system_names", cmap=fig_data['color_mapping'], labels="labels",
-                rectprops={'ec':'w', 'pad':(0,0,0,2)},
-                textprops={
-                    'fontfamily':'sans-serif', 'reflow':True, 'place':'center', 'grow':True,
-                    'max_fontsize':4, 'color':'k', 'pady':1, 'padx':1}, # Text inside squares
-                subgroup_rectprops={'roots':{'ec':'w', 'fc':_AbstractImagePlaceholder.BUNDLE_COLOR}},
-                subgroup_textprops={'roots':{'place':'top center', 'max_fontsize':3, 'pady':5, 'fontfamily':'sans-serif', 'color':'k'}}
-        )
-        ax.axis("off")
-        return fig
-    
-    @staticmethod
-    def _draw_barchart(width, height, fig_data):
-        pass
-
-_AbstractImagePlaceholder.MAPPER = {
-    'treemap': _AbstractImagePlaceholder._draw_treemap,
-    'barchart': _AbstractImagePlaceholder._draw_barchart
-}
