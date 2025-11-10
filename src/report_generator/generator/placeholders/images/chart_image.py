@@ -13,7 +13,6 @@
 #  limitations under the License.
 from abc import ABC, abstractmethod
 from datetime import datetime
-import plotly.graph_objects as go
 
 from report_generator.generator import report_utils
 from report_generator.generator.data_models import security_dashboard_findings_portfolio_data
@@ -36,14 +35,6 @@ class _AbstractChartImagePlaceholder(_AbstractImagePlaceholder, ABC):
 
 
 class _AbstractSecurityDashboardPlaceholder(_AbstractChartImagePlaceholder, ABC):
-    LAYOUT = go.Layout(
-        xaxis={'showline' : True, 'linewidth' : 2, 'linecolor' : '#6E7078', 'type': 'category', 'categoryorder': 'array', 'tickmode' : 'array'},
-        yaxis={'showgrid' : True, 'gridwidth' : 2, 'gridcolor' : '#E0E4EF' },
-        legend={'orientation' : 'h', 'yanchor' : 'top', 'xanchor' : 'center', 'y' : -0.05, 'x' : 0.5, 'traceorder' : 'normal'},
-        barmode='stack'
-    )
-    
-
     @staticmethod
     @abstractmethod
     def create_portfolio():
