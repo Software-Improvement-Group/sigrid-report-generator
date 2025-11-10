@@ -80,7 +80,7 @@ class _AbstractSecurityDashboardPlaceholder(_AbstractImagePlaceholder, ABC):
     @staticmethod
     def _calculate_sensible_ticker_interval(y_max, target_ticks=6):
         raw_interval = y_max / target_ticks
-        for n in [1, 2, 5, 10]:
+        for _ in range(4):
             p = 10 ** int(np.floor(np.log10(raw_interval)))
             for m in [1, 2, 5]:
                 step = m * p
@@ -171,7 +171,8 @@ class _AbstractSecurityDashboardResolutionTimesPlaceholder(_AbstractSecurityDash
         ax.bar_label(r, fontsize=8)
 
         x = np.arange(len(columns))
-        max_val = np.max(np.sum([v for v in portfolio.values()], axis=0))
+        # max_val = np.max(np.sum([v for v in portfolio.values()], axis=0))
+        max_val = np.max(np.sum(list(portfolio.values()), axis=0))
         _AbstractSecurityDashboardPlaceholder._format_image(ax=ax, x=x, columns=columns, max_value=max_val)
         return fig
 
