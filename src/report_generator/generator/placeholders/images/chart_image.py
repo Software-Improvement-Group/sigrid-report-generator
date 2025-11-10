@@ -22,19 +22,9 @@ from report_generator.generator.placeholders.images.base import _AbstractImagePl
 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 
-class _AbstractChartImagePlaceholder(_AbstractImagePlaceholder, ABC):
-    DASHBOARD_EXISTING_FINDINGS_COLOR = f"#{report_utils.pptx.DASHBOARD_EXISTING_FINDINGS_COLOR}"
-    DASHBOARD_NEW_FINDINGS_COLOR = f"#{report_utils.pptx.DASHBOARD_NEW_FINDINGS_COLOR}"
-    DASHBOARD_RESOLVED_FINDINGS_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLVED_FINDINGS_COLOR}"
-
-    DASHBOARD_RESOLUTION_NO_RISK_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLUTION_NO_RISK_COLOR}"
-    DASHBOARD_RESOLUTION_LOW_RISK_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLUTION_LOW_RISK_COLOR}"
-    DASHBOARD_RESOLUTION_MEDIUM_RISK_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLUTION_MEDIUM_RISK_COLOR}"
-    DASHBOARD_RESOLUTION_HIGH_RISK_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLUTION_HIGH_RISK_COLOR}"
-
-
-class _AbstractSecurityDashboardPlaceholder(_AbstractChartImagePlaceholder, ABC):
+class _AbstractSecurityDashboardPlaceholder(_AbstractImagePlaceholder, ABC):
     @staticmethod
     @abstractmethod
     def create_portfolio():
@@ -56,40 +46,67 @@ class _AbstractSecurityDashboardPlaceholder(_AbstractChartImagePlaceholder, ABC)
 
     @staticmethod
     def create_portfolio_helper(data_source, metric, risk_entries):
-        res = {"CRITICAL" : {}, "HIGH" : {}, "MEDIUM" : {}, "LOW" : {}}
-
+        severities = ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
+        portfolio = {severity : {risk: [0] * 12 for risk in risk_entries} for severity in severities}
         columns = []
-        for entry_entry in risk_entries:
-            for severity in res.keys():
-                res[severity][entry_entry] = [0] * 12
-        
+
         for system in data_source.data['systems']:
             md = maintainability_portfolio_data.get_system_metadata(system['system'])
             if not md or not md['active'] or md['isDevelopmentOnly']:
                 continue
-            for ratio in system[metric]:
-                month = _AbstractSecurityDashboardPlaceholder.transform_date_label_to_month(ratio['month'])
-                if month not in columns:
-                    columns.append(month)
-                month_idx = columns.index(month)
+            _AbstractSecurityDashboardPlaceholder._process_system(system=system, metric=metric, columns=columns, severities=severities, risk_entries=risk_entries, portfolio=portfolio)
+        portfolio['columns'] = columns
+        return portfolio
+    
 
-                for severity in res.keys():
-                    for entry_entry in risk_entries:
-                        res[severity][entry_entry][month_idx] += ratio['severities'][severity][entry_entry]
-        res['columns'] = columns
-        return res
+    @staticmethod
+    def _process_system(system: dict, metric: str, columns: list[str], severities: list[str], risk_entries: list[str], portfolio: dict):
+        for ratio in system[metric]:
+            month = _AbstractSecurityDashboardPlaceholder._transform_date_label_to_month(ratio['month'])
+            if month not in columns:
+                columns.append(month)
+            month_idx = columns.index(month)
+
+            for severity in severities:
+                for entry_entry in risk_entries:
+                    portfolio[severity][entry_entry][month_idx] += ratio['severities'][severity][entry_entry]
 
 
     @staticmethod
-    def transform_date_labels_to_months(dates):
-        return [datetime.strptime(x, "%Y-%m-%d").strftime("%b") for x in dates]
+    def _transform_date_label_to_month(date):
+        return datetime.strptime(date, "%Y-%m-%d").strftime("%b")
+
     
     @staticmethod
-    def transform_date_label_to_month(date):
-        return datetime.strptime(date, "%Y-%m-%d").strftime("%b")
+    def _calculate_sensible_ticker_interval(y_max, target_ticks=6):
+        raw_interval = y_max / target_ticks
+        for n in [1, 2, 5, 10]:
+            p = 10 ** int(np.floor(np.log10(raw_interval)))
+            for m in [1, 2, 5]:
+                step = m * p
+                if step >= raw_interval:
+                    return int(step)
+        return int(raw_interval)
+    
+    @staticmethod
+    def _format_image(ax, x, columns, max_value):
+        ax.set_xticks(x, columns, fontsize=10)
+        ax.set_ylim(0, int(max_value*1.15))
+        ticker_interval = _AbstractSecurityDashboardPlaceholder._calculate_sensible_ticker_interval(max_value)
+        ax.yaxis.set_major_locator(ticker.MultipleLocator(ticker_interval))
+        ax.legend(loc='upper center', ncols=4, bbox_to_anchor=(0.5, -0.15), fontsize=6)
+        ax.spines["right"].set_visible(False)
+        ax.spines["left"].set_visible(False)
+        ax.spines["top"].set_visible(False)
+        ax.tick_params(axis="y", length=0)
+        ax.yaxis.grid(True, color="#E0E4EF", zorder=0)
 
 
 class _AbstractSecurityDashboardFindingsPlaceholder(_AbstractSecurityDashboardPlaceholder, ABC):
+    DASHBOARD_EXISTING_FINDINGS_COLOR = f"#{report_utils.pptx.DASHBOARD_EXISTING_FINDINGS_COLOR}"
+    DASHBOARD_NEW_FINDINGS_COLOR = f"#{report_utils.pptx.DASHBOARD_NEW_FINDINGS_COLOR}"
+    DASHBOARD_RESOLVED_FINDINGS_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLVED_FINDINGS_COLOR}"
+
     @staticmethod
     def create_portfolio():
         return _AbstractSecurityDashboardPlaceholder.create_portfolio_helper(security_dashboard_findings_portfolio_data, 'findingRatio', {"resolved": 0, "existing": 0, "new": 0})
@@ -100,24 +117,21 @@ class _AbstractSecurityDashboardFindingsPlaceholder(_AbstractSecurityDashboardPl
         portfolio = portfolio_complete[severity]
         columns = portfolio_complete['columns']
         
-        fig, ax = plt.subplots(figsize=(width,height), dpi=200, layout='constrained')
+        fig, ax = plt.subplots(figsize=(width,height), dpi=200, facecolor="none")
 
         x = np.arange(len(columns))
         w = 0.4
 
-        ax.bar(x=x-(w/2), height=portfolio['new'], width=w, label="New")
+        ax.bar(x=x-(w/2), height=portfolio['new'], width=w, label="New", color=_AbstractSecurityDashboardFindingsPlaceholder.DASHBOARD_NEW_FINDINGS_COLOR, zorder=3)
 
-        r = ax.bar(x=x-(w/2), height=portfolio['existing'], width=w, bottom=portfolio['new'], label="Existing")
-        ax.bar_label(r, padding=2)
+        r = ax.bar(x=x-(w/2), height=portfolio['existing'], width=w, bottom=portfolio['new'], label="Existing", color=_AbstractSecurityDashboardFindingsPlaceholder.DASHBOARD_EXISTING_FINDINGS_COLOR, zorder=3)
+        ax.bar_label(r, padding=2, fontsize=8)
 
-        # Right: grouped bar
-        r = ax.bar(x=x+(w/2), height=portfolio['resolved'], width=w, label="Resolved")
-        ax.bar_label(r, padding=2)
+        r = ax.bar(x=x+(w/2), height=portfolio['resolved'], width=w, label="Resolved", color=_AbstractSecurityDashboardFindingsPlaceholder.DASHBOARD_RESOLVED_FINDINGS_COLOR, zorder=3)
+        ax.bar_label(r, padding=2, fontsize=8)
 
-        ax.set_ylabel('Length (mm)')
-        ax.set_title('Penguin attributes by species')
-        ax.set_xticks(x, columns)
-        ax.legend(loc='upper left', ncols=3)
+        max_val = np.max([np.max([x+y for x,y in zip(portfolio["new"], portfolio["existing"])]),np.max(portfolio["resolved"])])
+        _AbstractSecurityDashboardPlaceholder._format_image(ax=ax, x=x, columns=columns, max_value=max_val)
 
         return fig
 
@@ -127,6 +141,12 @@ class _AbstractSecurityDashboardResolutionTimesPlaceholder(_AbstractSecurityDash
         "HIGH" : {'noRisk' : "at most 14 days", "lowRisk" : "between 14-30 days", "mediumRisk" : "between 30-180 days", "highRisk" : "at least 180 days"},
         "MEDIUM" : {'noRisk' : "at most 30 days", "lowRisk" : "between 30-180 days", "mediumRisk" : "between 180-365 days", "highRisk" : "at least 365 days"},
         "LOW" : {'noRisk' : "at most 180 days", "lowRisk" : "between 180-365 days", "mediumRisk" : "between 1-2 years", "highRisk" : "at least 2 years"}
+    }
+    DASHBOARD_RESOLUTION_LEGEND_COLORS = {
+        'noRisk' : f"#{report_utils.pptx.DASHBOARD_RESOLUTION_NO_RISK_COLOR}",
+        'lowRisk' : f"#{report_utils.pptx.DASHBOARD_RESOLUTION_LOW_RISK_COLOR}",
+        'mediumRisk' : f"#{report_utils.pptx.DASHBOARD_RESOLUTION_MEDIUM_RISK_COLOR}",
+        'highRisk' : f"#{report_utils.pptx.DASHBOARD_RESOLUTION_HIGH_RISK_COLOR}"
     }
 
     @staticmethod
@@ -140,18 +160,19 @@ class _AbstractSecurityDashboardResolutionTimesPlaceholder(_AbstractSecurityDash
         columns = portfolio_complete['columns']
         legend_entries = _AbstractSecurityDashboardResolutionTimesPlaceholder.LEGEND_ENTRIES_PER_SEVERITY[severity]
 
-        fig, ax = plt.subplots(figsize=(width,height), dpi=200)
+        fig, ax = plt.subplots(figsize=(width,height), dpi=200, facecolor="none")
         bottom = np.zeros(12)
 
         for entry, vals in portfolio.items():
             legend_entry = legend_entries[entry]
             np_vals = np.array(vals)
-            r = ax.bar(x=columns, height=np_vals, label=legend_entry, bottom=bottom)
+            r = ax.bar(x=columns, height=np_vals, label=legend_entry, bottom=bottom, color=_AbstractSecurityDashboardResolutionTimesPlaceholder.DASHBOARD_RESOLUTION_LEGEND_COLORS[entry], zorder=3)
             bottom += np_vals
-        ax.bar_label(r)
+        ax.bar_label(r, fontsize=8)
 
-        ax.set_title("Number of penguins with above average body mass")
-        ax.legend(loc="upper right")
+        x = np.arange(len(columns))
+        max_val = np.max(np.sum([v for v in portfolio.values()], axis=0))
+        _AbstractSecurityDashboardPlaceholder._format_image(ax=ax, x=x, columns=columns, max_value=max_val)
         return fig
 
 
