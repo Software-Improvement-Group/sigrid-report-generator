@@ -38,17 +38,10 @@ class _AbstractSecurityDashboardPlaceholder(_AbstractImagePlaceholder, ABC):
 
 
     @staticmethod
-    def get_layout(keys):
-        layout = _AbstractSecurityDashboardPlaceholder.LAYOUT
-        layout.xaxis.update({'categoryarray' : list(keys), 'tickvals' : list(keys), 'ticktext' : _AbstractSecurityDashboardPlaceholder.transform_date_labels_to_months(keys)})
-        return layout
-
-
-    @staticmethod
     def create_portfolio_helper(data_source, metric, risk_entries):
         severities = ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
         portfolio = {severity : {risk: [0] * 12 for risk in risk_entries} for severity in severities}
-        columns = []
+        columns: list[str] = []
 
         for system in data_source.data['systems']:
             md = maintainability_portfolio_data.get_system_metadata(system['system'])
@@ -171,7 +164,6 @@ class _AbstractSecurityDashboardResolutionTimesPlaceholder(_AbstractSecurityDash
         ax.bar_label(r, fontsize=8)
 
         x = np.arange(len(columns))
-        # max_val = np.max(np.sum([v for v in portfolio.values()], axis=0))
         max_val = np.max(np.sum(list(portfolio.values()), axis=0))
         _AbstractSecurityDashboardPlaceholder._format_image(ax=ax, x=x, columns=columns, max_value=max_val)
         return fig
@@ -183,8 +175,8 @@ class SecurityDashboardCriticalFindingsPlaceholder(_AbstractSecurityDashboardFin
     key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_CRITICAL_FINDINGS"
 
     @classmethod
-    def value(cls, param):
-        return _AbstractSecurityDashboardFindingsPlaceholder.create_dashboard_with_severity(severity="CRITICAL", width=param['width'], height=param['height'])
+    def value(cls, parameter=None):
+        return _AbstractSecurityDashboardFindingsPlaceholder.create_dashboard_with_severity(severity="CRITICAL", width=parameter['width'], height=parameter['height'])
 
 
 class SecurityDashboardHighFindingsPlaceholder(_AbstractSecurityDashboardFindingsPlaceholder):
@@ -193,8 +185,8 @@ class SecurityDashboardHighFindingsPlaceholder(_AbstractSecurityDashboardFinding
     key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_HIGH_FINDINGS"
 
     @classmethod
-    def value(cls, param):
-        return _AbstractSecurityDashboardFindingsPlaceholder.create_dashboard_with_severity(severity="HIGH", width=param['width'], height=param['height'])
+    def value(cls, parameter=None):
+        return _AbstractSecurityDashboardFindingsPlaceholder.create_dashboard_with_severity(severity="HIGH", width=parameter['width'], height=parameter['height'])
 
 
 class SecurityDashboardMediumFindingsPlaceholder(_AbstractSecurityDashboardFindingsPlaceholder):
@@ -203,8 +195,8 @@ class SecurityDashboardMediumFindingsPlaceholder(_AbstractSecurityDashboardFindi
     key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_MEDIUM_FINDINGS"
 
     @classmethod
-    def value(cls, param):
-        return _AbstractSecurityDashboardFindingsPlaceholder.create_dashboard_with_severity(severity="MEDIUM", width=param['width'], height=param['height'])
+    def value(cls, parameter=None):
+        return _AbstractSecurityDashboardFindingsPlaceholder.create_dashboard_with_severity(severity="MEDIUM", width=parameter['width'], height=parameter['height'])
     
 
 class SecurityDashboardCriticalResolutionTimesPlaceholder(_AbstractSecurityDashboardResolutionTimesPlaceholder):
@@ -213,8 +205,8 @@ class SecurityDashboardCriticalResolutionTimesPlaceholder(_AbstractSecurityDashb
     key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_CRITICAL_RESOLUTION_TIMES"
 
     @classmethod
-    def value(cls, param):
-        return _AbstractSecurityDashboardResolutionTimesPlaceholder.create_dashboard_with_severity(severity="CRITICAL", width=param['width'], height=param['height'])
+    def value(cls, parameter=None):
+        return _AbstractSecurityDashboardResolutionTimesPlaceholder.create_dashboard_with_severity(severity="CRITICAL", width=parameter['width'], height=parameter['height'])
     
 
 class SecurityDashboardHighResolutionTimesPlaceholder(_AbstractSecurityDashboardResolutionTimesPlaceholder):
@@ -223,8 +215,8 @@ class SecurityDashboardHighResolutionTimesPlaceholder(_AbstractSecurityDashboard
     key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_HIGH_RESOLUTION_TIMES"
 
     @classmethod
-    def value(cls, param):
-        return _AbstractSecurityDashboardResolutionTimesPlaceholder.create_dashboard_with_severity(severity="HIGH", width=param['width'], height=param['height'])
+    def value(cls, parameter=None):
+        return _AbstractSecurityDashboardResolutionTimesPlaceholder.create_dashboard_with_severity(severity="HIGH", width=parameter['width'], height=parameter['height'])
     
 
 class SecurityDashboardMediumResolutionTimesPlaceholder(_AbstractSecurityDashboardResolutionTimesPlaceholder):
@@ -233,5 +225,5 @@ class SecurityDashboardMediumResolutionTimesPlaceholder(_AbstractSecurityDashboa
     key = "PORTFOLIO_PERIOD_SECURITY_DASHBOARD_MEDIUM_RESOLUTION_TIMES"
 
     @classmethod
-    def value(cls, param):
-        return _AbstractSecurityDashboardResolutionTimesPlaceholder.create_dashboard_with_severity(severity="MEDIUM", width=param['width'], height=param['height'])
+    def value(cls, parameter=None):
+        return _AbstractSecurityDashboardResolutionTimesPlaceholder.create_dashboard_with_severity(severity="MEDIUM", width=parameter['width'], height=parameter['height'])

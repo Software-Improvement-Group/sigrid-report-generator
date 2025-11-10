@@ -23,10 +23,6 @@ from report_generator.generator import report_utils
 import io
 from pptx.util import Inches
 
-import pandas as pd
-import matplotlib.pyplot as plt
-import mpl_extra.treemap as tr
-
 class _AbstractImagePlaceholder(Placeholder, ABC):
     __doc_type__ = PlaceholderDocType.IMAGE
     BUNDLE_COLOR = f"#{report_utils.pptx.SIG_GREY_COLOR}"
@@ -39,7 +35,7 @@ class _AbstractImagePlaceholder(Placeholder, ABC):
             return
 
         for shape in shapes:
-            fig = value_cb(param={'height':shape.height.inches, 'width':shape.width.inches})
+            fig = value_cb(parameter={'height':shape.height.inches, 'width':shape.width.inches})
             cls.create_and_add_image_to_slide(shape, fig)
     
     @staticmethod
