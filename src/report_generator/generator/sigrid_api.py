@@ -71,11 +71,11 @@ def set_context(
 
 
 def reset_context(
-        reset_bearer_token: bool = None,
-        reset_customer: bool = None,
-        reset_system: bool = None,
-        reset_period: bool = None,
-        reset_base_url: bool = None
+        reset_bearer_token: Optional[bool] = None,
+        reset_customer: Optional[bool] = None,
+        reset_system: Optional[bool] = None,
+        reset_period: Optional[bool] = None,
+        reset_base_url: Optional[bool] = None
 ) -> None:
     """Reset context values. If no parameters are provided, resets all values."""
     global _bearer_token, _customer, _system, _period, _rest_url
