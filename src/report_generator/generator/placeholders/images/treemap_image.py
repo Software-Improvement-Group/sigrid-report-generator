@@ -100,8 +100,8 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
         values: list[int] = []
         for system_name in treemap_data["system_names"]:
             end = portfolio.get(system_name, {}).get("end_date_data")
-            value = 0 if not end else end.get("volumeInPersonMonths", 0)
-            values.append(value)
+            value = 1e-6 if not end else end.get("volumeInPersonMonths", 1e-6)
+            values.append(max(value,1e-6))
         return values
 
 
