@@ -23,6 +23,7 @@ from dateutil.relativedelta import relativedelta
 
 from report_generator import presets
 from report_generator.generator import ReportGenerator, sigrid_api
+from report_generator.generator.data_models import portfolio_arguments_command
 
 DEFAULT_START_DATE = (date.today() + relativedelta(months=-1)).strftime('%Y-%m-%d')
 DEFAULT_END_DATE = date.today().strftime('%Y-%m-%d')
@@ -80,6 +81,7 @@ def _validate_layout_or_template(ctx, param, value):
 @click.option('-o', '--out-file', default='out', help='write output to this file (default out.pptx/docx)')
 @click.option('-a', '--api-url', default=None,
               help=f'Sigrid API base URL, will default to {sigrid_api.DEFAULT_BASE_URL} if not provided')
+@portfolio_arguments_command()
 @click.pass_context
 def run(_, debug, customer, system, token, layout, template, start, end, out_file, api_url):
     _configure_logging(debug)

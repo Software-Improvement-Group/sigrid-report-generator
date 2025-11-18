@@ -19,6 +19,7 @@ from functools import cached_property
 from report_generator.generator import sigrid_api
 from report_generator.generator.report_utils.time_series import Period
 
+from report_generator.generator.data_models.portfolio.portfolio_arguments import filter_data_on_portfolio_arguments
 
 class ObjectiveStatus(Enum):
     MET = "MET"
@@ -40,20 +41,30 @@ class ObjectivesData:
     def comparison_period(self):
         period = sigrid_api.get_period()
         return Period(period[0], period[1])
+    
+    @staticmethod
+    @filter_data_on_portfolio_arguments(data_tag="systems", system_tag="systemName")
+    def _get_filtered_objectives_evaluation_for_period(period):
+        return sigrid_api.get_objectives_evaluation(period)
 
     @cached_property
     def objectives_evaluation_trend(self):
-        return [(period, sigrid_api.get_objectives_evaluation(period)["systems"]) for period in self.periods]
+        return [(period, ObjectivesData._get_filtered_objectives_evaluation_for_period(period)["systems"]) for period in self.periods]
 
     @cached_property
     def objectives_evaluation_status(self):
         period = self.comparison_period
-        return sigrid_api.get_objectives_evaluation(period)["systems"]
+        return ObjectivesData._get_filtered_objectives_evaluation_for_period(period)["systems"]
 
     @cached_property
     def teams(self):
+        @filter_data_on_portfolio_arguments(system_tag="systemName")
+        def get_metadata():
+            return sigrid_api.get_portfolio_metadata()
+
         result = defaultdict(list)
-        for system_metadata in sigrid_api.get_portfolio_metadata():
+        metadata = get_metadata()
+        for system_metadata in metadata:
             for team in system_metadata["teamNames"]:
                 result[team].append(system_metadata["systemName"])
             if len(system_metadata["teamNames"]) == 0:
