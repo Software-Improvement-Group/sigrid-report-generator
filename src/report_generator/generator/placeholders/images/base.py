@@ -46,7 +46,7 @@ class _AbstractImagePlaceholder(Placeholder, ABC):
         pos_height = shape_placeholder.height.inches
 
         buf = io.BytesIO()
-        fig.savefig(buf, dpi='figure', bbox_inches='tight', transparent=True)
+        fig.savefig(buf, dpi='figure', bbox_inches='tight', transparent=True, pad_inches=0)
         buf.seek(0)
         
         shape_placeholder.part.slide.shapes.add_picture(io.BytesIO(buf.getvalue()),

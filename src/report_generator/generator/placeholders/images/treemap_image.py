@@ -130,7 +130,7 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
     def draw_image(width, height, fig_data):
         fig, ax = plt.subplots(figsize=(width,height), dpi=200)
         ratio = max(width,height)/min(width, height)
-        padding = 1 if ratio <= 1.2 else 5
+        padding = 1 if ratio <= 1.3 else 5
         subkeys = ["system_names", "volumes", "labels", "roots"]
         df = pd.DataFrame({k: fig_data[k] for k in subkeys})
         tr.treemap(axes=ax, data=df, area="volumes", levels=["roots", "system_names"], top=True,
