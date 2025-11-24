@@ -199,7 +199,7 @@ class PeriodPortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder, AB
     
     @staticmethod
     def _get_and_format_difference(differences, system_name, is_percentage):
-        if differences[system_name]:
+        if differences[system_name] is not None:
             return round(differences[system_name], 2) if not is_percentage else formatters.ratio_to_percentage(differences[system_name])
         return "N/A"
 
