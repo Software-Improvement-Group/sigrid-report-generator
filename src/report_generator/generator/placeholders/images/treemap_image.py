@@ -227,7 +227,6 @@ class MaintainabilityPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlacehol
     def value(cls, parameter=None):
         portfolio, _ = _AbstractPortfolioTreemapPlaceholder.prepare_portfolio_and_treemap()
         f = lambda t: portfolio.get(t, {}).get('end_date_data', {}).get('maintainability', None)
-        # f = lambda t: portfolio[t]['end_date_data']['maintainability']
         fig_data = cls.create_end_date_portfolio_treemap(rating_func=f, rating_rounding_func=formatters.maintainability_round, determine_color_function=cls.determine_rating_color)
         return _AbstractPortfolioTreemapPlaceholder.draw_image(width=parameter['width'], height=parameter['height'], fig_data=fig_data)
 

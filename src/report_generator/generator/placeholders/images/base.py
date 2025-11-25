@@ -47,7 +47,7 @@ class _AbstractImagePlaceholder(Placeholder, ABC):
         pos_height = shape_placeholder.height.inches
 
         if fig is None:
-            logging.warning(f"Figure data of an image placeholder is None.")
+            logging.warning("Figure data of an image placeholder is None.")
             return
 
         buf = io.BytesIO()
