@@ -36,12 +36,26 @@ class _AbstractSecurityDashboardPlaceholder(_AbstractImagePlaceholder, ABC):
     def create_dashboard_with_severity(severity, width, height):
         pass
 
+    
+    @staticmethod
+    def _determine_columns(data_source, metric):
+        columns: list[str] = []
+        for system in data_source.data['systems']:
+            md = maintainability_portfolio_data.get_system_metadata(system['system'])
+            if not md or not md['active'] or md['isDevelopmentOnly']:
+                continue
+            for ratio in system[metric]:
+                month = _AbstractSecurityDashboardPlaceholder._transform_date_label_to_month(ratio['month'])
+                if month not in columns:
+                    columns.append(month)
+        return columns
+
 
     @staticmethod
     def create_portfolio_helper(data_source, metric, risk_entries):
+        columns: list[str] = _AbstractSecurityDashboardPlaceholder._determine_columns(data_source=data_source, metric=metric)
         severities = ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
-        portfolio = {severity : {risk: [0] * 12 for risk in risk_entries} for severity in severities}
-        columns: list[str] = []
+        portfolio = {severity : {risk: [0] * len(columns) for risk in risk_entries} for severity in severities}
 
         for system in data_source.data['systems']:
             md = maintainability_portfolio_data.get_system_metadata(system['system'])
@@ -50,14 +64,27 @@ class _AbstractSecurityDashboardPlaceholder(_AbstractImagePlaceholder, ABC):
             _AbstractSecurityDashboardPlaceholder._process_system(system=system, metric=metric, columns=columns, severities=severities, risk_entries=risk_entries, portfolio=portfolio)
         portfolio['columns'] = columns
         return portfolio
+
+
+    # @staticmethod
+    # def create_portfolio_helper(data_source, metric, risk_entries):
+    #     severities = ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
+    #     portfolio = {severity : {risk: [0] * 12 for risk in risk_entries} for severity in severities}
+    #     columns: list[str] = []
+
+    #     for system in data_source.data['systems']:
+    #         md = maintainability_portfolio_data.get_system_metadata(system['system'])
+    #         if not md or not md['active'] or md['isDevelopmentOnly']:
+    #             continue
+    #         _AbstractSecurityDashboardPlaceholder._process_system(system=system, metric=metric, columns=columns, severities=severities, risk_entries=risk_entries, portfolio=portfolio)
+    #     portfolio['columns'] = columns
+    #     return portfolio
     
 
     @staticmethod
     def _process_system(system: dict, metric: str, columns: list[str], severities: list[str], risk_entries: list[str], portfolio: dict):
         for ratio in system[metric]:
             month = _AbstractSecurityDashboardPlaceholder._transform_date_label_to_month(ratio['month'])
-            if month not in columns:
-                columns.append(month)
             month_idx = columns.index(month)
 
             for severity in severities:
@@ -72,6 +99,8 @@ class _AbstractSecurityDashboardPlaceholder(_AbstractImagePlaceholder, ABC):
     
     @staticmethod
     def _calculate_sensible_ticker_interval(y_max, target_ticks=6):
+        if target_ticks < 1:
+            target_ticks = 6
         raw_interval = y_max / target_ticks
         for _ in range(4):
             p = 10 ** int(np.floor(np.log10(raw_interval)))
@@ -157,7 +186,7 @@ class _AbstractSecurityDashboardResolutionTimesPlaceholder(_AbstractSecurityDash
         legend_entries = _AbstractSecurityDashboardResolutionTimesPlaceholder.LEGEND_ENTRIES_PER_SEVERITY[severity]
 
         fig, ax = plt.subplots(figsize=(width,height), dpi=200, facecolor="none")
-        bottom = np.zeros(12)
+        bottom = np.zeros(len(columns))
 
         for entry, vals in portfolio.items():
             legend_entry = legend_entries[entry]
