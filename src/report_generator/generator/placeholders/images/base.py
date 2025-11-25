@@ -22,6 +22,7 @@ from report_generator.generator import report_utils
 
 import io
 from pptx.util import Inches
+import logging
 
 class _AbstractImagePlaceholder(Placeholder, ABC):
     __doc_type__ = PlaceholderDocType.IMAGE
@@ -45,11 +46,15 @@ class _AbstractImagePlaceholder(Placeholder, ABC):
         pos_width = shape_placeholder.width.inches
         pos_height = shape_placeholder.height.inches
 
+        if fig is None:
+            logging.warning(f"Figure data of an image placeholder is None.")
+            return
+
         buf = io.BytesIO()
         fig.savefig(buf, dpi='figure', bbox_inches='tight', transparent=True, pad_inches=0)
         buf.seek(0)
         
-        shape_placeholder.part.slide.shapes.add_picture(io.BytesIO(buf.getvalue()),
+        shape_placeholder.part.slide.shapes.add_picture(buf,
             left=Inches(pos_left), top=Inches(pos_top),
             width=Inches(pos_width), height=Inches(pos_height))
 

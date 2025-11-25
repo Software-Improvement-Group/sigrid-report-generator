@@ -83,6 +83,8 @@ class _AbstractSecurityDashboardPlaceholder(_AbstractImagePlaceholder, ABC):
     
     @staticmethod
     def _format_image(ax, x, columns, max_value):
+        if max_value <= 1:
+            max_value = 1
         ax.set_xticks(x, columns)#, fontsize=8)
         ax.set_ylim(0, int(max_value*1.15))
         ticker_interval = _AbstractSecurityDashboardPlaceholder._calculate_sensible_ticker_interval(max_value)
@@ -124,7 +126,7 @@ class _AbstractSecurityDashboardFindingsPlaceholder(_AbstractSecurityDashboardPl
         r = ax.bar(x=x+(w/2), height=portfolio['resolved'], width=w, label="Resolved", color=_AbstractSecurityDashboardFindingsPlaceholder.DASHBOARD_RESOLVED_FINDINGS_COLOR, zorder=3)
         ax.bar_label(r, padding=2, fontsize=6)
 
-        max_val = np.max([np.max([x+y for x,y in zip(portfolio["new"], portfolio["existing"])]),np.max(portfolio["resolved"])])
+        max_val = np.max([np.max([xx+yy for xx,yy in zip(portfolio["new"], portfolio["existing"])]),np.max(portfolio["resolved"])])
         _AbstractSecurityDashboardPlaceholder._format_image(ax=ax, x=x, columns=columns, max_value=max_val)
 
         return fig
