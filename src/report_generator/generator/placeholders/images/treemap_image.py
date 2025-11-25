@@ -129,8 +129,6 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
     @staticmethod
     def draw_image(width, height, fig_data):
         fig, ax = plt.subplots(figsize=(width,height), dpi=200)
-        ratio = max(width,height)/min(width, height)
-        padding = 1 if ratio <= 1.3 else 5
         subkeys = ["system_names", "volumes", "labels", "roots"]
         df = pd.DataFrame({k: fig_data[k] for k in subkeys})
         tr.treemap(axes=ax, data=df, area="volumes", levels=["roots", "system_names"], top=True,
@@ -140,7 +138,7 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
                     'fontfamily':'sans-serif', 'reflow':True, 'place':'center', 'grow':True,
                     'max_fontsize':4, 'color':'k', 'pady':1, 'padx':1}, # Text inside squares
                 subgroup_rectprops={'roots':{'ec':'w', 'fc':_AbstractImagePlaceholder.BUNDLE_COLOR}},
-                subgroup_textprops={'roots':{'place':'top center', 'max_fontsize':3, 'pady':padding, 'fontfamily':'sans-serif', 'color':'k'}}
+                subgroup_textprops={'roots':{'place':'top center', 'max_fontsize':3, 'pady':1, 'fontfamily':'sans-serif', 'color':'k'}}
         )
         ax.axis("off")
         return fig

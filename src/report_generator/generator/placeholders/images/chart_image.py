@@ -83,7 +83,7 @@ class _AbstractSecurityDashboardPlaceholder(_AbstractImagePlaceholder, ABC):
     
     @staticmethod
     def _format_image(ax, x, columns, max_value):
-        ax.set_xticks(x, columns, fontsize=10)
+        ax.set_xticks(x, columns)#, fontsize=8)
         ax.set_ylim(0, int(max_value*1.15))
         ticker_interval = _AbstractSecurityDashboardPlaceholder._calculate_sensible_ticker_interval(max_value)
         ax.yaxis.set_major_locator(ticker.MultipleLocator(ticker_interval))
@@ -92,6 +92,7 @@ class _AbstractSecurityDashboardPlaceholder(_AbstractImagePlaceholder, ABC):
         ax.spines["left"].set_visible(False)
         ax.spines["top"].set_visible(False)
         ax.tick_params(axis="y", length=0)
+        ax.tick_params(axis="both", labelsize=8)
         ax.yaxis.grid(True, color="#E0E4EF", zorder=0)
 
 
@@ -118,10 +119,10 @@ class _AbstractSecurityDashboardFindingsPlaceholder(_AbstractSecurityDashboardPl
         ax.bar(x=x-(w/2), height=portfolio['new'], width=w, label="New", color=_AbstractSecurityDashboardFindingsPlaceholder.DASHBOARD_NEW_FINDINGS_COLOR, zorder=3)
 
         r = ax.bar(x=x-(w/2), height=portfolio['existing'], width=w, bottom=portfolio['new'], label="Existing", color=_AbstractSecurityDashboardFindingsPlaceholder.DASHBOARD_EXISTING_FINDINGS_COLOR, zorder=3)
-        ax.bar_label(r, padding=2, fontsize=8)
+        ax.bar_label(r, padding=2, fontsize=6)
 
         r = ax.bar(x=x+(w/2), height=portfolio['resolved'], width=w, label="Resolved", color=_AbstractSecurityDashboardFindingsPlaceholder.DASHBOARD_RESOLVED_FINDINGS_COLOR, zorder=3)
-        ax.bar_label(r, padding=2, fontsize=8)
+        ax.bar_label(r, padding=2, fontsize=6)
 
         max_val = np.max([np.max([x+y for x,y in zip(portfolio["new"], portfolio["existing"])]),np.max(portfolio["resolved"])])
         _AbstractSecurityDashboardPlaceholder._format_image(ax=ax, x=x, columns=columns, max_value=max_val)
@@ -161,7 +162,7 @@ class _AbstractSecurityDashboardResolutionTimesPlaceholder(_AbstractSecurityDash
             np_vals = np.array(vals)
             r = ax.bar(x=columns, height=np_vals, label=legend_entry, bottom=bottom, color=_AbstractSecurityDashboardResolutionTimesPlaceholder.DASHBOARD_RESOLUTION_LEGEND_COLORS[entry], zorder=3)
             bottom += np_vals
-        ax.bar_label(r, fontsize=8)
+        ax.bar_label(r, fontsize=6)
 
         x = np.arange(len(columns))
         max_val = np.max(np.sum(list(portfolio.values()), axis=0))
