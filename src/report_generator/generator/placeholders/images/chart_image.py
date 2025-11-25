@@ -66,21 +66,6 @@ class _AbstractSecurityDashboardPlaceholder(_AbstractImagePlaceholder, ABC):
         return portfolio
 
 
-    # @staticmethod
-    # def create_portfolio_helper(data_source, metric, risk_entries):
-    #     severities = ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
-    #     portfolio = {severity : {risk: [0] * 12 for risk in risk_entries} for severity in severities}
-    #     columns: list[str] = []
-
-    #     for system in data_source.data['systems']:
-    #         md = maintainability_portfolio_data.get_system_metadata(system['system'])
-    #         if not md or not md['active'] or md['isDevelopmentOnly']:
-    #             continue
-    #         _AbstractSecurityDashboardPlaceholder._process_system(system=system, metric=metric, columns=columns, severities=severities, risk_entries=risk_entries, portfolio=portfolio)
-    #     portfolio['columns'] = columns
-    #     return portfolio
-    
-
     @staticmethod
     def _process_system(system: dict, metric: str, columns: list[str], severities: list[str], risk_entries: list[str], portfolio: dict):
         for ratio in system[metric]:
