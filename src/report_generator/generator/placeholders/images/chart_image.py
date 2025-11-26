@@ -73,8 +73,8 @@ class _AbstractSecurityDashboardPlaceholder(_AbstractImagePlaceholder, ABC):
             month_idx = columns.index(month)
 
             for severity in severities:
-                for entry_entry in risk_entries:
-                    portfolio[severity][entry_entry][month_idx] += ratio['severities'][severity][entry_entry]
+                for risk_entry in risk_entries:
+                    portfolio[severity][risk_entry][month_idx] += ratio['severities'][severity][risk_entry]
 
 
     @staticmethod
@@ -84,8 +84,13 @@ class _AbstractSecurityDashboardPlaceholder(_AbstractImagePlaceholder, ABC):
     
     @staticmethod
     def _calculate_sensible_ticker_interval(y_max, target_ticks=6):
+        """
+        Calculate a 'nice' interval for axis ticks, aiming for target_ticks.
+        Uses multipliers of 1, 2, 5, and powers of ten to find a suitable step.
+        """
         if target_ticks < 1:
             target_ticks = 6
+        y_max = max(1, y_max)
         raw_interval = y_max / target_ticks
         for _ in range(4):
             p = 10 ** int(np.floor(np.log10(raw_interval)))
@@ -99,7 +104,7 @@ class _AbstractSecurityDashboardPlaceholder(_AbstractImagePlaceholder, ABC):
     def _format_image(ax, x, columns, max_value):
         if max_value <= 1:
             max_value = 1
-        ax.set_xticks(x, columns)#, fontsize=8)
+        ax.set_xticks(x, columns)
         ax.set_ylim(0, int(max_value*1.15))
         ticker_interval = _AbstractSecurityDashboardPlaceholder._calculate_sensible_ticker_interval(max_value)
         ax.yaxis.set_major_locator(ticker.MultipleLocator(ticker_interval))

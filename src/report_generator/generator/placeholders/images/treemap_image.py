@@ -91,13 +91,14 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
         return {
             'display_names' : display_names,
             'parent_names' : parent_names,
-            'system_names' : system_names
+            'system_names' : system_names,
+            'color_mapping' : {}
         }
 
 
     @staticmethod
-    def create_treemap_values(portfolio, treemap_data) -> list[int]:
-        values: list[int] = []
+    def create_treemap_values(portfolio, treemap_data) -> list[float]:
+        values: list[float] = []
         for system_name in treemap_data["system_names"]:
             end = portfolio.get(system_name, {}).get("end_date_data")
             value = 1e-6 if not end else end.get("volumeInPersonMonths", 1e-6)
@@ -199,8 +200,9 @@ class PeriodPortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder, AB
     
     @staticmethod
     def _get_and_format_difference(differences, system_name, is_percentage):
-        if differences[system_name] is not None:
-            return round(differences[system_name], 2) if not is_percentage else formatters.ratio_to_percentage(differences[system_name])
+        diff = differences.get(system_name)
+        if diff is not None:
+            return round(diff, 2) if not is_percentage else formatters.ratio_to_percentage(diff)
         return "N/A"
 
     @staticmethod

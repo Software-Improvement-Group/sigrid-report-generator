@@ -105,7 +105,7 @@ def _include(system_name, portfolio_metadata):
     team_match = _team is not None and any(t in md['teamNames'] for t in _team)
     division_match = _division is not None and any(d == md['divisionName'] for d in _division)
 
-    return team_match and division_match
+    return team_match or division_match
 
 def _are_filters_set():
     return _team is not None or _division is not None
