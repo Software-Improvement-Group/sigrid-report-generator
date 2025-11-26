@@ -63,10 +63,10 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
         return res
     
     @classmethod
-    def create_blank_portfolio_treemap(cls):
+    def _create_blank_portfolio_and_treemap(cls) -> Tuple[dict,dict]:
         system_names = []
         display_names = []
-        parent_names = []
+        root_names = []
 
         portfolio = cls.create_portfolio()
         for s in portfolio.values():
@@ -85,15 +85,17 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
             elif not display_name:
                 display_name = m['systemName']
             display_names.append(display_name)
-            parent_names.append(team_name)
+            root_names.append(team_name)
             system_names.append(m['systemName'])
 
-        return {
+        treemap = {
             'display_names' : display_names,
-            'parent_names' : parent_names,
+            'root_names' : root_names,
             'system_names' : system_names,
-            'color_mapping' : {}
+            'color_mapping' : {},
+            'volumes' : []
         }
+        return portfolio, treemap
 
 
     @staticmethod
@@ -106,31 +108,51 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
         return values
 
 
-    @classmethod
-    def create_treemap_figure_data(cls, portfolio, treemap):
-        values = cls.create_treemap_values(portfolio, treemap)
+    @staticmethod
+    def create_treemap_figure_data(treemap):
         return {
             'labels' : treemap['display_names'],
             'system_names' : treemap['system_names'],
-            'roots' : treemap['parent_names'],
-            'volumes' : values,
+            'roots' : treemap['root_names'],
+            'volumes' : treemap['volumes'],
             'color_names' : treemap['system_names'],
             'color_mapping' : treemap['color_mapping'],
             'figure_type': 'treemap'
         }
+    
 
+    @staticmethod
+    def _sanitize_treemap(treemap):
+        root_names = list(set(treemap['root_names']))
+        portfolio_volume = sum(treemap['volumes'])
 
+        volume_per_root = {root: 0 for root in root_names}
+        for volume, root in zip(treemap["volumes"], treemap["root_names"]):
+            volume_per_root[root] += volume
+
+        # Keep only entries where the team has at least 1% of total volume
+        threshold = 0.01 * portfolio_volume
+        keep_indices = [i for i, root in enumerate(treemap["root_names"]) if volume_per_root[root] >= threshold]
+        
+        for key in ["volumes", "root_names", "display_names", "system_names"]:
+            treemap[key] = [treemap[key][i] for i in keep_indices]
+
+    
     @classmethod
     def prepare_portfolio_and_treemap(cls) -> Tuple[dict,dict]:
-        portfolio = cls.create_portfolio()
-        treemap = cls.create_blank_portfolio_treemap()
+        portfolio, treemap = cls._create_blank_portfolio_and_treemap()
+        treemap['volumes'] = cls.create_treemap_values(portfolio, treemap)
+        cls._sanitize_treemap(treemap)
         return portfolio, treemap
-
 
     @classmethod
     def draw_image(cls, width, height, fig_data):
-        if width <= 0 or height <= 0 or fig_data is None:
+        if width <= 0 or height <= 0:
+            logging.error("Width and/or height is <0.")
             return None
+        if fig_data is None:
+            logging.error("Figure data is None.")
+            return
         fig, ax = plt.subplots(figsize=(width,height), dpi=200)
         subkeys = ["system_names", "volumes", "labels", "roots"]
         df = pd.DataFrame({k: fig_data[k] for k in subkeys})
@@ -160,7 +182,7 @@ class EndDatePortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder, A
             treemap['color_mapping'][t] = determine_color_function(rating) if rating is not None else cls.NA_STAR_COLOR
             idx = treemap['system_names'].index(t)
             treemap['display_names'][idx] = f"{treemap['display_names'][idx].strip()}\n{rating_rounding_func(rating)}"
-        return cls.create_treemap_figure_data(portfolio, treemap)
+        return cls.create_treemap_figure_data(treemap)
 
 
 class PeriodPortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder, ABC):
@@ -217,7 +239,7 @@ class PeriodPortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder, AB
         for system_name in treemap['system_names']:
             idx = treemap['system_names'].index(system_name)
             treemap['display_names'][idx] = f"{treemap['display_names'][idx].strip()}\n{cls._get_and_format_difference(differences, system_name, is_percentage)}"
-        return cls.create_treemap_figure_data(portfolio, treemap)
+        return cls.create_treemap_figure_data(treemap)
 
     
 class MaintainabilityPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
@@ -227,7 +249,7 @@ class MaintainabilityPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlacehol
 
     @classmethod
     def value(cls, parameter=None):
-        portfolio, _ = cls.prepare_portfolio_and_treemap()
+        portfolio = cls.create_portfolio()
         f = lambda t: portfolio.get(t, {}).get('end_date_data', {}).get('maintainability', None)
         fig_data = cls.create_end_date_portfolio_treemap(rating_func=f, rating_rounding_func=formatters.maintainability_round, determine_color_function=cls.determine_rating_color)
         return cls.draw_image(width=parameter['width'], height=parameter['height'], fig_data=fig_data)
@@ -264,7 +286,7 @@ class TestCodePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
 
     @classmethod
     def value(cls, parameter=None):
-        portfolio, _ = cls.prepare_portfolio_and_treemap()
+        portfolio = cls.create_portfolio()
         f = lambda t: portfolio[t]['end_date_data']['testCodeRatio']
         fig_data = cls.create_end_date_portfolio_treemap(rating_func=f, rating_rounding_func=formatters.ratio_to_percentage, determine_color_function=cls.test_code_ratio_color)
         return cls.draw_image(width=parameter['width'], height=parameter['height'], fig_data=fig_data)
