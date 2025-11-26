@@ -50,15 +50,13 @@ class _AbstractImagePlaceholder(Placeholder, ABC):
             logging.warning("Figure data of an image placeholder is None.")
             return
 
-        buf = io.BytesIO()
-        fig.savefig(buf, dpi='figure', bbox_inches='tight', transparent=True, pad_inches=0)
-        buf.seek(0)
-        
-        shape_placeholder.part.slide.shapes.add_picture(buf,
-            left=Inches(pos_left), top=Inches(pos_top),
-            width=Inches(pos_width), height=Inches(pos_height))
+        with io.BytesIO() as buf:
+            fig.savefig(buf, dpi='figure', bbox_inches='tight', transparent=True, pad_inches=0)
+            buf.seek(0)
+            
+            shape_placeholder.part.slide.shapes.add_picture(buf,
+                left=Inches(pos_left), top=Inches(pos_top),
+                width=Inches(pos_width), height=Inches(pos_height))
 
         el = shape_placeholder.element
         el.getparent().remove(el)
-
-        buf.close()
