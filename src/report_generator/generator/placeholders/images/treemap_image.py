@@ -126,7 +126,7 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
         root_names = list(set(treemap['root_names']))
         portfolio_volume = sum(treemap['volumes'])
 
-        volume_per_root = {root: 0 for root in root_names}
+        volume_per_root = dict.fromkeys(root_names, 0)
         for volume, root in zip(treemap["volumes"], treemap["root_names"]):
             volume_per_root[root] += volume
 
