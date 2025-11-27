@@ -22,6 +22,7 @@ from report_generator.generator import report_utils
 
 import io
 from pptx.util import Inches
+import logging
 
 class _AbstractImagePlaceholder(Placeholder, ABC):
     __doc_type__ = PlaceholderDocType.IMAGE
@@ -34,8 +35,8 @@ class _AbstractImagePlaceholder(Placeholder, ABC):
         if len(shapes) == 0:
             return
 
-        fig = value_cb()
         for shape in shapes:
+            fig = value_cb(parameter={'height':shape.height.inches, 'width':shape.width.inches})
             cls.create_and_add_image_to_slide(shape, fig)
     
     @staticmethod
@@ -45,17 +46,17 @@ class _AbstractImagePlaceholder(Placeholder, ABC):
         pos_width = shape_placeholder.width.inches
         pos_height = shape_placeholder.height.inches
 
-        fig.update_layout(
-            margin = {'t':0, 'l':0, 'r':0, 'b':0},
-            plot_bgcolor="rgba(0,0,0,0)",
-            paper_bgcolor="rgba(0,0,0,0)"
-        )
-        
-        img_bytes = fig.to_image(format="png", width=pos_width*2*96, height=pos_height*2*96)
-        
-        shape_placeholder.part.slide.shapes.add_picture(io.BytesIO(img_bytes),
-            left=Inches(pos_left), top=Inches(pos_top),
-            width=Inches(pos_width), height=Inches(pos_height))
+        if fig is None:
+            logging.warning("Figure data of an image placeholder is None.")
+            return
+
+        with io.BytesIO() as buf:
+            fig.savefig(buf, dpi='figure', bbox_inches='tight', transparent=True, pad_inches=0)
+            buf.seek(0)
+            
+            shape_placeholder.part.slide.shapes.add_picture(buf,
+                left=Inches(pos_left), top=Inches(pos_top),
+                width=Inches(pos_width), height=Inches(pos_height))
 
         el = shape_placeholder.element
         el.getparent().remove(el)

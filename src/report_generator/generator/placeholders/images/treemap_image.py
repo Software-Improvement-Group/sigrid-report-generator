@@ -13,16 +13,17 @@
 #  limitations under the License.
 from abc import ABC
 from typing import Tuple
-import plotly.graph_objs as go
+import logging
 
 from report_generator.generator import report_utils
 from report_generator.generator.formatters import formatters
 from report_generator.generator.data_models import maintainability_portfolio_data, security_ratings_portfolio_data, architecture_portfolio_data, osh_ratings_portfolio_data
 from report_generator.generator.data_models import maintainability_delta_quality_new_code, maintainability_delta_quality_changed_code, maintainability_delta_quality_new_and_changed_code
-import plotly.express as px
-import logging
-from .base import _AbstractImagePlaceholder
+from report_generator.generator.placeholders.images.base import _AbstractImagePlaceholder
 
+import pandas as pd
+import matplotlib.pyplot as plt
+import mpl_extra.treemap as tr
 
 class _AbstractTreemapPlaceholder(_AbstractImagePlaceholder, ABC):
     @staticmethod
@@ -61,140 +62,184 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
             }
         return res
     
-    @staticmethod
-    def create_blank_portfolio_treemap():
-        names = []
-        parents = []
-        tracking = []
+    @classmethod
+    def _create_blank_portfolio_and_treemap(cls) -> Tuple[dict,dict]:
+        system_names = []
+        display_names = []
+        root_names = []
 
-        portfolio = _AbstractPortfolioTreemapPlaceholder.create_portfolio()
+        portfolio = cls.create_portfolio()
         for s in portfolio.values():
             m = s['metadata']
             team_name = "Unset"
+
+            # Systems are now aggregated based on teams; in the future, other categories should also be allowed (e.g.: divisions).
             if m['teamNames']:
                 if len(m['teamNames']) > 1:
                     team_name = "Multiple teams"
                 else:
                     team_name = m['teamNames'][0]
-            if team_name not in names:
-                names.append(team_name)
-                parents.append("")
-                tracking.append("")
-            name = m['displayName']
-            if name and name in names:
-                name = f"{name} " # A workaround if, for example, a team name is the same as a system name
-            elif not name:
-                name = m['systemName']
-            names.append(name)
-            parents.append(team_name)
-            tracking.append(m['systemName'])
+            display_name = m['displayName']
+            if display_name and display_name in display_names:
+                display_name = f"{display_name} " # A workaround if, for example, a team name is the same as a system name
+            elif not display_name:
+                display_name = m['systemName']
+            display_names.append(display_name)
+            root_names.append(team_name)
+            system_names.append(m['systemName'])
 
-        return {
-            'names' : names,
-            'parents' : parents,
-            'tracking' : tracking
+        treemap = {
+            'display_names' : display_names,
+            'root_names' : root_names,
+            'system_names' : system_names,
+            'color_mapping' : {},
+            'volumes' : []
         }
-    
+        return portfolio, treemap
+
+
     @staticmethod
-    def create_treemap_values(portfolio, treemap_data):
-        tracking = treemap_data.get("tracking", [])
-        parents = treemap_data.get("parents", [])
-        color_mapping = treemap_data.setdefault("color_mapping", {})
-
-        values: list[int] = []
-        for t, parent in zip(tracking, parents):
-            if parent == "":
-                values.append(0)
-                color_mapping.setdefault(t, _AbstractPortfolioTreemapPlaceholder.BUNDLE_COLOR)
-                continue
-
-            end = portfolio.get(t, {}).get("end_date_data")
-            value = 0 if not end else end.get("volumeInPersonMonths", 0)
-            values.append(value)
-
+    def create_treemap_values(portfolio, treemap_data) -> list[float]:
+        values: list[float] = []
+        for system_name in treemap_data["system_names"]:
+            end = portfolio.get(system_name, {}).get("end_date_data")
+            value = 1e-6 if not end else end.get("volumeInPersonMonths", 1e-6)
+            values.append(max(value,1e-6))
         return values
 
 
     @staticmethod
-    def create_treemap_figure(portfolio, treemap) -> go.Figure:
-        treemap['values'] = _AbstractPortfolioTreemapPlaceholder.create_treemap_values(portfolio, treemap)
-        fig = px.treemap(names=treemap['names'], parents=treemap['parents'], values=treemap['values'], color=treemap['color'], color_discrete_map=treemap['color_mapping'])
-        fig.update_traces(root_color='rgba(250, 250, 250, 1)', textposition="middle center")
+    def create_treemap_figure_data(treemap):
+        return {
+            'labels' : treemap['display_names'],
+            'system_names' : treemap['system_names'],
+            'roots' : treemap['root_names'],
+            'volumes' : treemap['volumes'],
+            'color_names' : treemap['system_names'],
+            'color_mapping' : treemap['color_mapping'],
+            'figure_type': 'treemap'
+        }
+    
+
+    @staticmethod
+    def _sanitize_treemap(treemap):
+        root_names = list(set(treemap['root_names']))
+        portfolio_volume = sum(treemap['volumes'])
+
+        volume_per_root = dict.fromkeys(root_names, 0)
+        for volume, root in zip(treemap["volumes"], treemap["root_names"]):
+            volume_per_root[root] += volume
+
+        # Keep only entries where the team has at least 1% of total volume
+        threshold = 0.01 * portfolio_volume
+        keep_indices = [i for i, root in enumerate(treemap["root_names"]) if volume_per_root[root] >= threshold]
+        
+        for key in ["volumes", "root_names", "display_names", "system_names"]:
+            treemap[key] = [treemap[key][i] for i in keep_indices]
+
+    
+    @classmethod
+    def prepare_portfolio_and_treemap(cls) -> Tuple[dict,dict]:
+        portfolio, treemap = cls._create_blank_portfolio_and_treemap()
+        treemap['volumes'] = cls.create_treemap_values(portfolio, treemap)
+        cls._sanitize_treemap(treemap)
+        return portfolio, treemap
+
+    @classmethod
+    def draw_image(cls, width, height, fig_data):
+        if width <= 0 or height <= 0:
+            logging.error("Width and/or height is <0.")
+            return None
+        if fig_data is None:
+            logging.error("Figure data is None.")
+            return
+        fig, ax = plt.subplots(figsize=(width,height), dpi=200)
+        subkeys = ["system_names", "volumes", "labels", "roots"]
+        df = pd.DataFrame({k: fig_data[k] for k in subkeys})
+        tr.treemap(axes=ax, data=df, area="volumes", levels=["roots", "system_names"], top=True,
+                fill="system_names", cmap=fig_data['color_mapping'], labels="labels",
+                rectprops={'ec':'w', 'pad':(0,0,0,2)},
+                textprops={
+                    'fontfamily':'sans-serif', 'reflow':True, 'place':'center', 'grow':True,
+                    'max_fontsize':4, 'color':'k', 'pady':1, 'padx':1}, # Text inside squares
+                subgroup_rectprops={'roots':{'ec':'w', 'fc':cls.BUNDLE_COLOR}},
+                subgroup_textprops={'roots':{'place':'top center', 'max_fontsize':3, 'pady':1, 'fontfamily':'sans-serif', 'color':'k'}}
+        )
+        ax.axis("off")
         return fig
 
 
-    @staticmethod
-    def prepare_portfolio_and_treemap() -> Tuple[dict,dict]:
-        portfolio = _AbstractPortfolioTreemapPlaceholder.create_portfolio()
-        treemap = _AbstractPortfolioTreemapPlaceholder.create_blank_portfolio_treemap()
-        treemap['color'] = treemap['tracking']
-        return portfolio, treemap
-
-
 class EndDatePortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder, ABC):
-    @staticmethod
-    def create_end_date_portfolio_treemap(system_names, rating_func, rating_rounding_func, determine_color_function):
-        portfolio, treemap = _AbstractPortfolioTreemapPlaceholder.prepare_portfolio_and_treemap()
-        treemap['color_mapping'] = dict.fromkeys(portfolio.keys(), _AbstractTreemapPlaceholder.NA_STAR_COLOR)
-        for t in system_names:
+    @classmethod
+    def create_end_date_portfolio_treemap(cls, rating_func, rating_rounding_func, determine_color_function):
+        portfolio, treemap = cls.prepare_portfolio_and_treemap()
+        treemap['color_mapping'] = dict.fromkeys(portfolio.keys(), cls.NA_STAR_COLOR)
+        for t in treemap['system_names']:
             rating = rating_func(t)
             if rating is None:
                 logging.debug(f"Cannot find end snapshot for {t}")
                 continue
-            if t not in treemap['color']:
-                continue
-            treemap['color_mapping'][t] = determine_color_function(rating) if rating is not None else _AbstractTreemapPlaceholder.NA_STAR_COLOR
-            idx = treemap['color'].index(t)
-            treemap['names'][idx] = f"{treemap['names'][idx].strip()}<br>{rating_rounding_func(rating)}"
-        return _AbstractPortfolioTreemapPlaceholder.create_treemap_figure(portfolio, treemap)
+            treemap['color_mapping'][t] = determine_color_function(rating) if rating is not None else cls.NA_STAR_COLOR
+            idx = treemap['system_names'].index(t)
+            treemap['display_names'][idx] = f"{treemap['display_names'][idx].strip()}\n{rating_rounding_func(rating)}"
+        return cls.create_treemap_figure_data(treemap)
 
 
 class PeriodPortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder, ABC):
     @staticmethod
-    def _calculate_differences(portfolio, metric):
+    def _calculate_differences(portfolio, metric, system_names):
         differences = {}
-        for entry in portfolio.keys():
-            if portfolio[entry]['start_date_data']['maintainabilityDate'] == portfolio[entry]['end_date_data']['maintainabilityDate'] or not portfolio[entry]['end_date_data'][metric] or not portfolio[entry]['start_date_data'][metric]:
-                differences[entry] = None
+        for system_name in system_names:
+            entry = portfolio.get(system_name)
+            if not entry:
+                continue
+
+            if entry['start_date_data']['maintainabilityDate'] == entry['end_date_data']['maintainabilityDate'] or not entry['end_date_data'][metric] or not entry['start_date_data'][metric]:
+                differences[system_name] = None
             else:
-                differences[entry] = portfolio[entry]['end_date_data'][metric]-portfolio[entry]['start_date_data'][metric]
+                differences[system_name] = entry['end_date_data'][metric]-entry['start_date_data'][metric]
+
         return differences
     
 
-    @staticmethod
-    def _create_color_mapping(differences, diff_min, diff_max, positive_color_range, negative_color_range):
+    @classmethod
+    def _create_color_mapping(cls, differences, diff_min, diff_max, positive_color_range, negative_color_range, system_names):
         color_mapping = {}
-        for entry in differences.keys():
-            diff = differences[entry]
+        for system_name in system_names:
+            diff = differences.get(system_name, None)
+            value = None
             if diff is None:
-                color_mapping[entry] = _AbstractPortfolioTreemapPlaceholder.NA_STAR_COLOR
+                value = cls.NA_STAR_COLOR
             elif diff < 0:
-                t = _AbstractPortfolioTreemapPlaceholder.normalize_clamped(0, abs(diff_min), abs(diff))
-                color_mapping[entry] = _AbstractTreemapPlaceholder.interpolate_color(negative_color_range, t)
+                t = cls.normalize_clamped(0, abs(diff_min), abs(diff))
+                value = cls.interpolate_color(negative_color_range, t)
             else:
-                t = _AbstractPortfolioTreemapPlaceholder.normalize_clamped(0, diff_max, diff)
-                color_mapping[entry] = _AbstractTreemapPlaceholder.interpolate_color(positive_color_range, t)
+                t = cls.normalize_clamped(0, diff_max, diff)
+                value = cls.interpolate_color(positive_color_range, t)
+            color_mapping[system_name] = value
+
         return color_mapping
     
     @staticmethod
     def _get_and_format_difference(differences, system_name, is_percentage):
-        if differences[system_name]:
-            return round(differences[system_name], 2) if not is_percentage else formatters.ratio_to_percentage(differences[system_name])
+        diff = differences.get(system_name)
+        if diff is not None:
+            return round(diff, 2) if not is_percentage else formatters.ratio_to_percentage(diff)
         return "N/A"
 
-    @staticmethod
-    def create_period_portfolio_treemap(metric, positive_color_range, negative_color_range, is_percentage=False):
-        portfolio, treemap = _AbstractPortfolioTreemapPlaceholder.prepare_portfolio_and_treemap()
-        differences = PeriodPortfolioTreemapPlaceholder._calculate_differences(portfolio, metric)
+    @classmethod
+    def create_period_portfolio_treemap(cls, metric, positive_color_range, negative_color_range, is_percentage=False):
+        portfolio, treemap = cls.prepare_portfolio_and_treemap()
+        differences = cls._calculate_differences(portfolio, metric, treemap['system_names'])
         processed_vals = [x for x in differences.values() if x is not None]
-        treemap['color_mapping'] = PeriodPortfolioTreemapPlaceholder._create_color_mapping(differences, min(processed_vals), max(processed_vals),
-                                                                                           positive_color_range, negative_color_range)
-        for system_name in portfolio.keys():
-            if system_name not in treemap['color']:
-                continue
-            idx = treemap['color'].index(system_name)
-            treemap['names'][idx] = f"{treemap['names'][idx].strip()}<br>{PeriodPortfolioTreemapPlaceholder._get_and_format_difference(differences, system_name, is_percentage)}"
-        return _AbstractPortfolioTreemapPlaceholder.create_treemap_figure(portfolio, treemap)
+        if len(processed_vals) == 0:
+            return None
+        treemap['color_mapping'] = cls._create_color_mapping(differences, min(processed_vals), max(processed_vals),
+                                                                                           positive_color_range, negative_color_range, treemap['system_names'])
+        for system_name in treemap['system_names']:
+            idx = treemap['system_names'].index(system_name)
+            treemap['display_names'][idx] = f"{treemap['display_names'][idx].strip()}\n{cls._get_and_format_difference(differences, system_name, is_percentage)}"
+        return cls.create_treemap_figure_data(treemap)
 
     
 class MaintainabilityPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
@@ -203,11 +248,11 @@ class MaintainabilityPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlacehol
     key = "PORTFOLIO_PERIOD_MAINTAINABILITY"
 
     @classmethod
-    def value(cls, param=None):
-        portfolio, _ = _AbstractPortfolioTreemapPlaceholder.prepare_portfolio_and_treemap()
-        f = lambda t: portfolio[t]['end_date_data']['maintainability']
-        return cls.create_end_date_portfolio_treemap(system_names=portfolio.keys(), rating_func=f,
-                                                     rating_rounding_func=formatters.maintainability_round, determine_color_function=cls.determine_rating_color)
+    def value(cls, parameter=None):
+        portfolio = cls.create_portfolio()
+        f = lambda t: portfolio.get(t, {}).get('end_date_data', {}).get('maintainability', None)
+        fig_data = cls.create_end_date_portfolio_treemap(rating_func=f, rating_rounding_func=formatters.maintainability_round, determine_color_function=cls.determine_rating_color)
+        return cls.draw_image(width=parameter['width'], height=parameter['height'], fig_data=fig_data)
 
     
 class MaintainabilityChangePortfolioTreemapPlaceholder(PeriodPortfolioTreemapPlaceholder):
@@ -216,9 +261,10 @@ class MaintainabilityChangePortfolioTreemapPlaceholder(PeriodPortfolioTreemapPla
     key = "PORTFOLIO_PERIOD_MAINTAINABILITY_CHANGE"
 
     @classmethod
-    def value(cls, param=None):
-        return cls.create_period_portfolio_treemap(metric='maintainability', positive_color_range=report_utils.pptx.MAINTAINABILITY_POS_CHANGE_RANGE_COLORS,
+    def value(cls, parameter=None):
+        fig_data = cls.create_period_portfolio_treemap(metric='maintainability', positive_color_range=report_utils.pptx.MAINTAINABILITY_POS_CHANGE_RANGE_COLORS,
                                                    negative_color_range=report_utils.pptx.MAINTAINABILITY_NEG_CHANGE_RANGE_COLORS)
+        return cls.draw_image(width=parameter['width'], height=parameter['height'], fig_data=fig_data)
 
 
 class VolumeChangePortfolioTreemapPlaceholder(PeriodPortfolioTreemapPlaceholder):
@@ -227,9 +273,10 @@ class VolumeChangePortfolioTreemapPlaceholder(PeriodPortfolioTreemapPlaceholder)
     key = "PORTFOLIO_PERIOD_VOLUME_CHANGE"
 
     @classmethod
-    def value(cls, param=None):
-        return cls.create_period_portfolio_treemap(metric='volumeInPersonMonths', positive_color_range=report_utils.pptx.VOLUME_POS_CHANGE_RANGE_COLORS,
+    def value(cls, parameter=None):
+        fig_data = cls.create_period_portfolio_treemap(metric='volumeInPersonMonths', positive_color_range=report_utils.pptx.VOLUME_POS_CHANGE_RANGE_COLORS,
                                                    negative_color_range=report_utils.pptx.VOLUME_NEG_CHANGE_RANGE_COLORS)
+        return cls.draw_image(width=parameter['width'], height=parameter['height'], fig_data=fig_data)
     
 
 class TestCodePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
@@ -238,11 +285,11 @@ class TestCodePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
     key = "PORTFOLIO_PERIOD_TEST_CODE"
 
     @classmethod
-    def value(cls, param=None):
-        portfolio, _ = _AbstractPortfolioTreemapPlaceholder.prepare_portfolio_and_treemap()
+    def value(cls, parameter=None):
+        portfolio = cls.create_portfolio()
         f = lambda t: portfolio[t]['end_date_data']['testCodeRatio']
-        return cls.create_end_date_portfolio_treemap(system_names=portfolio.keys(), rating_func=f,
-                                                     rating_rounding_func=formatters.ratio_to_percentage, determine_color_function=cls.test_code_ratio_color)
+        fig_data = cls.create_end_date_portfolio_treemap(rating_func=f, rating_rounding_func=formatters.ratio_to_percentage, determine_color_function=cls.test_code_ratio_color)
+        return cls.draw_image(width=parameter['width'], height=parameter['height'], fig_data=fig_data)
 
 
 class TestCodeChangePortfolioTreemapPlaceholder(PeriodPortfolioTreemapPlaceholder):
@@ -251,9 +298,10 @@ class TestCodeChangePortfolioTreemapPlaceholder(PeriodPortfolioTreemapPlaceholde
     key = "PORTFOLIO_PERIOD_TEST_CODE_CHANGE"
 
     @classmethod
-    def value(cls, param=None):
-        return cls.create_period_portfolio_treemap(metric='testCodeRatio', positive_color_range=report_utils.pptx.MAINTAINABILITY_POS_CHANGE_RANGE_COLORS,
+    def value(cls, parameter=None):
+        fig_data = cls.create_period_portfolio_treemap(metric='testCodeRatio', positive_color_range=report_utils.pptx.MAINTAINABILITY_POS_CHANGE_RANGE_COLORS,
                                                    negative_color_range=report_utils.pptx.MAINTAINABILITY_NEG_CHANGE_RANGE_COLORS, is_percentage=True)
+        return cls.draw_image(width=parameter['width'], height=parameter['height'], fig_data=fig_data)
     
     
 class SecurityRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
@@ -262,10 +310,10 @@ class SecurityRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlacehol
     key = "PORTFOLIO_PERIOD_SECURITY_RATINGS"
 
     @classmethod
-    def value(cls, param=None):
+    def value(cls, parameter=None):
         f = lambda t: security_ratings_portfolio_data.end_snapshot(t)['rating'] if security_ratings_portfolio_data.end_snapshot(t) else 0
-        return cls.create_end_date_portfolio_treemap(system_names=security_ratings_portfolio_data.system_names, rating_func=f,
-                                                     rating_rounding_func=formatters.maintainability_round, determine_color_function=cls.determine_rating_color)
+        fig_data = cls.create_end_date_portfolio_treemap(rating_func=f, rating_rounding_func=formatters.maintainability_round, determine_color_function=cls.determine_rating_color)
+        return cls.draw_image(width=parameter['width'], height=parameter['height'], fig_data=fig_data)
 
 
 class ArchitecturePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
@@ -274,10 +322,10 @@ class ArchitecturePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder
     key = "PORTFOLIO_PERIOD_ARCHITECTURE"
 
     @classmethod
-    def value(cls, param=None):
+    def value(cls, parameter=None):
         f = lambda t: architecture_portfolio_data.end_snapshot(t)['ratings']['architecture'] if architecture_portfolio_data.end_snapshot(t) else 0
-        return cls.create_end_date_portfolio_treemap(system_names=architecture_portfolio_data.system_names, rating_func=f,
-                                                     rating_rounding_func=formatters.maintainability_round, determine_color_function=cls.determine_rating_color)
+        fig_data = cls.create_end_date_portfolio_treemap(rating_func=f, rating_rounding_func=formatters.maintainability_round, determine_color_function=cls.determine_rating_color)
+        return cls.draw_image(width=parameter['width'], height=parameter['height'], fig_data=fig_data)
     
 
 class MaintainabilityDeltaQualityNewCodePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
@@ -286,10 +334,10 @@ class MaintainabilityDeltaQualityNewCodePortfolioTreemapPlaceholder(EndDatePortf
     key = "PORTFOLIO_PERIOD_MAINTAINABILITY_DELTA_QUALITY_NEW_CODE"
 
     @classmethod
-    def value(cls, param=None):
-        f = lambda t: maintainability_delta_quality_new_code.data[t]['filesRatingAtEnd'] if maintainability_delta_quality_new_code.data[t] else 0
-        return cls.create_end_date_portfolio_treemap(system_names=maintainability_delta_quality_new_code.system_names, rating_func=f,
-                                                     rating_rounding_func=formatters.maintainability_round, determine_color_function=cls.determine_rating_color)
+    def value(cls, parameter=None):
+        f = lambda t: maintainability_delta_quality_new_code.data[t]['filesRatingAtEnd'] if maintainability_delta_quality_new_code.data[t] and maintainability_delta_quality_new_code.data[t]['filesRatingAtEnd'] else 0
+        fig_data = cls.create_end_date_portfolio_treemap(rating_func=f, rating_rounding_func=formatters.maintainability_round, determine_color_function=cls.determine_rating_color)
+        return cls.draw_image(width=parameter['width'], height=parameter['height'], fig_data=fig_data)
     
 
 class MaintainabilityDeltaQualityChangedCodePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
@@ -298,10 +346,10 @@ class MaintainabilityDeltaQualityChangedCodePortfolioTreemapPlaceholder(EndDateP
     key = "PORTFOLIO_PERIOD_MAINTAINABILITY_DELTA_QUALITY_CHANGED_CODE"
 
     @classmethod
-    def value(cls, param=None):
-        f = lambda t: maintainability_delta_quality_changed_code.data[t]['filesRatingAtEnd'] if maintainability_delta_quality_changed_code.data[t] else 0
-        return cls.create_end_date_portfolio_treemap(system_names=maintainability_delta_quality_changed_code.system_names, rating_func=f,
-                                                     rating_rounding_func=formatters.maintainability_round, determine_color_function=cls.determine_rating_color)
+    def value(cls, parameter=None):
+        f = lambda t: maintainability_delta_quality_changed_code.data[t]['filesRatingAtEnd'] if maintainability_delta_quality_changed_code.data[t] and maintainability_delta_quality_changed_code.data[t]['filesRatingAtEnd'] else 0
+        fig_data = cls.create_end_date_portfolio_treemap(rating_func=f, rating_rounding_func=formatters.maintainability_round, determine_color_function=cls.determine_rating_color)
+        return cls.draw_image(width=parameter['width'], height=parameter['height'], fig_data=fig_data)
     
 
 class MaintainabilityDeltaQualityNewAndChangedCodePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
@@ -310,10 +358,10 @@ class MaintainabilityDeltaQualityNewAndChangedCodePortfolioTreemapPlaceholder(En
     key = "PORTFOLIO_PERIOD_MAINTAINABILITY_DELTA_QUALITY_NEW_AND_CHANGED_CODE"
 
     @classmethod
-    def value(cls, param=None):
-        f = lambda t: maintainability_delta_quality_new_and_changed_code.data[t]['filesRatingAtEnd'] if maintainability_delta_quality_new_and_changed_code.data[t] else 0
-        return cls.create_end_date_portfolio_treemap(system_names=maintainability_delta_quality_new_and_changed_code.system_names, rating_func=f,
-                                                     rating_rounding_func=formatters.maintainability_round, determine_color_function=cls.determine_rating_color)
+    def value(cls, parameter=None):
+        f = lambda t: maintainability_delta_quality_new_and_changed_code.data[t]['filesRatingAtEnd'] if maintainability_delta_quality_new_and_changed_code.data[t] and maintainability_delta_quality_new_and_changed_code.data[t]['filesRatingAtEnd'] else 0
+        fig_data = cls.create_end_date_portfolio_treemap(rating_func=f, rating_rounding_func=formatters.maintainability_round, determine_color_function=cls.determine_rating_color)
+        return cls.draw_image(width=parameter['width'], height=parameter['height'], fig_data=fig_data)
     
     
 class OSHRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
@@ -322,13 +370,10 @@ class OSHRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
     key = "PORTFOLIO_PERIOD_OSH_RATINGS"
 
     @classmethod
-    def value(cls, param=None):
+    def value(cls, parameter=None):
         def rating_function(system_name):
             system = osh_ratings_portfolio_data.find_system(system_name)
             props = system.get("sbom", {}).get("metadata", {}).get("properties", [])
-            return next(
-                (float(p["value"]) for p in props if p["name"] == "sigrid:ratings:system"),
-                0.0
-            )
-        return cls.create_end_date_portfolio_treemap(system_names=osh_ratings_portfolio_data.system_names, rating_func=rating_function,
-                                                     rating_rounding_func=formatters.maintainability_round, determine_color_function=cls.determine_rating_color)
+            return next((float(p["value"]) for p in props if p["name"] == "sigrid:ratings:system"),0.0)
+        fig_data = cls.create_end_date_portfolio_treemap(rating_func=rating_function, rating_rounding_func=formatters.maintainability_round, determine_color_function=cls.determine_rating_color)
+        return cls.draw_image(width=parameter['width'], height=parameter['height'], fig_data=fig_data)

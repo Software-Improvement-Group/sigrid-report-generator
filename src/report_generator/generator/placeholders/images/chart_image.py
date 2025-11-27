@@ -11,86 +11,144 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from abc import ABC
+from abc import ABC, abstractmethod
+from datetime import datetime
 
 from report_generator.generator import report_utils
 from report_generator.generator.data_models import security_dashboard_findings_portfolio_data
 from report_generator.generator.data_models import security_dashboard_resolution_times_portfolio_data
 from report_generator.generator.data_models import maintainability_portfolio_data
-import plotly.graph_objects as go
-from datetime import datetime
-from .base import _AbstractImagePlaceholder
+from report_generator.generator.placeholders.images.base import _AbstractImagePlaceholder
 
-class _AbstractChartImagePlaceholder(_AbstractImagePlaceholder, ABC):
-    DASHBOARD_EXISTING_FINDINGS_COLOR = f"#{report_utils.pptx.DASHBOARD_EXISTING_FINDINGS_COLOR}"
-    DASHBOARD_NEW_FINDINGS_COLOR = f"#{report_utils.pptx.DASHBOARD_NEW_FINDINGS_COLOR}"
-    DASHBOARD_RESOLVED_FINDINGS_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLVED_FINDINGS_COLOR}"
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 
-    DASHBOARD_RESOLUTION_NO_RISK_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLUTION_NO_RISK_COLOR}"
-    DASHBOARD_RESOLUTION_LOW_RISK_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLUTION_LOW_RISK_COLOR}"
-    DASHBOARD_RESOLUTION_MEDIUM_RISK_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLUTION_MEDIUM_RISK_COLOR}"
-    DASHBOARD_RESOLUTION_HIGH_RISK_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLUTION_HIGH_RISK_COLOR}"
-
-
-class _AbstractSecurityDashboardPlaceholder(_AbstractChartImagePlaceholder, ABC):
-    LAYOUT = go.Layout(
-        xaxis={'showline' : True, 'linewidth' : 2, 'linecolor' : '#6E7078', 'type': 'category', 'categoryorder': 'array', 'tickmode' : 'array'},
-        yaxis={'showgrid' : True, 'gridwidth' : 2, 'gridcolor' : '#E0E4EF' },
-        legend={'orientation' : 'h', 'yanchor' : 'top', 'xanchor' : 'center', 'y' : -0.05, 'x' : 0.5, 'traceorder' : 'normal'},
-        barmode='stack'
-    )
+class _AbstractSecurityDashboardPlaceholder(_AbstractImagePlaceholder, ABC):
+    @staticmethod
+    @abstractmethod
+    def create_portfolio():
+        pass
 
 
     @staticmethod
-    def get_layout(keys):
-        layout = _AbstractSecurityDashboardPlaceholder.LAYOUT
-        layout.xaxis.update({'categoryarray' : list(keys), 'tickvals' : list(keys), 'ticktext' : _AbstractSecurityDashboardPlaceholder.transform_date_labels_to_months(keys)})
-        return layout
+    @abstractmethod
+    def create_dashboard_with_severity(severity, width, height):
+        pass
 
-
-    @staticmethod
-    def create_portfolio_helper(data_source, metric, initial_dict):
-        res = {"CRITICAL" : {}, "HIGH" : {}, "MEDIUM" : {}, "LOW" : {}}
+    
+    @classmethod
+    def _determine_columns(cls, data_source, metric):
+        columns: list[str] = []
         for system in data_source.data['systems']:
             md = maintainability_portfolio_data.get_system_metadata(system['system'])
             if not md or not md['active'] or md['isDevelopmentOnly']:
                 continue
             for ratio in system[metric]:
-                month = ratio['month']
-                for severity in res.keys():
-                    if month not in res[severity].keys():
-                        res[severity][month] = initial_dict.copy()
-                    for status in res[severity][month].keys():
-                        res[severity][month][status] += ratio['severities'][severity][status]
-        return res
+                month = cls._transform_date_label_to_month(ratio['month'])
+                if month not in columns:
+                    columns.append(month)
+        return columns
+
+
+    @classmethod
+    def create_portfolio_helper(cls, data_source, metric, risk_entries):
+        columns: list[str] = cls._determine_columns(data_source=data_source, metric=metric)
+        severities = ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
+        portfolio = {severity : {risk: [0] * len(columns) for risk in risk_entries} for severity in severities}
+
+        for system in data_source.data['systems']:
+            md = maintainability_portfolio_data.get_system_metadata(system['system'])
+            if not md or not md['active'] or md['isDevelopmentOnly']:
+                continue
+            cls._process_system(system=system, metric=metric, columns=columns, severities=severities, risk_entries=risk_entries, portfolio=portfolio)
+        portfolio['columns'] = columns
+        return portfolio
+
+
+    @classmethod
+    def _process_system(cls, system: dict, metric: str, columns: list[str], severities: list[str], risk_entries: list[str], portfolio: dict):
+        for ratio in system[metric]:
+            month = cls._transform_date_label_to_month(ratio['month'])
+            month_idx = columns.index(month)
+
+            for severity in severities:
+                for risk_entry in risk_entries:
+                    portfolio[severity][risk_entry][month_idx] += ratio['severities'][severity][risk_entry]
 
 
     @staticmethod
-    def transform_date_labels_to_months(dates):
-        return [datetime.strptime(x, "%Y-%m-%d").strftime("%b") for x in dates]
+    def _transform_date_label_to_month(date):
+        return datetime.strptime(date, "%Y-%m-%d").strftime("%b")
+
+    
+    @staticmethod
+    def _calculate_sensible_ticker_interval(y_max, target_ticks=6):
+        """
+        Calculate a 'nice' interval for axis ticks, aiming for target_ticks.
+        Uses multipliers of 1, 2, 5, and powers of ten to find a suitable step.
+        """
+        if target_ticks < 1:
+            target_ticks = 6
+        y_max = max(1, y_max)
+        raw_interval = y_max / target_ticks
+        for _ in range(4):
+            p = 10 ** int(np.floor(np.log10(raw_interval)))
+            for m in [1, 2, 5]:
+                step = m * p
+                if step >= raw_interval:
+                    return int(step)
+        return int(raw_interval)
+    
+    @classmethod
+    def _format_image(cls, ax, x, columns, max_value):
+        if max_value <= 1:
+            max_value = 1
+        ax.set_xticks(x, columns)
+        ax.set_ylim(0, int(max_value*1.15))
+        ticker_interval = cls._calculate_sensible_ticker_interval(max_value)
+        ax.yaxis.set_major_locator(ticker.MultipleLocator(ticker_interval))
+        ax.legend(loc='upper center', ncols=4, bbox_to_anchor=(0.5, -0.15), fontsize=6)
+        ax.spines["right"].set_visible(False)
+        ax.spines["left"].set_visible(False)
+        ax.spines["top"].set_visible(False)
+        ax.tick_params(axis="y", length=0)
+        ax.tick_params(axis="both", labelsize=8)
+        ax.yaxis.grid(True, color="#E0E4EF", zorder=0)
 
 
 class _AbstractSecurityDashboardFindingsPlaceholder(_AbstractSecurityDashboardPlaceholder, ABC):
-    @staticmethod
-    def create_portfolio():
-        return _AbstractSecurityDashboardPlaceholder.create_portfolio_helper(security_dashboard_findings_portfolio_data, 'findingRatio', {"resolved": 0, "existing": 0, "new": 0})
+    DASHBOARD_EXISTING_FINDINGS_COLOR = f"#{report_utils.pptx.DASHBOARD_EXISTING_FINDINGS_COLOR}"
+    DASHBOARD_NEW_FINDINGS_COLOR = f"#{report_utils.pptx.DASHBOARD_NEW_FINDINGS_COLOR}"
+    DASHBOARD_RESOLVED_FINDINGS_COLOR = f"#{report_utils.pptx.DASHBOARD_RESOLVED_FINDINGS_COLOR}"
 
-    # noinspection PyTypeChecker - TK: It only works with strings
-    @staticmethod
-    def create_dashboard_with_severity(severity):
-        portfolio = _AbstractSecurityDashboardFindingsPlaceholder.create_portfolio()[severity]
+    @classmethod
+    def create_portfolio(cls):
+        return cls.create_portfolio_helper(security_dashboard_findings_portfolio_data, 'findingRatio', {"resolved": 0, "existing": 0, "new": 0})
 
-        y_values_new = [portfolio[k]['new'] for k in portfolio.keys()]
-        y_values_existing = [portfolio[k]['existing'] for k in portfolio.keys()]
-        y_values_resolved = [portfolio[k]['resolved'] for k in portfolio.keys()]
-        open_findings_text_values = [x + y for x, y in zip(y_values_new, y_values_existing)]
-        data = [
-            go.Bar(x=list(portfolio.keys()), y=y_values_new, name="New", marker_color=_AbstractChartImagePlaceholder.DASHBOARD_NEW_FINDINGS_COLOR, offsetgroup="open"),
-            go.Bar(x=list(portfolio.keys()), y=y_values_existing, name="Existing", marker_color=_AbstractChartImagePlaceholder.DASHBOARD_EXISTING_FINDINGS_COLOR, offsetgroup="open", textposition="outside", text=open_findings_text_values),
-            go.Bar(x=list(portfolio.keys()), y=y_values_resolved, name="Resolved", marker_color=_AbstractChartImagePlaceholder.DASHBOARD_RESOLVED_FINDINGS_COLOR, offsetgroup="closed", textposition="outside", text=y_values_resolved),
-        ]
-        return go.Figure(data=data, layout=_AbstractSecurityDashboardPlaceholder.get_layout(portfolio.keys()))
-    
+    @classmethod
+    def create_dashboard_with_severity(cls, severity, width, height):
+        portfolio_complete = cls.create_portfolio()
+        portfolio = portfolio_complete[severity]
+        columns = portfolio_complete['columns']
+        
+        fig, ax = plt.subplots(figsize=(width,height), dpi=200, facecolor="none")
+
+        x = np.arange(len(columns))
+        w = 0.4
+
+        ax.bar(x=x-(w/2), height=portfolio['new'], width=w, label="New", color=cls.DASHBOARD_NEW_FINDINGS_COLOR, zorder=3)
+
+        r = ax.bar(x=x-(w/2), height=portfolio['existing'], width=w, bottom=portfolio['new'], label="Existing", color=cls.DASHBOARD_EXISTING_FINDINGS_COLOR, zorder=3)
+        ax.bar_label(r, padding=2, fontsize=6)
+
+        r = ax.bar(x=x+(w/2), height=portfolio['resolved'], width=w, label="Resolved", color=cls.DASHBOARD_RESOLVED_FINDINGS_COLOR, zorder=3)
+        ax.bar_label(r, padding=2, fontsize=6)
+
+        max_val = np.max([np.max([xx+yy for xx,yy in zip(portfolio["new"], portfolio["existing"])]),np.max(portfolio["resolved"])])
+        cls._format_image(ax=ax, x=x, columns=columns, max_value=max_val)
+
+        return fig
 
 class _AbstractSecurityDashboardResolutionTimesPlaceholder(_AbstractSecurityDashboardPlaceholder, ABC):
     LEGEND_ENTRIES_PER_SEVERITY = {
@@ -99,31 +157,38 @@ class _AbstractSecurityDashboardResolutionTimesPlaceholder(_AbstractSecurityDash
         "MEDIUM" : {'noRisk' : "at most 30 days", "lowRisk" : "between 30-180 days", "mediumRisk" : "between 180-365 days", "highRisk" : "at least 365 days"},
         "LOW" : {'noRisk' : "at most 180 days", "lowRisk" : "between 180-365 days", "mediumRisk" : "between 1-2 years", "highRisk" : "at least 2 years"}
     }
+    DASHBOARD_RESOLUTION_LEGEND_COLORS = {
+        'noRisk' : f"#{report_utils.pptx.DASHBOARD_RESOLUTION_NO_RISK_COLOR}",
+        'lowRisk' : f"#{report_utils.pptx.DASHBOARD_RESOLUTION_LOW_RISK_COLOR}",
+        'mediumRisk' : f"#{report_utils.pptx.DASHBOARD_RESOLUTION_MEDIUM_RISK_COLOR}",
+        'highRisk' : f"#{report_utils.pptx.DASHBOARD_RESOLUTION_HIGH_RISK_COLOR}"
+    }
 
+    @classmethod
+    def create_portfolio(cls):
+        return cls.create_portfolio_helper(security_dashboard_resolution_times_portfolio_data, 'resolutionTimes', {"noRisk": 0, "lowRisk": 0, "mediumRisk": 0, "highRisk" : 0})
 
-    @staticmethod
-    def create_portfolio():
-        return _AbstractSecurityDashboardPlaceholder.create_portfolio_helper(security_dashboard_resolution_times_portfolio_data, 'resolutionTimes', {"noRisk": 0, "lowRisk": 0, "mediumRisk": 0, "highRisk" : 0})
+    @classmethod
+    def create_dashboard_with_severity(cls, severity, width, height):
+        portfolio_complete = cls.create_portfolio()
+        portfolio = portfolio_complete[severity]
+        columns = portfolio_complete['columns']
+        legend_entries = cls.LEGEND_ENTRIES_PER_SEVERITY[severity]
 
-    # noinspection PyTypeChecker
-    @staticmethod
-    def create_dashboard_with_severity(severity):
-        portfolio = _AbstractSecurityDashboardResolutionTimesPlaceholder.create_portfolio()[severity]
-        legend_entries = _AbstractSecurityDashboardResolutionTimesPlaceholder.LEGEND_ENTRIES_PER_SEVERITY[severity]
+        fig, ax = plt.subplots(figsize=(width,height), dpi=200, facecolor="none")
+        bottom = np.zeros(len(columns))
 
-        def get_risk_values(pf, levels):
-            return {risk: [pf[k][risk] for k in pf] for risk in levels}
-        
-        risk_levels = ['noRisk', 'lowRisk', 'mediumRisk', 'highRisk']
-        y_values = get_risk_values(portfolio, risk_levels)
-        text_values = [sum(y_values[risk][i] for risk in risk_levels) for i in range(len(portfolio))]
-        data = [
-            go.Bar(x=list(portfolio.keys()), y=y_values['noRisk'], name=legend_entries['noRisk'], marker_color=_AbstractChartImagePlaceholder.DASHBOARD_RESOLUTION_NO_RISK_COLOR),
-            go.Bar(x=list(portfolio.keys()), y=y_values['lowRisk'], name=legend_entries['lowRisk'], marker_color=_AbstractChartImagePlaceholder.DASHBOARD_RESOLUTION_LOW_RISK_COLOR),
-            go.Bar(x=list(portfolio.keys()), y=y_values['mediumRisk'], name=legend_entries['mediumRisk'], marker_color=_AbstractChartImagePlaceholder.DASHBOARD_RESOLUTION_MEDIUM_RISK_COLOR),
-            go.Bar(x=list(portfolio.keys()), y=y_values['highRisk'], name=legend_entries['highRisk'], marker_color=_AbstractChartImagePlaceholder.DASHBOARD_RESOLUTION_HIGH_RISK_COLOR, textposition="outside", text=text_values),
-        ]
-        return go.Figure(data=data, layout=_AbstractSecurityDashboardPlaceholder.get_layout(portfolio.keys()))
+        for entry, vals in portfolio.items():
+            legend_entry = legend_entries[entry]
+            np_vals = np.array(vals)
+            r = ax.bar(x=columns, height=np_vals, label=legend_entry, bottom=bottom, color=cls.DASHBOARD_RESOLUTION_LEGEND_COLORS[entry], zorder=3)
+            bottom += np_vals
+        ax.bar_label(r, fontsize=6)
+
+        x = np.arange(len(columns))
+        max_val = np.max(np.sum(list(portfolio.values()), axis=0))
+        cls._format_image(ax=ax, x=x, columns=columns, max_value=max_val)
+        return fig
 
 
 class SecurityDashboardCriticalFindingsPlaceholder(_AbstractSecurityDashboardFindingsPlaceholder):
@@ -133,7 +198,7 @@ class SecurityDashboardCriticalFindingsPlaceholder(_AbstractSecurityDashboardFin
 
     @classmethod
     def value(cls, parameter=None):
-        return _AbstractSecurityDashboardFindingsPlaceholder.create_dashboard_with_severity("CRITICAL")
+        return cls.create_dashboard_with_severity(severity="CRITICAL", width=parameter['width'], height=parameter['height'])
 
 
 class SecurityDashboardHighFindingsPlaceholder(_AbstractSecurityDashboardFindingsPlaceholder):
@@ -143,7 +208,7 @@ class SecurityDashboardHighFindingsPlaceholder(_AbstractSecurityDashboardFinding
 
     @classmethod
     def value(cls, parameter=None):
-        return _AbstractSecurityDashboardFindingsPlaceholder.create_dashboard_with_severity("HIGH")
+        return cls.create_dashboard_with_severity(severity="HIGH", width=parameter['width'], height=parameter['height'])
 
 
 class SecurityDashboardMediumFindingsPlaceholder(_AbstractSecurityDashboardFindingsPlaceholder):
@@ -153,7 +218,7 @@ class SecurityDashboardMediumFindingsPlaceholder(_AbstractSecurityDashboardFindi
 
     @classmethod
     def value(cls, parameter=None):
-        return _AbstractSecurityDashboardFindingsPlaceholder.create_dashboard_with_severity("MEDIUM")
+        return cls.create_dashboard_with_severity(severity="MEDIUM", width=parameter['width'], height=parameter['height'])
     
 
 class SecurityDashboardCriticalResolutionTimesPlaceholder(_AbstractSecurityDashboardResolutionTimesPlaceholder):
@@ -163,7 +228,7 @@ class SecurityDashboardCriticalResolutionTimesPlaceholder(_AbstractSecurityDashb
 
     @classmethod
     def value(cls, parameter=None):
-        return _AbstractSecurityDashboardResolutionTimesPlaceholder.create_dashboard_with_severity("CRITICAL")
+        return cls.create_dashboard_with_severity(severity="CRITICAL", width=parameter['width'], height=parameter['height'])
     
 
 class SecurityDashboardHighResolutionTimesPlaceholder(_AbstractSecurityDashboardResolutionTimesPlaceholder):
@@ -173,7 +238,7 @@ class SecurityDashboardHighResolutionTimesPlaceholder(_AbstractSecurityDashboard
 
     @classmethod
     def value(cls, parameter=None):
-        return _AbstractSecurityDashboardResolutionTimesPlaceholder.create_dashboard_with_severity("HIGH")
+        return cls.create_dashboard_with_severity(severity="HIGH", width=parameter['width'], height=parameter['height'])
     
 
 class SecurityDashboardMediumResolutionTimesPlaceholder(_AbstractSecurityDashboardResolutionTimesPlaceholder):
@@ -183,4 +248,4 @@ class SecurityDashboardMediumResolutionTimesPlaceholder(_AbstractSecurityDashboa
 
     @classmethod
     def value(cls, parameter=None):
-        return _AbstractSecurityDashboardResolutionTimesPlaceholder.create_dashboard_with_severity("MEDIUM")
+        return cls.create_dashboard_with_severity(severity="MEDIUM", width=parameter['width'], height=parameter['height'])
