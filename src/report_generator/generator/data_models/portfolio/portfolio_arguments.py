@@ -72,8 +72,8 @@ def portfolio_arguments_command():
         def wrapper(team, division, lifecycle, deployment, business_criticality, *args, **kwargs):
             try:
                 set_context(team=team, division=division, lifecycle=lifecycle, deployment=deployment, business_criticality=business_criticality)
-            except ValueError as e:
-                raise e
+            except ValueError:
+                raise
             return func(*args, **kwargs)
         return wrapper
     return decorator
@@ -128,19 +128,31 @@ def _include(system_name, portfolio_metadata):
     md = _find_system_metadata(system_name=system_name, portfolio_metadata=portfolio_metadata)
     if md is None:
         return False
+    
+    checks = [
+        (_team, md.get('teamNames'), None),
+        (_division, md.get('divisionName'), None),
+        (_lifecycle, md.get('lifecyclePhase'), str.upper),
+        (_deployment, md.get('deploymentType'), lambda x: x.upper().replace('-', '_')),
+        (_business_crititality, md.get('businessCriticality'), str.upper)
+    ]
 
-    matches = []
-    if _team is not None:
-        matches.append(any(t in md['teamNames'] for t in _team))
-    if _division is not None:
-        matches.append(any(d == md['divisionName'] for d in _division))
-    if _lifecycle is not None:
-        matches.append(any(lc.upper() == md['lifecyclePhase'] for lc in _lifecycle))
-    if _deployment is not None:
-        matches.append(any(d.upper().replace('-', '_') == md['deploymentType'] for d in _deployment))
-    if _business_crititality is not None:
-        matches.append(any(bc.upper() == md['businessCriticality'] for bc in _business_crititality))
-    return all(matches)
+    for filter_vals, actual_val, transform in checks:
+        if filter_vals:
+            # Normalize filter values if a transform function is provided
+            clean_filters = {transform(x) if transform else x for x in filter_vals}
+            
+            # Handle intersection (list vs list) or membership (list vs string)
+            is_match = False
+            if isinstance(actual_val, list):
+                is_match = bool(set(actual_val) & clean_filters)
+            else:
+                is_match = actual_val in clean_filters
+                
+            if not is_match:
+                return False
+
+    return True
 
 def _are_filters_set():
     return _team is not None or _division is not None
