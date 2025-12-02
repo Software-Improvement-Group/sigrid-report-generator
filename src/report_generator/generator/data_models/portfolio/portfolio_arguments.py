@@ -20,24 +20,45 @@ from report_generator.generator import sigrid_api
 
 _team: Optional[list[str]] = None
 _division: Optional[list[str]] = None
+_lifecycle: Optional[list[str]] = None
+_deployment: Optional[list[str]] = None
+_business_crititality: Optional[list[str]] = None
 
-def get_portfolio_context():
-    global _team, _division
-    return {
-        'team' : _team,
-        'division' : _division
-    }
+ALLOWED_LIFECYCLE_VALUES = {"INITIAL", "EVOLUTION", "MAINTENANCE", "EOL", "DECOMMISSIONED"}
+ALLOWED_DEPLOYMENT_VALUES = {"PUBLIC_FACING", "CONNECTED", "INTERNAL", "PHYSICAL"}
+ALLOWED_BUSINESS_CRITICALITY_VALUES = {"CRITICAL", "HIGH", "MEDIUM", "LOW"}
+
+def validate_values(values: list[str], allowed_values: set[str], field: str) -> None:
+    invalid = set(values) - allowed_values
+    if invalid:
+        raise ValueError(f"Invalid value(s) for {field}: {', '.join(sorted(invalid))}")
+
 
 def set_context(
         team: Optional[list[str]] = None,
-        division: Optional[list[str]] = None
+        division: Optional[list[str]] = None,
+        lifecycle: Optional[list[str]] = None,
+        deployment: Optional[list[str]] = None,
+        business_criticality: Optional[list[str]] = None
 ) -> None:
-    global _team, _division
+    global _team, _division, _lifecycle, _deployment, _business_crititality
     if team:
         _team = list(team)
 
     if division:
         _division = list(division)
+    
+    if lifecycle:
+        _lifecycle = [x.upper() for x in lifecycle]
+        validate_values(values=_lifecycle, allowed_values=ALLOWED_LIFECYCLE_VALUES, field="Lifecycle")
+    
+    if deployment:
+        _deployment = [x.upper() for x in deployment]
+        validate_values(values=_deployment, allowed_values=ALLOWED_DEPLOYMENT_VALUES, field="Deployment")
+    
+    if business_criticality:
+        _business_crititality = [x.upper().replace('-','_') for x in business_criticality]
+        validate_values(values=_business_crititality, allowed_values=ALLOWED_BUSINESS_CRITICALITY_VALUES, field="Business criticality")
 
 
 def portfolio_arguments_command():
@@ -45,8 +66,14 @@ def portfolio_arguments_command():
         @wraps(func)
         @click.option('--team', multiple=True, help="Team name filter, as displayed in Sigrid (multiple values need separate --team flags, ie.: --team aap --team noot)")
         @click.option('--division', multiple=True, help="Division name filter, as displayed in Sigrid (multiple values need separate --division flags, ie.: --division aap --division noot)")
-        def wrapper(team, division, *args, **kwargs):
-            set_context(team=team, division=division)
+        @click.option('--lifecycle', multiple=True, help=f"Lifecycle name filter, as displayed in Sigrid (multiple values need separate --lifecycle flags, ie.: --lifecycle initial --lifecycle evolution). Allowed values: {', '.join([x.lower() for x in ALLOWED_LIFECYCLE_VALUES])}")
+        @click.option('--deployment', multiple=True, help=f"Deployment name filter, as displayed in Sigrid (multiple values need separate --deployment flags, ie.: --deployment public-facing --deployment connected). Allowed values: {', '.join([x.lower().replace('_','-') for x in ALLOWED_DEPLOYMENT_VALUES])}")
+        @click.option('--business-criticality', multiple=True, help=f"Business criticality name filter, as displayed in Sigrid (multiple values need separate --business-criticality flags, ie.: --business-criticality critical --business-criticality high). Allowed values: {', '.join([x.lower() for x in ALLOWED_BUSINESS_CRITICALITY_VALUES])}")
+        def wrapper(team, division, lifecycle, deployment, business_criticality, *args, **kwargs):
+            try:
+                set_context(team=team, division=division, lifecycle=lifecycle, deployment=deployment, business_criticality=business_criticality)
+            except ValueError as e:
+                raise e
             return func(*args, **kwargs)
         return wrapper
     return decorator
@@ -97,15 +124,23 @@ def _without_data_tag(data, portfolio_metadata, system_tag):
     return systems
 
 def _include(system_name, portfolio_metadata):
-    global _team, _division
+    global _team, _division, _lifecycle, _deployment, _business_crititality
     md = _find_system_metadata(system_name=system_name, portfolio_metadata=portfolio_metadata)
     if md is None:
         return False
-    
-    team_match = _team is not None and any(t in md['teamNames'] for t in _team)
-    division_match = _division is not None and any(d == md['divisionName'] for d in _division)
 
-    return team_match or division_match
+    matches = []
+    if _team is not None:
+        matches.append(any(t in md['teamNames'] for t in _team))
+    if _division is not None:
+        matches.append(any(d == md['divisionName'] for d in _division))
+    if _lifecycle is not None:
+        matches.append(any(lc.upper() == md['lifecyclePhase'] for lc in _lifecycle))
+    if _deployment is not None:
+        matches.append(any(d.upper().replace('-', '_') == md['deploymentType'] for d in _deployment))
+    if _business_crititality is not None:
+        matches.append(any(bc.upper() == md['businessCriticality'] for bc in _business_crititality))
+    return all(matches)
 
 def _are_filters_set():
     return _team is not None or _division is not None
