@@ -85,11 +85,8 @@ def portfolio_arguments_command():
         @click.option('--target-industry', multiple=True, help=f"[filter] Target industry filter, as displayed in Sigrid (multiple values need separate --target-industry flags, ie.: --target-industry ICD0500 --target-industry SIG1100). Allowed values: {', '.join([x.lower() for x in common.METADATA_TARGET_INDUSTRY_MAPPING.keys()])}")
         @wraps(func)
         def wrapper(team, division, lifecycle, deployment, business_criticality, distribution, application_type, target_industry, *args, **kwargs):
-            try:
-                set_context(team=team, division=division, lifecycle=lifecycle, deployment=deployment, business_criticality=business_criticality,
-                            distribution=distribution, application_type=application_type, target_industry=target_industry)
-            except ValueError:
-                raise
+            set_context(team=team, division=division, lifecycle=lifecycle, deployment=deployment, business_criticality=business_criticality,
+                        distribution=distribution, application_type=application_type, target_industry=target_industry)
             return func(*args, **kwargs)
         return wrapper
     return decorator
