@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 from abc import ABC
-from typing import Tuple
+from typing import Tuple, ClassVar, Dict, Callable
 import logging
 
 from report_generator.generator import report_utils
@@ -46,6 +46,8 @@ class _AbstractTreemapPlaceholder(_AbstractImagePlaceholder, ABC):
 
 
 class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
+    grouping_processors: ClassVar[Dict[str, Callable]] = {}
+
     @staticmethod
     def create_portfolio():
         res = {}
@@ -61,31 +63,54 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
                 'end_date_data' : maintainability_portfolio_data.end_snapshot(system_name)
             }
         return res
+
+
+    @staticmethod
+    def _process_team_grouping(metadata):
+        team_name = "Unset"
+        if metadata['teamNames']:
+            if len(metadata['teamNames']) > 1:
+                team_name = "Multiple teams"
+            else:
+                team_name = metadata['teamNames'][0]
+        return team_name
     
+
+    @staticmethod
+    def _process_lifecycle_grouping(metadata):
+        if metadata['lifecyclePhase']:
+            return report_utils.common.METADATA_LIFECYCLE_MAPPING[metadata['lifecyclePhase']]
+        return "Unset"
+    
+
+    _grouping_processors = {
+        'team' : _process_team_grouping.__func__,
+        'lifecycle' : _process_lifecycle_grouping.__func__
+    }
+    
+
     @classmethod
     def _create_blank_portfolio_and_treemap(cls) -> Tuple[dict,dict]:
+        global _grouping
+
         system_names = []
         display_names = []
         root_names = []
 
+        _grouping = 'lifecycle' # TODO
+
         portfolio = cls.create_portfolio()
         for s in portfolio.values():
             m = s['metadata']
-            team_name = "Unset"
 
-            # Systems are now aggregated based on teams; in the future, other categories should also be allowed (e.g.: divisions).
-            if m['teamNames']:
-                if len(m['teamNames']) > 1:
-                    team_name = "Multiple teams"
-                else:
-                    team_name = m['teamNames'][0]
+            root_name = _AbstractPortfolioTreemapPlaceholder._grouping_processors[_grouping](m)
             display_name = m['displayName']
             if display_name and display_name in display_names:
                 display_name = f"{display_name} " # A workaround if, for example, a team name is the same as a system name
             elif not display_name:
                 display_name = m['systemName']
             display_names.append(display_name)
-            root_names.append(team_name)
+            root_names.append(root_name)
             system_names.append(m['systemName'])
 
         treemap = {

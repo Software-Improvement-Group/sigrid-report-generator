@@ -17,31 +17,38 @@ from functools import wraps
 import click
 
 from report_generator.generator import sigrid_api
+from report_generator.generator.report_utils import common
 
 _team: Optional[list[str]] = None
 _division: Optional[list[str]] = None
 _lifecycle: Optional[list[str]] = None
 _deployment: Optional[list[str]] = None
 _business_crititality: Optional[list[str]] = None
-
-ALLOWED_LIFECYCLE_VALUES = {"INITIAL", "EVOLUTION", "MAINTENANCE", "EOL", "DECOMMISSIONED"}
-ALLOWED_DEPLOYMENT_VALUES = {"PUBLIC_FACING", "CONNECTED", "INTERNAL", "PHYSICAL"}
-ALLOWED_BUSINESS_CRITICALITY_VALUES = {"CRITICAL", "HIGH", "MEDIUM", "LOW"}
+_distribution: Optional[list[str]] = None
+_application_type: Optional[list[str]] = None
+_target_industry: Optional[list[str]] = None
 
 def validate_values(values: list[str], allowed_values: set[str], field: str) -> None:
     invalid = set(values) - allowed_values
     if invalid:
         raise ValueError(f"Invalid value(s) for {field}: {', '.join(sorted(invalid))}")
 
+def process_values(values, mapping, field):
+    processed_values = [x.upper() for x in values]
+    validate_values(values=processed_values, allowed_values=mapping.keys(), field=field)
+    return processed_values
 
 def set_context(
         team: Optional[list[str]] = None,
         division: Optional[list[str]] = None,
         lifecycle: Optional[list[str]] = None,
         deployment: Optional[list[str]] = None,
-        business_criticality: Optional[list[str]] = None
+        business_criticality: Optional[list[str]] = None,
+        distribution: Optional[list[str]] = None,
+        application_type: Optional[list[str]] = None,
+        target_industry: Optional[list[str]] = None
 ) -> None:
-    global _team, _division, _lifecycle, _deployment, _business_crititality
+    global _team, _division, _lifecycle, _deployment, _business_crititality, _distribution, _application_type, _target_industry
     if team:
         _team = list(team)
 
@@ -49,35 +56,43 @@ def set_context(
         _division = list(division)
     
     if lifecycle:
-        _lifecycle = [x.upper() for x in lifecycle]
-        validate_values(values=_lifecycle, allowed_values=ALLOWED_LIFECYCLE_VALUES, field="Lifecycle")
+        _lifecycle = process_values(values=lifecycle, mapping=common.METADATA_LIFECYCLE_MAPPING, field="Lifecycle")
     
     if deployment:
-        _deployment = [x.upper() for x in deployment]
-        validate_values(values=_deployment, allowed_values=ALLOWED_DEPLOYMENT_VALUES, field="Deployment")
+        _deployment = process_values(values=deployment, mapping=common.METADATA_DEPLOYMENT_MAPPING, field="Deployment")
     
     if business_criticality:
-        _business_crititality = [x.upper().replace('-','_') for x in business_criticality]
-        validate_values(values=_business_crititality, allowed_values=ALLOWED_BUSINESS_CRITICALITY_VALUES, field="Business criticality")
+        _business_crititality = process_values(values=business_criticality, mapping=common.METADATA_BUSINESS_CRITICALITY_MAPPING, field="Business criticality")
+    
+    if distribution:
+        _distribution = process_values(values=distribution, mapping=common.METADATA_DISTRIBUTION_MAPPING, field="Distribution")
 
+    if application_type:
+        _application_type = process_values(values=application_type, mapping=common.METADATA_APPLICATION_TYPE_MAPPING, field="Application type")
+
+    if target_industry:
+        _target_industry = process_values(values=target_industry, mapping=common.METADATA_TARGET_INDUSTRY_MAPPING, field="Target industry")
 
 def portfolio_arguments_command():
     def decorator(func):
+        @click.option('--team', multiple=True, help="[filter] Team name filter, as displayed in Sigrid (multiple values need separate --team flags, ie.: --team aap --team noot)")
+        @click.option('--division', multiple=True, help="[filter] Division name filter, as displayed in Sigrid (multiple values need separate --division flags, ie.: --division aap --division noot)")
+        @click.option('--lifecycle', multiple=True, help=f"[filter] Lifecycle filter, as displayed in Sigrid (multiple values need separate --lifecycle flags, ie.: --lifecycle initial --lifecycle evolution). Allowed values: {', '.join([x.lower() for x in common.METADATA_LIFECYCLE_MAPPING.keys()])}")
+        @click.option('--deployment', multiple=True, help=f"[filter] Deployment filter, as displayed in Sigrid (multiple values need separate --deployment flags, ie.: --deployment public-facing --deployment connected). Allowed values: {', '.join([x.lower().replace('_','-') for x in common.METADATA_DEPLOYMENT_MAPPING.keys()])}")
+        @click.option('--business-criticality', multiple=True, help=f"[filter] Business criticality filter, as displayed in Sigrid (multiple values need separate --business-criticality flags, ie.: --business-criticality critical --business-criticality high). Allowed values: {', '.join([x.lower() for x in common.METADATA_BUSINESS_CRITICALITY_MAPPING.keys()])}")
+        @click.option('--distribution', multiple=True, help=f"[filter] Distribution filter, as displayed in Sigrid (multiple values need separate --distribution flags, ie.: --distribution not-distributed --distribution connected). Allowed values: {', '.join([x.lower().replace('_', '-') for x in common.METADATA_DISTRIBUTION_MAPPING.keys()])}")
+        @click.option('--application-type', multiple=True, help=f"[filter] Application type filter, as displayed in Sigrid (multiple values need separate --application-type flags, ie.: --application-type functional-applications --application-type case-management). Allowed values: {', '.join([x.lower().replace('_', '-') for x in common.METADATA_APPLICATION_TYPE_MAPPING.keys()])}")
+        @click.option('--target-industry', multiple=True, help=f"[filter] Target industry filter, as displayed in Sigrid (multiple values need separate --target-industry flags, ie.: --target-industry ICD0500 --target-industry SIG1100). Allowed values: {', '.join([x.lower() for x in common.METADATA_TARGET_INDUSTRY_MAPPING.keys()])}")
         @wraps(func)
-        @click.option('--team', multiple=True, help="Team name filter, as displayed in Sigrid (multiple values need separate --team flags, ie.: --team aap --team noot)")
-        @click.option('--division', multiple=True, help="Division name filter, as displayed in Sigrid (multiple values need separate --division flags, ie.: --division aap --division noot)")
-        @click.option('--lifecycle', multiple=True, help=f"Lifecycle name filter, as displayed in Sigrid (multiple values need separate --lifecycle flags, ie.: --lifecycle initial --lifecycle evolution). Allowed values: {', '.join([x.lower() for x in ALLOWED_LIFECYCLE_VALUES])}")
-        @click.option('--deployment', multiple=True, help=f"Deployment name filter, as displayed in Sigrid (multiple values need separate --deployment flags, ie.: --deployment public-facing --deployment connected). Allowed values: {', '.join([x.lower().replace('_','-') for x in ALLOWED_DEPLOYMENT_VALUES])}")
-        @click.option('--business-criticality', multiple=True, help=f"Business criticality name filter, as displayed in Sigrid (multiple values need separate --business-criticality flags, ie.: --business-criticality critical --business-criticality high). Allowed values: {', '.join([x.lower() for x in ALLOWED_BUSINESS_CRITICALITY_VALUES])}")
-        def wrapper(team, division, lifecycle, deployment, business_criticality, *args, **kwargs):
+        def wrapper(team, division, lifecycle, deployment, business_criticality, distribution, application_type, target_industry, *args, **kwargs):
             try:
-                set_context(team=team, division=division, lifecycle=lifecycle, deployment=deployment, business_criticality=business_criticality)
+                set_context(team=team, division=division, lifecycle=lifecycle, deployment=deployment, business_criticality=business_criticality,
+                            distribution=distribution, application_type=application_type, target_industry=target_industry)
             except ValueError:
                 raise
             return func(*args, **kwargs)
         return wrapper
     return decorator
-
 
 def filter_data_on_portfolio_arguments(data_tag=None, system_tag=None):
     """
@@ -124,7 +139,7 @@ def _without_data_tag(data, portfolio_metadata, system_tag):
     return systems
 
 def _include(system_name, portfolio_metadata):
-    global _team, _division, _lifecycle, _deployment, _business_crititality
+    global _team, _division, _lifecycle, _deployment, _business_crititality, _distribution, _application_type, _target_industry
     md = _find_system_metadata(system_name=system_name, portfolio_metadata=portfolio_metadata)
     if md is None:
         return False
@@ -134,7 +149,10 @@ def _include(system_name, portfolio_metadata):
         (_division, md.get('divisionName'), None),
         (_lifecycle, md.get('lifecyclePhase'), str.upper),
         (_deployment, md.get('deploymentType'), lambda x: x.upper().replace('-', '_')),
-        (_business_crititality, md.get('businessCriticality'), str.upper)
+        (_business_crititality, md.get('businessCriticality'), str.upper),
+        (_distribution, md.get('softwareDistributionStrategy'), lambda x: x.upper().replace('-', '_')),
+        (_application_type, md.get('applicationType'), lambda x: x.upper().replace('-', '_')),
+        (_target_industry, md.get('targetIndustry'), str.upper),
     ]
 
     for filter_vals, actual_val, transform in checks:

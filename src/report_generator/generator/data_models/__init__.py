@@ -28,3 +28,11 @@ from report_generator.generator.data_models.system.system_metadata import system
 from report_generator.generator.data_models.system.security import security_data
 from report_generator.generator.data_models.portfolio.security_portfolio import security_ratings_portfolio_data
 from report_generator.generator.data_models.portfolio.portfolio_arguments import portfolio_arguments_command
+
+from report_generator.generator.utils.utils import compose_options
+
+_data_model_arguments_decorator = [
+    portfolio_arguments_command()
+]
+
+data_model_arguments = compose_options(*_data_model_arguments_decorator)
