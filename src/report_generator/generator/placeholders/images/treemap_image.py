@@ -149,7 +149,7 @@ class AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
         return {
             'labels' : treemap['display_names'],
             'system_names' : treemap['system_names'],
-            'roots' : treemap['root_names'],
+            'root_names' : treemap['root_names'],
             'volumes' : treemap['volumes'],
             'color_names' : treemap['system_names'],
             'color_mapping' : treemap['color_mapping'],
@@ -190,16 +190,16 @@ class AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
             logging.error("Figure data is None.")
             return
         fig, ax = plt.subplots(figsize=(width,height), dpi=200)
-        subkeys = ["system_names", "volumes", "labels", "roots"]
+        subkeys = ["system_names", "volumes", "labels", "root_names"]
         df = pd.DataFrame({k: fig_data[k] for k in subkeys})
-        tr.treemap(axes=ax, data=df, area="volumes", levels=["roots", "system_names"], top=True,
+        tr.treemap(axes=ax, data=df, area="volumes", levels=["root_names", "system_names"], top=True,
                 fill="system_names", cmap=fig_data['color_mapping'], labels="labels",
                 rectprops={'ec':'w', 'pad':(0,0,0,2)},
                 textprops={
                     'fontfamily':'sans-serif', 'reflow':True, 'place':'center', 'grow':True,
                     'max_fontsize':4, 'color':'k', 'pady':1, 'padx':1}, # Text inside squares
-                subgroup_rectprops={'roots':{'ec':'w', 'fc':cls.BUNDLE_COLOR}},
-                subgroup_textprops={'roots':{'place':'top center', 'max_fontsize':3, 'pady':1, 'fontfamily':'sans-serif', 'color':'k'}}
+                subgroup_rectprops={'root_names':{'ec':'w', 'fc':cls.BUNDLE_COLOR}},
+                subgroup_textprops={'root_names':{'place':'top center', 'max_fontsize':3, 'pady':1, 'fontfamily':'sans-serif', 'color':'k'}}
         )
         ax.axis("off")
         return fig
