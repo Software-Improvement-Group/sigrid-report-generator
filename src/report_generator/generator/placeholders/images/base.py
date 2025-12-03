@@ -24,6 +24,8 @@ import io
 from pptx.util import Inches
 import logging
 
+import matplotlib.pyplot as plt
+
 class _AbstractImage:
     BUNDLE_COLOR = f"#{report_utils.pptx.SIG_GREY_COLOR}"
     NA_STAR_COLOR = f"#{report_utils.pptx.NA_STAR_COLOR}"
@@ -49,6 +51,7 @@ class _AbstractImage:
 
         el = shape_placeholder.element
         el.getparent().remove(el)
+        plt.close('all')
 
 class _AbstractImagePlaceholder(Placeholder, _AbstractImage, ABC):
     __doc_type__ = PlaceholderDocType.IMAGE
