@@ -13,8 +13,6 @@
 #  limitations under the License.
 
 from unittest.mock import MagicMock, patch
-import pytest
-import pandas as pd
 
 from report_generator.generator.constants import MetricEnum
 
