@@ -14,7 +14,6 @@
 
 import logging
 import os
-import sys
 from datetime import date
 from typing import Optional
 
@@ -145,15 +144,14 @@ def _validate_portfolio_has_systems():
             filter_desc.append(f"--division: {', '.join(context['division'])}")
         
         error_msg = (
-            f"\n\nError: No systems match the specified filters.\n"
+            f"No systems match the specified filters.\n"
             f"Filters applied:\n  {chr(10).join(filter_desc)}\n\n"
             f"Please verify:\n"
             f"  1. The team/division names match exactly as shown in Sigrid (case-sensitive)\n"
             f"  2. At least one active system exists with these team/division assignments\n"
-            f"  3. The systems are not marked as development-only\n"
+            f"  3. The systems are not marked as development-only"
         )
-        logging.error(error_msg)
-        sys.exit(1)
+        raise click.ClickException(error_msg)
 
 
 def _configure_logging(debug):
