@@ -146,7 +146,7 @@ def _validate_portfolio_has_systems():
         
         error_msg = (
             f"No systems match the specified filters.\n"
-            f"Filters applied:\n  {'\n  '.join(filter_desc)}\n\n"
+            f"Filters applied:\n  {chr(10).join(filter_desc)}\n\n"
             f"Please verify:\n"
             f"  1. The team/division names match exactly as shown in Sigrid (case-sensitive)\n"
             f"  2. At least one active system exists with these team/division assignments\n"
