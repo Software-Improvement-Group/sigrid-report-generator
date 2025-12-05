@@ -73,6 +73,13 @@ def test_generate_report(output_file, template, customer_name, system_name, toke
 
 class TestPortfolioFiltering:
     """Test cases for portfolio filtering validation."""
+    
+    def teardown_method(self):
+        """Reset portfolio context after each test."""
+        from report_generator.generator.data_models.portfolio import portfolio_arguments
+        # Reset the global context variables
+        portfolio_arguments._team = None
+        portfolio_arguments._division = None
 
     @patch('report_generator.generator.data_models.maintainability_portfolio_data')
     @patch('report_generator.cli.sigrid_api')
