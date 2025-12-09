@@ -53,6 +53,7 @@ ARCH_BEST_METRIC_TEXT = {
 ARCH_WORST_METRIC_TEXT = {
     ArchMetric.CODE_BREAKDOWN              : "The system's low score in Code Breakdown restricts flexibility, hindering parallel work across boundaries, as the codebase lacks clear, well-defined components, impeding efficient collaboration and adaptability.",
     ArchMetric.COMPONENT_COUPLING          : "The system's low score in Component Coupling constrains architecture, constraining evolution and imposing high-impact changes, impeding system adaptability.",
+    ArchMetric.COMPONENT_ADJACENCY         : "The system's low score in Component Adjacency limits the flexibility of your architecture, impeding adaptability across the system.",
     ArchMetric.COMPONENT_COHESION          : "The system scores poorly in Component Cohesion, constraining evolution and triggering high-impact changes, impeding adaptability across the system or landscape.",
     ArchMetric.CODE_REUSE                  : "The system's low score in Code Reuse heightens complexity, fostering coupling through duplicated code. This impedes flexibility and hinders responsibility separation.",
     ArchMetric.COMMUNICATION_CENTRALIZATION: "The system's low score in Communication Centralization weakens encapsulation, heightening sensitivity to external changes, making updates challenging, and impacting adaptability.",
