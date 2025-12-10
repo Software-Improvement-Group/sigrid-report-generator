@@ -14,6 +14,7 @@
 
 from unittest.mock import patch
 import pytest
+import click
 
 from report_generator.generator.data_models.portfolio import portfolio_arguments
 from report_generator.generator.data_models.portfolio.portfolio_arguments import (
@@ -226,7 +227,7 @@ class TestPortfolioArguments:
 
     @patch('report_generator.generator.data_models.portfolio.portfolio_arguments.sigrid_api')
     def test_decorator_raises_exception_when_no_systems_match(self, mock_sigrid_api, mock_data_with_data_tag, mock_portfolio_metadata):
-        """Test that decorator raises PlaceholderArgumentException when filters exclude all systems."""
+        """Test that decorator raises ClickException when filters exclude all systems."""
         set_context(team=['NonExistentTeam'])
         mock_sigrid_api.get_portfolio_metadata.return_value = mock_portfolio_metadata
 
@@ -234,7 +235,7 @@ class TestPortfolioArguments:
         def mock_function():
             return mock_data_with_data_tag
 
-        with pytest.raises(PlaceholderArgumentException) as exc_info:
+        with pytest.raises(click.ClickException) as exc_info:
             mock_function()
 
         assert "No systems match the specified filters" in str(exc_info.value)
