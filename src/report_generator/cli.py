@@ -24,7 +24,6 @@ from dateutil.relativedelta import relativedelta
 from report_generator import presets
 from report_generator.generator import ReportGenerator, sigrid_api
 from report_generator.generator.data_models import portfolio_arguments_command
-from report_generator.generator.data_models.portfolio import portfolio_arguments
 
 DEFAULT_START_DATE = (date.today() + relativedelta(months=-1)).strftime('%Y-%m-%d')
 DEFAULT_END_DATE = date.today().strftime('%Y-%m-%d')
@@ -88,10 +87,6 @@ def run(_, debug, customer, system, token, layout, template, start, end, out_fil
     _configure_logging(debug)
     _configure_api(customer, system, token, (start, end), api_url)
     _record_usage_statistics(layout, customer)
-    
-    # Validate that filters don't exclude all systems
-    if layout not in presets.SYSTEM_LEVEL_PRESETS:
-        _validate_portfolio_has_systems()
 
     if template:
         ReportGenerator(template.name).generate(out_file)
@@ -121,38 +116,6 @@ def _record_usage_statistics(layout, customer):
             f"{MATOMO_URL}/matomo.php?idsite=5&rec=1&ca=1&e_c=reportgenerator&e_a={report_type}&e_n={customer}")
     except requests.exceptions.ConnectionError:
         logging.warning(f"Failed to connect to {MATOMO_URL} for registering usage statistics (not harmful).")
-
-
-def _validate_portfolio_has_systems():
-    """Validate that team/division filters don't exclude all systems."""
-    context = portfolio_arguments.get_portfolio_context()
-    
-    # If no filters are set, skip validation
-    if not context['team'] and not context['division']:
-        return
-    
-    # Import here to avoid circular dependency and ensure API is configured
-    from report_generator.generator.data_models import maintainability_portfolio_data
-    
-    # Get filtered system names
-    filtered_systems = maintainability_portfolio_data.system_names
-    
-    if not filtered_systems:
-        filter_desc = []
-        if context['team']:
-            filter_desc.append(f"--team: {', '.join(context['team'])}")
-        if context['division']:
-            filter_desc.append(f"--division: {', '.join(context['division'])}")
-        
-        error_msg = (
-            f"No systems match the specified filters.\n"
-            f"Filters applied:\n  {chr(10).join(filter_desc)}\n\n"
-            f"Please verify:\n"
-            f"  1. The team/division names match exactly as shown in Sigrid (case-sensitive)\n"
-            f"  2. At least one active system exists with these team/division assignments\n"
-            f"  3. The systems are not marked as development-only"
-        )
-        raise click.ClickException(error_msg)
 
 
 def _configure_logging(debug):

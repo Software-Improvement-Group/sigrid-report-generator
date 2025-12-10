@@ -50,13 +50,6 @@ class TestFormatter:
 class TestMaintainabilityPortfolioFormatting:
     """Test cases for maintainability portfolio text formatting with edge cases."""
 
-    def test_format_maintainability_statement_with_zero_systems(self):
-        """Test that formatting handles zero systems gracefully."""
-        from report_generator.generator.placeholders.text.maintainability_portfolio import _format_maintainability_statement
-        
-        result = _format_maintainability_statement(0, 0, "above 4 stars")
-        assert result == "There are no systems in the portfolio."
-
     def test_format_maintainability_statement_with_normal_values(self):
         """Test formatting with normal values."""
         from report_generator.generator.placeholders.text.maintainability_portfolio import _format_maintainability_statement
@@ -74,13 +67,6 @@ class TestMaintainabilityPortfolioFormatting:
         assert "is 1" in result
         assert "system" in result
         assert "scores" in result
-
-    def test_format_short_maintainability_statement_with_zero_systems(self):
-        """Test that short formatting handles zero systems gracefully."""
-        from report_generator.generator.placeholders.text.maintainability_portfolio import _format_short_maintainability_statement
-        
-        result = _format_short_maintainability_statement(0, 0, "above 4 stars")
-        assert result == "No systems"
 
     def test_format_short_maintainability_statement_with_normal_values(self):
         """Test short formatting with normal values."""

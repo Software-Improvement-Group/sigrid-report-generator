@@ -12,8 +12,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from typing import Optional
 from functools import wraps
+from typing import Optional
+
 import click
 
 from report_generator.generator import sigrid_api
@@ -81,9 +82,16 @@ def filter_data_on_portfolio_arguments(data_tag=None, system_tag=None):
             pmd = sigrid_api.get_portfolio_metadata()
 
             if data_tag:
-                return _with_data_tag(data=data, portfolio_metadata=pmd, data_tag=data_tag, system_tag=system_tag)
+                filtered_data = _with_data_tag(data=data, portfolio_metadata=pmd, data_tag=data_tag,
+                                               system_tag=system_tag)
+                if not filtered_data[data_tag]:
+                    raise PlaceholderArgumentException("No systems match the specified filters.", func.__name__)
             else:
-                return _without_data_tag(data=data, portfolio_metadata=pmd, system_tag=system_tag)
+                filtered_data = _without_data_tag(data=data, portfolio_metadata=pmd, system_tag=system_tag)
+                if not filtered_data:
+                    raise PlaceholderArgumentException("No systems match the specified filters.", func.__name__)
+
+            return filtered_data
         return wrapper
     return decorator
 

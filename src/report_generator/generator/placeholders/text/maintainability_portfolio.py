@@ -23,15 +23,11 @@ def _format_percentage(percentage):
 
 
 def _format_maintainability_statement(amount, number_of_systems, postfix):
-    if number_of_systems == 0:
-        return "There are no systems in the portfolio."
     perc = _format_percentage(int(100*amount/number_of_systems))
     return f"There {'are' if amount > 1 else 'is'} {amount} ({perc}) {'systems' if amount > 1 else 'system'} that {'score' if amount > 1 else 'scores'} {postfix}."
 
 
 def _format_short_maintainability_statement(amount, number_of_systems, postfix):
-    if number_of_systems == 0:
-        return "No systems"
     perc = _format_percentage(int(100*amount/number_of_systems))
     return f"About {amount} ({perc}) {'systems' if amount > 1 else 'system'} {'score' if amount > 1 else 'scores'} {postfix}"
 
