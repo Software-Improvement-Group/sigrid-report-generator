@@ -40,6 +40,7 @@ MAINT_WORST_METRIC_TEXT = {
 ARCH_BEST_METRIC_TEXT = {
     ArchMetric.CODE_BREAKDOWN              : "The system scores highly in Code Breakdown resulting in increased flexibility through well-defined components that enable efficient parallel work across functional or technical boundaries.",
     ArchMetric.COMPONENT_COUPLING          : "The system's high score in component coupling means components with fewer dependencies, allowing for greater evolution, and minimizing impact on the system or landscape during interface changes.",
+    ArchMetric.COMPONENT_ADJACENCY         : "The system's high score in Component Adjacency means components interact with few other components, making them easier to change in isolation and therefore more flexible.",
     ArchMetric.COMPONENT_COHESION          : "The system's high score in Component Cohesion means highly reusable and replaceable components with focused internal logic. This minimizes external dependencies and references from other external components.",
     ArchMetric.CODE_REUSE                  : "The system scores highly in Code Reuse, minimizing duplication within and between components. This reduces coupling, preventing implicit dependencies and enhancing system modularity.",
     ArchMetric.COMMUNICATION_CENTRALIZATION: "The system's high score Communication Centralization reflects high encapsulation. Centralized calls from a component enhance encapsulation, making it less sensitive to external changes and easier to update in response to such modifications.",
