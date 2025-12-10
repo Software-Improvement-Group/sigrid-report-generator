@@ -45,3 +45,34 @@ class TestFormatter:
         assert formatters.format_diff(1.0, 1.0) == "="
         assert formatters.format_diff(1.0, 1.2) == "+ 0.2"
         assert formatters.format_diff(1.2, 1.0) == "- 0.2"
+
+
+class TestMaintainabilityPortfolioFormatting:
+    """Test cases for maintainability portfolio text formatting with edge cases."""
+
+    def test_format_maintainability_statement_with_normal_values(self):
+        """Test formatting with normal values."""
+        from report_generator.generator.placeholders.text.maintainability_portfolio import _format_maintainability_statement
+        
+        result = _format_maintainability_statement(5, 10, "above 4 stars")
+        assert "5" in result
+        assert "(50%)" in result
+        assert "above 4 stars" in result
+
+    def test_format_maintainability_statement_singular(self):
+        """Test formatting uses singular form correctly."""
+        from report_generator.generator.placeholders.text.maintainability_portfolio import _format_maintainability_statement
+        
+        result = _format_maintainability_statement(1, 10, "above 4 stars")
+        assert "is 1" in result
+        assert "system" in result
+        assert "scores" in result
+
+    def test_format_short_maintainability_statement_with_normal_values(self):
+        """Test short formatting with normal values."""
+        from report_generator.generator.placeholders.text.maintainability_portfolio import _format_short_maintainability_statement
+        
+        result = _format_short_maintainability_statement(3, 10, "above 4 stars")
+        assert "About 3" in result
+        assert "(30%)" in result
+        assert "above 4 stars" in result
