@@ -156,8 +156,22 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
         fig, ax = plt.subplots(figsize=(width,height), dpi=200)
         subkeys = ["system_names", "volumes", "labels", "roots"]
         df = pd.DataFrame({k: fig_data[k] for k in subkeys})
+        
+        # Check if there's any data to display
+        if df.empty or not fig_data.get('system_names'):
+            logging.warning("No systems to display in treemap (empty dataframe), returning None")
+            plt.close(fig)
+            return None
+        
+        # Handle empty color_mapping by creating a default mapping
+        color_mapping = fig_data['color_mapping']
+        if not color_mapping:
+            # Create default color mapping for all systems if none exists
+            logging.warning(f"Empty color_mapping detected, creating default mapping for {len(fig_data['system_names'])} systems")
+            color_mapping = {name: cls.NA_STAR_COLOR for name in fig_data['system_names']}
+        
         tr.treemap(axes=ax, data=df, area="volumes", levels=["roots", "system_names"], top=True,
-                fill="system_names", cmap=fig_data['color_mapping'], labels="labels",
+                fill="system_names", cmap=color_mapping, labels="labels",
                 rectprops={'ec':'w', 'pad':(0,0,0,2)},
                 textprops={
                     'fontfamily':'sans-serif', 'reflow':True, 'place':'center', 'grow':True,

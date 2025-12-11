@@ -12,8 +12,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from typing import Optional
 from functools import wraps
+from typing import Optional
+
 import click
 
 from report_generator.generator import sigrid_api
@@ -51,6 +52,24 @@ def portfolio_arguments_command():
         return wrapper
     return decorator
 
+def _raise_no_systems_found_error():
+    """Raise an error when no systems match the specified team/division filters."""
+    filter_desc = []
+    if _team:
+        filter_desc.append(f"--team: {', '.join(_team)}")
+    if _division:
+        filter_desc.append(f"--division: {', '.join(_division)}")
+
+    error_msg = (
+        f"No systems match the specified filters.\n"
+        f"Filters applied:\n{chr(10).join(filter_desc)}\n\n"
+        f"Please verify:\n"
+        f"  1. The team/division names match exactly as shown in Sigrid (case-sensitive)\n"
+        f"  2. At least one active system exists with these team/division assignments\n"
+        f"  3. The systems are not marked as development-only"
+    )
+    raise click.ClickException(error_msg)
+
 
 def filter_data_on_portfolio_arguments(data_tag=None, system_tag=None):
     """
@@ -81,9 +100,16 @@ def filter_data_on_portfolio_arguments(data_tag=None, system_tag=None):
             pmd = sigrid_api.get_portfolio_metadata()
 
             if data_tag:
-                return _with_data_tag(data=data, portfolio_metadata=pmd, data_tag=data_tag, system_tag=system_tag)
+                filtered_data = _with_data_tag(data=data, portfolio_metadata=pmd, data_tag=data_tag,
+                                               system_tag=system_tag)
+                if not filtered_data[data_tag]:
+                    _raise_no_systems_found_error()
             else:
-                return _without_data_tag(data=data, portfolio_metadata=pmd, system_tag=system_tag)
+                filtered_data = _without_data_tag(data=data, portfolio_metadata=pmd, system_tag=system_tag)
+                if not filtered_data:
+                    _raise_no_systems_found_error()
+
+            return filtered_data
         return wrapper
     return decorator
 
