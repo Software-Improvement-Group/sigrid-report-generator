@@ -22,13 +22,13 @@ from report_generator.generator.report_utils.time_series import Period
 import numpy as np
 
 
-class ObjectiveStatus(Enum):
+class ProgressStatus(Enum):
     MET_AT_START = "MET_AT_START"
     MET_AT_END = "MET_AT_END"
     UNKNOWN = "UNKNOWN"
 
 
-class ObjectivesDataSigrid:
+class ProgressSigridData:
     def __init__(self):
         self.capabilities = ["SECURITY", "OPEN_SOURCE_HEALTH", "ARCHITECTURE_QUALITY", "MAINTAINABILITY"]
 
@@ -78,11 +78,11 @@ class ObjectivesDataSigrid:
         for system in evaluations:
             for objective_evaluation in system["objectives"]:
                 if capability is None or objective_evaluation["feature"] == capability:
-                    if self.determine_system_status(objective_evaluation, ObjectiveStatus.MET_AT_START) == True:
+                    if self.determine_system_status(objective_evaluation, ProgressStatus.MET_AT_START) == True:
                         with_status_at_start += 1
-                    if self.determine_system_status(objective_evaluation, ObjectiveStatus.MET_AT_END) == True:
+                    if self.determine_system_status(objective_evaluation, ProgressStatus.MET_AT_END) == True:
                         with_status_at_end += 1
-                    if self.determine_system_status(objective_evaluation, ObjectiveStatus.UNKNOWN) == True:
+                    if self.determine_system_status(objective_evaluation, ProgressStatus.UNKNOWN) == True:
                         with_status_unknown += 1
                     total += 1
         
@@ -98,11 +98,11 @@ class ObjectivesDataSigrid:
 
     @staticmethod
     def determine_system_status(objective_evaluation, status):
-        if status == ObjectiveStatus.MET_AT_START:
+        if status == ProgressStatus.MET_AT_START:
             return objective_evaluation["targetMetAtStart"] == "MET"
-        if status == ObjectiveStatus.MET_AT_END:
+        if status == ProgressStatus.MET_AT_END:
             return objective_evaluation["targetMetAtEnd"] == "MET"
-        if status == ObjectiveStatus.UNKNOWN:
+        if status == ProgressStatus.UNKNOWN:
             return (objective_evaluation["targetMetAtEnd"] == "UNKNOWN"
                    or (objective_evaluation["targetMetAtEnd"] != "MET"
                        and objective_evaluation["delta"] != "IMPROVING"
@@ -110,4 +110,4 @@ class ObjectivesDataSigrid:
                        and objective_evaluation["delta"] != "SIMILAR"))
 
 
-objectives_data_sigrid = ObjectivesDataSigrid()
+progress_sigrid_data = ProgressSigridData()

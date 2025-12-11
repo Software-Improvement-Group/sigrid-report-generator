@@ -19,7 +19,7 @@ from pptx.chart.data import CategoryChartData
 from pptx.presentation import Presentation
 
 from report_generator.generator import report_utils
-from report_generator.generator.data_models import maintainability_data, modernization_data, objectives_data, objectives_data_sigrid
+from report_generator.generator.data_models import maintainability_data, modernization_data, objectives_data, progress_sigrid_data
 from report_generator.generator.placeholders import Placeholder
 from report_generator.generator.placeholders.base import PlaceholderDocType
 
@@ -275,15 +275,15 @@ class ObjectivesCapabilitiesChartPlaceholder(_AbstractCategoryChartPlaceholder):
     
 
 class ObjectivesOverallChartSigridPlaceholder(_AbstractCategoryChartPlaceholder):
-    key = "OBJECTIVES_OVERALL_CHART_SIGRID"
+    key = "PROGRESS_TIME_CHART"
 
     @classmethod
     def labels(cls):
-        return [period.start.strftime("%m/%Y") for period in objectives_data_sigrid.periods]
+        return [period.start.strftime("%m/%Y") for period in progress_sigrid_data.periods]
 
     @classmethod
     def series(cls):
-        return objectives_data_sigrid.get_portfolio_trend_series(None)
+        return progress_sigrid_data.get_portfolio_trend_series(None)
 
     @classmethod
     def axis_label(cls):
@@ -291,15 +291,15 @@ class ObjectivesOverallChartSigridPlaceholder(_AbstractCategoryChartPlaceholder)
 
 
 class ObjectivesMaintainabilityChartSigridPlaceholder(_AbstractCategoryChartPlaceholder):
-    key = "OBJECTIVES_MAINTAINABILITY_CHART_SIGRID"
+    key = "PROGRESS_MAINTAINABILITY_TIME_CHART"
 
     @classmethod
     def labels(cls):
-        return [period.start.strftime("%m/%Y") for period in objectives_data_sigrid.periods]
+        return [period.start.strftime("%m/%Y") for period in progress_sigrid_data.periods]
 
     @classmethod
     def series(cls):
-        return objectives_data_sigrid.get_portfolio_trend_series("MAINTAINABILITY")
+        return progress_sigrid_data.get_portfolio_trend_series("MAINTAINABILITY")
 
     @classmethod
     def axis_label(cls):
@@ -307,15 +307,15 @@ class ObjectivesMaintainabilityChartSigridPlaceholder(_AbstractCategoryChartPlac
 
 
 class ObjectivesArchitectureChartSigridPlaceholder(_AbstractCategoryChartPlaceholder):
-    key = "OBJECTIVES_ARCHITECTURE_CHART_SIGRID"
+    key = "PROGRESS_ARCHITECTURE_TIME_CHART"
 
     @classmethod
     def labels(cls):
-        return [period.start.strftime("%m/%Y") for period in objectives_data_sigrid.periods]
+        return [period.start.strftime("%m/%Y") for period in progress_sigrid_data.periods]
 
     @classmethod
     def series(cls):
-        return objectives_data_sigrid.get_portfolio_trend_series("ARCHITECTURE_QUALITY")
+        return progress_sigrid_data.get_portfolio_trend_series("ARCHITECTURE_QUALITY")
 
     @classmethod
     def axis_label(cls):
@@ -323,15 +323,15 @@ class ObjectivesArchitectureChartSigridPlaceholder(_AbstractCategoryChartPlaceho
 
 
 class ObjectivesSecurityChartSigridPlaceholder(_AbstractCategoryChartPlaceholder):
-    key = "OBJECTIVES_SECURITY_CHART_SIGRID"
+    key = "PROGRESS_SECURITY_TIME_CHART"
 
     @classmethod
     def labels(cls):
-        return [period.start.strftime("%m/%Y") for period in objectives_data_sigrid.periods]
+        return [period.start.strftime("%m/%Y") for period in progress_sigrid_data.periods]
 
     @classmethod
     def series(cls):
-        return objectives_data_sigrid.get_portfolio_trend_series("SECURITY")
+        return progress_sigrid_data.get_portfolio_trend_series("SECURITY")
 
     @classmethod
     def axis_label(cls):
@@ -339,15 +339,15 @@ class ObjectivesSecurityChartSigridPlaceholder(_AbstractCategoryChartPlaceholder
 
 
 class ObjectivesOpenSourceHealthChartSigridPlaceholder(_AbstractCategoryChartPlaceholder):
-    key = "OBJECTIVES_OSH_CHART_SIGRID"
+    key = "PROGRESS_OSH_TIME_CHART"
 
     @classmethod
     def labels(cls):
-        return [period.start.strftime("%m/%Y") for period in objectives_data_sigrid.periods]
+        return [period.start.strftime("%m/%Y") for period in progress_sigrid_data.periods]
 
     @classmethod
     def series(cls):
-        return objectives_data_sigrid.get_portfolio_trend_series("OPEN_SOURCE_HEALTH")
+        return progress_sigrid_data.get_portfolio_trend_series("OPEN_SOURCE_HEALTH")
 
     @classmethod
     def axis_label(cls):
@@ -355,15 +355,15 @@ class ObjectivesOpenSourceHealthChartSigridPlaceholder(_AbstractCategoryChartPla
     
 
 class ObjectivesCapabilitiesChartSigridPlaceholder(_AbstractCategoryChartPlaceholder):
-    key = "OBJECTIVES_CAPABILITY_CHART_SIGRID"
+    key = "PROGRESS_CAPABILITY_CHART"
 
     @classmethod
     def labels(cls):
-        return [capability.title().replace("_", " ") for capability in objectives_data_sigrid.capabilities]
+        return [capability.title().replace("_", " ") for capability in progress_sigrid_data.capabilities]
 
     @classmethod
     def series(cls):
-        return objectives_data_sigrid.get_capability_status_series()
+        return progress_sigrid_data.get_capability_status_series()
 
     @classmethod
     def axis_label(cls):
@@ -371,7 +371,7 @@ class ObjectivesCapabilitiesChartSigridPlaceholder(_AbstractCategoryChartPlaceho
 
 
 class ObjectivesStatusChartSigridPlaceholder(_AbstractCategoryChartPlaceholder):
-    key = "OBJECTIVES_STATUS_CHART_SIGRID"
+    key = "PROGRESS_STATUS_CHART"
 
     @classmethod
     def labels(cls):
@@ -379,7 +379,7 @@ class ObjectivesStatusChartSigridPlaceholder(_AbstractCategoryChartPlaceholder):
 
     @classmethod
     def series(cls):
-        return objectives_data_sigrid.get_portfolio_status_series()
+        return progress_sigrid_data.get_portfolio_status_series()
 
     @classmethod
     def axis_label(cls):

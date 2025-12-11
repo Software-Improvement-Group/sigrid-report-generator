@@ -106,22 +106,29 @@ Use these placeholders anywhere in your PowerPoint/Word template. `report-genera
 
 These placeholders, generally placed off-screen, only serve to identify a slide on which a specific chart is placed. If you want to use this chart, be sure to copy both the chart and the placeholder from a standard template and then modify its layout BUT NOT its structure or chart type.
 
-| Key                                | Supports   | Description                                                                                                |
-|:-----------------------------------|:-----------|:-----------------------------------------------------------------------------------------------------------|
-| `GALAXY_SLIDE`                     | PPTX       | Traditional SIG benchmark galaxy chart.                                                                    |
-| `MODERNIZATION_SCATTER_PLOT_CHART` | PPTX       |                                                                                                            |
-| `OBJECTIVES_ARCHITECTURE_CHART`    | PPTX       |                                                                                                            |
-| `OBJECTIVES_CAPABILITY_CHART`      | PPTX       |                                                                                                            |
-| `OBJECTIVES_MAINTAINABILITY_CHART` | PPTX       |                                                                                                            |
-| `OBJECTIVES_OSH_CHART`             | PPTX       |                                                                                                            |
-| `OBJECTIVES_OVERALL_CHART`         | PPTX       |                                                                                                            |
-| `OBJECTIVES_SECURITY_CHART`        | PPTX       |                                                                                                            |
-| `OBJECTIVES_STATUS_CHART`          | PPTX       |                                                                                                            |
-| `OBJECTIVES_TEAM_CHART`            | PPTX       |                                                                                                            |
-| `OSH_SLIDE`                        | PPTX       | Traditional SIG OSH system-level slide, with risk bar charts for all 6 OSH metrics.                        |
-| `TECHNICAL_DEBT_SYSTEMS_CHART`     | PPTX       |                                                                                                            |
-| `TECHNOLOGY_CHART`                 | PPTX       | Chart with volume (in % of person months of code) per technology.                                          |
-| `TEST_CODE_RATIO_CHART`            | PPTX       | Pie chart with volume and % of test code per technology, colored in line with the SIG test code benchmark. |
+| Key                                   | Supports   | Description                                                                                                |
+|:--------------------------------------|:-----------|:-----------------------------------------------------------------------------------------------------------|
+| `GALAXY_SLIDE`                        | PPTX       | Traditional SIG benchmark galaxy chart.                                                                    |
+| `MODERNIZATION_SCATTER_PLOT_CHART`    | PPTX       |                                                                                                            |
+| `OBJECTIVES_ARCHITECTURE_CHART`       | PPTX       |                                                                                                            |
+| `OBJECTIVES_CAPABILITY_CHART`         | PPTX       |                                                                                                            |
+| `OBJECTIVES_MAINTAINABILITY_CHART`    | PPTX       |                                                                                                            |
+| `OBJECTIVES_OSH_CHART`                | PPTX       |                                                                                                            |
+| `OBJECTIVES_OVERALL_CHART`            | PPTX       |                                                                                                            |
+| `OBJECTIVES_SECURITY_CHART`           | PPTX       |                                                                                                            |
+| `OBJECTIVES_STATUS_CHART`             | PPTX       |                                                                                                            |
+| `OBJECTIVES_TEAM_CHART`               | PPTX       |                                                                                                            |
+| `OSH_SLIDE`                           | PPTX       | Traditional SIG OSH system-level slide, with risk bar charts for all 6 OSH metrics.                        |
+| `PROGRESS_ARCHITECTURE_TIME_CHART`    | PPTX       | Architecture progress per month for the past year.                                                         |
+| `PROGRESS_CAPABILITY_CHART`           | PPTX       | Progress per capability for the chosen period, identical to Progress view in Sigrid.                       |
+| `PROGRESS_MAINTAINABILITY_TIME_CHART` | PPTX       | Maintanability progress per month for the past year.                                                       |
+| `PROGRESS_OSH_TIME_CHART`             | PPTX       | OSH progress per month for the past year.                                                                  |
+| `PROGRESS_SECURITY_TIME_CHART`        | PPTX       | Security progress per month for the past year.                                                             |
+| `PROGRESS_STATUS_CHART`               | PPTX       | Overall progress for the chosen period, identical to Progress view in Sigrid.                              |
+| `PROGRESS_TIME_CHART`                 | PPTX       | Overall progress per month for the past year.                                                              |
+| `TECHNICAL_DEBT_SYSTEMS_CHART`        | PPTX       |                                                                                                            |
+| `TECHNOLOGY_CHART`                    | PPTX       | Chart with volume (in % of person months of code) per technology.                                          |
+| `TEST_CODE_RATIO_CHART`               | PPTX       | Pie chart with volume and % of test code per technology, colored in line with the SIG test code benchmark. |
 
 ## Dynamic Table Placeholders
 
