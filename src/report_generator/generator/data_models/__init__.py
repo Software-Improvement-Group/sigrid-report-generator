@@ -27,4 +27,5 @@ from report_generator.generator.data_models.portfolio.security_dashboard_resolut
 from report_generator.generator.data_models.system.system_metadata import system_metadata
 from report_generator.generator.data_models.system.security import security_data
 from report_generator.generator.data_models.portfolio.security_portfolio import security_ratings_portfolio_data
+from report_generator.generator.data_models.portfolio.progress_sigrid import progress_sigrid_data
 from report_generator.generator.data_models.portfolio.portfolio_arguments import portfolio_arguments_command, get_portfolio_context
