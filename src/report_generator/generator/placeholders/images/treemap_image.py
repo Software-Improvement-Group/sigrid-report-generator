@@ -46,7 +46,7 @@ class _AbstractTreemapPlaceholder(_AbstractParameterizedImagePlaceholder, ABC):
         return max(0, min(1, (val - min_val) / (max_val - min_val)))
 
 
-class AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
+class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
     grouping_processors: ClassVar[Dict[str, Callable]] = {}
 
     @staticmethod
@@ -220,7 +220,7 @@ class AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
         return fig
 
 
-class EndDatePortfolioTreemapPlaceholder(AbstractPortfolioTreemapPlaceholder, ABC):
+class EndDatePortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder, ABC):
     @classmethod
     def create_end_date_portfolio_treemap(cls, grouping, rating_func, rating_rounding_func, determine_color_function):
         portfolio, treemap = cls.prepare_portfolio_and_treemap(grouping)
@@ -236,7 +236,7 @@ class EndDatePortfolioTreemapPlaceholder(AbstractPortfolioTreemapPlaceholder, AB
         return cls.create_treemap_figure_data(treemap)
 
 
-class PeriodPortfolioTreemapPlaceholder(AbstractPortfolioTreemapPlaceholder, ABC):
+class PeriodPortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder, ABC):
     @staticmethod
     def _calculate_differences(portfolio, metric, system_names):
         differences = {}
