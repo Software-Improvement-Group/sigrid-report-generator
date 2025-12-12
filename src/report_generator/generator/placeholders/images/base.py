@@ -27,6 +27,7 @@ import logging
 import matplotlib.pyplot as plt
 
 class _AbstractImage:
+    __doc_type__ = PlaceholderDocType.IMAGE
     BUNDLE_COLOR = f"#{report_utils.pptx.SIG_GREY_COLOR}"
     NA_STAR_COLOR = f"#{report_utils.pptx.NA_STAR_COLOR}"
 
@@ -54,7 +55,6 @@ class _AbstractImage:
         plt.close('all')
 
 class _AbstractImagePlaceholder(Placeholder, _AbstractImage, ABC):
-    __doc_type__ = PlaceholderDocType.IMAGE
     @classmethod
     def resolve_pptx(cls, presentation: Presentation, key: str, value_cb: Callable):
         shapes = report_utils.pptx.find_shapes(presentation, key)
@@ -66,7 +66,6 @@ class _AbstractImagePlaceholder(Placeholder, _AbstractImage, ABC):
             cls.create_and_add_image_to_slide(shape, fig)
     
 class _AbstractParameterizedImagePlaceholder(ParameterizedPlaceholder, _AbstractImage, ABC):
-    __doc_type__ = PlaceholderDocType.IMAGE
     @classmethod
     def resolve_pptx(cls, presentation: Presentation, key: str, value_cb: Callable):
         shapes = report_utils.pptx.find_shapes(presentation, key)

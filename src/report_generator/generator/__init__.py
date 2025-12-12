@@ -15,8 +15,17 @@
 from . import data_models, placeholders, report_utils, sigrid_api, utils
 from .report_generator import ReportGenerator
 
-from .utils.utils import compose_options
 from .data_models import data_model_arguments
+from functools import reduce
+
+def compose_options(*decorators):
+    """
+    Composes multiple decorators into a single decorator.
+    Applied in reverse order so the first in the list is the outermost wrapper.
+    """
+    def composition(func):
+        return reduce(lambda f, dec: dec(f), reversed(decorators), func)
+    return composition
 
 _generator_arguments_aggregate = [
     data_model_arguments

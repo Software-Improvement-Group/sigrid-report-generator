@@ -19,6 +19,7 @@ from report_generator.generator import report_utils
 from report_generator.generator.formatters import formatters
 from report_generator.generator.data_models import maintainability_portfolio_data, security_ratings_portfolio_data, architecture_portfolio_data, osh_ratings_portfolio_data
 from report_generator.generator.data_models import maintainability_delta_quality_new_code, maintainability_delta_quality_changed_code, maintainability_delta_quality_new_and_changed_code
+from report_generator.generator.data_models.portfolio import portfolio_arguments
 from report_generator.generator.placeholders.images.base import _AbstractParameterizedImagePlaceholder
 
 import pandas as pd
@@ -79,20 +80,20 @@ class AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
     @staticmethod
     def _process_lifecycle_grouping(metadata):
         if metadata['lifecyclePhase']:
-            return report_utils.common.METADATA_LIFECYCLE_MAPPING[metadata['lifecyclePhase']]
+            return portfolio_arguments.METADATA_LIFECYCLE_MAPPING[metadata['lifecyclePhase']]
         return "Unset"
     
 
     @staticmethod
     def _process_business_criticality_grouping(metadata):
         if metadata['businessCriticality']:
-            return report_utils.common.METADATA_BUSINESS_CRITICALITY_MAPPING[metadata['businessCriticality']]
+            return portfolio_arguments.METADATA_BUSINESS_CRITICALITY_MAPPING[metadata['businessCriticality']]
         return "Unset"
     
     @staticmethod
     def _process_deployment_grouping(metadata):
         if metadata['deploymentType']:
-            return report_utils.common.METADATA_DEPLOYMENT_MAPPING[metadata['deploymentType']]
+            return portfolio_arguments.METADATA_DEPLOYMENT_MAPPING[metadata['deploymentType']]
         return "Unset"
 
     grouping_processors = {

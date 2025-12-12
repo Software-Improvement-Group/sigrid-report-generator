@@ -17,7 +17,19 @@ from functools import wraps
 import click
 
 from report_generator.generator import sigrid_api
-from report_generator.generator.report_utils import common
+
+METADATA_LIFECYCLE_MAPPING = {
+    "INITIAL" : "Initial development",
+    "EVOLUTION" : "Evolution",
+    "MAINTENANCE" : "Maintenance",
+    "EOL" : "End-of-life",
+    "DECOMMISSIONED" : "Decommissioned"
+}
+METADATA_DEPLOYMENT_MAPPING = {x: x.lower().capitalize().replace('_','-') for x in ["PUBLIC_FACING", "CONNECTED", "INTERNAL", "PHYSICAL"]}
+METADATA_BUSINESS_CRITICALITY_MAPPING = {x: x.lower().capitalize() for x in ["CRITICAL", "HIGH", "MEDIUM", "LOW"]}
+METADATA_DISTRIBUTION_MAPPING = {x: x.lower().capitalize().replace('_', ' ') for x in ["NOT_DISTRIBUTED", "NETWORK_SERVICE", "DISTRIBUTED"]}
+METADATA_APPLICATION_TYPE_MAPPING = {x: x.lower().capitalize().replace('_', ' ') for x in ["PROCESS_CONTROLLER","TRANSACTION_PROCESSING","RESOURCE_MANAGEMENT","CASE_MANAGEMENT","DESIGN_ENGINEERING_DEVELOPMENT","ANALYTICAL","AUTHENTICATION_AND_PORTALS","COMMUNICATION","FUNCTIONAL_APPLICATIONS","KNOWLEDGE_AND_DOCUMENT_MANAGEMENT","PERSONAL_PRODUCTIVITY_APPLICATIONS"]}
+METADATA_TARGET_INDUSTRY_MAPPING = {"ICD0500":"Oil & Gas","ICD1750":"Industrial Metals & Mining","ICD2350":"Construction & Materials","ICD2710":"Aerospace & Defense","ICD2730":"Electronic & Electrical Equipment","ICD2750":"Industrial Engineering","ICD2770":"Industrial Transportation","ICD2790":"Support Services","ICD2797":"Industrial Suppliers","ICD3350":"Automobiles & Part","ICD3500":"Food & Beverage","ICD3700":"Personal & Household Goods","ICD4500":"Health Care","ICD5300":"Retail","ICD5500":"Media","ICD5700":"Travel & Leisure","ICD6500":"Telecommunications","ICD7500":"Energy","ICD7577":"Water","ICD8300":"Banking","ICD8500":"Insurance","ICD8630":"Real Estate Investment & Services","ICD8700":"Financial Services","ICD9530":"Software & Computer Services","ICD9570":"Technology hardware & equipment","SIG2200":"Legal Services","SIG1200":"Research","SIG1000":"Government","SIG1100":"Education"}
 
 _team: Optional[list[str]] = None
 _division: Optional[list[str]] = None
@@ -56,33 +68,33 @@ def set_context(
         _division = list(division)
     
     if lifecycle:
-        _lifecycle = process_values(values=lifecycle, mapping=common.METADATA_LIFECYCLE_MAPPING, field="Lifecycle")
+        _lifecycle = process_values(values=lifecycle, mapping=METADATA_LIFECYCLE_MAPPING, field="Lifecycle")
     
     if deployment:
-        _deployment = process_values(values=deployment, mapping=common.METADATA_DEPLOYMENT_MAPPING, field="Deployment")
+        _deployment = process_values(values=deployment, mapping=METADATA_DEPLOYMENT_MAPPING, field="Deployment")
     
     if business_criticality:
-        _business_crititality = process_values(values=business_criticality, mapping=common.METADATA_BUSINESS_CRITICALITY_MAPPING, field="Business criticality")
+        _business_crititality = process_values(values=business_criticality, mapping=METADATA_BUSINESS_CRITICALITY_MAPPING, field="Business criticality")
     
     if distribution:
-        _distribution = process_values(values=distribution, mapping=common.METADATA_DISTRIBUTION_MAPPING, field="Distribution")
+        _distribution = process_values(values=distribution, mapping=METADATA_DISTRIBUTION_MAPPING, field="Distribution")
 
     if application_type:
-        _application_type = process_values(values=application_type, mapping=common.METADATA_APPLICATION_TYPE_MAPPING, field="Application type")
+        _application_type = process_values(values=application_type, mapping=METADATA_APPLICATION_TYPE_MAPPING, field="Application type")
 
     if target_industry:
-        _target_industry = process_values(values=target_industry, mapping=common.METADATA_TARGET_INDUSTRY_MAPPING, field="Target industry")
+        _target_industry = process_values(values=target_industry, mapping=METADATA_TARGET_INDUSTRY_MAPPING, field="Target industry")
 
 def portfolio_arguments_command():
     def decorator(func):
         @click.option('--team', multiple=True, help="[filter] Team name filter, as displayed in Sigrid (multiple values need separate --team flags, ie.: --team aap --team noot)")
         @click.option('--division', multiple=True, help="[filter] Division name filter, as displayed in Sigrid (multiple values need separate --division flags, ie.: --division aap --division noot)")
-        @click.option('--lifecycle', multiple=True, help=f"[filter] Lifecycle filter, as displayed in Sigrid (multiple values need separate --lifecycle flags, ie.: --lifecycle initial --lifecycle evolution). Allowed values: {', '.join([x.lower() for x in common.METADATA_LIFECYCLE_MAPPING.keys()])}")
-        @click.option('--deployment', multiple=True, help=f"[filter] Deployment filter, as displayed in Sigrid (multiple values need separate --deployment flags, ie.: --deployment public-facing --deployment connected). Allowed values: {', '.join([x.lower().replace('_','-') for x in common.METADATA_DEPLOYMENT_MAPPING.keys()])}")
-        @click.option('--business-criticality', multiple=True, help=f"[filter] Business criticality filter, as displayed in Sigrid (multiple values need separate --business-criticality flags, ie.: --business-criticality critical --business-criticality high). Allowed values: {', '.join([x.lower() for x in common.METADATA_BUSINESS_CRITICALITY_MAPPING.keys()])}")
-        @click.option('--distribution', multiple=True, help=f"[filter] Distribution filter, as displayed in Sigrid (multiple values need separate --distribution flags, ie.: --distribution not-distributed --distribution connected). Allowed values: {', '.join([x.lower().replace('_', '-') for x in common.METADATA_DISTRIBUTION_MAPPING.keys()])}")
-        @click.option('--application-type', multiple=True, help=f"[filter] Application type filter, as displayed in Sigrid (multiple values need separate --application-type flags, ie.: --application-type functional-applications --application-type case-management). Allowed values: {', '.join([x.lower().replace('_', '-') for x in common.METADATA_APPLICATION_TYPE_MAPPING.keys()])}")
-        @click.option('--target-industry', multiple=True, help=f"[filter] Target industry filter, as displayed in Sigrid (multiple values need separate --target-industry flags, ie.: --target-industry ICD0500 --target-industry SIG1100). Allowed values: {', '.join([x.lower() for x in common.METADATA_TARGET_INDUSTRY_MAPPING.keys()])}")
+        @click.option('--lifecycle', multiple=True, help=f"[filter] Lifecycle filter, as displayed in Sigrid (multiple values need separate --lifecycle flags, ie.: --lifecycle initial --lifecycle evolution). Allowed values: {', '.join([x.lower() for x in METADATA_LIFECYCLE_MAPPING.keys()])}")
+        @click.option('--deployment', multiple=True, help=f"[filter] Deployment filter, as displayed in Sigrid (multiple values need separate --deployment flags, ie.: --deployment public-facing --deployment connected). Allowed values: {', '.join([x.lower().replace('_','-') for x in METADATA_DEPLOYMENT_MAPPING.keys()])}")
+        @click.option('--business-criticality', multiple=True, help=f"[filter] Business criticality filter, as displayed in Sigrid (multiple values need separate --business-criticality flags, ie.: --business-criticality critical --business-criticality high). Allowed values: {', '.join([x.lower() for x in METADATA_BUSINESS_CRITICALITY_MAPPING.keys()])}")
+        @click.option('--distribution', multiple=True, help=f"[filter] Distribution filter, as displayed in Sigrid (multiple values need separate --distribution flags, ie.: --distribution not-distributed --distribution connected). Allowed values: {', '.join([x.lower().replace('_', '-') for x in METADATA_DISTRIBUTION_MAPPING.keys()])}")
+        @click.option('--application-type', multiple=True, help=f"[filter] Application type filter, as displayed in Sigrid (multiple values need separate --application-type flags, ie.: --application-type functional-applications --application-type case-management). Allowed values: {', '.join([x.lower().replace('_', '-') for x in METADATA_APPLICATION_TYPE_MAPPING.keys()])}")
+        @click.option('--target-industry', multiple=True, help=f"[filter] Target industry filter, as displayed in Sigrid (multiple values need separate --target-industry flags, ie.: --target-industry ICD0500 --target-industry SIG1100). Allowed values: {', '.join([x.lower() for x in METADATA_TARGET_INDUSTRY_MAPPING.keys()])}")
         @wraps(func)
         def wrapper(team, division, lifecycle, deployment, business_criticality, distribution, application_type, target_industry, *args, **kwargs):
             set_context(team=team, division=division, lifecycle=lifecycle, deployment=deployment, business_criticality=business_criticality,

@@ -29,7 +29,16 @@ from report_generator.generator.data_models.system.security import security_data
 from report_generator.generator.data_models.portfolio.security_portfolio import security_ratings_portfolio_data
 from report_generator.generator.data_models.portfolio.portfolio_arguments import portfolio_arguments_command
 
-from report_generator.generator.utils.utils import compose_options
+from functools import reduce
+
+def compose_options(*decorators):
+    """
+    Composes multiple decorators into a single decorator.
+    Applied in reverse order so the first in the list is the outermost wrapper.
+    """
+    def composition(func):
+        return reduce(lambda f, dec: dec(f), reversed(decorators), func)
+    return composition
 
 _data_model_arguments_decorator = [
     portfolio_arguments_command()

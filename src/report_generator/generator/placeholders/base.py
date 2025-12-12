@@ -46,6 +46,18 @@ class PlaceholderDocType(Enum):
 
 @dataclass
 class Placeholder(ABC):
+    """
+    Abstract base class representing a dynamic element (placeholder) in a report.
+
+    A Placeholder maps a specific key (string identifier) in a document template
+    to a dynamically calculated value. It handles the logic of resolving that value
+    into specific document formats (e.g., PowerPoint, Word) based on the ReportType.
+
+    Attributes:
+        key (str): The identifier string found in the report template (e.g., 'PROJECT_NAME').
+        __doc_type__ (PlaceholderDocType): The type of content this placeholder produces.
+                                           Defaults to PlaceholderDocType.OTHER.
+    """
     key: str
     __doc_type__: PlaceholderDocType = PlaceholderDocType.OTHER
     __placeholder__ = True
@@ -88,11 +100,38 @@ class Placeholder(ABC):
 
 
 class ParameterizedPlaceholder(Placeholder, ABC):
+    """
+    A specialized Placeholder that expands into multiple values based on a list of parameters.
+
+    Instead of a single key, this class iterates over `allowed_parameters` to generate
+    multiple dynamic keys. It expects the `key` attribute to contain a formatting marker
+    (specifically `{parameter}`) which is replaced during resolution.
+
+    Attributes:
+        allowed_parameters (ParameterList): A list of values (str, int, or Enum) used to
+                                            generate unique keys and calculate values.
+    """
     __parameterized_placeholder__ = True
     allowed_parameters: ParameterList
 
     @classmethod
     def resolve(cls, report: Report) -> None:
+        """
+        Iterates through allowed parameters to resolve multiple instances of this placeholder.
+
+        For every parameter in `allowed_parameters`, this method:
+        1. Generates a specific key by replacing '{parameter}' in `cls.key`.
+        2. Creates a lambda function to pass the specific parameter to `cls.value`.
+        3. Calls the report-specific resolution method (e.g., `resolve_pptx`).
+
+        The constructed `value_p` callable accepts an `optional_parameter`. This allows the
+        underlying report generator (e.g., the PowerPoint resolver) to pass additional
+        context or configuration—such as chart filters or formatting options—back into
+        `cls.value` during execution.
+        
+        Args:
+            report (Report): The report instance where the placeholders should be resolved.
+        """
         resolve_method_name = cls._determine_resolve_method(report.type)
 
         if not resolve_method_name:
