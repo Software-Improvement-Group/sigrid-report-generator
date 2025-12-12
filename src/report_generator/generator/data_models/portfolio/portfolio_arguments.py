@@ -112,6 +112,18 @@ def _raise_no_systems_found_error():
         filter_desc.append(f"--team: {', '.join(_team)}")
     if _division:
         filter_desc.append(f"--division: {', '.join(_division)}")
+    if _lifecycle:
+        filter_desc.append(f"--lifecycle: {', '.join(_lifecycle)}")
+    if _deployment:
+        filter_desc.append(f"--deployment: {', '.join(_deployment)}")
+    if _business_crititality:
+        filter_desc.append(f"--business-criticality: {', '.join(_business_crititality)}")
+    if _distribution:
+        filter_desc.append(f"--distribution: {', '.join(_distribution)}")
+    if _application_type:
+        filter_desc.append(f"--application-type: {', '.join(_application_type)}")
+    if _target_industry:
+        filter_desc.append(f"--target-industry: {', '.join(_target_industry)}")
 
     error_msg = (
         f"No systems match the specified filters.\n"
