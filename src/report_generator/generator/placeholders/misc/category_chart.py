@@ -19,7 +19,7 @@ from pptx.chart.data import CategoryChartData
 from pptx.presentation import Presentation
 
 from report_generator.generator import report_utils
-from report_generator.generator.data_models import maintainability_data, modernization_data, objectives_data
+from report_generator.generator.data_models import maintainability_data, modernization_data, objectives_data, progress_sigrid_data
 from report_generator.generator.placeholders import Placeholder
 from report_generator.generator.placeholders.base import PlaceholderDocType
 
@@ -272,3 +272,116 @@ class ObjectivesCapabilitiesChartPlaceholder(_AbstractCategoryChartPlaceholder):
     @classmethod
     def axis_label(cls):
         return "Percentage of portfolio"
+    
+
+class ObjectivesOverallChartSigridPlaceholder(_AbstractCategoryChartPlaceholder):
+    key = "PROGRESS_TIME_CHART"
+
+    @classmethod
+    def labels(cls):
+        return [period.start.strftime("%m/%Y") for period in progress_sigrid_data.periods]
+
+    @classmethod
+    def series(cls):
+        return progress_sigrid_data.get_portfolio_trend_series(None)
+
+    @classmethod
+    def axis_label(cls):
+        return "Percentage of portfolio"
+
+
+class ObjectivesMaintainabilityChartSigridPlaceholder(_AbstractCategoryChartPlaceholder):
+    key = "PROGRESS_MAINTAINABILITY_TIME_CHART"
+
+    @classmethod
+    def labels(cls):
+        return [period.start.strftime("%m/%Y") for period in progress_sigrid_data.periods]
+
+    @classmethod
+    def series(cls):
+        return progress_sigrid_data.get_portfolio_trend_series("MAINTAINABILITY")
+
+    @classmethod
+    def axis_label(cls):
+        return "Percentage of portfolio"
+
+
+class ObjectivesArchitectureChartSigridPlaceholder(_AbstractCategoryChartPlaceholder):
+    key = "PROGRESS_ARCHITECTURE_TIME_CHART"
+
+    @classmethod
+    def labels(cls):
+        return [period.start.strftime("%m/%Y") for period in progress_sigrid_data.periods]
+
+    @classmethod
+    def series(cls):
+        return progress_sigrid_data.get_portfolio_trend_series("ARCHITECTURE_QUALITY")
+
+    @classmethod
+    def axis_label(cls):
+        return "Percentage of portfolio"
+
+
+class ObjectivesSecurityChartSigridPlaceholder(_AbstractCategoryChartPlaceholder):
+    key = "PROGRESS_SECURITY_TIME_CHART"
+
+    @classmethod
+    def labels(cls):
+        return [period.start.strftime("%m/%Y") for period in progress_sigrid_data.periods]
+
+    @classmethod
+    def series(cls):
+        return progress_sigrid_data.get_portfolio_trend_series("SECURITY")
+
+    @classmethod
+    def axis_label(cls):
+        return "Percentage of portfolio"
+
+
+class ObjectivesOpenSourceHealthChartSigridPlaceholder(_AbstractCategoryChartPlaceholder):
+    key = "PROGRESS_OSH_TIME_CHART"
+
+    @classmethod
+    def labels(cls):
+        return [period.start.strftime("%m/%Y") for period in progress_sigrid_data.periods]
+
+    @classmethod
+    def series(cls):
+        return progress_sigrid_data.get_portfolio_trend_series("OPEN_SOURCE_HEALTH")
+
+    @classmethod
+    def axis_label(cls):
+        return "Percentage of portfolio"
+    
+
+class ObjectivesCapabilitiesChartSigridPlaceholder(_AbstractCategoryChartPlaceholder):
+    key = "PROGRESS_CAPABILITY_CHART"
+
+    @classmethod
+    def labels(cls):
+        return [capability.title().replace("_", " ") for capability in progress_sigrid_data.capabilities]
+
+    @classmethod
+    def series(cls):
+        return progress_sigrid_data.get_capability_status_series()
+
+    @classmethod
+    def axis_label(cls):
+        return "Percentage of portfolio"
+
+
+class ObjectivesStatusChartSigridPlaceholder(_AbstractCategoryChartPlaceholder):
+    key = "PROGRESS_STATUS_CHART"
+
+    @classmethod
+    def labels(cls):
+        return ["Overall"]
+
+    @classmethod
+    def series(cls):
+        return progress_sigrid_data.get_portfolio_status_series()
+
+    @classmethod
+    def axis_label(cls):
+        return "Percentage of portfolio"
+
