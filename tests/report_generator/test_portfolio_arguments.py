@@ -19,7 +19,6 @@ import click
 from report_generator.generator.data_models.portfolio import portfolio_arguments
 from report_generator.generator.data_models.portfolio.portfolio_arguments import (
     set_context,
-    get_portfolio_context,
     filter_data_on_portfolio_arguments,
     PlaceholderArgumentException,
     _include,
@@ -103,15 +102,6 @@ class TestPortfolioArguments:
 
         assert portfolio_arguments._team == ['TeamA', 'TeamB']
         assert portfolio_arguments._division == ['DivisionX']
-
-    def test_get_portfolio_context(self):
-        """Test that get_portfolio_context returns the current filter context."""
-        set_context(team=['TeamA'], division=['DivisionY'])
-
-        context = get_portfolio_context()
-
-        assert context['team'] == ['TeamA']
-        assert context['division'] == ['DivisionY']
 
     # Filter Checking Tests
 
