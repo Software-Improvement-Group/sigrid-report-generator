@@ -58,3 +58,68 @@ class TestSigridAPI:
         sigrid_api.reset_context()
         assert sigrid_api._customer is None
         assert sigrid_api._system is None
+
+    def test_get_period_raises_exception_when_not_set(self):
+        sigrid_api.reset_context()
+        
+        with pytest.raises(Exception) as excinfo:
+            sigrid_api.get_period()
+        assert "Reporting period not defined" in str(excinfo.value)
+
+    def test_get_period_returns_set_period(self):
+        sigrid_api.reset_context()
+        sigrid_api.set_context(period=("2024-01-01", "2024-12-31"))
+        
+        start, end = sigrid_api.get_period()
+        
+        assert start == "2024-01-01"
+        assert end == "2024-12-31"
+        
+        sigrid_api.reset_context()
+
+    def test_check_context_raises_error_when_bearer_token_missing(self):
+        sigrid_api.reset_context()
+        sigrid_api._bearer_token = None
+        sigrid_api._customer = "test"
+        sigrid_api._rest_url = "http://test"
+        
+        with pytest.raises(ValueError) as excinfo:
+            sigrid_api._check_context()
+        assert "_bearer_token" in str(excinfo.value)
+        
+        sigrid_api.reset_context()
+
+    def test_check_context_raises_error_when_customer_missing(self):
+        sigrid_api.reset_context()
+        sigrid_api._bearer_token = "test-token"
+        sigrid_api._customer = None
+        sigrid_api._rest_url = "http://test"
+        
+        with pytest.raises(ValueError) as excinfo:
+            sigrid_api._check_context()
+        assert "_customer" in str(excinfo.value)
+        
+        sigrid_api.reset_context()
+
+    def test_check_context_raises_error_when_rest_url_missing(self):
+        sigrid_api.reset_context()
+        sigrid_api._bearer_token = "test-token"
+        sigrid_api._customer = "test"
+        sigrid_api._rest_url = None
+        
+        with pytest.raises(ValueError) as excinfo:
+            sigrid_api._check_context()
+        assert "_rest_url" in str(excinfo.value)
+        
+        sigrid_api.reset_context()
+
+    def test_check_context_passes_when_all_values_set(self):
+        sigrid_api.reset_context()
+        sigrid_api._bearer_token = "test-token"
+        sigrid_api._customer = "test"
+        sigrid_api._rest_url = "http://test"
+        
+        # Should not raise
+        sigrid_api._check_context()
+        
+        sigrid_api.reset_context()
