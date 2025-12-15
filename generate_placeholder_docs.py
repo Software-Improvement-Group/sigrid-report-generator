@@ -84,7 +84,7 @@ def placeholders_to_table(placeholders, skip_columns: Set[str] = None) -> pd.Dat
 
 def get_placeholder_doc(placeholder_class: Placeholder) -> Optional[str]:
     doc = placeholder_class.__doc__
-    if doc and not doc.startswith('Placeholder('):
+    if doc and placeholder_class is not Placeholder:
         return doc
 
     # noinspection PyUnresolvedReferences
