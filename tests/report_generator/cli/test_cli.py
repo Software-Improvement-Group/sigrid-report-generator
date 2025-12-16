@@ -97,7 +97,7 @@ class TestCLIParameters:
         mock_presets.run = MagicMock()
 
         runner = CliRunner()
-        result = runner.invoke(run_cli, [
+        runner.invoke(run_cli, [
             '--customer', 'test-customer',
             '--layout', 'portfolio-overview'
         ])
@@ -129,7 +129,7 @@ class TestCLIParameters:
         mock_presets.run = MagicMock()
 
         runner = CliRunner()
-        result = runner.invoke(run_cli, [
+        runner.invoke(run_cli, [
             '--customer', 'test-customer',
             '--token', 'test-token'
         ])
@@ -144,7 +144,7 @@ class TestCLIParameters:
         mock_presets.run = MagicMock()
 
         runner = CliRunner()
-        result = runner.invoke(run_cli, [
+        runner.invoke(run_cli, [
             '--customer', 'test-customer',
             '--token', 'test-token',
             '--layout', 'portfolio-overview'
@@ -160,7 +160,7 @@ class TestCLIParameters:
         mock_presets.run = MagicMock()
 
         runner = CliRunner()
-        result = runner.invoke(run_cli, [
+        runner.invoke(run_cli, [
             '--customer', 'test-customer',
             '--token', 'test-token',
             '--layout', 'portfolio-overview',
@@ -194,7 +194,7 @@ class TestCLIParameters:
         mock_presets.run = MagicMock()
 
         runner = CliRunner()
-        result = runner.invoke(run_cli, [
+        runner.invoke(run_cli, [
             '--customer', 'test-customer',
             '--token', 'test-token',
             '--layout', 'portfolio-overview',
@@ -212,7 +212,7 @@ class TestCLIParameters:
         mock_presets.run = MagicMock()
 
         runner = CliRunner()
-        result = runner.invoke(run_cli, [
+        runner.invoke(run_cli, [
             '--customer', 'test-customer',
             '--token', 'test-token',
             '--layout', 'portfolio-overview',
@@ -273,7 +273,7 @@ class TestCLIParameters:
             with open('template.pptx', 'wb') as f:
                 f.write(b'dummy content')
             
-            result = runner.invoke(run_cli, [
+            runner.invoke(run_cli, [
                 '--customer', 'test-customer',
                 '--token', 'test-token',
                 '--template', 'template.pptx'

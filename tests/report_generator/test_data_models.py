@@ -13,7 +13,6 @@
 #  limitations under the License.
 
 from unittest.mock import patch, MagicMock
-import pytest
 
 # noinspection PyProtectedMember
 from report_generator.generator.data_models.system.maintainability import _sort_and_aggregate_technology_data
