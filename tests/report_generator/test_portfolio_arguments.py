@@ -19,7 +19,6 @@ import click
 from report_generator.generator.data_models.portfolio import portfolio_arguments
 from report_generator.generator.data_models.portfolio.portfolio_arguments import (
     set_context,
-    get_portfolio_context,
     filter_data_on_portfolio_arguments,
     PlaceholderArgumentException,
     _include,
@@ -45,6 +44,16 @@ def mock_portfolio_metadata():
         {
             'systemName': 'system3',
             'teamNames': ['TeamA'],
+            'divisionName': 'DivisionX'
+        },
+        {
+            'systemName': 'system4',
+            'teamNames': ['TeamA'],
+            'divisionName': 'DivisionY'
+        },
+        {
+            'systemName': 'system5',
+            'teamNames': ['TeamB'],
             'divisionName': 'DivisionX'
         }
     ]
@@ -104,15 +113,6 @@ class TestPortfolioArguments:
         assert portfolio_arguments._team == ['TeamA', 'TeamB']
         assert portfolio_arguments._division == ['DivisionX']
 
-    def test_get_portfolio_context(self):
-        """Test that get_portfolio_context returns the current filter context."""
-        set_context(team=['TeamA'], division=['DivisionY'])
-
-        context = get_portfolio_context()
-
-        assert context['team'] == ['TeamA']
-        assert context['division'] == ['DivisionY']
-
     # Filter Checking Tests
 
     def test_are_filters_set_returns_false_when_no_filters(self):
@@ -167,17 +167,21 @@ class TestPortfolioArguments:
 
         assert result is False
 
-    def test_include_matches_either_team_or_division(self, mock_portfolio_metadata):
-        """Test that _include uses OR logic between team and division filters."""
-        set_context(team=['TeamC'], division=['DivisionX'])
+    def test_include_matches_team_and_division(self, mock_portfolio_metadata):
+        """Test that _include uses AND logic between team and division filters."""
+        set_context(team=['TeamA'], division=['DivisionX'])
 
-        result1 = _include('system1', mock_portfolio_metadata)  # Matches division only
-        result2 = _include('system2', mock_portfolio_metadata)  # Matches team only
-        result3 = _include('system3', mock_portfolio_metadata)  # Matches division only
+        result1 = _include('system1', mock_portfolio_metadata)  # Matches both team and division
+        result2 = _include('system2', mock_portfolio_metadata)  # Matches nothing
+        result3 = _include('system3', mock_portfolio_metadata)  # Matches both team and division
+        result4 = _include('system4', mock_portfolio_metadata)  # Matches team only
+        result5 = _include('system5', mock_portfolio_metadata)  # Matches division only
 
         assert result1 is True
-        assert result2 is True
+        assert result2 is False
         assert result3 is True
+        assert result4 is False
+        assert result5 is False
 
     def test_find_system_metadata_returns_none_for_unknown_system(self, mock_portfolio_metadata):
         """Test that _find_system_metadata returns None for systems not in portfolio."""
