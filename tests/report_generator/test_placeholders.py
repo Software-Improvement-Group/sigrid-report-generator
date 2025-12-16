@@ -52,7 +52,7 @@ class TestTreemapImagePlaceholder:
             'system_names': [],
             'volumes': [],
             'labels': [],
-            'roots': [],
+            'root_names': [],
             'color_mapping': {}
         }
         
@@ -79,7 +79,7 @@ class TestTreemapImagePlaceholder:
             'system_names': ['system1', 'system2'],
             'volumes': [100, 200],
             'labels': ['System 1', 'System 2'],
-            'roots': ['root', 'root'],
+            'root_names': ['root', 'root'],
             'color_mapping': {}
         }
         
@@ -103,7 +103,7 @@ class TestTreemapImagePlaceholder:
             'system_names': ['system1'],
             'volumes': [100],
             'labels': ['System 1'],
-            'roots': ['root'],
+            'root_names': ['root'],
             'color_mapping': {'system1': '#FF0000'}
         }
         
@@ -143,7 +143,7 @@ class TestTreemapImagePlaceholder:
             'system_names': ['system1', 'system2'],
             'volumes': [100, 200],
             'labels': ['System 1', 'System 2'],
-            'roots': ['root', 'root'],
+            'root_names': ['root', 'root'],
             'color_mapping': {'system1': '#FF0000', 'system2': '#00FF00'}
         }
         
