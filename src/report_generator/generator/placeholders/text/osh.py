@@ -109,7 +109,7 @@ def osh_legal_summary():
     if not osh_data.legal_risk_count:
         return "All dependencies in the system use relatively liberal open-source licenses."
 
-    return f"{osh_data.legal_risk_count:.0%} of dependencies ({osh_data.legal_risk_count} in total) uses a potentially restrictive open-source license (e.g. GPL/AGPL)."
+    return f"{osh_data.legal_risk_fraction:.0%} of dependencies ({osh_data.legal_risk_count} in total) uses a potentially restrictive open-source license (e.g. GPL/AGPL)."
 
 
 @text_placeholder()
