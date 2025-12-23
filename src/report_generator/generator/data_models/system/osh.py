@@ -21,48 +21,24 @@ from report_generator.generator import sigrid_api
 from report_generator.generator.constants import MetricEnum, OSHMetric
 
 
-class _AnonDataClass:
-    # critical, high, medium, low, no risk
-    vuln_risks = [0, 0, 0, 0, 0]
-    license_risks = [0, 0, 0, 0, 0]
-    freshness_risks = [0, 0, 0, 0, 0]
-    stability_risks = [0, 0, 0, 0, 0]
-    mgmt_risks = [0, 0, 0, 0, 0]
-    activity_risks = [0, 0, 0, 0, 0]
-
-
 class _SystemMetric(MetricEnum):
     SYSTEM = "SYSTEM"
 
 
 type OSHMetricOrSystem = Union[OSHMetric, _SystemMetric]
 
+
+def _find_cyclonedx_property_value(properties, key):
+    for prop in properties:
+        if prop["name"] == key:
+            return prop["value"]
+    return None
+
 class OSHData:
 
     @cached_property
     def raw_data(self):
         return sigrid_api.get_osh_findings()
-
-    @cached_property
-    def data(self) -> _AnonDataClass:
-        raw_data = self.raw_data
-        data = _AnonDataClass()
-
-        for component in raw_data.get("components", []):
-            self._assign_risk(data.vuln_risks,
-                              self._find_cyclonedx_property_value(component["properties"], "sigrid:risk:vulnerability"))
-            self._assign_risk(data.license_risks,
-                              self._find_cyclonedx_property_value(component["properties"], "sigrid:risk:legal"))
-            self._assign_risk(data.freshness_risks,
-                              self._find_cyclonedx_property_value(component["properties"], "sigrid:risk:freshness"))
-            self._assign_risk(data.stability_risks,
-                              self._find_cyclonedx_property_value(component["properties"], "sigrid:risk:stability"))
-            self._assign_risk(data.mgmt_risks,
-                              self._find_cyclonedx_property_value(component["properties"], "sigrid:risk:management"))
-            self._assign_risk(data.activity_risks,
-                              self._find_cyclonedx_property_value(component["properties"], "sigrid:risk:activity"))
-
-        return data
 
     @cached_property
     def date(self) -> datetime:
@@ -81,13 +57,62 @@ class OSHData:
         logging.warning(f"OSH rating not found for property {metric.to_json_name()}")
         return 0.0
 
+    @lru_cache
+    def _get_risk_distribution_for_metric(self, metric: OSHMetric) -> list[int]:
+        """Returns risk distribution as [critical, high, medium, low, no_risk] counts."""
+        property_name = f"sigrid:risk:{metric.to_json_name()}"
+
+        risk_counts = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0, None: 0}
+
+        for component in self.raw_data.get("components", []):
+            risk = _find_cyclonedx_property_value(component["properties"], property_name)
+            risk_counts[risk if risk in risk_counts else None] += 1
+
+        return [risk_counts["CRITICAL"], risk_counts["HIGH"], risk_counts["MEDIUM"], risk_counts["LOW"],
+                risk_counts[None]]
+
+    @cached_property
+    def risk_distributions(self) -> dict[str, list[int]]:
+        return {
+            "vulnerability": self.vulnerability_risk_distribution,
+            "legal"        : self.legal_risk_distribution,
+            "freshness"    : self.freshness_risk_distribution,
+            "stability"    : self.stability_risk_distribution,
+            "management"   : self.management_risk_distribution,
+            "activity"     : self.activity_risk_distribution,
+        }
+
+    @cached_property
+    def vulnerability_risk_distribution(self) -> list[int]:
+        return self._get_risk_distribution_for_metric(OSHMetric.VULNERABILITY)
+
+    @cached_property
+    def freshness_risk_distribution(self) -> list[int]:
+        return self._get_risk_distribution_for_metric(OSHMetric.FRESHNESS)
+
+    @cached_property
+    def legal_risk_distribution(self) -> list[int]:
+        return self._get_risk_distribution_for_metric(OSHMetric.LICENSES)
+
+    @cached_property
+    def stability_risk_distribution(self) -> list[int]:
+        return self._get_risk_distribution_for_metric(OSHMetric.STABILITY)
+
+    @cached_property
+    def management_risk_distribution(self) -> list[int]:
+        return self._get_risk_distribution_for_metric(OSHMetric.MANAGEMENT)
+
+    @cached_property
+    def activity_risk_distribution(self) -> list[int]:
+        return self._get_risk_distribution_for_metric(OSHMetric.ACTIVITY)
+
     @cached_property
     def dependencies_count(self):
         return len(self.raw_data["components"])
 
     @cached_property
     def vulnerabilities_count(self) -> int:
-        return sum(self.data.vuln_risks[0:4])
+        return sum(self.vulnerability_risk_distribution[0:4])
 
     @cached_property
     def vulnerabilities_fraction(self) -> float:
@@ -99,7 +124,8 @@ class OSHData:
     @cached_property
     def outdated_count(self) -> int:
         return sum(
-            self.data.freshness_risks[0:3])  # Only count critical to medium. Low is fresh enough to not report on
+            self.freshness_risk_distribution[
+                0:3])  # Only count critical to medium. Low is fresh enough to not report on
 
     @cached_property
     def outdated_fraction(self) -> float:
@@ -110,7 +136,7 @@ class OSHData:
 
     @cached_property
     def legal_risk_count(self) -> int:
-        return sum(self.data.license_risks[
+        return sum(self.legal_risk_distribution[
                        0:3])  # Only count critical to medium. Low license risk is typically not restrictive, so not interesting to report on
 
     @cached_property
@@ -122,7 +148,7 @@ class OSHData:
 
     @cached_property
     def unmanaged_count(self) -> int:
-        return sum(self.data.mgmt_risks[0:4])
+        return sum(self.management_risk_distribution[0:4])
 
     @cached_property
     def unmanaged_fraction(self) -> float:
@@ -133,7 +159,7 @@ class OSHData:
 
     @cached_property
     def activity_risk_count(self) -> int:
-        return sum(self.data.activity_risks[0:4])
+        return sum(self.activity_risk_distribution[0:4])
 
     @cached_property
     def activity_risk_fraction(self) -> float:
@@ -141,26 +167,6 @@ class OSHData:
             return 0.0
 
         return max(self.activity_risk_count / self.dependencies_count, 0.01)
-
-    @staticmethod
-    def _assign_risk(values, risk):
-        if risk == "CRITICAL":
-            values[0] += 1
-        elif risk == "HIGH":
-            values[1] += 1
-        elif risk == "MEDIUM":
-            values[2] += 1
-        elif risk == "LOW":
-            values[3] += 1
-        else:
-            values[4] += 1
-
-    @staticmethod
-    def _find_cyclonedx_property_value(properties, key):
-        for prop in properties:
-            if prop["name"] == key:
-                return prop["value"]
-        return None
 
 
 osh_data = OSHData()

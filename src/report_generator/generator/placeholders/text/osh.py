@@ -60,6 +60,7 @@ def osh_total_activity_risk():
     """Number of open-source dependencies with activity risk."""
     return osh_data.activity_risk_count
 
+
 @text_placeholder()
 def osh_date_day():
     """The day of the month the latest system snapshot which was analyzed."""
@@ -90,7 +91,7 @@ def osh_vuln_summary():
     if not osh_data.vulnerabilities_count:
         return "The system is free of known vulnerabilities."
 
-    return f"{osh_data.vulnerabilities_fraction:.0%} of dependencies ({osh_data.dependencies_count} in total) used in the system contain one or more known vulnerabilities."
+    return f"{osh_data.vulnerabilities_fraction:.0%} of dependencies ({osh_data.vulnerabilities_count} in total) used in the system contain one or more known vulnerabilities."
 
 
 @text_placeholder()
@@ -99,7 +100,7 @@ def osh_freshness_summary():
     if not osh_data.outdated_count:
         return "All dependencies in the system have been updated in the last 2 years."
 
-    return f"{osh_data.outdated_fraction:.0%} of dependencies ({osh_data.dependencies_count} in total) used in the system have not been updated for over 2 years."
+    return f"{osh_data.outdated_fraction:.0%} of dependencies ({osh_data.outdated_count} in total) used in the system have not been updated for over 2 years."
 
 
 @text_placeholder()
@@ -108,7 +109,7 @@ def osh_legal_summary():
     if not osh_data.legal_risk_count:
         return "All dependencies in the system use relatively liberal open-source licenses."
 
-    return f"{osh_data.legal_risk_count:.0%} of dependencies ({osh_data.dependencies_count} in total) uses a potentially restrictive open-source license (e.g. GPL/AGPL)."
+    return f"{osh_data.legal_risk_count:.0%} of dependencies ({osh_data.legal_risk_count} in total) uses a potentially restrictive open-source license (e.g. GPL/AGPL)."
 
 
 @text_placeholder()
@@ -117,7 +118,7 @@ def osh_management_summary():
     if not osh_data.unmanaged_count:
         return "All dependencies in the system are managed by a package manager."
 
-    return f"{osh_data.unmanaged_fraction:.0%} of dependencies ({osh_data.dependencies_count} in total) does not use a package manager but is placed in the codebase directly."
+    return f"{osh_data.unmanaged_fraction:.0%} of dependencies ({osh_data.unmanaged_count} in total) does not use a package manager but is placed in the codebase directly."
 
 
 @text_placeholder()
