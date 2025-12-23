@@ -45,7 +45,7 @@ class OSHData:
         return datetime.strptime(self.raw_data["metadata"]["timestamp"], "%Y-%m-%dT%H:%M:%SZ")
 
     @cached_property
-    def system_rating(self):
+    def system_rating(self) -> float:
         return self.get_rating_for_metric(_SystemMetric.SYSTEM)
 
     @lru_cache
