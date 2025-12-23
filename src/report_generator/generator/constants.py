@@ -65,7 +65,6 @@ class ArchSubcharacteristic(MetricEnum):
 
 
 class OSHMetric(MetricEnum):
-    SYSTEM = "SYSTEM"
     VULNERABILITY = "VULNERABILITY"
     LICENSES = "LICENSES"
     FRESHNESS = "FRESHNESS"
