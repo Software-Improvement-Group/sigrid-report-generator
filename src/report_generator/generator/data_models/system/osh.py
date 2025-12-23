@@ -107,7 +107,7 @@ class OSHData:
         return self._get_risk_distribution_for_metric(OSHMetric.ACTIVITY)
 
     @cached_property
-    def dependencies_count(self):
+    def dependencies_count(self) -> int:
         return len(self.raw_data["components"])
 
     @cached_property
