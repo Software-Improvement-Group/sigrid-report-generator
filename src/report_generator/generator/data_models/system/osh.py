@@ -60,7 +60,9 @@ class OSHData:
     @lru_cache
     def _get_risk_distribution_for_metric(self, metric: OSHMetric) -> list[int]:
         """Returns risk distribution as [critical, high, medium, low, no_risk] counts."""
-        property_name = f"sigrid:risk:{metric.to_json_name()}"
+        metric_key = metric.to_json_name()
+        metric_key = "legal" if metric_key == "licenses" else metric_key  # Sigrid API uses "legal" only in risk context
+        property_name = f"sigrid:risk:{metric_key}"
 
         risk_counts = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0, None: 0}
 
