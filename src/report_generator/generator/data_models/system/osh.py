@@ -45,7 +45,7 @@ class OSHData:
         return datetime.strptime(self.raw_data["metadata"]["timestamp"], "%Y-%m-%dT%H:%M:%SZ")
 
     @cached_property
-    def system_rating(self):
+    def system_rating(self) -> float:
         return self.get_rating_for_metric(_SystemMetric.SYSTEM)
 
     @lru_cache
@@ -107,7 +107,7 @@ class OSHData:
         return self._get_risk_distribution_for_metric(OSHMetric.ACTIVITY)
 
     @cached_property
-    def dependencies_count(self):
+    def dependencies_count(self) -> int:
         return len(self.raw_data["components"])
 
     @cached_property
