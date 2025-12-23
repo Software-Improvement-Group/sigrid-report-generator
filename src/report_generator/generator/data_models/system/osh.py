@@ -13,22 +13,16 @@
 #  limitations under the License.
 
 import logging
-from functools import cached_property
-
-import dateutil.parser
+from datetime import datetime
+from functools import cached_property, lru_cache
+from typing import Union
 
 from report_generator.generator import sigrid_api
-from report_generator.generator.constants import OSHMetric
+from report_generator.generator.constants import MetricEnum, OSHMetric
 
 
 class _AnonDataClass:
     total_deps = 0
-
-    date_day = ""
-    date_month = ""
-    date_year = ""
-
-    ratings = {}
 
     # critical, high, medium, low, no risk
     vuln_risks = [0, 0, 0, 0, 0]
@@ -38,12 +32,12 @@ class _AnonDataClass:
     mgmt_risks = [0, 0, 0, 0, 0]
     activity_risks = [0, 0, 0, 0, 0]
 
-    vulns = []
 
-    @property
-    def total_vulnerable(self):
-        return sum(self.vuln_risks[0:4])
+class _SystemMetric(MetricEnum):
+    SYSTEM = "SYSTEM"
 
+
+type OSHMetricOrSystem = Union[OSHMetric, _SystemMetric]
 
 class OSHData:
 
@@ -52,16 +46,11 @@ class OSHData:
         return sigrid_api.get_osh_findings()
 
     @cached_property
-    def data(self):
+    def data(self) -> _AnonDataClass:
         raw_data = self.raw_data
         data = _AnonDataClass()
 
         for component in raw_data.get("components", []):
-            data.total_deps += 1
-
-            if data.date_year == "":
-                (data.date_year, data.date_month, data.date_day) = self._format_date(raw_data["metadata"]["timestamp"])
-
             self._assign_risk(data.vuln_risks,
                               self._find_cyclonedx_property_value(component["properties"], "sigrid:risk:vulnerability"))
             self._assign_risk(data.license_risks,
@@ -75,68 +64,74 @@ class OSHData:
             self._assign_risk(data.activity_risks,
                               self._find_cyclonedx_property_value(component["properties"], "sigrid:risk:activity"))
 
-        try:
-            for prop in OSHMetric:
-                data.ratings[prop.value.lower()] = self.get_rating_from_data(raw_data, prop.to_json_name())
-        except KeyError:
-            logging.warning("No OSH ratings found in API response. Not populating OSH ratings slide")
-
         return data
 
-    @staticmethod
-    def get_rating_from_data(raw_data, rating_name):
-        for prop in raw_data['metadata']['properties']:
-            if prop["name"] == f"sigrid:ratings:{rating_name}":
+    @cached_property
+    def date(self) -> datetime:
+        return datetime.strptime(self.raw_data["metadata"]["timestamp"], "%Y-%m-%dT%H:%M:%SZ")
+
+    @cached_property
+    def system_rating(self):
+        return self.get_rating_for_metric(_SystemMetric.SYSTEM)
+
+    @lru_cache
+    def get_rating_for_metric(self, metric: OSHMetricOrSystem) -> float:
+        for prop in self.raw_data['metadata']['properties']:
+            if prop['name'] == f"sigrid:ratings:{metric.to_json_name()}":
                 return float(prop["value"])
-        return None
 
-    def get_score_for_prop(self, prop):
-        return self.data.ratings[prop] if prop in self.data.ratings else \
-            0.0
+        logging.warning(f"OSH rating not found for property {metric.to_json_name()}")
+        return 0.0
 
-    @property
-    def vulnerability_summary(self):
-        total_vulns = self.data.total_vulnerable
-        if total_vulns > 0:
-            pct_vulns = max(total_vulns / self.data.total_deps,
-                            0.01)  # Percentage should always be at least 1. 0% looks stupid.
-            return f"{pct_vulns:.0%} of dependencies ({total_vulns} in total) used in the system contain one or more known vulnerabilities."
-        else:
-            return "The system is free of known vulnerabilities."
+    @cached_property
+    def dependencies_count(self):
+        return len(self.raw_data["components"])
 
-    @property
-    def freshness_summary(self):
-        total_outdated = sum(self.data.freshness_risks[
-                                 0:3])  # Only count critial+high+medium risk. Llow is fresh enough to not report on
-        if total_outdated > 0:
-            pct_outdated = max(total_outdated / self.data.total_deps, 0.01)
-            return f"{pct_outdated:.0%} of dependencies ({total_outdated} in total) used in the system have not been updated for over 2 years."
-        else:
-            return "All dependencies in the system have been updated in the last 2 years."
+    @cached_property
+    def vulnerabilities_count(self) -> int:
+        return sum(self.data.vuln_risks[0:4])
 
-    @property
-    def legal_summary(self):
-        total_legal = sum(self.data.license_risks[
-                              0:3])  # Only count critial, high, and medium. Low license risk is typically not restrictive, so not interesting to report on
-        if total_legal > 0:
-            pct_legal = max(total_legal / self.data.total_deps, 0.01)
-            return f"{pct_legal:.0%} of dependencies ({total_legal} in total) uses a potentially restrictive open-source license (e.g. GPL/AGPL)."
-        else:
-            return "All dependencies in the system use relatively liberal open-source licenses."
+    @cached_property
+    def vulnerabilities_fraction(self) -> float:
+        if not self.vulnerabilities_count:
+            return 0.0
 
-    @property
-    def management_summary(self):
-        total_unmanaged = sum(self.data.mgmt_risks[0:4])
-        if total_unmanaged > 0:
-            pct_unmanaged = max(total_unmanaged / self.data.total_deps, 0.01)
-            return f"{pct_unmanaged:.0%} of dependencies ({total_unmanaged} in total) does not use a package manager but is placed in the codebase directly."
-        else:
-            return "All dependencies in the system are managed by a package manager."
+        return max(self.vulnerabilities_count / self.dependencies_count, 0.01)
 
-    @staticmethod
-    def _format_date(input_date):
-        date = dateutil.parser.isoparse(input_date)
-        return str(date.year), date.strftime('%b').upper(), str(date.day)
+    @cached_property
+    def outdated_count(self) -> int:
+        return sum(
+            self.data.freshness_risks[0:3])  # Only count critical to medium. Low is fresh enough to not report on
+
+    @cached_property
+    def outdated_fraction(self) -> float:
+        if not self.outdated_count:
+            return 0.0
+
+        return max(self.outdated_count / self.dependencies_count, 0.01)
+
+    @cached_property
+    def legal_risk_count(self) -> int:
+        return sum(self.data.license_risks[
+                       0:3])  # Only count critical to medium. Low license risk is typically not restrictive, so not interesting to report on
+
+    @cached_property
+    def legal_risk_fraction(self) -> float:
+        if not self.legal_risk_count:
+            return 0.0
+
+        return max(self.legal_risk_count / self.dependencies_count, 0.01)
+
+    @cached_property
+    def unmanaged_count(self) -> int:
+        return sum(self.data.mgmt_risks[0:4])
+
+    @cached_property
+    def unmanaged_fraction(self) -> float:
+        if not self.unmanaged_count:
+            return 0.0
+
+        return max(self.unmanaged_count / self.dependencies_count, 0.01)
 
     @staticmethod
     def _assign_risk(values, risk):

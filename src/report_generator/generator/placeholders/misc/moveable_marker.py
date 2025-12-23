@@ -75,7 +75,7 @@ class OSHMovableMarkerPlaceholder(_AbstractMoveableMarkerPlaceholder):
 
     @classmethod
     def value(cls, parameter=None) -> str:
-        return maintainability_round(osh_data.data.ratings["system"])
+        return maintainability_round(osh_data.system_rating)
 
 
 class SecurityMovableMarkerPlaceholder(_AbstractMoveableMarkerPlaceholder):
