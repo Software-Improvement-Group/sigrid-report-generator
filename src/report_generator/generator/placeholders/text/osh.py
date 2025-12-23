@@ -28,14 +28,37 @@ def osh_risk_summary():
 @text_placeholder()
 def osh_total_deps():
     """Total number of identified open-source dependencies."""
-    return osh_data.data.total_deps
+    return osh_data.dependencies_count
 
 
 @text_placeholder()
 def osh_total_vuln():
-    """Number of identified open-source dependencies with a known vulnerability."""
-    return osh_data.data.total_vulnerable
+    """Number of open-source dependencies with a known vulnerability."""
+    return osh_data.vulnerabilities_count
 
+
+@text_placeholder()
+def osh_total_legal_risk():
+    """Number of open-source dependencies with a medium to critical license risk."""
+    return osh_data.legal_risk_count
+
+
+@text_placeholder()
+def osh_total_outdated():
+    """Number of open-source dependencies not updated in the last 2 years."""
+    return osh_data.outdated_count
+
+
+@text_placeholder()
+def osh_total_unmanaged():
+    """Number of open-source dependencies not managed using a package manager."""
+    return osh_data.unmanaged_count
+
+
+@text_placeholder()
+def osh_total_activity_risk():
+    """Number of open-source dependencies with activity risk."""
+    return osh_data.activity_risk_count
 
 @text_placeholder()
 def osh_date_day():

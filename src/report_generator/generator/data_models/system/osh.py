@@ -22,8 +22,6 @@ from report_generator.generator.constants import MetricEnum, OSHMetric
 
 
 class _AnonDataClass:
-    total_deps = 0
-
     # critical, high, medium, low, no risk
     vuln_risks = [0, 0, 0, 0, 0]
     license_risks = [0, 0, 0, 0, 0]
@@ -132,6 +130,17 @@ class OSHData:
             return 0.0
 
         return max(self.unmanaged_count / self.dependencies_count, 0.01)
+
+    @cached_property
+    def activity_risk_count(self) -> int:
+        return sum(self.data.activity_risks[0:4])
+
+    @cached_property
+    def activity_risk_fraction(self) -> float:
+        if not self.activity_risk_count:
+            return 0.0
+
+        return max(self.activity_risk_count / self.dependencies_count, 0.01)
 
     @staticmethod
     def _assign_risk(values, risk):
