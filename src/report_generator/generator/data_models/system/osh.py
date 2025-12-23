@@ -25,7 +25,7 @@ class _SystemMetric(MetricEnum):
     SYSTEM = "SYSTEM"
 
 
-type OSHMetricOrSystem = Union[OSHMetric, _SystemMetric]
+OSHMetricOrSystem = Union[OSHMetric, _SystemMetric]
 
 
 def _find_cyclonedx_property_value(properties, key):
