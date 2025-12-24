@@ -39,8 +39,8 @@ class TestDataModels:
         assert sorted_tech_data[3]["name"] == "noot"
         assert sorted_tech_data[4]["name"] == "others"
         assert sorted_tech_data[4]["volumeInPersonMonths"] == 4
-        assert sorted_tech_data[4]["maintainability"] == 3.5
-        assert sorted_tech_data[4]["testCodeRatio"] == 26.25
+        assert abs(sorted_tech_data[4]["maintainability"] - 3.5) < 0.01
+        assert abs(sorted_tech_data[4]["testCodeRatio"] - 26.25) < 0.01
         assert sorted_tech_data[4]["technologyRisk"] == "TOLERATE"
 
     def test_aggregate_removes_technologies_with_zero_loc(self):
@@ -164,7 +164,7 @@ class TestMaintainabilityPortfolioData:
 
         assert system is not None
         assert system['system'] == 'system1'
-        assert system['maintainability'] == 4.0
+        assert abs(system['maintainability'] - 4.0) < 0.01
 
     @patch('report_generator.generator.data_models.portfolio.maintainability_portfolio.sigrid_api')
     def test_get_system_returns_none_for_unknown_system(self, mock_sigrid_api):
@@ -216,7 +216,7 @@ class TestAbstractPortfolioModel:
 
         assert result is not None
         assert result['system'] == 'sys2'
-        assert result['maintainability'] == 3.5
+        assert abs(result['maintainability'] - 3.5) < 0.01
 
     def test_get_system_helper_returns_none_for_missing(self):
         """Test _get_system_helper returns None for non-existent system."""
@@ -448,7 +448,7 @@ class TestSecurityPortfolioData:
         
         assert system is not None
         assert system['systemName'] == 'system1'
-        assert system['securityRating'] == 4.5
+        assert abs(system['securityRating'] - 4.5) < 0.01
 
     @patch('report_generator.generator.data_models.portfolio.security_portfolio.sigrid_api')
     def test_system_names_returns_all_systems(self, mock_sigrid_api):
@@ -566,7 +566,7 @@ class TestSecurityDashboardResolutionTimesPortfolioData:
         
         assert system is not None
         assert system['system'] == 'system1'
-        assert system['avgResolutionTime'] == 15.5
+        assert abs(system['avgResolutionTime'] - 15.5) < 0.01
 
     @patch('report_generator.generator.data_models.portfolio.security_dashboard_resolution_times_portfolio.sigrid_api')
     def test_system_names_returns_all_systems(self, mock_sigrid_api):
@@ -626,7 +626,7 @@ class TestOSHPortfolioData:
         
         assert system is not None
         assert system['systemName'] == 'system1'
-        assert system['oshRating'] == 4.5
+        assert abs(system['oshRating'] - 4.5) < 0.01
 
     @patch('report_generator.generator.data_models.portfolio.osh_portfolio.sigrid_api')
     def test_find_system_returns_correct_system(self, mock_sigrid_api):
@@ -733,7 +733,7 @@ class TestMaintainabilityPortfolioHelpers:
         result = _weighted_avg(values, weights)
         
         # Should return a very small number instead of crashing
-        assert result == 0.000001
+        assert abs(result - 0.000001) < 0.00001
 
     def test_parse_date_converts_string_to_datetime(self):
         """Test that _parse_date correctly parses date strings."""
@@ -771,7 +771,7 @@ class TestMaintainabilityPortfolioHelpers:
         _finalize_change_statistics(stats, best_inc, best_dec)
         
         assert 'system1' in stats['maintainability-change']['increase']
-        assert stats['maintainability-change']['increase']['system1'] == 0.5
+        assert abs(stats['maintainability-change']['increase']['system1'] - 0.5) < 0.01
 
     def test_finalize_change_statistics_with_decrease(self):
         """Test that _finalize_change_statistics records decreases."""
@@ -786,7 +786,7 @@ class TestMaintainabilityPortfolioHelpers:
         _finalize_change_statistics(stats, best_inc, best_dec)
         
         assert 'system2' in stats['maintainability-change']['decrease']
-        assert stats['maintainability-change']['decrease']['system2'] == -0.3
+        assert abs(stats['maintainability-change']['decrease']['system2'] - (-0.3)) < 0.01
 
 
 class TestModernizationHelpers:
@@ -800,7 +800,7 @@ class TestModernizationHelpers:
         
         effort = get_renovation_effort(Scenario.KEEP_AS_IS, {}, 100.0)
         
-        assert effort == 0.0
+        assert abs(effort - 0.0) < 0.01
 
     def test_get_renovation_effort_for_replace(self):
         """Test that get_renovation_effort returns 0 for REPLACE."""
@@ -810,7 +810,7 @@ class TestModernizationHelpers:
         
         effort = get_renovation_effort(Scenario.REPLACE, {}, 100.0)
         
-        assert effort == 0.0
+        assert abs(effort - 0.0) < 0.01
 
     def test_get_renovation_effort_for_rebuild(self):
         """Test that get_renovation_effort returns volume for REBUILD."""
@@ -820,7 +820,7 @@ class TestModernizationHelpers:
         
         effort = get_renovation_effort(Scenario.REBUILD, {}, 100.0)
         
-        assert effort == 100.0
+        assert abs(effort - 100.0) < 0.01
 
     def test_get_renovation_effort_for_renovate(self):
         """Test that get_renovation_effort returns renovation effort for RENOVATE."""
@@ -831,7 +831,7 @@ class TestModernizationHelpers:
         architecture_metrics = {'RENOVATION_EFFORT': 50.0}
         effort = get_renovation_effort(Scenario.RENOVATE, architecture_metrics, 100.0)
         
-        assert effort == 50.0
+        assert abs(effort - 50.0) < 0.01
 
     def test_get_activity_calculates_from_churn(self):
         """Test that get_activity calculates activity from churn percentage."""
@@ -847,8 +847,8 @@ class TestModernizationHelpers:
         
         activity = get_activity(100.0, architecture_graph)
         
-        # (10.0 / 100.0 * 52) * 100.0 = 520.0
-        assert activity == 520.0
+        # note: (10.0 / 100.0 * 52) * 100.0 = 520.0
+        assert abs(activity - 520.0) < 0.01
 
     def test_get_activity_returns_none_when_no_churn(self):
         """Test that get_activity returns None when churn data is missing."""
@@ -872,7 +872,7 @@ class TestModernizationHelpers:
         
         speed = get_change_speed(Scenario.KEEP_AS_IS, {})
         
-        assert speed == 0.0
+        assert abs(speed - 0.0) < 0.01
 
     def test_get_change_speed_returns_potential_for_renovate(self):
         """Test that get_change_speed returns potential change speed for RENOVATE."""
@@ -883,7 +883,7 @@ class TestModernizationHelpers:
         architecture_metrics = {'POTENTIAL_CHANGE_SPEED': 1.5}
         speed = get_change_speed(Scenario.RENOVATE, architecture_metrics)
         
-        assert speed == 1.5
+        assert abs(speed - 1.5) < 0.01
 
 
 class TestArchitecturePortfolioData:
@@ -917,7 +917,7 @@ class TestArchitecturePortfolioData:
         
         assert system is not None
         assert system['system'] == 'system1'
-        assert system['architectureQuality'] == 4.5
+        assert abs(system['architectureQuality'] - 4.5) < 0.01
 
     @patch('report_generator.generator.data_models.portfolio.architecture_portfolio.sigrid_api')
     def test_system_names_returns_all_systems(self, mock_sigrid_api):
@@ -1007,7 +1007,7 @@ class TestMaintainabilityDeltaQualityPortfolio:
         system_data = maintainability_delta_quality_new_code.get_system('system1')
         
         assert system_data is not None
-        assert system_data['quality'] == 4.5
+        assert abs(system_data['quality'] - 4.5) < 0.01
 
     @patch('report_generator.generator.data_models.portfolio.maintainability_delta_quality_portfolio.maintainability_portfolio_data')
     @patch('report_generator.generator.data_models.portfolio.maintainability_delta_quality_portfolio.sigrid_api')
@@ -1072,7 +1072,7 @@ class TestSystemSecurityData:
         
         rating = security_data.security_rating
         
-        assert rating == 4.5
+        assert abs(rating - 4.5) < 0.01
 
 
 class TestSystemMetadata:

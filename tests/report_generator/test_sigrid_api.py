@@ -33,7 +33,7 @@ class TestSigridAPI:
         try:
             sigrid_api._test_sigrid_token("eyKskfiurkfshiuwhfibvcgi43hf2o3h893hg34")
         except ValueError:
-            pytest.fail(f"This token was expected to be valid")
+            pytest.fail("This token was expected to be valid")
 
     def test_set_context_multiple_times_preserves_previous_values(self):
         sigrid_api.reset_context()
