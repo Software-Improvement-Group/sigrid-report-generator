@@ -11,7 +11,7 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-
+import logging
 from abc import ABC
 from typing import Callable
 
@@ -25,6 +25,12 @@ from report_generator.generator.placeholders import Placeholder
 
 _RATING_MARKER_MOVE_SIZE = 2200000
 _MANAGEMENT_SUMMARY_MARKER_RANGE = 4000000
+
+
+def set_marker_move_size(marker_move_size: int) -> None:
+    """Some templates may use a different width of the rating slider, therefore requiring a different marker move size."""
+    global _RATING_MARKER_MOVE_SIZE
+    _RATING_MARKER_MOVE_SIZE = marker_move_size
 
 
 def _distance_to_average(rating):
@@ -75,7 +81,7 @@ class OSHMovableMarkerPlaceholder(_AbstractMoveableMarkerPlaceholder):
 
     @classmethod
     def value(cls, parameter=None) -> str:
-        return maintainability_round(osh_data.data.ratings["system"])
+        return maintainability_round(osh_data.system_rating)
 
 
 class SecurityMovableMarkerPlaceholder(_AbstractMoveableMarkerPlaceholder):
