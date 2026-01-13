@@ -40,6 +40,7 @@ MAINT_WORST_METRIC_TEXT = {
 ARCH_BEST_METRIC_TEXT = {
     ArchMetric.CODE_BREAKDOWN              : "The system scores highly in Code Breakdown resulting in increased flexibility through well-defined components that enable efficient parallel work across functional or technical boundaries.",
     ArchMetric.COMPONENT_COUPLING          : "The system's high score in component coupling means components with fewer dependencies, allowing for greater evolution, and minimizing impact on the system or landscape during interface changes.",
+    ArchMetric.COMPONENT_ADJACENCY         : "The system's high score in Component Adjacency means components interact with few other components, making them easier to change in isolation and therefore more flexible.",
     ArchMetric.COMPONENT_COHESION          : "The system's high score in Component Cohesion means highly reusable and replaceable components with focused internal logic. This minimizes external dependencies and references from other external components.",
     ArchMetric.CODE_REUSE                  : "The system scores highly in Code Reuse, minimizing duplication within and between components. This reduces coupling, preventing implicit dependencies and enhancing system modularity.",
     ArchMetric.COMMUNICATION_CENTRALIZATION: "The system's high score Communication Centralization reflects high encapsulation. Centralized calls from a component enhance encapsulation, making it less sensitive to external changes and easier to update in response to such modifications.",
@@ -53,6 +54,7 @@ ARCH_BEST_METRIC_TEXT = {
 ARCH_WORST_METRIC_TEXT = {
     ArchMetric.CODE_BREAKDOWN              : "The system's low score in Code Breakdown restricts flexibility, hindering parallel work across boundaries, as the codebase lacks clear, well-defined components, impeding efficient collaboration and adaptability.",
     ArchMetric.COMPONENT_COUPLING          : "The system's low score in Component Coupling constrains architecture, constraining evolution and imposing high-impact changes, impeding system adaptability.",
+    ArchMetric.COMPONENT_ADJACENCY         : "The system's low score in Component Adjacency limits the flexibility of your architecture, impeding adaptability across the system.",
     ArchMetric.COMPONENT_COHESION          : "The system scores poorly in Component Cohesion, constraining evolution and triggering high-impact changes, impeding adaptability across the system or landscape.",
     ArchMetric.CODE_REUSE                  : "The system's low score in Code Reuse heightens complexity, fostering coupling through duplicated code. This impedes flexibility and hinders responsibility separation.",
     ArchMetric.COMMUNICATION_CENTRALIZATION: "The system's low score in Communication Centralization weakens encapsulation, heightening sensitivity to external changes, making updates challenging, and impacting adaptability.",

@@ -99,7 +99,7 @@ def compare_table_cells(table1, table2, slide_index, table_index):
                     f"Slide {slide_index + 1}, Table {table_index + 1}, Cell ({row_idx + 1}, {col_idx + 1}): Text difference:"
                 )
                 differences.extend(
-                    [f"    {line}" for line in diff if line.startswith('+ ') or line.startswith('- ')]
+                    [f"    <{line}>" for line in diff if line.startswith('+ ') or line.startswith('- ')]
                 )
     return differences
 
