@@ -20,99 +20,99 @@ from .base import parameterized_text_placeholder, text_placeholder
 
 
 @text_placeholder()
-def osh_pf_total_deps():
+def portfolio_osh_total_deps():
     """Total number of identified open-source dependencies."""
-    return osh_portfolio_data.library_risks.total_deps
+    return osh_portfolio_data.dependencies_count
 
 
 @text_placeholder()
-def osh_pf_total_vuln():
+def portfolio_osh_total_vuln():
     """Number of identified open-source dependencies with a known vulnerability."""
-    return osh_portfolio_data.library_risks.total_vulnerable
+    return osh_portfolio_data.vulnerabilities_count
 
 
 @text_placeholder()
-def osh_pf_critical_risk():
+def portfolio_osh_critical_risk():
     """Number of library-risk occurrences with critical-level risk across all OSH categories."""
     return osh_portfolio_data.library_risk_levels['critical']
 
 
 @text_placeholder()
-def osh_pf_high_risk():
+def portfolio_osh_high_risk():
     """Number of library-risk occurrences with high-level risk across all OSH categories."""
     return osh_portfolio_data.library_risk_levels['high']
 
 
 @text_placeholder()
-def osh_pf_medium_risk():
+def portfolio_osh_medium_risk():
     """Number of library-risk occurrences with medium-level risk across all OSH categories."""
     return osh_portfolio_data.library_risk_levels['medium']
 
 
 @text_placeholder()
-def osh_pf_low_risk():
+def portfolio_osh_low_risk():
     """Number of library-risk occurrences with low-level risk across all OSH categories."""
     return osh_portfolio_data.library_risk_levels['low']
 
 
 @text_placeholder()
-def osh_pf_no_risk():
+def portfolio_osh_no_risk():
     """Number of library-risk occurrences with no OSH risk."""
     return osh_portfolio_data.library_risk_levels['no_risk']
 
 
 @text_placeholder()
-def osh_pf_date_day():
+def portfolio_osh_date_day():
     """The day of the month the latest system snapshot which was analyzed."""
-    return osh_portfolio_data.library_risks.date_day
+    return osh_portfolio_data.date.strftime("%d")
 
 
 @text_placeholder()
-def osh_pf_date_month():
+def portfolio_osh_date_month():
     """The month of the latest system snapshot which was analyzed."""
-    return osh_portfolio_data.library_risks.date_month
+    return osh_portfolio_data.date.strftime("%b").upper()
 
 
 @text_placeholder()
-def osh_pf_date_year():
+def portfolio_osh_date_year():
     """The year of the latest system snapshot which was analyzed."""
-    return osh_portfolio_data.library_risks.date_year
+    return osh_portfolio_data.date.strftime("%Y")
 
 
 @text_placeholder()
-def osh_pf_vuln_summary():
+def portfolio_osh_vuln_summary():
     """Descriptive summary of open-source vulnerability issues identified."""
     return osh_portfolio_data.vulnerability_summary
 
 
 @text_placeholder()
-def osh_pf_freshness_summary():
+def portfolio_osh_freshness_summary():
     """Descriptive summary of open-source freshness issues identified."""
     return osh_portfolio_data.freshness_summary
 
 
 @text_placeholder()
-def osh_pf_legal_summary():
+def portfolio_osh_legal_summary():
     """Descriptive summary of open-source legal issues identified."""
     return osh_portfolio_data.legal_summary
 
 
 @text_placeholder()
-def osh_pf_management_summary():
+def portfolio_osh_management_summary():
     """Descriptive summary of open-source management issues identified."""
     return osh_portfolio_data.management_summary
 
 
 @text_placeholder()
-def osh_pf_relative():
+def portfolio_osh_relative():
     """Relative rating remark for open-source health."""
     system_rating = osh_portfolio_data.get_score_for_prop("system")
     return smart_remarks.osh_relative_rating(system_rating)
 
 
-@parameterized_text_placeholder(custom_key="OSH_PF_RATING_{parameter}",
+@parameterized_text_placeholder(custom_key="portfolio_osh_RATING_{parameter}",
                                 parameters=list(OSHMetric))
-def osh_pf_rating_param(metric: OSHMetric):
+def portfolio_osh_rating_param(metric: OSHMetric):
     """The 0.5-5.5 star rating for this OSH metric."""
     metric_key = metric.to_json_name()
     return maintainability_round(osh_portfolio_data.get_score_for_prop(metric_key))
@@ -120,7 +120,7 @@ def osh_pf_rating_param(metric: OSHMetric):
 
 @parameterized_text_placeholder(custom_key="STARS_PF_{parameter}",
                                 parameters=list(OSHMetric))
-def osh_pf_stars_param(metric: OSHMetric):
+def portfolio_osh_stars_param(metric: OSHMetric):
     """Stars corresponding to this OSH metric rating."""
     metric_key = metric.to_json_name()
     return calculate_stars(osh_portfolio_data.get_score_for_prop(metric_key))

@@ -2540,21 +2540,27 @@ class TestSecurityDashboardResolutionTimesPortfolioData:
 class TestOSHPortfolioData:
     """Test cases for OSHRatingsPortfolioData model."""
 
+    def setup_method(self):
+        """Reset portfolio context before each test."""
+        from report_generator.generator.data_models.portfolio import portfolio_arguments
+        portfolio_arguments._team = None
+        portfolio_arguments._division = None
+
     def teardown_method(self):
         """Clean up portfolio context and cached data after each test."""
         from report_generator.generator.data_models.portfolio import portfolio_arguments
         portfolio_arguments._team = None
         portfolio_arguments._division = None
         
-        from report_generator.generator.data_models.portfolio.osh_portfolio import osh_ratings_portfolio_data
-        cache_attrs = ['data', 'metadata', 'period', 'system_names']
+        from report_generator.generator.data_models.portfolio.osh_portfolio import osh_portfolio_data
+        cache_attrs = ['raw_data', 'metadata', 'period', 'system_names']
         for attr in cache_attrs:
-            osh_ratings_portfolio_data.__dict__.pop(attr, None)
+            osh_portfolio_data.__dict__.pop(attr, None)
 
     @patch('report_generator.generator.data_models.portfolio.osh_portfolio.sigrid_api')
     def test_get_system_returns_correct_system(self, mock_sigrid_api):
         """Test that get_system returns correct system data."""
-        from report_generator.generator.data_models.portfolio.osh_portfolio import osh_ratings_portfolio_data
+        from report_generator.generator.data_models.portfolio.osh_portfolio import osh_portfolio_data
         
         mock_data = {
             'systems': [
@@ -2564,9 +2570,9 @@ class TestOSHPortfolioData:
         }
         mock_sigrid_api.get_portfolio_osh_findings.return_value = mock_data
         
-        osh_ratings_portfolio_data.__dict__.pop('data', None)
+        osh_portfolio_data.__dict__.pop('raw_data', None)
         
-        system = osh_ratings_portfolio_data.get_system('system1')
+        system = osh_portfolio_data.get_system('system1')
         
         assert system is not None
         assert system['systemName'] == 'system1'
@@ -2575,7 +2581,7 @@ class TestOSHPortfolioData:
     @patch('report_generator.generator.data_models.portfolio.osh_portfolio.sigrid_api')
     def test_find_system_returns_correct_system(self, mock_sigrid_api):
         """Test that find_system returns correct system data (alias for get_system)."""
-        from report_generator.generator.data_models.portfolio.osh_portfolio import osh_ratings_portfolio_data
+        from report_generator.generator.data_models.portfolio.osh_portfolio import osh_portfolio_data
         
         mock_data = {
             'systems': [
@@ -2584,9 +2590,9 @@ class TestOSHPortfolioData:
         }
         mock_sigrid_api.get_portfolio_osh_findings.return_value = mock_data
         
-        osh_ratings_portfolio_data.__dict__.pop('data', None)
+        osh_portfolio_data.__dict__.pop('raw_data', None)
         
-        system = osh_ratings_portfolio_data.find_system('system1')
+        system = osh_portfolio_data.find_system('system1')
         
         assert system is not None
         assert system['systemName'] == 'system1'
@@ -2594,7 +2600,7 @@ class TestOSHPortfolioData:
     @patch('report_generator.generator.data_models.portfolio.osh_portfolio.sigrid_api')
     def test_system_names_returns_all_systems(self, mock_sigrid_api):
         """Test that system_names property returns all system names."""
-        from report_generator.generator.data_models.portfolio.osh_portfolio import osh_ratings_portfolio_data
+        from report_generator.generator.data_models.portfolio.osh_portfolio import osh_portfolio_data
         
         mock_data = {
             'systems': [
@@ -2605,10 +2611,10 @@ class TestOSHPortfolioData:
         }
         mock_sigrid_api.get_portfolio_osh_findings.return_value = mock_data
         
-        for attr in ['data', 'system_names']:
-            osh_ratings_portfolio_data.__dict__.pop(attr, None)
+        for attr in ['raw_data', 'data', 'system_names']:
+            osh_portfolio_data.__dict__.pop(attr, None)
         
-        names = osh_ratings_portfolio_data.system_names
+        names = osh_portfolio_data.system_names
         
         assert len(names) == 3
         assert 'system1' in names
@@ -2714,8 +2720,8 @@ class TestMaintainabilityPortfolioHelpers:
         
         _finalize_change_statistics(stats, best_inc, best_dec)
         
-        assert 'system1' in stats['maintainability-change']['increase']
-        assert abs(stats['maintainability-change']['increase']['system1'] - 0.5) < 0.01
+        assert 'system1' in stats['maintainability-change']['biggest-increase']
+        assert abs(stats['maintainability-change']['biggest-increase']['system1'] - 0.5) < 0.01
 
     def test_finalize_change_statistics_with_decrease(self):
         """Test that _finalize_change_statistics records decreases."""
@@ -2729,8 +2735,8 @@ class TestMaintainabilityPortfolioHelpers:
         
         _finalize_change_statistics(stats, best_inc, best_dec)
         
-        assert 'system2' in stats['maintainability-change']['decrease']
-        assert abs(stats['maintainability-change']['decrease']['system2'] - (-0.3)) < 0.01
+        assert 'system2' in stats['maintainability-change']['biggest-decrease']
+        assert abs(stats['maintainability-change']['biggest-decrease']['system2'] - (-0.3)) < 0.01
 
 
 class TestModernizationHelpers:

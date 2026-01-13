@@ -49,8 +49,8 @@ def _format_chart_data(data) -> Tuple[ChartData, ChartData]:
     return chart_data, chart_data2
 
 
-def _determine_chart_axis_max():
-    data = osh_data.risk_distributions  # TODO actually use chart data
+def _determine_chart_axis_max(original_data):
+    data = original_data.risk_distributions
     max_bar_length = max(sum(data["vulnerability"][0:4]), sum(data["legal"][0:4]), sum(data["freshness"][0:4]),
                          sum(data["activity"][0:4]), sum(data["stability"][0:4]), sum(data["management"][0:4]))
 
@@ -101,8 +101,7 @@ class OSHPortfolioSlidePlaceholder(Placeholder):
 
     @classmethod
     def value(cls, parameter=None):
-        portfolio_data = osh_portfolio_data.library_risks
-        return _format_chart_data(portfolio_data)
+        return _format_chart_data(osh_portfolio_data.risk_distributions)
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
@@ -111,4 +110,4 @@ class OSHPortfolioSlidePlaceholder(Placeholder):
             return
         (data, data2) = value_cb()
         for slide in slides:
-            _populate_osh_system_slide(slide, data, data2, osh_portfolio_data.library_risks)
+            _populate_osh_system_slide(slide, data, data2, osh_portfolio_data)
