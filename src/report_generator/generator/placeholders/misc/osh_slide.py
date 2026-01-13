@@ -30,29 +30,29 @@ from report_generator.generator.placeholders.base import PlaceholderDocType
 def _format_chart_data(data) -> Tuple[ChartData, ChartData]:
     chart_data = ChartData()
     chart_data.categories = ["Vulnerability risk", "Legal risk"]
-    chart_data.add_series("Critical risk", [data.vuln_risks[0], data.license_risks[0]])
-    chart_data.add_series("High risk", [data.vuln_risks[1], data.license_risks[1]])
-    chart_data.add_series("Medium risk", [data.vuln_risks[2], data.license_risks[2]])
-    chart_data.add_series("Low risk", [data.vuln_risks[3], data.license_risks[3]])
+    chart_data.add_series("Critical risk", [data["vulnerability"][0], data["legal"][0]])
+    chart_data.add_series("High risk", [data["vulnerability"][1], data["legal"][1]])
+    chart_data.add_series("Medium risk", [data["vulnerability"][2], data["legal"][2]])
+    chart_data.add_series("Low risk", [data["vulnerability"][3], data["legal"][3]])
 
     chart_data2 = ChartData()
     chart_data2.categories = ["Freshness risk", "Stability risk", "Management risk", "Activity risk"]
-    chart_data2.add_series("Critical risk", [data.freshness_risks[0], data.stability_risks[0], data.mgmt_risks[0],
-                                             data.activity_risks[0]])
-    chart_data2.add_series("High risk", [data.freshness_risks[1], data.stability_risks[1], data.mgmt_risks[1],
-                                         data.activity_risks[1]])
-    chart_data2.add_series("Medium risk", [data.freshness_risks[2], data.stability_risks[2], data.mgmt_risks[2],
-                                           data.activity_risks[2]])
-    chart_data2.add_series("Low risk", [data.freshness_risks[3], data.stability_risks[3], data.mgmt_risks[3],
-                                        data.activity_risks[3]])
+    chart_data2.add_series("Critical risk", [data["freshness"][0], data["stability"][0], data["management"][0],
+                                             data["activity"][0]])
+    chart_data2.add_series("High risk", [data["freshness"][1], data["stability"][1], data["management"][1],
+                                         data["activity"][1]])
+    chart_data2.add_series("Medium risk", [data["freshness"][2], data["stability"][2], data["management"][2],
+                                           data["activity"][2]])
+    chart_data2.add_series("Low risk", [data["freshness"][3], data["stability"][3], data["management"][3],
+                                        data["activity"][3]])
 
     return chart_data, chart_data2
 
 
-def _determine_chart_axis_max(data) -> float:
-    # TODO actually use chart data
-    max_bar_length = max(sum(data.vuln_risks[0:4]), sum(data.license_risks[0:4]), sum(data.freshness_risks[0:4]),
-                         sum(data.activity_risks[0:4]), sum(data.stability_risks[0:4]), sum(data.mgmt_risks[0:4]))
+def _determine_chart_axis_max():
+    data = osh_data.risk_distributions  # TODO actually use chart data
+    max_bar_length = max(sum(data["vulnerability"][0:4]), sum(data["legal"][0:4]), sum(data["freshness"][0:4]),
+                         sum(data["activity"][0:4]), sum(data["stability"][0:4]), sum(data["management"][0:4]))
 
     return max_bar_length * 1.1
 
@@ -80,7 +80,7 @@ class OSHSlidePlaceholder(Placeholder):
 
     @classmethod
     def value(cls, parameter=None):
-        return _format_chart_data(osh_data.data)
+        return _format_chart_data(osh_data.risk_distributions)
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
