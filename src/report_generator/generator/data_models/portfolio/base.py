@@ -59,3 +59,30 @@ class AbstractPortfolioModel(ABC):
 
     def end_snapshot(self, system):
         return self.get_system(system)
+    
+    @staticmethod
+    def _categorize_rating(rating):
+        """Categorize a rating into market segments."""
+        if rating >= 3.5:
+            return 'above_market'
+        elif rating >= 2.5:
+            return 'market_average'
+        else:
+            return 'below_market'
+    
+    @staticmethod
+    def _calculate_percentages(counts, total):
+        """Calculate percentages from counts."""
+        if total == 0:
+            return {'above_market': 0, 'market_average': 0, 'below_market': 0}
+        
+        return {
+            'above_market': round(100 * counts['above_market'] / total),
+            'market_average': round(100 * counts['market_average'] / total),
+            'below_market': round(100 * counts['below_market'] / total)
+        }
+    
+    @staticmethod
+    def _round_star_rating(rating):
+        """Round rating to one decimal place."""
+        return int(rating * 10) / 10

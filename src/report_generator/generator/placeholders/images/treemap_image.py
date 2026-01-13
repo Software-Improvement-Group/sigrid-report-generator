@@ -17,7 +17,7 @@ import logging
 
 from report_generator.generator import report_utils
 from report_generator.generator.formatters import formatters
-from report_generator.generator.data_models import maintainability_portfolio_data, security_ratings_portfolio_data, architecture_portfolio_data, osh_ratings_portfolio_data
+from report_generator.generator.data_models import maintainability_portfolio_data, security_ratings_portfolio_data, architecture_portfolio_data, osh_portfolio_data
 from report_generator.generator.data_models import maintainability_delta_quality_new_code, maintainability_delta_quality_changed_code, maintainability_delta_quality_new_and_changed_code
 from report_generator.generator.placeholders.images.base import _AbstractImagePlaceholder
 
@@ -372,7 +372,7 @@ class OSHRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
     @classmethod
     def value(cls, parameter=None):
         def rating_function(system_name):
-            system = osh_ratings_portfolio_data.find_system(system_name)
+            system = osh_portfolio_data.find_system(system_name)
             props = system.get("sbom", {}).get("metadata", {}).get("properties", [])
             return next((float(p["value"]) for p in props if p["name"] == "sigrid:ratings:system"),0.0)
         fig_data = cls.create_end_date_portfolio_treemap(rating_func=rating_function, rating_rounding_func=formatters.maintainability_round, determine_color_function=cls.determine_rating_color)

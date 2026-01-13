@@ -22,23 +22,24 @@ from report_generator.generator.constants import OSHMetric
 
 
 class _AnonDataClass:
-    total_deps = 0
+    def __init__(self):
+        self.total_deps = 0
 
-    date_day = ""
-    date_month = ""
-    date_year = ""
+        self.date_day = ""
+        self.date_month = ""
+        self.date_year = ""
 
-    ratings = {}
+        self.ratings = {}
 
-    # critical, high, medium, low, no risk
-    vuln_risks = [0, 0, 0, 0, 0]
-    license_risks = [0, 0, 0, 0, 0]
-    freshness_risks = [0, 0, 0, 0, 0]
-    stability_risks = [0, 0, 0, 0, 0]
-    mgmt_risks = [0, 0, 0, 0, 0]
-    activity_risks = [0, 0, 0, 0, 0]
+        # critical, high, medium, low, no risk
+        self.vuln_risks = [0, 0, 0, 0, 0]
+        self.license_risks = [0, 0, 0, 0, 0]
+        self.freshness_risks = [0, 0, 0, 0, 0]
+        self.stability_risks = [0, 0, 0, 0, 0]
+        self.mgmt_risks = [0, 0, 0, 0, 0]
+        self.activity_risks = [0, 0, 0, 0, 0]
 
-    vulns = []
+        self.vulns = []
 
     @property
     def total_vulnerable(self):
@@ -51,9 +52,7 @@ class OSHData:
     def raw_data(self):
         return sigrid_api.get_osh_findings()
 
-    @cached_property
-    def data(self):
-        raw_data = self.raw_data
+    def _process_osh_data(self, raw_data):
         data = _AnonDataClass()
 
         for component in raw_data.get("components", []):
@@ -82,6 +81,10 @@ class OSHData:
             logging.warning("No OSH ratings found in API response. Not populating OSH ratings slide")
 
         return data
+
+    @cached_property
+    def data(self):
+        return self._process_osh_data(self.raw_data)
 
     @staticmethod
     def get_rating_from_data(raw_data, rating_name):

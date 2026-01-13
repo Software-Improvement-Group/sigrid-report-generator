@@ -26,10 +26,128 @@ class SecurityDashboardFindingsPortfolioData(AbstractPortfolioModel):
         return sigrid_api.get_portfolio_security_dashboard_findings()
     
     @cached_property
+    def period(self):
+        return sigrid_api.get_period()
+    
+    @cached_property
     def system_names(self):
         return AbstractPortfolioModel._system_names_helper(self.data['systems'], 'system')
     
     def get_system(self, system):
         return AbstractPortfolioModel._get_system_helper(system, self.data['systems'], 'system')
+    
+    def _initialize_severity_stats(self):
+        """Initialize statistics structure for all severity levels."""
+        return {
+            'CRITICAL': {'resolved': 0, 'added': 0},
+            'HIGH': {'resolved': 0, 'added': 0},
+            'MEDIUM': {'resolved': 0, 'added': 0},
+            'LOW': {'resolved': 0, 'added': 0}
+        }
+    
+    def _is_month_in_period(self, month):
+        """Check if a month falls within the reporting period.
+        
+        Compares year-month to handle cases where the period is within a single month.
+        For example, if period is 2025-01-15 to 2025-01-31, month 2025-01-01 should match.
+        """
+        if not month:
+            return False
+        period_start, period_end = self.period
+        
+        # Extract year-month (YYYY-MM) for comparison
+        month_ym = month[:7]  # e.g., "2025-01-01" -> "2025-01"
+        period_start_ym = period_start[:7]
+        period_end_ym = period_end[:7]
+        
+        # Month is included if its year-month falls within the period's year-month range
+        return period_start_ym <= month_ym <= period_end_ym
+    
+    def _accumulate_severity_counts(self, stats):
+        """Accumulate resolved and added counts for all severity levels within the period."""
+        for system in self.data.get('systems', []):
+            for month_data in system.get('findingRatio', []):
+                if self._is_month_in_period(month_data.get('month')):
+                    severities = month_data.get('severities', {})
+                    
+                    for severity_level in ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']:
+                        severity_data = severities.get(severity_level, {})
+                        stats[severity_level]['resolved'] += severity_data.get('resolved', 0)
+                        stats[severity_level]['added'] += severity_data.get('new', 0)
+    
+    def _calculate_net_changes(self, stats):
+        """Calculate net change for each severity level."""
+        for severity_level in stats:
+            net_change = stats[severity_level]['added'] - stats[severity_level]['resolved']
+            stats[severity_level]['net_change'] = net_change
+    
+    def _get_earliest_month(self):
+        """Get the earliest month from the actual API data.
+        
+        Returns:
+            str: The earliest month date (always first of the month), or period start if no data.
+        """
+        earliest_month = None
+        
+        for system in self.data.get('systems', []):
+            for month_data in system.get('findingRatio', []):
+                month = month_data.get('month')
+                if month and (earliest_month is None or month < earliest_month):
+                    earliest_month = month
+        
+        return earliest_month if earliest_month else self.period[0]
+    
+    @cached_property
+    def _all_findings_statistics(self):
+        """
+        Calculate statistics for all severity levels in a single loop for efficiency.
+        
+        Returns:
+            dict: Statistics for each severity level (CRITICAL, HIGH, MEDIUM, LOW).
+        """
+        stats = self._initialize_severity_stats()
+        self._accumulate_severity_counts(stats)
+        self._calculate_net_changes(stats)
+        return stats
+    
+    @cached_property
+    def critical_findings_statistics(self):
+        """
+        Calculate statistics for critical security findings across the portfolio.
+        
+        Returns:
+            dict: Statistics including total resolved, new, and net change in critical findings.
+        """
+        return self._all_findings_statistics['CRITICAL']
+    
+    @cached_property
+    def high_findings_statistics(self):
+        """
+        Calculate statistics for high severity security findings across the portfolio.
+        
+        Returns:
+            dict: Statistics including total resolved, new, and net change in high severity findings.
+        """
+        return self._all_findings_statistics['HIGH']
+    
+    @cached_property
+    def medium_findings_statistics(self):
+        """
+        Calculate statistics for medium severity security findings across the portfolio.
+        
+        Returns:
+            dict: Statistics including total resolved, new, and net change in medium severity findings.
+        """
+        return self._all_findings_statistics['MEDIUM']
+    
+    @cached_property
+    def low_findings_statistics(self):
+        """
+        Calculate statistics for low severity security findings across the portfolio.
+        
+        Returns:
+            dict: Statistics including total resolved, new, and net change in low severity findings.
+        """
+        return self._all_findings_statistics['LOW']
 
 security_dashboard_findings_portfolio_data = SecurityDashboardFindingsPortfolioData()

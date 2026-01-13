@@ -20,6 +20,9 @@ from pptx.slide import Slide
 
 from report_generator.generator import report_utils
 from report_generator.generator.data_models import osh_data
+
+from report_generator.generator.data_models import osh_portfolio_data #TODO: separate from system slide?
+
 from report_generator.generator.placeholders import Placeholder
 from report_generator.generator.placeholders.base import PlaceholderDocType
 
@@ -46,19 +49,22 @@ def _format_chart_data(data) -> Tuple[ChartData, ChartData]:
     return chart_data, chart_data2
 
 
-def _determine_chart_axis_max():
-    data = osh_data.data  # TODO actually use chart data
+def _determine_chart_axis_max(data) -> float:
+    # TODO actually use chart data
     max_bar_length = max(sum(data.vuln_risks[0:4]), sum(data.license_risks[0:4]), sum(data.freshness_risks[0:4]),
                          sum(data.activity_risks[0:4]), sum(data.stability_risks[0:4]), sum(data.mgmt_risks[0:4]))
 
     return max_bar_length * 1.1
 
 
-def _populate_osh_system_slide(slide: Slide, data, data2):
+def _populate_osh_system_slide(slide: Slide, data, data2, orginal_data):
     shapes_by_name = dict((s.name, s) for s in slide.shapes)
-    chart_axis_max = _determine_chart_axis_max()
+    print('a')
+    chart_axis_max = _determine_chart_axis_max(orginal_data)
+    print('b')
     _set_chart_data_and_axis(shapes_by_name["CHART_1"].chart, data, chart_axis_max)
     _set_chart_data_and_axis(shapes_by_name["CHART_2"].chart, data2, chart_axis_max)
+    print('c')
 
 
 def _set_chart_data_and_axis(chart, data, axis_max):
@@ -85,4 +91,24 @@ class OSHSlidePlaceholder(Placeholder):
 
         (data, data2) = value_cb()
         for slide in slides:
-            _populate_osh_system_slide(slide, data, data2)
+            _populate_osh_system_slide(slide, data, data2, osh_data.data)
+
+
+class OSHPortfolioSlidePlaceholder(Placeholder):
+    """Traditional SIG OSH portfolio-level slide, with risk bar charts for all 6 OSH metrics."""
+    key = "OSH_PORTFOLIO_SLIDE"
+    __doc_type__ = PlaceholderDocType.CHART
+
+    @classmethod
+    def value(cls, parameter=None):
+        portfolio_data = osh_portfolio_data.library_risks
+        return _format_chart_data(portfolio_data)
+
+    @staticmethod
+    def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
+        slides = report_utils.pptx.identify_specific_slide(presentation, key)
+        if len(slides) == 0:
+            return
+        (data, data2) = value_cb()
+        for slide in slides:
+            _populate_osh_system_slide(slide, data, data2, osh_portfolio_data.library_risks)
