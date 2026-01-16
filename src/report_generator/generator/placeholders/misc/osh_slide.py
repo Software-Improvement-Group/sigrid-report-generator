@@ -59,12 +59,9 @@ def _determine_chart_axis_max(original_data):
 
 def _populate_osh_system_slide(slide: Slide, data, data2, orginal_data):
     shapes_by_name = dict((s.name, s) for s in slide.shapes)
-    print('a')
     chart_axis_max = _determine_chart_axis_max(orginal_data)
-    print('b')
     _set_chart_data_and_axis(shapes_by_name["CHART_1"].chart, data, chart_axis_max)
     _set_chart_data_and_axis(shapes_by_name["CHART_2"].chart, data2, chart_axis_max)
-    print('c')
 
 
 def _set_chart_data_and_axis(chart, data, axis_max):
