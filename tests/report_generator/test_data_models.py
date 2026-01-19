@@ -3080,3 +3080,353 @@ class TestSystemMetadata:
         
         assert teams == ['Team A', 'Team B']
 
+
+class TestSecurityDashboardFindingsChartData:
+    """Test suite for security dashboard findings chart data model methods."""
+    
+    @patch('report_generator.generator.data_models.portfolio.security_dashboard_findings_portfolio.sigrid_api')
+    def test_extract_unique_months(self, mock_sigrid_api):
+        """Test _unique_months extracts and returns unique months."""
+        mock_data = {
+            'systems': [
+                {
+                    'system': 'test-system',
+                    'findingRatio': [
+                        {'month': '2025-01-01'},
+                        {'month': '2025-02-01'},
+                        {'month': '2025-03-01'}
+                    ]
+                }
+            ]
+        }
+        mock_sigrid_api.get_portfolio_security_dashboard_findings.return_value = mock_data
+        
+        portfolio = SecurityDashboardFindingsPortfolioData()
+        portfolio.__dict__.pop('data', None)
+        
+        columns = portfolio.unique_months
+        
+        assert len(columns) == 3
+        assert columns == ['Jan', 'Feb', 'Mar']
+    
+    @patch('report_generator.generator.data_models.portfolio.security_dashboard_findings_portfolio.sigrid_api')
+    def test_extract_unique_months_removes_duplicates(self, mock_sigrid_api):
+        """Test _unique_months removes duplicate months from multiple systems."""
+        mock_data = {
+            'systems': [
+                {
+                    'system': 'system1',
+                    'findingRatio': [
+                        {'month': '2025-01-01'},
+                        {'month': '2025-02-01'}
+                    ]
+                },
+                {
+                    'system': 'system2',
+                    'findingRatio': [
+                        {'month': '2025-02-01'},
+                        {'month': '2025-03-01'}
+                    ]
+                }
+            ]
+        }
+        mock_sigrid_api.get_portfolio_security_dashboard_findings.return_value = mock_data
+        
+        portfolio = SecurityDashboardFindingsPortfolioData()
+        portfolio.__dict__.pop('data', None)
+        
+        columns = portfolio.unique_months
+        
+        assert len(columns) == 3
+        assert columns == ['Jan', 'Feb', 'Mar']
+    
+    @patch('report_generator.generator.data_models.portfolio.security_dashboard_findings_portfolio.sigrid_api')
+    def test_aggregate_findings_for_severity(self, mock_sigrid_api):
+        """Test _aggregate_findings_for_severity aggregates data correctly."""
+        mock_data = {
+            'systems': [
+                {
+                    'system': 'system1',
+                    'findingRatio': [
+                        {
+                            'month': '2025-01-01',
+                            'severities': {
+                                'CRITICAL': {'new': 5, 'existing': 10, 'resolved': 3}
+                            }
+                        }
+                    ]
+                },
+                {
+                    'system': 'system2',
+                    'findingRatio': [
+                        {
+                            'month': '2025-01-01',
+                            'severities': {
+                                'CRITICAL': {'new': 2, 'existing': 7, 'resolved': 1}
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+        mock_sigrid_api.get_portfolio_security_dashboard_findings.return_value = mock_data
+        
+        portfolio = SecurityDashboardFindingsPortfolioData()
+        portfolio.__dict__.pop('data', None)
+        
+        findings = portfolio._aggregate_findings_for_severity('CRITICAL', ['Jan'])
+        
+        assert findings['new'][0] == 7  # 5 + 2
+        assert findings['existing'][0] == 17  # 10 + 7
+        assert findings['resolved'][0] == 4  # 3 + 1
+    
+    @patch('report_generator.generator.data_models.portfolio.security_dashboard_findings_portfolio.sigrid_api')
+    def test_chart_findings_by_severity(self, mock_sigrid_api):
+        """Test chart_findings_by_severity returns complete aggregated data."""
+        mock_data = {
+            'systems': [
+                {
+                    'system': 'test-system',
+                    'findingRatio': [
+                        {
+                            'month': '2025-01-01',
+                            'severities': {
+                                'HIGH': {'new': 3, 'existing': 8, 'resolved': 2}
+                            }
+                        },
+                        {
+                            'month': '2025-02-01',
+                            'severities': {
+                                'HIGH': {'new': 5, 'existing': 6, 'resolved': 4}
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+        mock_sigrid_api.get_portfolio_security_dashboard_findings.return_value = mock_data
+        
+        portfolio = SecurityDashboardFindingsPortfolioData()
+        portfolio.__dict__.pop('data', None)
+        
+        result = portfolio.chart_findings_by_severity('HIGH')
+        
+        assert 'columns' in result
+        assert 'new' in result
+        assert 'existing' in result
+        assert 'resolved' in result
+        assert len(result['columns']) == 2
+        assert result['new'] == [3, 5]
+        assert result['existing'] == [8, 6]
+        assert result['resolved'] == [2, 4]
+
+
+class TestSecurityDashboardResolutionTimesChartData:
+    """Test suite for security dashboard resolution times chart data model methods."""
+    
+    @patch('report_generator.generator.data_models.portfolio.security_dashboard_resolution_times_portfolio.sigrid_api')
+    def test_get_legend_labels(self, mock_sigrid_api):
+        """Test get_legend_labels returns correct labels from API."""
+        mock_data = {
+            'legend': {
+                'CRITICAL': {
+                    'noRisk': 'at most 7 days',
+                    'lowRisk': 'between 7 and 14 days',
+                    'mediumRisk': 'between 14 and 30 days',
+                    'highRisk': 'at least 30 days'
+                }
+            },
+            'systems': []
+        }
+        mock_sigrid_api.get_portfolio_security_resolution_time_findings.return_value = mock_data
+        
+        portfolio = SecurityDashboardResolutionTimesPortfolioData()
+        portfolio.__dict__.pop('data', None)
+        
+        labels = portfolio.get_legend_labels('CRITICAL')
+        
+        assert labels['noRisk'] == 'at most 7 days'
+        assert labels['lowRisk'] == 'between 7 and 14 days'
+        assert labels['mediumRisk'] == 'between 14 and 30 days'
+        assert labels['highRisk'] == 'at least 30 days'
+    
+    @patch('report_generator.generator.data_models.portfolio.security_dashboard_resolution_times_portfolio.sigrid_api')
+    def test_get_legend_labels_with_defaults(self, mock_sigrid_api):
+        """Test get_legend_labels returns defaults when API data is missing."""
+        mock_data = {
+            'legend': {},
+            'systems': []
+        }
+        mock_sigrid_api.get_portfolio_security_resolution_time_findings.return_value = mock_data
+        
+        portfolio = SecurityDashboardResolutionTimesPortfolioData()
+        portfolio.__dict__.pop('data', None)
+        
+        labels = portfolio.get_legend_labels('HIGH')
+        
+        assert labels['noRisk'] == 'No Risk'
+        assert labels['lowRisk'] == 'Low Risk'
+        assert labels['mediumRisk'] == 'Medium Risk'
+        assert labels['highRisk'] == 'High Risk'
+    
+    @patch('report_generator.generator.data_models.portfolio.security_dashboard_resolution_times_portfolio.sigrid_api')
+    def test_extract_unique_months_from_resolution_times(self, mock_sigrid_api):
+        """Test _extract_unique_months_from_resolution_times extracts unique months."""
+        mock_data = {
+            'systems': [
+                {
+                    'system': 'test-system',
+                    'resolutionTimes': [
+                        {'month': '2025-01-01'},
+                        {'month': '2025-02-01'}
+                    ]
+                }
+            ]
+        }
+        mock_sigrid_api.get_portfolio_security_resolution_time_findings.return_value = mock_data
+        
+        portfolio = SecurityDashboardResolutionTimesPortfolioData()
+        portfolio.__dict__.pop('data', None)
+        
+        columns = portfolio.unique_months
+        
+        assert len(columns) == 2
+        assert columns == ['Jan', 'Feb']
+    
+    @patch('report_generator.generator.data_models.portfolio.security_dashboard_resolution_times_portfolio.sigrid_api')
+    def test_update_times_for_entry(self, mock_sigrid_api):
+        """Test _update_times_for_entry updates arrays correctly."""
+        mock_data = {'systems': []}
+        mock_sigrid_api.get_portfolio_security_resolution_time_findings.return_value = mock_data
+        
+        portfolio = SecurityDashboardResolutionTimesPortfolioData()
+        portfolio.__dict__.pop('data', None)
+        
+        times = {
+            'noRisk': [0, 0],
+            'lowRisk': [0, 0],
+            'mediumRisk': [0, 0],
+            'highRisk': [0, 0]
+        }
+        
+        entry = {
+            'month': '2025-01-01',
+            'severities': {
+                'CRITICAL': {
+                    'noRisk': 5,
+                    'lowRisk': 3,
+                    'mediumRisk': 2,
+                    'highRisk': 1
+                }
+            }
+        }
+        
+        portfolio._update_times_for_entry(times, entry, 'CRITICAL', ['Jan', 'Feb'])
+        
+        assert times['noRisk'][0] == 5
+        assert times['lowRisk'][0] == 3
+        assert times['mediumRisk'][0] == 2
+        assert times['highRisk'][0] == 1
+    
+    @patch('report_generator.generator.data_models.portfolio.security_dashboard_resolution_times_portfolio.sigrid_api')
+    def test_aggregate_resolution_times_for_severity(self, mock_sigrid_api):
+        """Test _aggregate_resolution_times_for_severity aggregates across systems."""
+        mock_data = {
+            'systems': [
+                {
+                    'system': 'system1',
+                    'resolutionTimes': [
+                        {
+                            'month': '2025-01-01',
+                            'severities': {
+                                'HIGH': {
+                                    'noRisk': 10,
+                                    'lowRisk': 5,
+                                    'mediumRisk': 3,
+                                    'highRisk': 2
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    'system': 'system2',
+                    'resolutionTimes': [
+                        {
+                            'month': '2025-01-01',
+                            'severities': {
+                                'HIGH': {
+                                    'noRisk': 8,
+                                    'lowRisk': 4,
+                                    'mediumRisk': 1,
+                                    'highRisk': 1
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+        mock_sigrid_api.get_portfolio_security_resolution_time_findings.return_value = mock_data
+        
+        portfolio = SecurityDashboardResolutionTimesPortfolioData()
+        portfolio.__dict__.pop('data', None)
+        
+        times = portfolio._aggregate_resolution_times_for_severity('HIGH', ['Jan'])
+        
+        assert times['noRisk'][0] == 18  # 10 + 8
+        assert times['lowRisk'][0] == 9  # 5 + 4
+        assert times['mediumRisk'][0] == 4  # 3 + 1
+        assert times['highRisk'][0] == 3  # 2 + 1
+    
+    @patch('report_generator.generator.data_models.portfolio.security_dashboard_resolution_times_portfolio.sigrid_api')
+    def test_chart_resolution_times_by_severity(self, mock_sigrid_api):
+        """Test chart_resolution_times_by_severity returns complete aggregated data."""
+        mock_data = {
+            'systems': [
+                {
+                    'system': 'test-system',
+                    'resolutionTimes': [
+                        {
+                            'month': '2025-01-01',
+                            'severities': {
+                                'MEDIUM': {
+                                    'noRisk': 15,
+                                    'lowRisk': 10,
+                                    'mediumRisk': 5,
+                                    'highRisk': 3
+                                }
+                            }
+                        },
+                        {
+                            'month': '2025-02-01',
+                            'severities': {
+                                'MEDIUM': {
+                                    'noRisk': 12,
+                                    'lowRisk': 8,
+                                    'mediumRisk': 4,
+                                    'highRisk': 2
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+        mock_sigrid_api.get_portfolio_security_resolution_time_findings.return_value = mock_data
+        
+        portfolio = SecurityDashboardResolutionTimesPortfolioData()
+        portfolio.__dict__.pop('data', None)
+        
+        result = portfolio.chart_resolution_times_by_severity('MEDIUM')
+        
+        assert 'columns' in result
+        assert 'noRisk' in result
+        assert 'lowRisk' in result
+        assert 'mediumRisk' in result
+        assert 'highRisk' in result
+        assert len(result['columns']) == 2
+        assert result['noRisk'] == [15, 12]
+        assert result['lowRisk'] == [10, 8]
+        assert result['mediumRisk'] == [5, 4]
+        assert result['highRisk'] == [3, 2]

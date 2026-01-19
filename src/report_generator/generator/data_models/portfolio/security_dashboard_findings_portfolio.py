@@ -149,5 +149,56 @@ class SecurityDashboardFindingsPortfolioData(AbstractPortfolioModel):
             dict: Statistics including total resolved, new, and net change in low severity findings.
         """
         return self._all_findings_statistics['LOW']
+    
+    @cached_property
+    def unique_months(self):
+        """Extract unique month labels from findings data
+        """
+        from datetime import datetime
+        
+        columns = []
+        for system in self.data['systems']:
+            for ratio in system.get('findingRatio', []):
+                month = datetime.strptime(ratio['month'], "%Y-%m-%d").strftime("%b")
+                if month not in columns:
+                    columns.append(month)
+        return columns
+    
+    def _aggregate_findings_for_severity(self, severity, columns):
+        """Aggregate findings data for a specific severity across all systems"""
+        from datetime import datetime
+        
+        findings = {
+            'new': [0] * len(columns),
+            'existing': [0] * len(columns),
+            'resolved': [0] * len(columns)
+        }
+        
+        for system in self.data['systems']:
+            for ratio in system.get('findingRatio', []):
+                month = datetime.strptime(ratio['month'], "%Y-%m-%d").strftime("%b")
+                month_idx = columns.index(month)
+                
+                severities = ratio.get('severities', {}).get(severity, {})
+                findings['new'][month_idx] += severities.get('new', 0)
+                findings['existing'][month_idx] += severities.get('existing', 0)
+                findings['resolved'][month_idx] += severities.get('resolved', 0)
+        
+        return findings
+    
+    def chart_findings_by_severity(self, severity):
+        """
+        Get aggregated findings data by severity level for chart display.
+        
+        Args:
+            severity: Severity level ('CRITICAL', 'HIGH', 'MEDIUM', 'LOW')
+        
+        Returns:
+            dict: Contains 'columns' (month labels), 'new', 'existing', and 'resolved' arrays
+        """
+        columns = self.unique_months
+        findings = self._aggregate_findings_for_severity(severity, columns)
+        findings['columns'] = columns
+        return findings
 
 security_dashboard_findings_portfolio_data = SecurityDashboardFindingsPortfolioData()
