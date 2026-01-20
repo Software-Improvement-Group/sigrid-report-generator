@@ -335,7 +335,7 @@ class TestSecurityDashboardChartPlaceholders:
     
     def test_add_month_data_row(self):
         """Test _add_month_data_row appends data correctly to arrays."""
-        from report_generator.generator.placeholders.charts.security_findings import _add_month_data_row
+        from report_generator.generator.placeholders.charts.security_findings import _add_month_data_row, MonthData
         
         arrays = {
             'categories': [],
@@ -345,7 +345,7 @@ class TestSecurityDashboardChartPlaceholders:
             'total': []
         }
         
-        _add_month_data_row(arrays, 'Jan', 5, 10, 2, 15)
+        _add_month_data_row(arrays, MonthData('Jan', 5, 10, 2, 15))
         
         assert arrays['categories'] == ['Jan']
         assert arrays['new'] == [5]

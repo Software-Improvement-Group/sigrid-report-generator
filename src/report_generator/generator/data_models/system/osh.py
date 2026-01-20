@@ -19,6 +19,7 @@ from typing import Union
 
 from report_generator.generator import sigrid_api
 from report_generator.generator.constants import MetricEnum, OSHMetric
+from report_generator.generator.data_models.osh_base import OSHMetricsBase
 
 
 class _SystemMetric(MetricEnum):
@@ -34,11 +35,16 @@ def _find_cyclonedx_property_value(properties, key):
             return prop["value"]
     return None
 
-class OSHData:
+class OSHData(OSHMetricsBase):
 
     @cached_property
     def raw_data(self):
         return sigrid_api.get_osh_findings()
+    
+    @cached_property
+    def data(self):
+        """Returns this OSH data instance for compatibility."""
+        return self
 
     @cached_property
     def date(self) -> datetime:
@@ -111,64 +117,6 @@ class OSHData:
     @cached_property
     def dependencies_count(self) -> int:
         return len(self.raw_data["components"])
-
-    @cached_property
-    def vulnerabilities_count(self) -> int:
-        return sum(self.vulnerability_risk_distribution[0:4])
-
-    @cached_property
-    def vulnerabilities_fraction(self) -> float:
-        if not self.vulnerabilities_count:
-            return 0.0
-
-        return max(self.vulnerabilities_count / self.dependencies_count, 0.01)
-
-    @cached_property
-    def outdated_count(self) -> int:
-        return sum(
-            self.freshness_risk_distribution[
-                0:3])  # Only count critical to medium. Low is fresh enough to not report on
-
-    @cached_property
-    def outdated_fraction(self) -> float:
-        if not self.outdated_count:
-            return 0.0
-
-        return max(self.outdated_count / self.dependencies_count, 0.01)
-
-    @cached_property
-    def legal_risk_count(self) -> int:
-        return sum(self.legal_risk_distribution[
-                       0:3])  # Only count critical to medium. Low license risk is typically not restrictive, so not interesting to report on
-
-    @cached_property
-    def legal_risk_fraction(self) -> float:
-        if not self.legal_risk_count:
-            return 0.0
-
-        return max(self.legal_risk_count / self.dependencies_count, 0.01)
-
-    @cached_property
-    def unmanaged_count(self) -> int:
-        return sum(self.management_risk_distribution[0:4])
-
-    @cached_property
-    def unmanaged_fraction(self) -> float:
-        if not self.unmanaged_count:
-            return 0.0
-
-        return max(self.unmanaged_count / self.dependencies_count, 0.01)
-
-    @cached_property
-    def activity_risk_count(self) -> int:
-        return sum(self.activity_risk_distribution[0:4])
-
-    @cached_property
-    def activity_risk_fraction(self) -> float:
-        if not self.activity_risk_count:
-            return 0.0
-
-        return max(self.activity_risk_count / self.dependencies_count, 0.01)
 
 
 osh_data = OSHData()

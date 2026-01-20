@@ -268,6 +268,223 @@ class TestOSHPortfolioData:
         assert 'system3' in names
 
 
+class TestOSHMetricsBase:
+    """Test cases for OSHMetricsBase shared metrics calculations."""
+
+    def test_vulnerabilities_count_calculates_from_risk_distribution(self):
+        """Test vulnerabilities_count sums critical to low risk levels (0-3)."""
+        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        
+        class TestMetrics(OSHMetricsBase):
+            vulnerability_risk_distribution = [5, 10, 8, 3, 20]  # critical, high, medium, low, no_risk
+            dependencies_count = 46
+        
+        metrics = TestMetrics()
+        assert metrics.vulnerabilities_count == 26  # 5 + 10 + 8 + 3
+    
+    def test_vulnerabilities_fraction_calculates_correctly(self):
+        """Test vulnerabilities_fraction divides count by total dependencies with minimum."""
+        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        
+        class TestMetrics(OSHMetricsBase):
+            vulnerability_risk_distribution = [5, 10, 8, 3, 20]
+            dependencies_count = 46
+        
+        metrics = TestMetrics()
+        assert metrics.vulnerabilities_fraction == pytest.approx(26 / 46)
+    
+    def test_vulnerabilities_fraction_returns_zero_when_no_vulnerabilities(self):
+        """Test vulnerabilities_fraction returns 0.0 when count is zero."""
+        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        
+        class TestMetrics(OSHMetricsBase):
+            vulnerability_risk_distribution = [0, 0, 0, 0, 46]
+            dependencies_count = 46
+        
+        metrics = TestMetrics()
+        assert metrics.vulnerabilities_fraction == pytest.approx(0.0)
+    
+    def test_vulnerabilities_fraction_has_minimum_floor(self):
+        """Test vulnerabilities_fraction has a minimum value of 0.01."""
+        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        
+        class TestMetrics(OSHMetricsBase):
+            vulnerability_risk_distribution = [0, 0, 0, 1, 999]
+            dependencies_count = 1000
+        
+        metrics = TestMetrics()
+        assert metrics.vulnerabilities_fraction == pytest.approx(0.01)
+    
+    def test_outdated_count_only_includes_critical_to_medium(self):
+        """Test outdated_count sums critical to medium freshness risk (0-2), excluding low."""
+        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        
+        class TestMetrics(OSHMetricsBase):
+            freshness_risk_distribution = [3, 7, 12, 5, 20]  # critical, high, medium, low, no_risk
+            dependencies_count = 47
+        
+        metrics = TestMetrics()
+        assert metrics.outdated_count == 22  # 3 + 7 + 12 (excludes low=5)
+    
+    def test_outdated_fraction_calculates_correctly(self):
+        """Test outdated_fraction divides count by total dependencies with minimum."""
+        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        
+        class TestMetrics(OSHMetricsBase):
+            freshness_risk_distribution = [3, 7, 12, 5, 20]
+            dependencies_count = 47
+        
+        metrics = TestMetrics()
+        assert metrics.outdated_fraction == pytest.approx(22 / 47)
+    
+    def test_legal_risk_count_only_includes_critical_to_medium(self):
+        """Test legal_risk_count sums critical to medium license risk (0-2), excluding low."""
+        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        
+        class TestMetrics(OSHMetricsBase):
+            legal_risk_distribution = [2, 5, 8, 10, 25]  # critical, high, medium, low, no_risk
+            dependencies_count = 50
+        
+        metrics = TestMetrics()
+        assert metrics.legal_risk_count == 15  # 2 + 5 + 8 (excludes low=10)
+    
+    def test_legal_risk_fraction_calculates_correctly(self):
+        """Test legal_risk_fraction divides count by total dependencies with minimum."""
+        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        
+        class TestMetrics(OSHMetricsBase):
+            legal_risk_distribution = [2, 5, 8, 10, 25]
+            dependencies_count = 50
+        
+        metrics = TestMetrics()
+        assert metrics.legal_risk_fraction == pytest.approx(15 / 50)
+    
+    def test_unmanaged_count_includes_all_risk_levels(self):
+        """Test unmanaged_count sums critical to low management risk (0-3)."""
+        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        
+        class TestMetrics(OSHMetricsBase):
+            management_risk_distribution = [1, 3, 5, 7, 30]  # critical, high, medium, low, no_risk
+            dependencies_count = 46
+        
+        metrics = TestMetrics()
+        assert metrics.unmanaged_count == 16  # 1 + 3 + 5 + 7
+    
+    def test_unmanaged_fraction_calculates_correctly(self):
+        """Test unmanaged_fraction divides count by total dependencies with minimum."""
+        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        
+        class TestMetrics(OSHMetricsBase):
+            management_risk_distribution = [1, 3, 5, 7, 30]
+            dependencies_count = 46
+        
+        metrics = TestMetrics()
+        assert metrics.unmanaged_fraction == pytest.approx(16 / 46)
+    
+    def test_activity_risk_count_includes_all_risk_levels(self):
+        """Test activity_risk_count sums critical to low activity risk (0-3)."""
+        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        
+        class TestMetrics(OSHMetricsBase):
+            activity_risk_distribution = [2, 4, 6, 8, 35]  # critical, high, medium, low, no_risk
+            dependencies_count = 55
+        
+        metrics = TestMetrics()
+        assert metrics.activity_risk_count == 20  # 2 + 4 + 6 + 8
+    
+    def test_activity_risk_fraction_calculates_correctly(self):
+        """Test activity_risk_fraction divides count by total dependencies with minimum."""
+        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        
+        class TestMetrics(OSHMetricsBase):
+            activity_risk_distribution = [2, 4, 6, 8, 35]
+            dependencies_count = 55
+        
+        metrics = TestMetrics()
+        assert metrics.activity_risk_fraction == pytest.approx(20 / 55)
+    
+    def test_all_fractions_have_minimum_floor_of_0_01(self):
+        """Test all fraction methods apply minimum floor of 0.01 when count is non-zero."""
+        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        
+        class TestMetrics(OSHMetricsBase):
+            vulnerability_risk_distribution = [0, 0, 0, 1, 9999]
+            freshness_risk_distribution = [1, 0, 0, 0, 9999]
+            legal_risk_distribution = [0, 1, 0, 0, 9999]
+            management_risk_distribution = [0, 0, 0, 1, 9999]
+            activity_risk_distribution = [0, 0, 1, 0, 9999]
+            dependencies_count = 10000
+        
+        metrics = TestMetrics()
+        assert metrics.vulnerabilities_fraction == pytest.approx(0.01)
+        assert metrics.outdated_fraction == pytest.approx(0.01)
+        assert metrics.legal_risk_fraction == pytest.approx(0.01)
+        assert metrics.unmanaged_fraction == pytest.approx(0.01)
+        assert metrics.activity_risk_fraction == pytest.approx(0.01)
+    
+    def test_all_fractions_return_zero_when_counts_are_zero(self):
+        """Test all fraction methods return 0.0 when respective counts are zero."""
+        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        
+        class TestMetrics(OSHMetricsBase):
+            vulnerability_risk_distribution = [0, 0, 0, 0, 100]
+            freshness_risk_distribution = [0, 0, 0, 50, 50]
+            legal_risk_distribution = [0, 0, 0, 50, 50]
+            management_risk_distribution = [0, 0, 0, 0, 100]
+            activity_risk_distribution = [0, 0, 0, 0, 100]
+            dependencies_count = 100
+        
+        metrics = TestMetrics()
+        assert metrics.vulnerabilities_fraction == pytest.approx(0.0)
+        assert metrics.outdated_fraction == pytest.approx(0.0)
+        assert metrics.legal_risk_fraction == pytest.approx(0.0)
+        assert metrics.unmanaged_fraction == pytest.approx(0.0)
+        assert metrics.activity_risk_fraction == pytest.approx(0.0)
+    
+    def test_properties_are_cached(self):
+        """Test that properties use @cached_property decorator and don't recalculate."""
+        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        
+        call_count = {'vulnerability': 0, 'freshness': 0}
+        
+        class TestMetrics(OSHMetricsBase):
+            dependencies_count = 100
+            
+            @property
+            def vulnerability_risk_distribution(self):
+                call_count['vulnerability'] += 1
+                return [5, 10, 8, 3, 74]
+            
+            @property
+            def freshness_risk_distribution(self):
+                call_count['freshness'] += 1
+                return [3, 7, 12, 5, 73]
+            
+            @property
+            def legal_risk_distribution(self):
+                return [0, 0, 0, 0, 100]
+            
+            @property
+            def management_risk_distribution(self):
+                return [0, 0, 0, 0, 100]
+            
+            @property
+            def activity_risk_distribution(self):
+                return [0, 0, 0, 0, 100]
+        
+        metrics = TestMetrics()
+        
+        # Access vulnerabilities_count multiple times
+        _ = metrics.vulnerabilities_count
+        _ = metrics.vulnerabilities_count
+        assert call_count['vulnerability'] == 1  # Should only calculate once
+        
+        # Access outdated_count multiple times
+        _ = metrics.outdated_count
+        _ = metrics.outdated_count
+        assert call_count['freshness'] == 1  # Should only calculate once
+
+
 class TestRatingDistributionPercentages:
     def test_osh_rating_distribution_calculation(self, mocker):
         """Test get_rating_distribution_percentages calculates percentages correctly for OSH."""

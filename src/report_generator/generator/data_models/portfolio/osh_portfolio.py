@@ -15,11 +15,12 @@
 from functools import cached_property
 
 from report_generator.generator import sigrid_api
+from report_generator.generator.data_models.osh_base import OSHMetricsBase
 from report_generator.generator.data_models.portfolio.base import AbstractPortfolioModel
 from report_generator.generator.data_models.portfolio.portfolio_arguments import filter_data_on_portfolio_arguments
 
 
-class OSHRatingsPortfolioData(AbstractPortfolioModel):
+class OSHRatingsPortfolioData(OSHMetricsBase, AbstractPortfolioModel):
     @cached_property
     @filter_data_on_portfolio_arguments(data_tag="systems", system_tag="systemName")
     def raw_data(self):
@@ -95,61 +96,6 @@ class OSHRatingsPortfolioData(AbstractPortfolioModel):
             "management"   : self.management_risk_distribution,
             "activity"     : self.activity_risk_distribution,
         }
-    
-    @cached_property
-    def vulnerabilities_count(self) -> int:
-        """Number of dependencies with vulnerabilities (critical to low)."""
-        return sum(self.vulnerability_risk_distribution[0:4])
-    
-    @cached_property
-    def vulnerabilities_fraction(self) -> float:
-        if not self.vulnerabilities_count:
-            return 0.0
-        return max(self.vulnerabilities_count / self.dependencies_count, 0.01)
-    
-    @cached_property
-    def outdated_count(self) -> int:
-        """Number of outdated dependencies (critical to medium freshness risk)."""
-        return sum(self.freshness_risk_distribution[0:3])
-    
-    @cached_property
-    def outdated_fraction(self) -> float:
-        if not self.outdated_count:
-            return 0.0
-        return max(self.outdated_count / self.dependencies_count, 0.01)
-    
-    @cached_property
-    def legal_risk_count(self) -> int:
-        """Number of dependencies with restrictive licenses (critical to medium)."""
-        return sum(self.legal_risk_distribution[0:3])
-    
-    @cached_property
-    def legal_risk_fraction(self) -> float:
-        if not self.legal_risk_count:
-            return 0.0
-        return max(self.legal_risk_count / self.dependencies_count, 0.01)
-    
-    @cached_property
-    def unmanaged_count(self) -> int:
-        """Number of unmanaged dependencies (all risk levels)."""
-        return sum(self.management_risk_distribution[0:4])
-    
-    @cached_property
-    def unmanaged_fraction(self) -> float:
-        if not self.unmanaged_count:
-            return 0.0
-        return max(self.unmanaged_count / self.dependencies_count, 0.01)
-    
-    @cached_property
-    def activity_risk_count(self) -> int:
-        """Number of dependencies with activity risks."""
-        return sum(self.activity_risk_distribution[0:4])
-    
-    @cached_property
-    def activity_risk_fraction(self) -> float:
-        if not self.activity_risk_count:
-            return 0.0
-        return max(self.activity_risk_count / self.dependencies_count, 0.01)
     
     @cached_property
     def date(self):

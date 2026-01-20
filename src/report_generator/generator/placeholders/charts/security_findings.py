@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from dataclasses import dataclass
 from typing import Callable
 
 from pptx.chart.data import CategoryChartData
@@ -24,13 +25,23 @@ from report_generator.generator.placeholders import Placeholder
 from report_generator.generator.placeholders.base import PlaceholderDocType
 
 
-def _add_month_data_row(arrays_dict, month, new_val, existing_val, resolved_val, total_val):
-    """Add a single row of data for a month"""
-    arrays_dict['categories'].append(month)
-    arrays_dict['new'].append(new_val)
-    arrays_dict['existing'].append(existing_val)
-    arrays_dict['resolved'].append(resolved_val)
-    arrays_dict['total'].append(total_val)
+@dataclass
+class MonthData:
+    """Data for a single month row in the security findings chart."""
+    month: str
+    new: int
+    existing: int
+    resolved: int
+    total: int
+
+
+def _add_month_data_row(arrays_dict: dict, month_data: MonthData) -> None:
+    """Add a single row of data for a month."""
+    arrays_dict['categories'].append(month_data.month)
+    arrays_dict['new'].append(month_data.new)
+    arrays_dict['existing'].append(month_data.existing)
+    arrays_dict['resolved'].append(month_data.resolved)
+    arrays_dict['total'].append(month_data.total)
 
 
 def _build_chart_data_arrays(data):
@@ -60,14 +71,14 @@ def _build_chart_data_arrays(data):
         total = new[i] + existing[i]
         
         # Row 1: Month name with New and Existing stacked (no Resolved here)
-        _add_month_data_row(arrays_dict, month, new[i], existing[i], 0, total)
+        _add_month_data_row(arrays_dict, MonthData(month, new[i], existing[i], 0, total))
         
         # Row 2: Blank for spacing (only Resolved gets value here for clustering effect)
-        _add_month_data_row(arrays_dict, '', 0, 0, resolved[i], resolved[i])
+        _add_month_data_row(arrays_dict, MonthData('', 0, 0, resolved[i], resolved[i]))
         
         # Row 3: Blank for spacing (skip for last month)
         if i < len(columns) - 1:
-            _add_month_data_row(arrays_dict, '', 0, 0, 0, 0)
+            _add_month_data_row(arrays_dict, MonthData('', 0, 0, 0, 0))
     
     return arrays_dict
 
