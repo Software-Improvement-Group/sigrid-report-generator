@@ -254,7 +254,7 @@ class TestTreemapImagePlaceholder:
             'color_mapping': {}
         }
         
-        result = _AbstractPortfolioTreemapPlaceholder.draw_image(10, 10, fig_data)
+        _AbstractPortfolioTreemapPlaceholder.draw_image(10, 10, fig_data)
         
         # Should have called treemap with a non-empty color mapping
         assert mock_treemap.treemap.called

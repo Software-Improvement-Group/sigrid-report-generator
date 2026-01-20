@@ -17,23 +17,60 @@ from unittest.mock import patch
 # noinspection PyProtectedMember
 from report_generator.generator.data_models.system.maintainability import _sort_and_aggregate_technology_data
 # noinspection PyProtectedMember
-from report_generator.generator.data_models.portfolio.osh_portfolio import OSHRatingsPortfolioData
+from report_generator.generator.data_models.system.security import security_data
 # noinspection PyProtectedMember
-from report_generator.generator.data_models.portfolio.security_portfolio import SecurityRatingsPortfolioData
+from report_generator.generator.data_models.system.system_metadata import system_metadata
 # noinspection PyProtectedMember
-from report_generator.generator.data_models.portfolio.security_dashboard_findings_portfolio import SecurityDashboardFindingsPortfolioData
+from report_generator.generator.data_models.portfolio import portfolio_arguments
 # noinspection PyProtectedMember
-from report_generator.generator.data_models.portfolio.security_dashboard_resolution_times_portfolio import SecurityDashboardResolutionTimesPortfolioData
+from report_generator.generator.data_models.portfolio.osh_portfolio import OSHRatingsPortfolioData, osh_portfolio_data
+# noinspection PyProtectedMember
+from report_generator.generator.data_models.portfolio.security_portfolio import SecurityRatingsPortfolioData, security_ratings_portfolio_data
+# noinspection PyProtectedMember
+from report_generator.generator.data_models.portfolio.security_dashboard_findings_portfolio import (
+    SecurityDashboardFindingsPortfolioData,
+    security_dashboard_findings_portfolio_data
+)
+# noinspection PyProtectedMember
+from report_generator.generator.data_models.portfolio.security_dashboard_resolution_times_portfolio import (
+    SecurityDashboardResolutionTimesPortfolioData,
+    security_dashboard_resolution_times_portfolio_data
+)
 # noinspection PyProtectedMember
 from report_generator.generator.data_models.portfolio.maintainability_portfolio import (
     MaintainabilityPortfolioData,
-    maintainability_portfolio_data
+    maintainability_portfolio_data,
+    _initialize_statistics,
+    _is_system_active,
+    _weighted_avg,
+    _parse_date,
+    _update_star_statistics,
+    _finalize_change_statistics
 )
 # noinspection PyProtectedMember
-from report_generator.generator.data_models.portfolio.architecture_portfolio import ArchitecturePortfolioData
+from report_generator.generator.data_models.portfolio.architecture_portfolio import (
+    ArchitecturePortfolioData,
+    architecture_portfolio_data
+)
 # noinspection PyProtectedMember
 from report_generator.generator.data_models.portfolio.maintainability_delta_quality_portfolio import (
-    _AbstractMaintainabilityDeltaQualityPortfolioData
+    _AbstractMaintainabilityDeltaQualityPortfolioData,
+    maintainability_delta_quality_new_code,
+    maintainability_delta_quality_changed_code,
+    maintainability_delta_quality_new_and_changed_code
+)
+# noinspection PyProtectedMember
+from report_generator.generator.data_models.portfolio.objectives import (
+    objectives_data,
+    ObjectivesData,
+    ObjectiveStatus
+)
+# noinspection PyProtectedMember
+from report_generator.generator.data_models.portfolio.modernization import (
+    get_activity,
+    get_renovation_effort,
+    get_change_speed,
+    Scenario
 )
 from report_generator.generator.data_models.portfolio.base import AbstractPortfolioModel
 
@@ -95,6 +132,22 @@ class TestDataModels:
 
 
 class TestOSHPortfolioData:
+    """Test cases for OSHRatingsPortfolioData model."""
+
+    def setup_method(self):
+        """Reset portfolio context before each test."""
+        portfolio_arguments._team = None
+        portfolio_arguments._division = None
+
+    def teardown_method(self):
+        """Clean up portfolio context and cached data after each test."""
+        portfolio_arguments._team = None
+        portfolio_arguments._division = None
+        
+        cache_attrs = ['raw_data', 'metadata', 'period', 'system_names']
+        for attr in cache_attrs:
+            osh_portfolio_data.__dict__.pop(attr, None)
+
     def test_extract_osh_rating_with_valid_data(self):
         """Test _extract_osh_rating extracts ratings correctly from SBOM metadata."""
         portfolio = OSHRatingsPortfolioData()
@@ -154,6 +207,64 @@ class TestOSHPortfolioData:
         
         rating = portfolio._extract_osh_rating(system, 'system')
         assert rating is None
+
+    @patch('report_generator.generator.data_models.portfolio.osh_portfolio.sigrid_api')
+    def test_get_system_returns_correct_system(self, mock_sigrid_api):
+        """Test that get_system returns correct system data."""
+        mock_data = {
+            'systems': [
+                {'systemName': 'system1', 'oshRating': 4.5},
+                {'systemName': 'system2', 'oshRating': 3.8}
+            ]
+        }
+        mock_sigrid_api.get_portfolio_osh_findings.return_value = mock_data
+        
+        osh_portfolio_data.__dict__.pop('raw_data', None)
+        
+        system = osh_portfolio_data.get_system('system1')
+        
+        assert system is not None
+        assert system['systemName'] == 'system1'
+        assert abs(system['oshRating'] - 4.5) < 0.01
+
+    @patch('report_generator.generator.data_models.portfolio.osh_portfolio.sigrid_api')
+    def test_find_system_returns_correct_system(self, mock_sigrid_api):
+        """Test that find_system returns correct system data (alias for get_system)."""
+        mock_data = {
+            'systems': [
+                {'systemName': 'system1', 'oshRating': 4.5}
+            ]
+        }
+        mock_sigrid_api.get_portfolio_osh_findings.return_value = mock_data
+        
+        osh_portfolio_data.__dict__.pop('raw_data', None)
+        
+        system = osh_portfolio_data.find_system('system1')
+        
+        assert system is not None
+        assert system['systemName'] == 'system1'
+
+    @patch('report_generator.generator.data_models.portfolio.osh_portfolio.sigrid_api')
+    def test_system_names_returns_all_systems(self, mock_sigrid_api):
+        """Test that system_names property returns all system names."""
+        mock_data = {
+            'systems': [
+                {'systemName': 'system1', 'oshRating': 4.5},
+                {'systemName': 'system2', 'oshRating': 3.8},
+                {'systemName': 'system3', 'oshRating': 4.2}
+            ]
+        }
+        mock_sigrid_api.get_portfolio_osh_findings.return_value = mock_data
+        
+        for attr in ['raw_data', 'data', 'system_names']:
+            osh_portfolio_data.__dict__.pop(attr, None)
+        
+        names = osh_portfolio_data.system_names
+        
+        assert len(names) == 3
+        assert 'system1' in names
+        assert 'system2' in names
+        assert 'system3' in names
 
 
 class TestRatingDistributionPercentages:
@@ -2025,7 +2136,6 @@ class TestMaintainabilityPortfolioData:
 
     def setup_method(self):
         """Clean up portfolio context before each test."""
-        from report_generator.generator.data_models.portfolio import portfolio_arguments
         portfolio_arguments._team = None
         portfolio_arguments._division = None
         
@@ -2036,7 +2146,6 @@ class TestMaintainabilityPortfolioData:
 
     def teardown_method(self):
         """Clean up portfolio context and cached data after each test."""
-        from report_generator.generator.data_models.portfolio import portfolio_arguments
         portfolio_arguments._team = None
         portfolio_arguments._division = None
         
@@ -2233,11 +2342,9 @@ class TestObjectivesData:
 
     def teardown_method(self):
         """Clean up portfolio context and cached data after each test."""
-        from report_generator.generator.data_models.portfolio import portfolio_arguments
         portfolio_arguments._team = None
         portfolio_arguments._division = None
         
-        from report_generator.generator.data_models.portfolio.objectives import objectives_data
         cache_attrs = ['periods', 'comparison_period', 'objectives_evaluation_trend', 
                       'objectives_evaluation_status', 'teams']
         for attr in cache_attrs:
@@ -2246,8 +2353,6 @@ class TestObjectivesData:
     @patch('report_generator.generator.data_models.portfolio.objectives.sigrid_api')
     def test_determine_system_status_met(self, mock_sigrid_api):
         """Test that determine_system_status returns MET when target is met."""
-        from report_generator.generator.data_models.portfolio.objectives import ObjectivesData, ObjectiveStatus
-        
         objective = {
             "targetMetAtEnd": "MET",
             "delta": "SIMILAR"
@@ -2259,8 +2364,6 @@ class TestObjectivesData:
     @patch('report_generator.generator.data_models.portfolio.objectives.sigrid_api')
     def test_determine_system_status_improved(self, mock_sigrid_api):
         """Test that determine_system_status returns IMPROVED when improving."""
-        from report_generator.generator.data_models.portfolio.objectives import ObjectivesData, ObjectiveStatus
-        
         objective = {
             "targetMetAtEnd": "NOT_MET",
             "delta": "IMPROVING"
@@ -2272,8 +2375,6 @@ class TestObjectivesData:
     @patch('report_generator.generator.data_models.portfolio.objectives.sigrid_api')
     def test_determine_system_status_worsened(self, mock_sigrid_api):
         """Test that determine_system_status returns WORSENED when deteriorating."""
-        from report_generator.generator.data_models.portfolio.objectives import ObjectivesData, ObjectiveStatus
-        
         objective = {
             "targetMetAtEnd": "NOT_MET",
             "delta": "DETERIORATING"
@@ -2285,8 +2386,6 @@ class TestObjectivesData:
     @patch('report_generator.generator.data_models.portfolio.objectives.sigrid_api')
     def test_determine_system_status_unchanged(self, mock_sigrid_api):
         """Test that determine_system_status returns UNCHANGED when similar."""
-        from report_generator.generator.data_models.portfolio.objectives import ObjectivesData, ObjectiveStatus
-        
         objective = {
             "targetMetAtEnd": "NOT_MET",
             "delta": "SIMILAR"
@@ -2298,8 +2397,6 @@ class TestObjectivesData:
     @patch('report_generator.generator.data_models.portfolio.objectives.sigrid_api')
     def test_determine_system_status_unknown(self, mock_sigrid_api):
         """Test that determine_system_status returns UNKNOWN for unknown states."""
-        from report_generator.generator.data_models.portfolio.objectives import ObjectivesData, ObjectiveStatus
-        
         objective = {
             "targetMetAtEnd": "UNKNOWN",
             "delta": "SIMILAR"
@@ -2311,8 +2408,6 @@ class TestObjectivesData:
     @patch('report_generator.generator.data_models.portfolio.objectives.sigrid_api')
     def test_filter_system_evaluations(self, mock_sigrid_api):
         """Test that filter_system_evaluations filters systems correctly."""
-        from report_generator.generator.data_models.portfolio.objectives import ObjectivesData
-        
         evaluation = [
             {"systemName": "system1", "objectives": []},
             {"systemName": "system2", "objectives": []},
@@ -2328,8 +2423,6 @@ class TestObjectivesData:
     @patch('report_generator.generator.data_models.portfolio.objectives.sigrid_api')
     def test_get_portfolio_percentage_with_no_objectives(self, mock_sigrid_api):
         """Test that get_portfolio_percentage returns 0 when no objectives exist."""
-        from report_generator.generator.data_models.portfolio.objectives import objectives_data, ObjectiveStatus
-        
         evaluations = [{"systemName": "system1", "objectives": []}]
         
         percentage = objectives_data.get_portfolio_percentage(evaluations, None, ObjectiveStatus.MET)
@@ -2339,8 +2432,6 @@ class TestObjectivesData:
     @patch('report_generator.generator.data_models.portfolio.objectives.sigrid_api')
     def test_get_portfolio_percentage_calculates_correctly(self, mock_sigrid_api):
         """Test that get_portfolio_percentage calculates percentage correctly."""
-        from report_generator.generator.data_models.portfolio.objectives import objectives_data, ObjectiveStatus
-        
         evaluations = [
             {
                 "systemName": "system1",
@@ -2366,11 +2457,9 @@ class TestSecurityPortfolioData:
 
     def teardown_method(self):
         """Clean up portfolio context and cached data after each test."""
-        from report_generator.generator.data_models.portfolio import portfolio_arguments
         portfolio_arguments._team = None
         portfolio_arguments._division = None
         
-        from report_generator.generator.data_models.portfolio.security_portfolio import security_ratings_portfolio_data
         cache_attrs = ['data', 'metadata', 'period', 'system_names']
         for attr in cache_attrs:
             security_ratings_portfolio_data.__dict__.pop(attr, None)
@@ -2378,8 +2467,6 @@ class TestSecurityPortfolioData:
     @patch('report_generator.generator.data_models.portfolio.security_portfolio.sigrid_api')
     def test_get_system_returns_correct_system(self, mock_sigrid_api):
         """Test that get_system returns correct system data."""
-        from report_generator.generator.data_models.portfolio.security_portfolio import security_ratings_portfolio_data
-        
         mock_data = [
             {'systemName': 'system1', 'securityRating': 4.5},
             {'systemName': 'system2', 'securityRating': 3.8}
@@ -2397,8 +2484,6 @@ class TestSecurityPortfolioData:
     @patch('report_generator.generator.data_models.portfolio.security_portfolio.sigrid_api')
     def test_system_names_returns_all_systems(self, mock_sigrid_api):
         """Test that system_names property returns all system names."""
-        from report_generator.generator.data_models.portfolio.security_portfolio import security_ratings_portfolio_data
-        
         mock_data = [
             {'systemName': 'system1', 'securityRating': 4.5},
             {'systemName': 'system2', 'securityRating': 3.8},
@@ -2422,11 +2507,9 @@ class TestSecurityDashboardFindingsPortfolioData:
 
     def teardown_method(self):
         """Clean up portfolio context and cached data after each test."""
-        from report_generator.generator.data_models.portfolio import portfolio_arguments
         portfolio_arguments._team = None
         portfolio_arguments._division = None
         
-        from report_generator.generator.data_models.portfolio.security_dashboard_findings_portfolio import security_dashboard_findings_portfolio_data
         cache_attrs = ['data', 'metadata', 'system_names']
         for attr in cache_attrs:
             security_dashboard_findings_portfolio_data.__dict__.pop(attr, None)
@@ -2434,8 +2517,6 @@ class TestSecurityDashboardFindingsPortfolioData:
     @patch('report_generator.generator.data_models.portfolio.security_dashboard_findings_portfolio.sigrid_api')
     def test_get_system_returns_correct_system(self, mock_sigrid_api):
         """Test that get_system returns correct system data."""
-        from report_generator.generator.data_models.portfolio.security_dashboard_findings_portfolio import security_dashboard_findings_portfolio_data
-        
         mock_data = {
             'systems': [
                 {'system': 'system1', 'findings': [{'severity': 'HIGH'}]},
@@ -2455,8 +2536,6 @@ class TestSecurityDashboardFindingsPortfolioData:
     @patch('report_generator.generator.data_models.portfolio.security_dashboard_findings_portfolio.sigrid_api')
     def test_system_names_returns_all_systems(self, mock_sigrid_api):
         """Test that system_names property returns all system names."""
-        from report_generator.generator.data_models.portfolio.security_dashboard_findings_portfolio import security_dashboard_findings_portfolio_data
-        
         mock_data = {
             'systems': [
                 {'system': 'system1', 'findings': []},
@@ -2482,11 +2561,9 @@ class TestSecurityDashboardResolutionTimesPortfolioData:
 
     def teardown_method(self):
         """Clean up portfolio context and cached data after each test."""
-        from report_generator.generator.data_models.portfolio import portfolio_arguments
         portfolio_arguments._team = None
         portfolio_arguments._division = None
         
-        from report_generator.generator.data_models.portfolio.security_dashboard_resolution_times_portfolio import security_dashboard_resolution_times_portfolio_data
         cache_attrs = ['data', 'metadata', 'system_names']
         for attr in cache_attrs:
             security_dashboard_resolution_times_portfolio_data.__dict__.pop(attr, None)
@@ -2494,8 +2571,6 @@ class TestSecurityDashboardResolutionTimesPortfolioData:
     @patch('report_generator.generator.data_models.portfolio.security_dashboard_resolution_times_portfolio.sigrid_api')
     def test_get_system_returns_correct_system(self, mock_sigrid_api):
         """Test that get_system returns correct system data."""
-        from report_generator.generator.data_models.portfolio.security_dashboard_resolution_times_portfolio import security_dashboard_resolution_times_portfolio_data
-        
         mock_data = {
             'systems': [
                 {'system': 'system1', 'avgResolutionTime': 15.5},
@@ -2515,8 +2590,6 @@ class TestSecurityDashboardResolutionTimesPortfolioData:
     @patch('report_generator.generator.data_models.portfolio.security_dashboard_resolution_times_portfolio.sigrid_api')
     def test_system_names_returns_all_systems(self, mock_sigrid_api):
         """Test that system_names property returns all system names."""
-        from report_generator.generator.data_models.portfolio.security_dashboard_resolution_times_portfolio import security_dashboard_resolution_times_portfolio_data
-        
         mock_data = {
             'systems': [
                 {'system': 'system1', 'avgResolutionTime': 15.5},
@@ -2537,98 +2610,11 @@ class TestSecurityDashboardResolutionTimesPortfolioData:
         assert 'system3' in names
 
 
-class TestOSHPortfolioData:
-    """Test cases for OSHRatingsPortfolioData model."""
-
-    def setup_method(self):
-        """Reset portfolio context before each test."""
-        from report_generator.generator.data_models.portfolio import portfolio_arguments
-        portfolio_arguments._team = None
-        portfolio_arguments._division = None
-
-    def teardown_method(self):
-        """Clean up portfolio context and cached data after each test."""
-        from report_generator.generator.data_models.portfolio import portfolio_arguments
-        portfolio_arguments._team = None
-        portfolio_arguments._division = None
-        
-        from report_generator.generator.data_models.portfolio.osh_portfolio import osh_portfolio_data
-        cache_attrs = ['raw_data', 'metadata', 'period', 'system_names']
-        for attr in cache_attrs:
-            osh_portfolio_data.__dict__.pop(attr, None)
-
-    @patch('report_generator.generator.data_models.portfolio.osh_portfolio.sigrid_api')
-    def test_get_system_returns_correct_system(self, mock_sigrid_api):
-        """Test that get_system returns correct system data."""
-        from report_generator.generator.data_models.portfolio.osh_portfolio import osh_portfolio_data
-        
-        mock_data = {
-            'systems': [
-                {'systemName': 'system1', 'oshRating': 4.5},
-                {'systemName': 'system2', 'oshRating': 3.8}
-            ]
-        }
-        mock_sigrid_api.get_portfolio_osh_findings.return_value = mock_data
-        
-        osh_portfolio_data.__dict__.pop('raw_data', None)
-        
-        system = osh_portfolio_data.get_system('system1')
-        
-        assert system is not None
-        assert system['systemName'] == 'system1'
-        assert abs(system['oshRating'] - 4.5) < 0.01
-
-    @patch('report_generator.generator.data_models.portfolio.osh_portfolio.sigrid_api')
-    def test_find_system_returns_correct_system(self, mock_sigrid_api):
-        """Test that find_system returns correct system data (alias for get_system)."""
-        from report_generator.generator.data_models.portfolio.osh_portfolio import osh_portfolio_data
-        
-        mock_data = {
-            'systems': [
-                {'systemName': 'system1', 'oshRating': 4.5}
-            ]
-        }
-        mock_sigrid_api.get_portfolio_osh_findings.return_value = mock_data
-        
-        osh_portfolio_data.__dict__.pop('raw_data', None)
-        
-        system = osh_portfolio_data.find_system('system1')
-        
-        assert system is not None
-        assert system['systemName'] == 'system1'
-
-    @patch('report_generator.generator.data_models.portfolio.osh_portfolio.sigrid_api')
-    def test_system_names_returns_all_systems(self, mock_sigrid_api):
-        """Test that system_names property returns all system names."""
-        from report_generator.generator.data_models.portfolio.osh_portfolio import osh_portfolio_data
-        
-        mock_data = {
-            'systems': [
-                {'systemName': 'system1', 'oshRating': 4.5},
-                {'systemName': 'system2', 'oshRating': 3.8},
-                {'systemName': 'system3', 'oshRating': 4.2}
-            ]
-        }
-        mock_sigrid_api.get_portfolio_osh_findings.return_value = mock_data
-        
-        for attr in ['raw_data', 'data', 'system_names']:
-            osh_portfolio_data.__dict__.pop(attr, None)
-        
-        names = osh_portfolio_data.system_names
-        
-        assert len(names) == 3
-        assert 'system1' in names
-        assert 'system2' in names
-        assert 'system3' in names
-
-
 class TestMaintainabilityPortfolioHelpers:
     """Test cases for helper functions in maintainability_portfolio module."""
 
     def test_initialize_statistics(self):
         """Test that _initialize_statistics returns correct structure."""
-        from report_generator.generator.data_models.portfolio.maintainability_portfolio import _initialize_statistics
-        
         stats = _initialize_statistics()
         
         assert 'maintainability' in stats
@@ -2639,32 +2625,24 @@ class TestMaintainabilityPortfolioHelpers:
 
     def test_is_system_active_returns_true_for_active(self):
         """Test that _is_system_active returns True for active non-dev systems."""
-        from report_generator.generator.data_models.portfolio.maintainability_portfolio import _is_system_active
-        
         metadata = {'active': True, 'isDevelopmentOnly': False}
         
         assert _is_system_active(metadata) is True
 
     def test_is_system_active_returns_false_for_inactive(self):
         """Test that _is_system_active returns False for inactive systems."""
-        from report_generator.generator.data_models.portfolio.maintainability_portfolio import _is_system_active
-        
         metadata = {'active': False, 'isDevelopmentOnly': False}
         
         assert _is_system_active(metadata) is False
 
     def test_is_system_active_returns_false_for_dev_only(self):
         """Test that _is_system_active returns False for dev-only systems."""
-        from report_generator.generator.data_models.portfolio.maintainability_portfolio import _is_system_active
-        
         metadata = {'active': True, 'isDevelopmentOnly': True}
         
         assert _is_system_active(metadata) is False
 
     def test_weighted_avg_calculates_correctly(self):
         """Test that _weighted_avg calculates weighted average correctly."""
-        from report_generator.generator.data_models.portfolio.maintainability_portfolio import _weighted_avg
-        
         values = [4.0, 3.0, 5.0]
         weights = [10, 5, 15]
         
@@ -2675,8 +2653,6 @@ class TestMaintainabilityPortfolioHelpers:
 
     def test_weighted_avg_handles_zero_weights(self):
         """Test that _weighted_avg handles zero total weight gracefully."""
-        from report_generator.generator.data_models.portfolio.maintainability_portfolio import _weighted_avg
-        
         values = [4.0, 3.0]
         weights = [0, 0]
         
@@ -2687,7 +2663,6 @@ class TestMaintainabilityPortfolioHelpers:
 
     def test_parse_date_converts_string_to_datetime(self):
         """Test that _parse_date correctly parses date strings."""
-        from report_generator.generator.data_models.portfolio.maintainability_portfolio import _parse_date
         from datetime import datetime
         
         result = _parse_date("2024-01-15")
@@ -2696,10 +2671,6 @@ class TestMaintainabilityPortfolioHelpers:
 
     def test_update_star_statistics_increments_correctly(self):
         """Test that _update_star_statistics updates statistics correctly."""
-        from report_generator.generator.data_models.portfolio.maintainability_portfolio import (
-            _initialize_statistics, _update_star_statistics
-        )
-        
         stats = _initialize_statistics()
         end_snapshot = {'maintainability': 4.5}
         
@@ -2710,10 +2681,6 @@ class TestMaintainabilityPortfolioHelpers:
 
     def test_finalize_change_statistics_with_increase(self):
         """Test that _finalize_change_statistics records increases."""
-        from report_generator.generator.data_models.portfolio.maintainability_portfolio import (
-            _initialize_statistics, _finalize_change_statistics
-        )
-        
         stats = _initialize_statistics()
         best_inc = ('system1', 0.5)
         best_dec = (None, float('inf'))
@@ -2725,10 +2692,6 @@ class TestMaintainabilityPortfolioHelpers:
 
     def test_finalize_change_statistics_with_decrease(self):
         """Test that _finalize_change_statistics records decreases."""
-        from report_generator.generator.data_models.portfolio.maintainability_portfolio import (
-            _initialize_statistics, _finalize_change_statistics
-        )
-        
         stats = _initialize_statistics()
         best_inc = (None, float('-inf'))
         best_dec = ('system2', -0.3)
@@ -2744,40 +2707,24 @@ class TestModernizationHelpers:
 
     def test_get_renovation_effort_for_keep_as_is(self):
         """Test that get_renovation_effort returns 0 for KEEP_AS_IS."""
-        from report_generator.generator.data_models.portfolio.modernization import (
-            get_renovation_effort, Scenario
-        )
-        
         effort = get_renovation_effort(Scenario.KEEP_AS_IS, {}, 100.0)
         
         assert abs(effort - 0.0) < 0.01
 
     def test_get_renovation_effort_for_replace(self):
         """Test that get_renovation_effort returns 0 for REPLACE."""
-        from report_generator.generator.data_models.portfolio.modernization import (
-            get_renovation_effort, Scenario
-        )
-        
         effort = get_renovation_effort(Scenario.REPLACE, {}, 100.0)
         
         assert abs(effort - 0.0) < 0.01
 
     def test_get_renovation_effort_for_rebuild(self):
         """Test that get_renovation_effort returns volume for REBUILD."""
-        from report_generator.generator.data_models.portfolio.modernization import (
-            get_renovation_effort, Scenario
-        )
-        
         effort = get_renovation_effort(Scenario.REBUILD, {}, 100.0)
         
         assert abs(effort - 100.0) < 0.01
 
     def test_get_renovation_effort_for_renovate(self):
         """Test that get_renovation_effort returns renovation effort for RENOVATE."""
-        from report_generator.generator.data_models.portfolio.modernization import (
-            get_renovation_effort, Scenario
-        )
-        
         architecture_metrics = {'RENOVATION_EFFORT': 50.0}
         effort = get_renovation_effort(Scenario.RENOVATE, architecture_metrics, 100.0)
         
@@ -2785,8 +2732,6 @@ class TestModernizationHelpers:
 
     def test_get_activity_calculates_from_churn(self):
         """Test that get_activity calculates activity from churn percentage."""
-        from report_generator.generator.data_models.portfolio.modernization import get_activity
-        
         architecture_graph = {
             'systemElements': [{
                 'measurementTimeSeries': {
@@ -2802,8 +2747,6 @@ class TestModernizationHelpers:
 
     def test_get_activity_returns_none_when_no_churn(self):
         """Test that get_activity returns None when churn data is missing."""
-        from report_generator.generator.data_models.portfolio.modernization import get_activity
-        
         architecture_graph = {
             'systemElements': [{
                 'measurementTimeSeries': {}
@@ -2816,20 +2759,12 @@ class TestModernizationHelpers:
 
     def test_get_change_speed_returns_zero_for_keep_as_is(self):
         """Test that get_change_speed returns 0 for KEEP_AS_IS."""
-        from report_generator.generator.data_models.portfolio.modernization import (
-            get_change_speed, Scenario
-        )
-        
         speed = get_change_speed(Scenario.KEEP_AS_IS, {})
         
         assert abs(speed - 0.0) < 0.01
 
     def test_get_change_speed_returns_potential_for_renovate(self):
         """Test that get_change_speed returns potential change speed for RENOVATE."""
-        from report_generator.generator.data_models.portfolio.modernization import (
-            get_change_speed, Scenario
-        )
-        
         architecture_metrics = {'POTENTIAL_CHANGE_SPEED': 1.5}
         speed = get_change_speed(Scenario.RENOVATE, architecture_metrics)
         
@@ -2841,11 +2776,9 @@ class TestArchitecturePortfolioData:
 
     def teardown_method(self):
         """Clean up portfolio context and cached data after each test."""
-        from report_generator.generator.data_models.portfolio import portfolio_arguments
         portfolio_arguments._team = None
         portfolio_arguments._division = None
         
-        from report_generator.generator.data_models.portfolio.architecture_portfolio import architecture_portfolio_data
         cache_attrs = ['data', 'metadata', 'period', 'system_names']
         for attr in cache_attrs:
             architecture_portfolio_data.__dict__.pop(attr, None)
@@ -2853,8 +2786,6 @@ class TestArchitecturePortfolioData:
     @patch('report_generator.generator.data_models.portfolio.architecture_portfolio.sigrid_api')
     def test_get_system_returns_correct_system(self, mock_sigrid_api):
         """Test that get_system returns correct system data."""
-        from report_generator.generator.data_models.portfolio.architecture_portfolio import architecture_portfolio_data
-        
         mock_data = [
             {'system': 'system1', 'architectureQuality': 4.5},
             {'system': 'system2', 'architectureQuality': 3.8}
@@ -2872,8 +2803,6 @@ class TestArchitecturePortfolioData:
     @patch('report_generator.generator.data_models.portfolio.architecture_portfolio.sigrid_api')
     def test_system_names_returns_all_systems(self, mock_sigrid_api):
         """Test that system_names property returns all system names."""
-        from report_generator.generator.data_models.portfolio.architecture_portfolio import architecture_portfolio_data
-        
         mock_data = [
             {'system': 'system1', 'architectureQuality': 4.5},
             {'system': 'system2', 'architectureQuality': 3.8},
@@ -2897,12 +2826,6 @@ class TestMaintainabilityDeltaQualityPortfolio:
 
     def teardown_method(self):
         """Clean up cached data after each test."""
-        from report_generator.generator.data_models.portfolio.maintainability_delta_quality_portfolio import (
-            maintainability_delta_quality_new_code,
-            maintainability_delta_quality_changed_code,
-            maintainability_delta_quality_new_and_changed_code
-        )
-        
         for model in [maintainability_delta_quality_new_code, maintainability_delta_quality_changed_code, maintainability_delta_quality_new_and_changed_code]:
             cache_attrs = ['data', 'system_names']
             for attr in cache_attrs:
@@ -2912,40 +2835,24 @@ class TestMaintainabilityDeltaQualityPortfolio:
     @patch('report_generator.generator.data_models.portfolio.maintainability_delta_quality_portfolio.sigrid_api')
     def test_new_code_get_type_returns_new_code(self, mock_sigrid_api, mock_portfolio_data):
         """Test that new code model returns NEW_CODE type."""
-        from report_generator.generator.data_models.portfolio.maintainability_delta_quality_portfolio import (
-            maintainability_delta_quality_new_code
-        )
-        
         assert maintainability_delta_quality_new_code.get_type() == "NEW_CODE"
 
     @patch('report_generator.generator.data_models.portfolio.maintainability_delta_quality_portfolio.maintainability_portfolio_data')
     @patch('report_generator.generator.data_models.portfolio.maintainability_delta_quality_portfolio.sigrid_api')
     def test_changed_code_get_type_returns_changed_code(self, mock_sigrid_api, mock_portfolio_data):
         """Test that changed code model returns CHANGED_CODE type."""
-        from report_generator.generator.data_models.portfolio.maintainability_delta_quality_portfolio import (
-            maintainability_delta_quality_changed_code
-        )
-        
         assert maintainability_delta_quality_changed_code.get_type() == "CHANGED_CODE"
 
     @patch('report_generator.generator.data_models.portfolio.maintainability_delta_quality_portfolio.maintainability_portfolio_data')
     @patch('report_generator.generator.data_models.portfolio.maintainability_delta_quality_portfolio.sigrid_api')
     def test_new_and_changed_code_get_type_returns_new_and_changed_code(self, mock_sigrid_api, mock_portfolio_data):
         """Test that new and changed code model returns NEW_AND_CHANGED_CODE type."""
-        from report_generator.generator.data_models.portfolio.maintainability_delta_quality_portfolio import (
-            maintainability_delta_quality_new_and_changed_code
-        )
-        
         assert maintainability_delta_quality_new_and_changed_code.get_type() == "NEW_AND_CHANGED_CODE"
 
     @patch('report_generator.generator.data_models.portfolio.maintainability_delta_quality_portfolio.maintainability_portfolio_data')
     @patch('report_generator.generator.data_models.portfolio.maintainability_delta_quality_portfolio.sigrid_api')
     def test_get_system_returns_delta_quality_data(self, mock_sigrid_api, mock_portfolio_data):
         """Test that get_system returns delta quality data for a system."""
-        from report_generator.generator.data_models.portfolio.maintainability_delta_quality_portfolio import (
-            maintainability_delta_quality_new_code
-        )
-        
         mock_portfolio_data.system_names = ['system1', 'system2']
         mock_sigrid_api.get_maintainability_delta_quality.side_effect = [
             {'quality': 4.5},
@@ -2963,10 +2870,6 @@ class TestMaintainabilityDeltaQualityPortfolio:
     @patch('report_generator.generator.data_models.portfolio.maintainability_delta_quality_portfolio.sigrid_api')
     def test_handles_api_request_failed(self, mock_sigrid_api, mock_portfolio_data):
         """Test that API request failures are handled gracefully."""
-        from report_generator.generator.data_models.portfolio.maintainability_delta_quality_portfolio import (
-            maintainability_delta_quality_new_code
-        )
-        
         # Create a proper exception class
         class SigridAPIRequestFailed(Exception):
             pass
@@ -2987,7 +2890,6 @@ class TestSystemSecurityData:
 
     def teardown_method(self):
         """Clean up cached data after each test."""
-        from report_generator.generator.data_models.system.security import security_data
         cache_attrs = ['findings', 'security_rating']
         for attr in cache_attrs:
             security_data.__dict__.pop(attr, None)
@@ -2995,8 +2897,6 @@ class TestSystemSecurityData:
     @patch('report_generator.generator.data_models.system.security.sigrid_api')
     def test_count_findings_by_severity(self, mock_sigrid_api):
         """Test that count_findings correctly counts findings by severity."""
-        from report_generator.generator.data_models.system.security import security_data
-        
         mock_findings = [
             {'severity': 'HIGH', 'description': 'Issue 1'},
             {'severity': 'HIGH', 'description': 'Issue 2'},
@@ -3014,8 +2914,6 @@ class TestSystemSecurityData:
     @patch('report_generator.generator.data_models.system.security.sigrid_api')
     def test_security_rating_returns_rating(self, mock_sigrid_api):
         """Test that security_rating returns the rating from API."""
-        from report_generator.generator.data_models.system.security import security_data
-        
         mock_sigrid_api.get_security_ratings.return_value = {'rating': 4.5}
         
         security_data.__dict__.pop('security_rating', None)
@@ -3030,7 +2928,6 @@ class TestSystemMetadata:
 
     def teardown_method(self):
         """Clean up cached data after each test."""
-        from report_generator.generator.data_models.system.system_metadata import system_metadata
         cache_attrs = ['data']
         for attr in cache_attrs:
             system_metadata.__dict__.pop(attr, None)
@@ -3038,8 +2935,6 @@ class TestSystemMetadata:
     @patch('report_generator.generator.data_models.system.system_metadata.sigrid_api')
     def test_display_name_attribute_access(self, mock_sigrid_api):
         """Test that display_name can be accessed via attribute."""
-        from report_generator.generator.data_models.system.system_metadata import system_metadata
-        
         mock_sigrid_api.get_system_metadata.return_value = {
             'displayName': 'My System'
         }
@@ -3053,8 +2948,6 @@ class TestSystemMetadata:
     @patch('report_generator.generator.data_models.system.system_metadata.sigrid_api')
     def test_division_name_attribute_access(self, mock_sigrid_api):
         """Test that division_name can be accessed via attribute."""
-        from report_generator.generator.data_models.system.system_metadata import system_metadata
-        
         mock_sigrid_api.get_system_metadata.return_value = {
             'divisionName': 'Engineering'
         }
@@ -3068,8 +2961,6 @@ class TestSystemMetadata:
     @patch('report_generator.generator.data_models.system.system_metadata.sigrid_api')
     def test_team_names_attribute_access(self, mock_sigrid_api):
         """Test that team_names can be accessed via attribute."""
-        from report_generator.generator.data_models.system.system_metadata import system_metadata
-        
         mock_sigrid_api.get_system_metadata.return_value = {
             'teamNames': ['Team A', 'Team B']
         }

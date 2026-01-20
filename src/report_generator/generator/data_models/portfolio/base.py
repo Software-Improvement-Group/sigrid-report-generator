@@ -112,7 +112,7 @@ class AbstractPortfolioModel(ABC):
         try:
             end_snapshot = maintainability_portfolio_data.end_snapshot(system_name)
             return end_snapshot.get('volumeInPersonMonths', 0) if end_snapshot else 0
-        except:
+        except Exception:
             return 0
     
     def _get_rating_and_volume_from_system(self, system, rating_extractor, system_name_key='systemName'):
