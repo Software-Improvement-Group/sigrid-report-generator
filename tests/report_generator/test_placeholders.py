@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import pytest
 from unittest.mock import MagicMock, patch
 
 from report_generator.generator.constants import MetricEnum
@@ -49,9 +50,9 @@ class TestPortfolioPlaceholders:
                           new_callable=mocker.PropertyMock, return_value=mock_distribution)
         
         # The placeholders are classes with a `replace` method, but we can test the underlying functions
-        assert osh_portfolio_data.get_rating_distribution_percentages['above_market'] == 45.5
-        assert osh_portfolio_data.get_rating_distribution_percentages['market_average'] == 30.0
-        assert osh_portfolio_data.get_rating_distribution_percentages['below_market'] == 24.5
+        assert osh_portfolio_data.get_rating_distribution_percentages['above_market'] == pytest.approx(45.5)
+        assert osh_portfolio_data.get_rating_distribution_percentages['market_average'] == pytest.approx(30.0)
+        assert osh_portfolio_data.get_rating_distribution_percentages['below_market'] == pytest.approx(24.5)
     
     def test_portfolio_security_placeholders_return_distribution_values(self, mocker):
         """Test that security portfolio placeholders access and return distribution percentages."""
@@ -62,9 +63,9 @@ class TestPortfolioPlaceholders:
                           new_callable=mocker.PropertyMock, return_value=mock_distribution)
         
         # Test that we can access the distribution values
-        assert security_ratings_portfolio_data.get_rating_distribution_percentages['above_market'] == 60.0
-        assert security_ratings_portfolio_data.get_rating_distribution_percentages['market_average'] == 25.0
-        assert security_ratings_portfolio_data.get_rating_distribution_percentages['below_market'] == 15.0
+        assert security_ratings_portfolio_data.get_rating_distribution_percentages['above_market'] == pytest.approx(60.0)
+        assert security_ratings_portfolio_data.get_rating_distribution_percentages['market_average'] == pytest.approx(25.0)
+        assert security_ratings_portfolio_data.get_rating_distribution_percentages['below_market'] == pytest.approx(15.0)
     
     def test_portfolio_security_critical_findings_placeholders(self, mocker):
         """Test security critical findings placeholders return correct values."""

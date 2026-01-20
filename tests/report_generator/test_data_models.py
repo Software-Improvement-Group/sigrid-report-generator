@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import pytest
 from unittest.mock import patch
 
 # noinspection PyProtectedMember
@@ -163,10 +164,10 @@ class TestOSHPortfolioData:
         }
         
         rating = portfolio._extract_osh_rating(system, 'system')
-        assert rating == 4.5
+        assert rating == pytest.approx(4.5)
         
         rating = portfolio._extract_osh_rating(system, 'vulnerability')
-        assert rating == 3.2
+        assert rating == pytest.approx(3.2)
     
     def test_extract_osh_rating_with_missing_metadata(self):
         """Test _extract_osh_rating returns None when metadata is missing."""
@@ -284,9 +285,9 @@ class TestRatingDistributionPercentages:
         mocker.patch.object(type(portfolio), 'raw_data', new_callable=mocker.PropertyMock, return_value=mock_data)
         
         distribution = portfolio.get_rating_distribution_percentages
-        assert distribution['above_market'] == 50.0
-        assert distribution['market_average'] == 25.0
-        assert distribution['below_market'] == 25.0
+        assert distribution['above_market'] == pytest.approx(50.0)
+        assert distribution['market_average'] == pytest.approx(25.0)
+        assert distribution['below_market'] == pytest.approx(25.0)
     
     def test_osh_rating_distribution_with_no_systems(self, mocker):
         """Test get_rating_distribution_percentages handles empty systems list."""
@@ -294,9 +295,9 @@ class TestRatingDistributionPercentages:
         mocker.patch.object(type(portfolio), 'raw_data', new_callable=mocker.PropertyMock, return_value={'systems': []})
         
         distribution = portfolio.get_rating_distribution_percentages
-        assert distribution['above_market'] == 0.0
-        assert distribution['market_average'] == 0.0
-        assert distribution['below_market'] == 0.0
+        assert distribution['above_market'] == pytest.approx(0.0)
+        assert distribution['market_average'] == pytest.approx(0.0)
+        assert distribution['below_market'] == pytest.approx(0.0)
     
     def test_osh_rating_distribution_all_above_market(self, mocker):
         """Test get_rating_distribution_percentages when all systems are above market."""
@@ -312,9 +313,9 @@ class TestRatingDistributionPercentages:
         mocker.patch.object(type(portfolio), 'raw_data', new_callable=mocker.PropertyMock, return_value=mock_data)
         
         distribution = portfolio.get_rating_distribution_percentages
-        assert distribution['above_market'] == 100.0
-        assert distribution['market_average'] == 0.0
-        assert distribution['below_market'] == 0.0
+        assert distribution['above_market'] == pytest.approx(100.0)
+        assert distribution['market_average'] == pytest.approx(0.0)
+        assert distribution['below_market'] == pytest.approx(0.0)
     
     def test_security_rating_distribution_calculation(self, mocker):
         """Test get_rating_distribution_percentages for security portfolio."""
@@ -330,9 +331,9 @@ class TestRatingDistributionPercentages:
         mocker.patch.object(type(portfolio), 'data', new_callable=mocker.PropertyMock, return_value=mock_data)
         
         distribution = portfolio.get_rating_distribution_percentages
-        assert distribution['above_market'] == 50.0
-        assert distribution['market_average'] == 25.0
-        assert distribution['below_market'] == 25.0
+        assert distribution['above_market'] == pytest.approx(50.0)
+        assert distribution['market_average'] == pytest.approx(25.0)
+        assert distribution['below_market'] == pytest.approx(25.0)
     
     def test_rating_distribution_edge_case_exact_thresholds(self, mocker):
         """Test rating distribution with values exactly at thresholds."""
@@ -347,9 +348,9 @@ class TestRatingDistributionPercentages:
         mocker.patch.object(type(portfolio), 'raw_data', new_callable=mocker.PropertyMock, return_value=mock_data)
         
         distribution = portfolio.get_rating_distribution_percentages
-        assert distribution['above_market'] == 50.0
-        assert distribution['market_average'] == 50.0
-        assert distribution['below_market'] == 0.0
+        assert distribution['above_market'] == pytest.approx(50.0)
+        assert distribution['market_average'] == pytest.approx(50.0)
+        assert distribution['below_market'] == pytest.approx(0.0)
     
     @staticmethod
     def _mock_osh_system(name, rating):
@@ -386,7 +387,7 @@ class TestWeightedAverageRatings:
         
         # Weighted average = (4.0*100 + 3.0*200 + 2.0*100) / (100+200+100) = 1200/400 = 3.0
         avg_rating = portfolio.weighted_average_rating
-        assert avg_rating == 3.0
+        assert avg_rating == pytest.approx(3.0)
     
     def test_security_weighted_average_with_zero_volume(self, mocker):
         """Test weighted average handles systems with zero volume."""
@@ -407,7 +408,7 @@ class TestWeightedAverageRatings:
         mocker.patch.object(maintainability_portfolio_data, 'end_snapshot', side_effect=mock_end_snapshot)
         
         avg_rating = portfolio.weighted_average_rating
-        assert avg_rating == 4.0
+        assert avg_rating == pytest.approx(4.0)
     
     def test_security_weighted_average_empty_data(self, mocker):
         """Test weighted average returns 0 for empty data."""
@@ -415,7 +416,7 @@ class TestWeightedAverageRatings:
         mocker.patch.object(type(portfolio), 'data', new_callable=mocker.PropertyMock, return_value=[])
         
         avg_rating = portfolio.weighted_average_rating
-        assert avg_rating == 0.0
+        assert avg_rating == pytest.approx(0.0)
     
     def test_osh_weighted_average_rating(self, mocker):
         """Test weighted average rating calculation for OSH portfolio."""
@@ -452,7 +453,7 @@ class TestWeightedAverageRatings:
         
         # Weighted average = (4.0*10000 + 3.0*20000) / (10000+20000) = 100000/30000 = 3.333... truncated to 3.3
         avg_rating = portfolio.weighted_average_rating
-        assert avg_rating == 3.3
+        assert avg_rating == pytest.approx(3.3)
     
     def test_maintainability_weighted_average_rating(self, mocker):
         """Test weighted average rating calculation for maintainability portfolio."""
@@ -475,7 +476,7 @@ class TestWeightedAverageRatings:
         
         # Weighted average = (4.0*50 + 3.0*100) / (50+100) = 500/150 = 3.333... truncated to 3.3
         avg_rating = portfolio.weighted_average_rating
-        assert avg_rating == 3.3
+        assert avg_rating == pytest.approx(3.3)
     
     def test_architecture_weighted_average_rating(self, mocker):
         """Test weighted average rating calculation for architecture portfolio."""
@@ -496,7 +497,7 @@ class TestWeightedAverageRatings:
         
         # Weighted average = (4.0*80 + 2.0*40) / (80+40) = 400/120 = 3.333... truncated to 3.3
         avg_rating = portfolio.weighted_average_rating
-        assert avg_rating == 3.3
+        assert avg_rating == pytest.approx(3.3)
 
 
 class TestMaintainabilityStatistics:
@@ -559,9 +560,9 @@ class TestMaintainabilityStatistics:
         
         # Verify biggest changes
         assert 'system1' in stats['maintainability-change']['biggest-increase']
-        assert stats['maintainability-change']['biggest-increase']['system1'] == 1.0
+        assert stats['maintainability-change']['biggest-increase']['system1'] == pytest.approx(1.0)
         assert 'system2' in stats['maintainability-change']['biggest-decrease']
-        assert stats['maintainability-change']['biggest-decrease']['system2'] == -1.0
+        assert stats['maintainability-change']['biggest-decrease']['system2'] == pytest.approx(-1.0)
         
         # Verify averages exist
         assert 'start-average' in stats['maintainability']
@@ -841,14 +842,14 @@ class TestMaintainabilityStatistics:
         stats = portfolio.statistics
         
         # Should only count system1 and system3: (4.0 + 3.0) / 2 = 3.5
-        assert stats['avg_stars'] == 3.5
+        assert stats['avg_stars'] == pytest.approx(3.5)
         assert stats['count'] == 2
         
         # Extremes should only be from systems with ratings
         assert stats['lowest_system'][0] == 'system3'
-        assert stats['lowest_system'][1] == 3.0
+        assert stats['lowest_system'][1] == pytest.approx(3.0)
         assert stats['highest_system'][0] == 'system1'
-        assert stats['highest_system'][1] == 4.0
+        assert stats['highest_system'][1] == pytest.approx(4.0)
     
     def test_statistics_with_no_systems(self, mocker):
         """Test statistics when there are no systems."""
@@ -919,12 +920,12 @@ class TestMaintainabilityStatistics:
         
         stats = portfolio.statistics
         
-        assert stats['avg_stars'] == 3.7
+        assert stats['avg_stars'] == pytest.approx(3.7)
         assert stats['count'] == 1
         assert stats['lowest_system'][0] == 'only_system'
-        assert stats['lowest_system'][1] == 3.7
+        assert stats['lowest_system'][1] == pytest.approx(3.7)
         assert stats['highest_system'][0] == 'only_system'
-        assert stats['highest_system'][1] == 3.7
+        assert stats['highest_system'][1] == pytest.approx(3.7)
     
     def test_update_extremes(self, mocker):
         """Test the _update_extremes method updates lowest and highest correctly."""
@@ -1163,8 +1164,8 @@ class TestTestCodeRatioChange:
         stats = portfolio.statistics
         
         # Verify totals
-        assert stats['test-code-ratio-change']['total-start'] == 2.3  # 0.5 + 0.8 + 0.6 + 0.4
-        assert stats['test-code-ratio-change']['total-end'] == 2.61  # 0.7 + 0.6 + 0.9 + 0.41
+        assert stats['test-code-ratio-change']['total-start'] == pytest.approx(2.3)  # 0.5 + 0.8 + 0.6 + 0.4
+        assert stats['test-code-ratio-change']['total-end'] == pytest.approx(2.61)  # 0.7 + 0.6 + 0.9 + 0.41
         
         # Verify change counts
         assert stats['test-code-ratio-change']['systems-increased'] == 2  # system1, system3
@@ -1214,8 +1215,8 @@ class TestTestCodeRatioChange:
         stats = portfolio.statistics
         
         # Only system1 should be counted (has both start and end ratios)
-        assert stats['test-code-ratio-change']['total-start'] == 0.5
-        assert stats['test-code-ratio-change']['total-end'] == 0.7
+        assert stats['test-code-ratio-change']['total-start'] == pytest.approx(0.5)
+        assert stats['test-code-ratio-change']['total-end'] == pytest.approx(0.7)
         assert stats['test-code-ratio-change']['systems-increased'] == 1
         assert stats['test-code-ratio-change']['systems-decreased'] == 0
         assert stats['test-code-ratio-change']['systems-stable'] == 0
@@ -1246,8 +1247,8 @@ class TestTestCodeRatioChange:
         stats = portfolio.statistics
         
         # Both systems stable
-        assert stats['test-code-ratio-change']['total-start'] == 1.0
-        assert stats['test-code-ratio-change']['total-end'] == 1.0
+        assert stats['test-code-ratio-change']['total-start'] == pytest.approx(1.0)
+        assert stats['test-code-ratio-change']['total-end'] == pytest.approx(1.0)
         assert stats['test-code-ratio-change']['systems-increased'] == 0
         assert stats['test-code-ratio-change']['systems-decreased'] == 0
         assert stats['test-code-ratio-change']['systems-stable'] == 2
