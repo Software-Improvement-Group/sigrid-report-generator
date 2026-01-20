@@ -86,18 +86,6 @@ class OSHRatingsPortfolioData(OSHMetricsBase, AbstractPortfolioModel):
         return self._get_risk_distribution_for_metric("sigrid:risk:activity")
     
     @cached_property
-    def risk_distributions(self) -> dict[str, list[int]]:
-        """Dictionary of all risk distributions for chart rendering."""
-        return {
-            "vulnerability": self.vulnerability_risk_distribution,
-            "legal"        : self.legal_risk_distribution,
-            "freshness"    : self.freshness_risk_distribution,
-            "stability"    : self.stability_risk_distribution,
-            "management"   : self.management_risk_distribution,
-            "activity"     : self.activity_risk_distribution,
-        }
-    
-    @cached_property
     def date(self):
         """Returns the end date of the analysis period as a datetime object."""
         from datetime import datetime
