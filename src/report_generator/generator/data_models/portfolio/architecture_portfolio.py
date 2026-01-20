@@ -19,9 +19,6 @@ from report_generator.generator.data_models.portfolio.base import AbstractPortfo
 
 from report_generator.generator.data_models.portfolio.portfolio_arguments import filter_data_on_portfolio_arguments
 
-#To import system volume
-from report_generator.generator.data_models.portfolio.maintainability_portfolio import maintainability_portfolio_data
-
 class ArchitecturePortfolioData(AbstractPortfolioModel):
     @cached_property
     @filter_data_on_portfolio_arguments(system_tag="system")
@@ -62,42 +59,20 @@ class ArchitecturePortfolioData(AbstractPortfolioModel):
             return None
         return system['ratings']['architecture']
     
-    def _get_volume_from_maintainability(self, system_name):
-        """Get volume from maintainability portfolio for a given system."""
-        try:
-            end_snapshot = maintainability_portfolio_data.end_snapshot(system_name)
-            return end_snapshot.get('volumeInPersonMonths', 0) if end_snapshot else 0
-        except:
-            return 0
-    
     def _get_rating_and_volume(self, system):
         """Extract rating and volume for a system."""
-        rating = self._extract_architecture_rating(system)
-        system_name = system.get('system')
-        
-        if rating is None or system_name is None:
-            return None, 0
-        
-        volume = self._get_volume_from_maintainability(system_name)
-        return rating, volume
+        return self._get_rating_and_volume_from_system(
+            system,
+            self._extract_architecture_rating,
+            'system'
+        )
     
     @cached_property
     def weighted_average_rating(self):
         """Calculate volume-weighted average architecture rating across all systems."""
-        total_weighted_rating = 0
-        total_volume = 0
-        
-        for system in self.data:
-            rating, volume = self._get_rating_and_volume(system)
-            
-            if rating is None or volume == 0:
-                continue
-            
-            total_weighted_rating += rating * volume
-            total_volume += volume
-        
-        if total_volume > 0:
-            return self._round_star_rating(total_weighted_rating / total_volume)
-        return 0.0
+        return self._calculate_weighted_average_rating(
+            self.data,
+            self._get_rating_and_volume
+        )
 
 architecture_portfolio_data = ArchitecturePortfolioData()

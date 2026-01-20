@@ -18,9 +18,6 @@ from report_generator.generator import sigrid_api
 from report_generator.generator.data_models.portfolio.base import AbstractPortfolioModel
 from report_generator.generator.data_models.portfolio.portfolio_arguments import filter_data_on_portfolio_arguments
 
-#To import system volume
-from report_generator.generator.data_models.portfolio.maintainability_portfolio import maintainability_portfolio_data
-
 
 class OSHRatingsPortfolioData(AbstractPortfolioModel):
     @cached_property
@@ -365,42 +362,20 @@ class OSHRatingsPortfolioData(AbstractPortfolioModel):
         
         return self._calculate_percentages(counts, total_systems)
     
-    def _get_volume_from_maintainability(self, system_name):
-        """Get volume from maintainability portfolio for a given system."""
-        try:
-            end_snapshot = maintainability_portfolio_data.end_snapshot(system_name)
-            return end_snapshot.get('volumeInPersonMonths', 0) if end_snapshot else 0
-        except:
-            return 0
-    
     def _get_rating_and_volume(self, system):
         """Extract rating and volume for a system."""
-        rating = self._extract_osh_rating(system, 'system')
-        system_name = system.get('systemName')
-        
-        if rating is None or system_name is None:
-            return None, 0
-        
-        volume = self._get_volume_from_maintainability(system_name)
-        return rating, volume
+        return self._get_rating_and_volume_from_system(
+            system,
+            lambda s: self._extract_osh_rating(s, 'system'),
+            'systemName'
+        )
     
     @cached_property
     def weighted_average_rating(self):
         """Calculate volume-weighted average OSH rating across all systems."""
-        total_weighted_rating = 0
-        total_volume = 0
-        
-        for system in self.raw_data.get('systems', []):
-            rating, volume = self._get_rating_and_volume(system)
-            
-            if rating is None or volume == 0:
-                continue
-            
-            total_weighted_rating += rating * volume
-            total_volume += volume
-        
-        if total_volume > 0:
-            return self._round_star_rating(total_weighted_rating / total_volume)
-        return 0.0
+        return self._calculate_weighted_average_rating(
+            self.raw_data.get('systems', []),
+            self._get_rating_and_volume
+        )
 
 osh_portfolio_data = OSHRatingsPortfolioData()

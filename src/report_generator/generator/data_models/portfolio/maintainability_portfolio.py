@@ -330,30 +330,24 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
         
         return self._calculate_percentages(counts, total)
     
+    def _get_rating_and_volume_for_system_name(self, system_name):
+        """Extract rating and volume for a system by name, considering active status."""
+        md = self.get_system_metadata(system_name)
+        if not _is_system_active(md):
+            return None, 0
+            
+        end_snapshot = self.end_snapshot(system_name)
+        rating = end_snapshot['maintainability']
+        volume = end_snapshot.get('volumeInPersonMonths', 0)
+        return rating, volume
+    
     @cached_property
     def weighted_average_rating(self):
         """Calculate volume-weighted average maintainability rating across all systems."""
-        total_weighted_rating = 0
-        total_volume = 0
-        
-        for system_name in self.system_names:
-            md = self.get_system_metadata(system_name)
-            if not _is_system_active(md):
-                continue
-                
-            end_snapshot = self.end_snapshot(system_name)
-            rating = end_snapshot['maintainability']
-            volume = end_snapshot.get('volumeInPersonMonths', 0)
-            
-            if volume == 0:
-                continue
-            
-            total_weighted_rating += rating * volume
-            total_volume += volume
-        
-        if total_volume > 0:
-            return self._round_star_rating(total_weighted_rating / total_volume)
-        return 0.0
+        return self._calculate_weighted_average_rating(
+            self.system_names,
+            self._get_rating_and_volume_for_system_name
+        )
 
     @cached_property
     def test_code_ratio_distribution_percentages(self):
