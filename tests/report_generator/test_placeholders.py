@@ -15,9 +15,6 @@
 from unittest.mock import MagicMock, patch
 
 from report_generator.generator.constants import MetricEnum
-from report_generator.generator.placeholders.text import osh_portfolio, security_portfolio
-from report_generator.generator.data_models.portfolio.osh_portfolio import OSHRatingsPortfolioData
-from report_generator.generator.data_models.portfolio.security_portfolio import SecurityRatingsPortfolioData
 from report_generator.generator.data_models import (
     osh_portfolio_data,
     security_ratings_portfolio_data,
