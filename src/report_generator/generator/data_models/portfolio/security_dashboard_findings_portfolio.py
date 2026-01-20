@@ -45,24 +45,6 @@ class SecurityDashboardFindingsPortfolioData(AbstractPortfolioModel):
             'LOW': {'resolved': 0, 'added': 0}
         }
     
-    def _is_month_in_period(self, month):
-        """Check if a month falls within the reporting period.
-        
-        Compares year-month to handle cases where the period is within a single month.
-        For example, if period is 2025-01-15 to 2025-01-31, month 2025-01-01 should match.
-        """
-        if not month:
-            return False
-        period_start, period_end = self.period
-        
-        # Extract year-month (YYYY-MM) for comparison
-        month_ym = month[:7]  # e.g., "2025-01-01" -> "2025-01"
-        period_start_ym = period_start[:7]
-        period_end_ym = period_end[:7]
-        
-        # Month is included if its year-month falls within the period's year-month range
-        return period_start_ym <= month_ym <= period_end_ym
-    
     def _accumulate_severity_counts(self, stats):
         """Accumulate resolved and added counts for all severity levels within the period."""
         for system in self.data.get('systems', []):

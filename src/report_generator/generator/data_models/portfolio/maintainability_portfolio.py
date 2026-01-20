@@ -137,7 +137,7 @@ def _update_biggest_changes(statistics, system_name, diff):
         if not biggest or diff < list(biggest.values())[0]:
             statistics['test-code-ratio-change']['biggest-decrease'] = {system_name: diff}
 
-def _update_test_code_ratio_change(statistics, system_name, start_snapshot, end_snapshot, start_date, end_date, period_start):
+def _update_test_code_ratio_change(statistics, system_name, start_snapshot, end_snapshot, start_date, end_date):
     """Track test code ratio changes across the portfolio."""
     start_ratio, end_ratio = _get_test_code_ratios(start_snapshot, end_snapshot)
     
@@ -296,7 +296,7 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
             )
             _update_change_count(statistics, diff)
             _update_volume_change(statistics, system_name, start_snapshot, end_snapshot)
-            _update_test_code_ratio_change(statistics, system_name, start_snapshot, end_snapshot, start_date, end_date, period_start)
+            _update_test_code_ratio_change(statistics, system_name, start_snapshot, end_snapshot, start_date, end_date)
             _collect_averages_data(
                 start_snapshot, end_snapshot, start_date, period_start,
                 start_maintainability_ratings, end_maintainability_ratings,
@@ -311,24 +311,21 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
 
         return statistics
     
+    def _extract_maintainability_rating(self, system_name):
+        """Extract maintainability rating for a system, considering active status."""
+        md = self.get_system_metadata(system_name)
+        if not _is_system_active(md):
+            return None
+        end_snapshot = self.end_snapshot(system_name)
+        return end_snapshot['maintainability']
+    
     @cached_property
     def get_rating_distribution_percentages(self):
         """Calculate percentage of systems in each rating category."""
-        counts = {'above_market': 0, 'market_average': 0, 'below_market': 0}
-        total = 0
-        
-        for system_name in self.system_names:
-            md = self.get_system_metadata(system_name)
-            if not _is_system_active(md):
-                continue
-                
-            end_snapshot = self.end_snapshot(system_name)
-            rating = end_snapshot['maintainability']
-            category = self._categorize_rating(rating)
-            counts[category] += 1
-            total += 1
-        
-        return self._calculate_percentages(counts, total)
+        return self._get_rating_distribution_percentages(
+            self.system_names,
+            self._extract_maintainability_rating
+        )
     
     def _get_rating_and_volume_for_system_name(self, system_name):
         """Extract rating and volume for a system by name, considering active status."""

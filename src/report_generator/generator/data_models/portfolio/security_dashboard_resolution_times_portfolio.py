@@ -36,19 +36,6 @@ class SecurityDashboardResolutionTimesPortfolioData(AbstractPortfolioModel):
     def period(self):
         return sigrid_api.get_period()
     
-    def _is_month_in_period(self, month):
-        """Check if a month falls within the reporting period."""
-        if not month:
-            return False
-        period_start, period_end = self.period
-        
-        # Extract year-month (YYYY-MM) for comparison
-        month_ym = month[:7]
-        period_start_ym = period_start[:7]
-        period_end_ym = period_end[:7]
-        
-        return period_start_ym <= month_ym <= period_end_ym
-    
     def _initialize_resolution_stats(self):
         """Initialize resolution statistics structure for all severity levels."""
         return {

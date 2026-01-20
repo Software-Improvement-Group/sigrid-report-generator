@@ -437,22 +437,22 @@ class TestSecurityDashboardChartPlaceholders:
     
     @patch('report_generator.generator.placeholders.charts.security_findings.report_utils.pptx.identify_specific_slide')
     def test_populate_security_findings_chart_no_slides(self, mock_identify):
-        """Test _populate_security_findings_chart returns early when no slides found."""
-        from report_generator.generator.placeholders.charts.security_findings import _populate_security_findings_chart
+        """Test _populate_chart returns early when no slides found."""
+        from report_generator.generator.placeholders.charts.security_findings import _populate_chart
         
         mock_identify.return_value = []
         mock_presentation = MagicMock()
         mock_value_cb = MagicMock()
         
-        _populate_security_findings_chart(mock_presentation, 'TEST_KEY', mock_value_cb, 'TEST_CHART')
+        _populate_chart(mock_presentation, 'TEST_KEY', mock_value_cb, 'TEST_CHART')
         
         # Should not call value_cb if no slides found
         mock_value_cb.assert_not_called()
     
     @patch('report_generator.generator.placeholders.charts.security_findings.report_utils.pptx.identify_specific_slide')
     def test_populate_security_findings_chart_updates_chart(self, mock_identify):
-        """Test _populate_security_findings_chart updates chart when found."""
-        from report_generator.generator.placeholders.charts.security_findings import _populate_security_findings_chart
+        """Test _populate_chart updates chart when found."""
+        from report_generator.generator.placeholders.charts.security_findings import _populate_chart
         
         # Mock slide with chart shape
         mock_chart = MagicMock()
@@ -469,7 +469,7 @@ class TestSecurityDashboardChartPlaceholders:
         mock_chart_data = MagicMock()
         mock_value_cb = MagicMock(return_value=mock_chart_data)
         
-        _populate_security_findings_chart(mock_presentation, 'TEST_KEY', mock_value_cb, 'TEST_CHART')
+        _populate_chart(mock_presentation, 'TEST_KEY', mock_value_cb, 'TEST_CHART')
         
         # Should call replace_data on the chart
         mock_chart.replace_data.assert_called_once_with(mock_chart_data)

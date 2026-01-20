@@ -93,8 +93,8 @@ def _create_security_findings_chart_data(severity):
     return chart_data
 
 
-def _populate_security_findings_chart(presentation: Presentation, key: str, value_cb: Callable, chart_name: str):
-    """Populate the security findings chart in the presentation"""
+def _populate_chart(presentation: Presentation, key: str, value_cb: Callable, chart_name: str):
+    """Populate a chart in the presentation by finding slides with the key and updating the named chart."""
     slides = report_utils.pptx.identify_specific_slide(presentation, key)
     
     if len(slides) == 0:
@@ -127,7 +127,7 @@ class SecurityDashboardCriticalFindingsChartPlaceholder(Placeholder):
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
-        _populate_security_findings_chart(presentation, key, value_cb, "PORTFOLIO_SECURITY_FINDINGS_CRITICAL")
+        _populate_chart(presentation, key, value_cb, "PORTFOLIO_SECURITY_FINDINGS_CRITICAL")
 
 
 class SecurityDashboardHighFindingsChartPlaceholder(Placeholder):
@@ -146,7 +146,7 @@ class SecurityDashboardHighFindingsChartPlaceholder(Placeholder):
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
-        _populate_security_findings_chart(presentation, key, value_cb, "PORTFOLIO_SECURITY_FINDINGS_HIGH")
+        _populate_chart(presentation, key, value_cb, "PORTFOLIO_SECURITY_FINDINGS_HIGH")
 
 
 class SecurityDashboardMediumFindingsChartPlaceholder(Placeholder):
@@ -165,7 +165,7 @@ class SecurityDashboardMediumFindingsChartPlaceholder(Placeholder):
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
-        _populate_security_findings_chart(presentation, key, value_cb, "PORTFOLIO_SECURITY_FINDINGS_MEDIUM")
+        _populate_chart(presentation, key, value_cb, "PORTFOLIO_SECURITY_FINDINGS_MEDIUM")
 
 
 # Resolution Times Placeholders
@@ -219,24 +219,6 @@ def _create_resolution_times_chart_data(severity):
     return chart_data
 
 
-def _populate_resolution_times_chart(presentation: Presentation, key: str, value_cb: Callable, chart_name: str):
-    """Populate the resolution times chart in the presentation"""
-    slides = report_utils.pptx.identify_specific_slide(presentation, key)
-    
-    if len(slides) == 0:
-        return
-    
-    # Get chart data
-    chart_data = value_cb()
-    
-    # Find and update charts by name
-    for slide in slides:
-        shapes_by_name = dict((s.name, s) for s in slide.shapes)
-        if chart_name in shapes_by_name:
-            chart = shapes_by_name[chart_name].chart
-            chart.replace_data(chart_data)
-
-
 class SecurityDashboardCriticalResolutionTimesChartPlaceholder(Placeholder):
     """PowerPoint chart depicting resolution times of critical security findings over the last 12 months.
     
@@ -252,7 +234,7 @@ class SecurityDashboardCriticalResolutionTimesChartPlaceholder(Placeholder):
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
-        _populate_resolution_times_chart(presentation, key, value_cb, "PORTFOLIO_SECURITY_RESOLUTION_CRITICAL")
+        _populate_chart(presentation, key, value_cb, "PORTFOLIO_SECURITY_RESOLUTION_CRITICAL")
 
 
 class SecurityDashboardHighResolutionTimesChartPlaceholder(Placeholder):
@@ -270,7 +252,7 @@ class SecurityDashboardHighResolutionTimesChartPlaceholder(Placeholder):
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
-        _populate_resolution_times_chart(presentation, key, value_cb, "PORTFOLIO_SECURITY_RESOLUTION_HIGH")
+        _populate_chart(presentation, key, value_cb, "PORTFOLIO_SECURITY_RESOLUTION_HIGH")
 
 
 class SecurityDashboardMediumResolutionTimesChartPlaceholder(Placeholder):
@@ -288,5 +270,5 @@ class SecurityDashboardMediumResolutionTimesChartPlaceholder(Placeholder):
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
-        _populate_resolution_times_chart(presentation, key, value_cb, "PORTFOLIO_SECURITY_RESOLUTION_MEDIUM")
+        _populate_chart(presentation, key, value_cb, "PORTFOLIO_SECURITY_RESOLUTION_MEDIUM")
 

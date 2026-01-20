@@ -21,7 +21,7 @@ from pptx.slide import Slide
 from report_generator.generator import report_utils
 from report_generator.generator.data_models import osh_data
 
-from report_generator.generator.data_models import osh_portfolio_data #TODO: separate from system slide?
+from report_generator.generator.data_models import osh_portfolio_data
 
 from report_generator.generator.placeholders import Placeholder
 from report_generator.generator.placeholders.base import PlaceholderDocType
@@ -70,6 +70,18 @@ def _set_chart_data_and_axis(chart, data, axis_max):
     chart.value_axis.maximum_scale = axis_max
 
 
+def _resolve_osh_pptx(presentation: Presentation, key: str, value_cb: Callable, data_source) -> None:
+    """Generic resolver for OSH slide placeholders."""
+    slides = report_utils.pptx.identify_specific_slide(presentation, key)
+    
+    if len(slides) == 0:
+        return
+    
+    (data, data2) = value_cb()
+    for slide in slides:
+        _populate_osh_system_slide(slide, data, data2, data_source)
+
+
 class OSHSlidePlaceholder(Placeholder):
     """Traditional SIG OSH system-level slide, with risk bar charts for all 6 OSH metrics."""
     key = "OSH_SLIDE"
@@ -81,14 +93,7 @@ class OSHSlidePlaceholder(Placeholder):
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
-        slides = report_utils.pptx.identify_specific_slide(presentation, key)
-
-        if len(slides) == 0:
-            return
-
-        (data, data2) = value_cb()
-        for slide in slides:
-            _populate_osh_system_slide(slide, data, data2, osh_data.data)
+        _resolve_osh_pptx(presentation, key, value_cb, osh_data.data)
 
 
 class OSHPortfolioSlidePlaceholder(Placeholder):
@@ -102,9 +107,4 @@ class OSHPortfolioSlidePlaceholder(Placeholder):
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
-        slides = report_utils.pptx.identify_specific_slide(presentation, key)
-        if len(slides) == 0:
-            return
-        (data, data2) = value_cb()
-        for slide in slides:
-            _populate_osh_system_slide(slide, data, data2, osh_portfolio_data)
+        _resolve_osh_pptx(presentation, key, value_cb, osh_portfolio_data)

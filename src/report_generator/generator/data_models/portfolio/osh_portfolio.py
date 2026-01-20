@@ -348,19 +348,10 @@ class OSHRatingsPortfolioData(AbstractPortfolioModel):
     @cached_property
     def get_rating_distribution_percentages(self):
         """Calculate the percentage of systems above market, at market average, and below market average."""
-        counts = {"above_market": 0, "market_average": 0, "below_market": 0}
-        total_systems = 0
-        
-        for system in self.raw_data.get('systems', []):
-            rating = self._extract_osh_rating(system, 'system')
-            if rating is None:
-                continue
-            
-            total_systems += 1
-            category = self._categorize_rating(rating)
-            counts[category] += 1
-        
-        return self._calculate_percentages(counts, total_systems)
+        return self._get_rating_distribution_percentages(
+            self.raw_data.get('systems', []),
+            lambda system: self._extract_osh_rating(system, 'system')
+        )
     
     def _get_rating_and_volume(self, system):
         """Extract rating and volume for a system."""

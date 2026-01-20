@@ -87,6 +87,24 @@ class AbstractPortfolioModel(ABC):
         """Round rating to one decimal place."""
         return int(rating * 10) / 10
     
+    def _is_month_in_period(self, month):
+        """Check if a month falls within the reporting period.
+        
+        Compares year-month to handle cases where the period is within a single month.
+        For example, if period is 2025-01-15 to 2025-01-31, month 2025-01-01 should match.
+        """
+        if not month:
+            return False
+        period_start, period_end = self.period
+        
+        # Extract year-month (YYYY-MM) for comparison
+        month_ym = month[:7]  # e.g., "2025-01-01" -> "2025-01"
+        period_start_ym = period_start[:7]
+        period_end_ym = period_end[:7]
+        
+        # Month is included if its year-month falls within the period's year-month range
+        return period_start_ym <= month_ym <= period_end_ym
+    
     def _get_volume_from_maintainability(self, system_name):
         """Get volume from maintainability portfolio for a given system."""
         from report_generator.generator.data_models.portfolio.maintainability_portfolio import maintainability_portfolio_data
@@ -144,3 +162,28 @@ class AbstractPortfolioModel(ABC):
         if total_volume > 0:
             return self._round_star_rating(total_weighted_rating / total_volume)
         return 0.0
+    
+    def _get_rating_distribution_percentages(self, data_source, rating_extractor):
+        """
+        Calculate percentage of items in each rating category (above_market, market_average, below_market).
+        
+        Args:
+            data_source: Iterable of systems/items to process
+            rating_extractor: Function that takes an item and returns its rating (or None if unavailable)
+        
+        Returns:
+            dict: Percentages for 'above_market', 'market_average', and 'below_market' categories
+        """
+        counts = {'above_market': 0, 'market_average': 0, 'below_market': 0}
+        total = 0
+        
+        for item in data_source:
+            rating = rating_extractor(item)
+            if rating is None:
+                continue
+                
+            category = self._categorize_rating(rating)
+            counts[category] += 1
+            total += 1
+        
+        return self._calculate_percentages(counts, total)

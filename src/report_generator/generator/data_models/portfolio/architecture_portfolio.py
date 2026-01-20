@@ -39,19 +39,10 @@ class ArchitecturePortfolioData(AbstractPortfolioModel):
     @cached_property
     def get_rating_distribution_percentages(self):
         """Calculate percentage of systems in each rating category."""
-        counts = {'above_market': 0, 'market_average': 0, 'below_market': 0}
-        total = 0
-        
-        for system in self.data:
-            if 'ratings' not in system or 'architecture' not in system['ratings']:
-                continue
-                
-            rating = system['ratings']['architecture']
-            category = self._categorize_rating(rating)
-            counts[category] += 1
-            total += 1
-        
-        return self._calculate_percentages(counts, total)
+        return self._get_rating_distribution_percentages(
+            self.data,
+            self._extract_architecture_rating
+        )
     
     def _extract_architecture_rating(self, system):
         """Extract architecture rating from a system."""
