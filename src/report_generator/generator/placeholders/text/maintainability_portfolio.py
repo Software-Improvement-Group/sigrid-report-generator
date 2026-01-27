@@ -14,6 +14,7 @@
 
 from report_generator.generator.data_models import maintainability_portfolio_data
 from .base import text_placeholder
+from report_generator.generator.formatters.formatters import star_rating_round
 
 
 def _format_percentage(percentage):
@@ -114,7 +115,7 @@ def portfolio_maint_above_market():
 @text_placeholder()
 def portfolio_maint_avg_rating():
     """Volume-weighted average maintainability rating across all systems in the portfolio."""
-    return maintainability_portfolio_data.weighted_average_rating
+    return star_rating_round(maintainability_portfolio_data.weighted_average_rating)
 
 @text_placeholder()
 def portfolio_maint_market_average():

@@ -14,7 +14,7 @@
 
 from report_generator.generator.data_models import architecture_portfolio_data
 from .base import text_placeholder
-
+from report_generator.generator.formatters.formatters import star_rating_round
 
 @text_placeholder()
 def portfolio_arch_above_market():
@@ -40,4 +40,4 @@ def portfolio_arch_below_market():
 @text_placeholder()
 def portfolio_arch_avg_rating():
     """Volume-weighted average architecture rating across all systems in the portfolio."""
-    return architecture_portfolio_data.weighted_average_rating
+    return star_rating_round(architecture_portfolio_data.weighted_average_rating)

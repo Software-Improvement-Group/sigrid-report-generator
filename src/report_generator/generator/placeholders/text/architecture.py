@@ -15,7 +15,7 @@
 from report_generator.generator.constants import ArchMetric, ArchSubcharacteristic, MetricEnum
 from report_generator.generator.data_models import *
 from report_generator.generator.formatters import smart_remarks
-from report_generator.generator.formatters.formatters import calculate_stars, maintainability_round
+from report_generator.generator.formatters.formatters import calculate_stars, star_rating_round
 from .base import parameterized_text_placeholder, text_placeholder
 
 
@@ -46,7 +46,7 @@ def arch_date_year():
 @text_placeholder()
 def arch_rating():
     """The 0.5-5.5 star rating provided by SIG's Architecture Quality Model."""
-    return maintainability_round(architecture_data.ratings["architecture"])
+    return star_rating_round(architecture_data.ratings["architecture"])
 
 
 @text_placeholder()
@@ -90,7 +90,7 @@ def arch_best_metric_remark():
 def arch_rating_param(metric: MetricEnum):
     """The 0.5-5.5 star rating for this metric or subcharacteristic."""
     metric_key = metric.to_json_name()
-    return maintainability_round(architecture_data.get_score_for_prop_or_subchar(metric_key))
+    return star_rating_round(architecture_data.get_score_for_prop_or_subchar(metric_key))
 
 
 @parameterized_text_placeholder(custom_key="STARS_{parameter}",

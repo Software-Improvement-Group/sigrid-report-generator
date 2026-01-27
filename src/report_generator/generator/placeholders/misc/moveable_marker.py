@@ -20,7 +20,7 @@ from pptx.presentation import Presentation
 from report_generator.generator import report_utils
 from report_generator.generator.data_models import architecture_data, maintainability_data, modernization_data, \
     osh_data, security_data
-from report_generator.generator.formatters.formatters import maintainability_round
+from report_generator.generator.formatters.formatters import star_rating_round
 from report_generator.generator.placeholders import Placeholder
 
 _RATING_MARKER_MOVE_SIZE = 2200000
@@ -65,7 +65,7 @@ class MaintainabilityMovableMarkerPlaceholder(_AbstractMoveableMarkerPlaceholder
 
     @classmethod
     def value(cls, parameter=None):
-        return maintainability_round(maintainability_data.maintainability_rating)
+        return star_rating_round(maintainability_data.maintainability_rating)
 
 
 class ArchitectureMovableMarkerPlaceholder(_AbstractMoveableMarkerPlaceholder):
@@ -73,7 +73,7 @@ class ArchitectureMovableMarkerPlaceholder(_AbstractMoveableMarkerPlaceholder):
 
     @classmethod
     def value(cls, parameter=None):
-        return maintainability_round(architecture_data.ratings["architecture"])
+        return star_rating_round(architecture_data.ratings["architecture"])
 
 
 class OSHMovableMarkerPlaceholder(_AbstractMoveableMarkerPlaceholder):
@@ -81,7 +81,7 @@ class OSHMovableMarkerPlaceholder(_AbstractMoveableMarkerPlaceholder):
 
     @classmethod
     def value(cls, parameter=None) -> str:
-        return maintainability_round(osh_data.system_rating)
+        return star_rating_round(osh_data.system_rating)
 
 
 class SecurityMovableMarkerPlaceholder(_AbstractMoveableMarkerPlaceholder):
@@ -89,7 +89,7 @@ class SecurityMovableMarkerPlaceholder(_AbstractMoveableMarkerPlaceholder):
 
     @classmethod
     def value(cls, parameter=None) -> str:
-        return maintainability_round(security_data.security_rating)
+        return star_rating_round(security_data.security_rating)
 
 
 class _ManagementSummaryMarkerPlaceholder(Placeholder, ABC):

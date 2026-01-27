@@ -15,7 +15,7 @@
 from report_generator.generator.constants import OSHMetric
 from report_generator.generator.data_models import osh_portfolio_data
 from report_generator.generator.formatters import smart_remarks
-from report_generator.generator.formatters.formatters import calculate_stars, maintainability_round
+from report_generator.generator.formatters.formatters import calculate_stars, star_rating_round
 from .base import parameterized_text_placeholder, text_placeholder
 
 
@@ -115,7 +115,7 @@ def portfolio_osh_relative():
 def portfolio_osh_rating_param(metric: OSHMetric):
     """The 0.5-5.5 star rating for this OSH metric."""
     metric_key = metric.to_json_name()
-    return maintainability_round(osh_portfolio_data.get_score_for_prop(metric_key))
+    return star_rating_round(osh_portfolio_data.get_score_for_prop(metric_key))
 
 
 @parameterized_text_placeholder(custom_key="STARS_PF_{parameter}",
@@ -150,4 +150,4 @@ def portfolio_osh_below_market():
 @text_placeholder()
 def portfolio_osh_avg_rating():
     """Volume-weighted average OSH rating across all systems in the portfolio."""
-    return osh_portfolio_data.weighted_average_rating
+    return star_rating_round(osh_portfolio_data.weighted_average_rating)

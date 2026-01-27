@@ -16,6 +16,7 @@ from report_generator.generator.data_models import (security_ratings_portfolio_d
                                                        security_dashboard_findings_portfolio_data,
                                                        security_dashboard_resolution_times_portfolio_data)
 from .base import text_placeholder
+from report_generator.generator.formatters.formatters import star_rating_round
 
 
 @text_placeholder()
@@ -42,7 +43,7 @@ def portfolio_sec_below_market():
 @text_placeholder()
 def portfolio_sec_avg_rating():
     """Volume-weighted average security rating across all systems in the portfolio."""
-    return security_ratings_portfolio_data.weighted_average_rating
+    return star_rating_round(security_ratings_portfolio_data.weighted_average_rating)
 
 
 @text_placeholder()

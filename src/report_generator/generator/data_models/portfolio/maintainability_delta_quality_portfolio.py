@@ -99,7 +99,7 @@ class _AbstractMaintainabilityDeltaQualityPortfolioData(AbstractPortfolioModel, 
                 lowest_system, highest_system = self._process_system_data(system_data, stats, lowest_system, highest_system)
         
         if stats['count'] > 0:
-            stats['avg_stars'] = self._round_star_rating(stats['total_rating'] / stats['count'])
+            stats['avg_stars'] = stats['total_rating'] / stats['count']
         else:
             stats['avg_stars'] = 0
         

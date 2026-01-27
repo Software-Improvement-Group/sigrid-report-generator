@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from report_generator.generator.data_models import *
+from report_generator.generator.data_models import security_data
 from report_generator.generator.formatters.smart_remarks import relative_to_market_average
 from .base import text_placeholder
 

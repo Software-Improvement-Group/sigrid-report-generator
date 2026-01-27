@@ -47,7 +47,7 @@ def calculate_stars(maintainability_rating: float) -> str:
     return ratings[star_rating-1]
 
 
-def maintainability_round(rating) -> str:
+def star_rating_round(rating) -> str:
     if isinstance(rating, str):
         rating = float(rating)
 

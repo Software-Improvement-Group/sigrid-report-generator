@@ -13,6 +13,7 @@
 #  limitations under the License.
 
 from report_generator.generator.data_models.portfolio.maintainability_delta_quality_portfolio import maintainability_delta_quality_new_code
+from report_generator.generator.formatters.formatters import star_rating_round
 from .base import text_placeholder
 
 
@@ -23,11 +24,11 @@ def portfolio_new_code_biggest_changes():
     res = []
     highest_system = stats['highest_system']
     if highest_system:
-        rating_str = int(highest_system[1] * 10) / 10
+        rating_str = star_rating_round(highest_system[1])
         res.append(f"The highest maintainability rating for new code was achieved by {highest_system[0]} ({rating_str} stars).")
     lowest_system = stats['lowest_system']
     if lowest_system:
-        rating_str = int(lowest_system[1] * 10) / 10
+        rating_str = star_rating_round(lowest_system[1])
         res.append(f"The lowest maintainability rating for new code was in {lowest_system[0]} ({rating_str} stars).")
     if res:
         return " ".join(res)

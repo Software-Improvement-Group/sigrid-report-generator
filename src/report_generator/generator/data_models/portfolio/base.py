@@ -81,18 +81,8 @@ class AbstractPortfolioModel(ABC):
             'market_average': round(100 * counts['market_average'] / total),
             'below_market': round(100 * counts['below_market'] / total)
         }
-    
-    @staticmethod
-    def _round_star_rating(rating):
-        """Round rating to one decimal place."""
-        return int(rating * 10) / 10
-    
+
     def _is_month_in_period(self, month):
-        """Check if a month falls within the reporting period.
-        
-        Compares year-month to handle cases where the period is within a single month.
-        For example, if period is 2025-01-15 to 2025-01-31, month 2025-01-01 should match.
-        """
         if not month:
             return False
         period_start, period_end = self.period
@@ -104,9 +94,8 @@ class AbstractPortfolioModel(ABC):
         
         # Month is included if its year-month falls within the period's year-month range
         return period_start_ym <= month_ym <= period_end_ym
-    
-    def _get_volume_from_maintainability(self, system_name):
-        """Get volume from maintainability portfolio for a given system."""
+
+    def _get_volume(self, system_name):
         from report_generator.generator.data_models.portfolio.maintainability_portfolio import maintainability_portfolio_data
         
         try:
@@ -114,7 +103,7 @@ class AbstractPortfolioModel(ABC):
             return end_snapshot.get('volumeInPersonMonths', 0) if end_snapshot else 0
         except Exception:
             return 0
-    
+
     def _get_rating_and_volume_from_system(self, system, rating_extractor, system_name_key='systemName'):
         """
         Extract rating and volume for a system.
@@ -135,7 +124,7 @@ class AbstractPortfolioModel(ABC):
         
         volume = self._get_volume_from_maintainability(system_name)
         return rating, volume
-    
+
     def _calculate_weighted_average_rating(self, data_source, get_rating_and_volume_func):
         """
         Calculate volume-weighted average rating across all items in a data source.
@@ -160,9 +149,9 @@ class AbstractPortfolioModel(ABC):
             total_volume += volume
         
         if total_volume > 0:
-            return self._round_star_rating(total_weighted_rating / total_volume)
+            return total_weighted_rating / total_volume
         return 0.0
-    
+
     def _get_rating_distribution_percentages(self, data_source, rating_extractor):
         """
         Calculate percentage of items in each rating category (above_market, market_average, below_market).
