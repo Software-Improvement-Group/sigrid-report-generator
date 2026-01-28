@@ -40,11 +40,6 @@ class OSHData(OSHMetricsBase):
     @cached_property
     def raw_data(self):
         return sigrid_api.get_osh_findings()
-    
-    @cached_property
-    def data(self):
-        """Returns this OSH data instance for compatibility."""
-        return self
 
     @cached_property
     def date(self) -> datetime:

@@ -93,7 +93,7 @@ class OSHSlidePlaceholder(Placeholder):
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
-        _resolve_osh_pptx(presentation, key, value_cb, osh_data.data)
+        _resolve_osh_pptx(presentation, key, value_cb, osh_data)
 
 
 class OSHPortfolioSlidePlaceholder(Placeholder):
