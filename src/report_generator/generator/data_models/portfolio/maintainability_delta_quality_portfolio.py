@@ -107,7 +107,7 @@ class _AbstractMaintainabilityDeltaQualityPortfolioData(AbstractPortfolioModel, 
         stats['lowest_system'] = lowest_system if lowest_system[0] is not None else None
         stats['highest_system'] = highest_system if highest_system[0] is not None else None
         
-        logging.info(f"Delta quality statistics: avg_stars={stats['avg_stars']}, count={stats['count']}, systems_processed={len([s for s in self.system_names if self.data.get(s)])}")
+        logging.debug(f"Delta quality statistics: avg_stars={stats['avg_stars']}, count={stats['count']}, systems_processed={len([s for s in self.system_names if self.data.get(s)])}")
         
         return stats
 

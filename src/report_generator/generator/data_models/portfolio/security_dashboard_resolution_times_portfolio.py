@@ -16,7 +16,7 @@ from functools import cached_property
 
 from report_generator.generator import sigrid_api
 from report_generator.generator.data_models.portfolio.base import AbstractPortfolioModel
-
+from report_generator.generator.data_models.portfolio import utils
 from report_generator.generator.data_models.portfolio.portfolio_arguments import filter_data_on_portfolio_arguments
 
 class SecurityDashboardResolutionTimesPortfolioData(AbstractPortfolioModel):
@@ -27,10 +27,10 @@ class SecurityDashboardResolutionTimesPortfolioData(AbstractPortfolioModel):
     
     @cached_property
     def system_names(self):
-        return AbstractPortfolioModel._system_names_helper(self.data['systems'], 'system')
+        return utils._system_names_helper(self.data['systems'], 'system')
     
     def get_system(self, system):
-        return AbstractPortfolioModel._get_system_helper(system, self.data['systems'], 'system')
+        return utils._get_system_helper(system, self.data['systems'], 'system')
     
     @cached_property
     def period(self):
@@ -49,7 +49,7 @@ class SecurityDashboardResolutionTimesPortfolioData(AbstractPortfolioModel):
         """Accumulate resolution time counts for all severity levels within the period."""
         for system in self.data.get('systems', []):
             for month_data in system.get('resolutionTimes', []):
-                if self._is_month_in_period(month_data.get('month')):
+                if utils._is_month_in_period(month_data.get('month'), self.period):
                     severities = month_data.get('severities', {})
                     
                     for severity_level in ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']:
