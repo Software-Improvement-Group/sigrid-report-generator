@@ -16,7 +16,7 @@ from functools import cached_property
 
 from report_generator.generator import sigrid_api
 from report_generator.generator.data_models.portfolio.base import AbstractPortfolioModel
-from report_generator.generator.data_models.portfolio import utils
+from report_generator.generator.data_models.portfolio import portfolio_utils as utils
 from report_generator.generator.data_models.portfolio.portfolio_arguments import filter_data_on_portfolio_arguments
 
 class SecurityDashboardResolutionTimesPortfolioData(AbstractPortfolioModel):
