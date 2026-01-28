@@ -14,10 +14,11 @@
 
 import inspect
 
-from . import security_findings
+from . import security_findings, osh_charts
 
 _all_implementations = {
     **security_findings.__dict__,
+    **osh_charts.__dict__,
 }
 
 _placeholders_map = {

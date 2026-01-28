@@ -13,7 +13,7 @@
 #  limitations under the License.
 
 from dataclasses import dataclass
-from typing import Callable
+from typing import Callable, Dict, List
 
 from pptx.chart.data import CategoryChartData
 from pptx.presentation import Presentation
@@ -35,8 +35,7 @@ class MonthData:
     total: int
 
 
-def _add_month_data_row(arrays_dict: dict, month_data: MonthData) -> None:
-    """Add a single row of data for a month."""
+def _add_month_data_row(arrays_dict: Dict[str, List], month_data: MonthData) -> None:
     arrays_dict['categories'].append(month_data.month)
     arrays_dict['new'].append(month_data.new)
     arrays_dict['existing'].append(month_data.existing)
@@ -44,7 +43,7 @@ def _add_month_data_row(arrays_dict: dict, month_data: MonthData) -> None:
     arrays_dict['total'].append(month_data.total)
 
 
-def _build_chart_data_arrays(data):
+def _build_chart_data_arrays(data: Dict) -> Dict[str, List]:
     """Build data arrays for the grouped/clustered chart structure.
     
     For the chart to work with stacked (New+Existing) and clustered (Resolved) bars,
@@ -57,7 +56,6 @@ def _build_chart_data_arrays(data):
     existing = data['existing']
     resolved = data['resolved']
     
-    # Initialize result dictionary
     arrays_dict = {
         'categories': [],
         'new': [],
@@ -67,7 +65,6 @@ def _build_chart_data_arrays(data):
     }
     
     for i, month in enumerate(columns):
-        # Calculate total for this month (new + existing)
         total = new[i] + existing[i]
         
         # Row 1: Month name with New and Existing stacked (no Resolved here)
@@ -83,19 +80,14 @@ def _build_chart_data_arrays(data):
     return arrays_dict
 
 
-def _create_security_findings_chart_data(severity):
-    """Create CategoryChartData for security findings chart"""
-    # Get aggregated data from data model
+def _create_security_findings_chart_data(severity: str) -> CategoryChartData:
     aggregated_data = security_dashboard_findings_portfolio_data.chart_findings_by_severity(severity)
-    
-    # Build chart-ready arrays with grouping
     chart_arrays = _build_chart_data_arrays(aggregated_data)
     
-    # Create CategoryChartData
     chart_data = CategoryChartData()
     chart_data.categories = chart_arrays['categories']
     
-    # Add series: New and Existing will be stacked, Resolved will be clustered, Total displays on top
+    # New and Existing will be stacked, Resolved will be clustered, Total displays on top
     chart_data.add_series('New', chart_arrays['new'])
     chart_data.add_series('Existing', chart_arrays['existing'])
     chart_data.add_series('Resolved', chart_arrays['resolved'])
@@ -104,22 +96,16 @@ def _create_security_findings_chart_data(severity):
     return chart_data
 
 
-def _populate_chart(presentation: Presentation, key: str, value_cb: Callable, chart_name: str):
-    """Populate a chart in the presentation by finding slides with the key and updating the named chart."""
-    slides = report_utils.pptx.identify_specific_slide(presentation, key)
+def _populate_chart(presentation: Presentation, value_cb: Callable[[], CategoryChartData], key: str) -> None:
+    charts = report_utils.pptx.find_charts(presentation, key)
     
-    if len(slides) == 0:
+    if not charts:
         return
     
-    # Get chart data
     chart_data = value_cb()
     
-    # Find and update charts by name
-    for slide in slides:
-        shapes_by_name = dict((s.name, s) for s in slide.shapes)
-        if chart_name in shapes_by_name:
-            chart = shapes_by_name[chart_name].chart
-            chart.replace_data(chart_data)
+    for chart in charts:
+        chart.replace_data(chart_data)
 
 
 class SecurityDashboardCriticalFindingsChartPlaceholder(Placeholder):
@@ -138,7 +124,7 @@ class SecurityDashboardCriticalFindingsChartPlaceholder(Placeholder):
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
-        _populate_chart(presentation, key, value_cb, "PORTFOLIO_SECURITY_FINDINGS_CRITICAL")
+        _populate_chart(presentation, value_cb, key)
 
 
 class SecurityDashboardHighFindingsChartPlaceholder(Placeholder):
@@ -148,7 +134,7 @@ class SecurityDashboardHighFindingsChartPlaceholder(Placeholder):
     and Resolved appears as a separate clustered column next to them for each month.
     """
     
-    key = "PORTFOLIO_SECURITY_FINDINGS_HIGHMED"
+    key = "PORTFOLIO_SECURITY_FINDINGS_HIGH"
     __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
@@ -157,7 +143,7 @@ class SecurityDashboardHighFindingsChartPlaceholder(Placeholder):
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
-        _populate_chart(presentation, key, value_cb, "PORTFOLIO_SECURITY_FINDINGS_HIGH")
+        _populate_chart(presentation, value_cb, key)
 
 
 class SecurityDashboardMediumFindingsChartPlaceholder(Placeholder):
@@ -167,7 +153,7 @@ class SecurityDashboardMediumFindingsChartPlaceholder(Placeholder):
     and Resolved appears as a separate clustered column next to them for each month.
     """
     
-    key = "PORTFOLIO_SECURITY_FINDINGS_HIGHMED"
+    key = "PORTFOLIO_SECURITY_FINDINGS_MEDIUM"
     __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
@@ -176,12 +162,12 @@ class SecurityDashboardMediumFindingsChartPlaceholder(Placeholder):
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
-        _populate_chart(presentation, key, value_cb, "PORTFOLIO_SECURITY_FINDINGS_MEDIUM")
+        _populate_chart(presentation, value_cb, key)
 
 
 # Resolution Times Placeholders
 
-def _build_resolution_times_chart_data_arrays(data):
+def _build_resolution_times_chart_data_arrays(data: Dict) -> Dict[str, List]:
     """Build data arrays for stacked resolution times chart.
     
     Returns arrays with month categories and stacked risk level values.
@@ -192,7 +178,6 @@ def _build_resolution_times_chart_data_arrays(data):
     medium_risk = data['mediumRisk']
     high_risk = data['highRisk']
     
-    # Calculate totals for each month
     totals = [no_risk[i] + low_risk[i] + medium_risk[i] + high_risk[i] for i in range(len(columns))]
     
     return {
@@ -205,22 +190,15 @@ def _build_resolution_times_chart_data_arrays(data):
     }
 
 
-def _create_resolution_times_chart_data(severity):
-    """Create CategoryChartData for resolution times chart"""
-    # Get aggregated data from data model
+def _create_resolution_times_chart_data(severity: str) -> CategoryChartData:
     aggregated_data = security_dashboard_resolution_times_portfolio_data.chart_resolution_times_by_severity(severity)
-    
-    # Build chart-ready arrays
     chart_arrays = _build_resolution_times_chart_data_arrays(aggregated_data)
-    
-    # Get legend labels from data model
     labels = security_dashboard_resolution_times_portfolio_data.get_legend_labels(severity)
     
-    # Create CategoryChartData
     chart_data = CategoryChartData()
     chart_data.categories = chart_arrays['categories']
     
-    # Add series: All will be stacked, Total displays on top
+    # All will be stacked, Total displays on top
     chart_data.add_series(labels['noRisk'], chart_arrays['noRisk'])
     chart_data.add_series(labels['lowRisk'], chart_arrays['lowRisk'])
     chart_data.add_series(labels['mediumRisk'], chart_arrays['mediumRisk'])
@@ -236,7 +214,7 @@ class SecurityDashboardCriticalResolutionTimesChartPlaceholder(Placeholder):
     Stacked bar chart showing distribution across different risk categories based on resolution time.
     """
     
-    key = "PORTFOLIO_SECURITY_FINDINGS_CRITICAL"
+    key = "PORTFOLIO_SECURITY_RESOLUTION_CRITICAL"
     __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
@@ -245,7 +223,7 @@ class SecurityDashboardCriticalResolutionTimesChartPlaceholder(Placeholder):
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
-        _populate_chart(presentation, key, value_cb, "PORTFOLIO_SECURITY_RESOLUTION_CRITICAL")
+        _populate_chart(presentation, value_cb, key)
 
 
 class SecurityDashboardHighResolutionTimesChartPlaceholder(Placeholder):
@@ -254,7 +232,7 @@ class SecurityDashboardHighResolutionTimesChartPlaceholder(Placeholder):
     Stacked bar chart showing distribution across different risk categories based on resolution time.
     """
     
-    key = "PORTFOLIO_SECURITY_FINDINGS_HIGHMED"
+    key = "PORTFOLIO_SECURITY_RESOLUTION_HIGH"
     __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
@@ -263,7 +241,7 @@ class SecurityDashboardHighResolutionTimesChartPlaceholder(Placeholder):
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
-        _populate_chart(presentation, key, value_cb, "PORTFOLIO_SECURITY_RESOLUTION_HIGH")
+        _populate_chart(presentation, value_cb, key)
 
 
 class SecurityDashboardMediumResolutionTimesChartPlaceholder(Placeholder):
@@ -272,7 +250,7 @@ class SecurityDashboardMediumResolutionTimesChartPlaceholder(Placeholder):
     Stacked bar chart showing distribution across different risk categories based on resolution time.
     """
     
-    key = "PORTFOLIO_SECURITY_FINDINGS_HIGHMED"
+    key = "PORTFOLIO_SECURITY_RESOLUTION_MEDIUM"
     __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
@@ -281,5 +259,5 @@ class SecurityDashboardMediumResolutionTimesChartPlaceholder(Placeholder):
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
-        _populate_chart(presentation, key, value_cb, "PORTFOLIO_SECURITY_RESOLUTION_MEDIUM")
+        _populate_chart(presentation, value_cb, key)
 
