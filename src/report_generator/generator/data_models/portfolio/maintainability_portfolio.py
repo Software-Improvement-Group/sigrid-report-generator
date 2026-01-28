@@ -19,7 +19,7 @@ from typing import Tuple, Optional
 from report_generator.generator import sigrid_api
 from report_generator.generator.formatters.formatters import calculate_star_rating_integer
 from report_generator.generator.data_models.portfolio.base import AbstractPortfolioModel
-from report_generator.generator.data_models.portfolio import portfolio_utils as utils
+from report_generator.generator.data_models.portfolio import portfolio_utils
 from report_generator.generator.data_models.portfolio.portfolio_arguments import filter_data_on_portfolio_arguments
 
 def _categorize_test_code_ratio(ratio):
@@ -192,13 +192,13 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
     
     @cached_property
     def system_names(self):
-        return utils._system_names_helper(self.data['systems'], 'system')
+        return portfolio_utils._system_names_helper(self.data['systems'], 'system')
     
     def get_system(self, system):
-        return utils._get_system_helper(system, self.data['systems'], 'system')
+        return portfolio_utils._get_system_helper(system, self.data['systems'], 'system')
     
     def get_system_metadata(self, system_name):
-        return utils.get_system_metadata(self.metadata, system_name)
+        return portfolio_utils.get_system_metadata(self.metadata, system_name)
     
     @staticmethod
     def _get_head_entry(system):
@@ -282,7 +282,7 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
         start_volumes, end_volumes = [], []
 
         for system_name in self.system_names:
-            md = utils.get_system_metadata(self.metadata, system_name)
+            md = portfolio_utils.get_system_metadata(self.metadata, system_name)
             if not _is_system_active(md):
                 continue
 
@@ -314,7 +314,7 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
         return statistics
     
     def _extract_maintainability_rating(self, system_name):
-        md = utils.get_system_metadata(self.metadata, system_name)
+        md = portfolio_utils.get_system_metadata(self.metadata, system_name)
         if not _is_system_active(md):
             return None
         end_snapshot = self.end_snapshot(system_name)
@@ -322,13 +322,13 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
     
     @cached_property
     def get_rating_distribution_percentages(self):
-        return utils._get_rating_distribution_percentages(
+        return portfolio_utils._get_rating_distribution_percentages(
             self.system_names,
             self._extract_maintainability_rating
         )
     
     def _get_rating_and_volume_for_system_name(self, system_name):
-        md = utils.get_system_metadata(self.metadata, system_name)
+        md = portfolio_utils.get_system_metadata(self.metadata, system_name)
         if not _is_system_active(md):
             return None, 0
             
@@ -339,7 +339,7 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
     
     @cached_property
     def weighted_average_rating(self):
-        return utils._calculate_weighted_average_rating(
+        return portfolio_utils._calculate_weighted_average_rating(
             self.system_names,
             self._get_rating_and_volume_for_system_name
         )
@@ -351,7 +351,7 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
         total = 0
         
         for system_name in self.system_names:
-            md = utils.get_system_metadata(self.metadata, system_name)
+            md = portfolio_utils.get_system_metadata(self.metadata, system_name)
             if not _is_system_active(md):
                 continue
                 
