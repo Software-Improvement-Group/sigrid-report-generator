@@ -109,11 +109,7 @@ def _populate_chart(presentation: Presentation, value_cb: Callable[[], CategoryC
 
 
 class SecurityDashboardCriticalFindingsChartPlaceholder(Placeholder):
-    """PowerPoint chart depicting new, existing, and resolved critical security findings over the last 12 months.
-    
-    Uses a combination of stacked and clustered columns where New and Existing are stacked together,
-    and Resolved appears as a separate clustered column next to them for each month.
-    """
+    """PowerPoint chart showing new, existing, and resolved critical security findings over the last 12 months."""
     
     key = "PORTFOLIO_SECURITY_FINDINGS_CRITICAL"
     __doc_type__ = PlaceholderDocType.CHART
@@ -128,11 +124,7 @@ class SecurityDashboardCriticalFindingsChartPlaceholder(Placeholder):
 
 
 class SecurityDashboardHighFindingsChartPlaceholder(Placeholder):
-    """PowerPoint chart depicting new, existing, and resolved high security findings over the last 12 months.
-    
-    Uses a combination of stacked and clustered columns where New and Existing are stacked together,
-    and Resolved appears as a separate clustered column next to them for each month.
-    """
+    """PowerPoint chart showing new, existing, and resolved high security findings over the last 12 months."""
     
     key = "PORTFOLIO_SECURITY_FINDINGS_HIGH"
     __doc_type__ = PlaceholderDocType.CHART
@@ -147,11 +139,7 @@ class SecurityDashboardHighFindingsChartPlaceholder(Placeholder):
 
 
 class SecurityDashboardMediumFindingsChartPlaceholder(Placeholder):
-    """PowerPoint chart depicting new, existing, and resolved medium security findings over the last 12 months.
-    
-    Uses a combination of stacked and clustered columns where New and Existing are stacked together,
-    and Resolved appears as a separate clustered column next to them for each month.
-    """
+    """PowerPoint chart showing new, existing, and resolved medium security findings over the last 12 months."""
     
     key = "PORTFOLIO_SECURITY_FINDINGS_MEDIUM"
     __doc_type__ = PlaceholderDocType.CHART
@@ -209,10 +197,7 @@ def _create_resolution_times_chart_data(severity: str) -> CategoryChartData:
 
 
 class SecurityDashboardCriticalResolutionTimesChartPlaceholder(Placeholder):
-    """PowerPoint chart depicting resolution times of critical security findings over the last 12 months.
-    
-    Stacked bar chart showing distribution across different risk categories based on resolution time.
-    """
+    """PowerPoint chart showing resolution times of critical security findings over the last 12 months."""
     
     key = "PORTFOLIO_SECURITY_RESOLUTION_CRITICAL"
     __doc_type__ = PlaceholderDocType.CHART
@@ -227,10 +212,7 @@ class SecurityDashboardCriticalResolutionTimesChartPlaceholder(Placeholder):
 
 
 class SecurityDashboardHighResolutionTimesChartPlaceholder(Placeholder):
-    """PowerPoint chart depicting resolution times of high security findings over the last 12 months.
-    
-    Stacked bar chart showing distribution across different risk categories based on resolution time.
-    """
+    """PowerPoint chart showing resolution times of high security findings over the last 12 months."""
     
     key = "PORTFOLIO_SECURITY_RESOLUTION_HIGH"
     __doc_type__ = PlaceholderDocType.CHART
@@ -245,10 +227,7 @@ class SecurityDashboardHighResolutionTimesChartPlaceholder(Placeholder):
 
 
 class SecurityDashboardMediumResolutionTimesChartPlaceholder(Placeholder):
-    """PowerPoint chart depicting resolution times of medium security findings over the last 12 months.
-    
-    Stacked bar chart showing distribution across different risk categories based on resolution time.
-    """
+    """PowerPoint chart showing resolution times of medium security findings over the last 12 months."""
     
     key = "PORTFOLIO_SECURITY_RESOLUTION_MEDIUM"
     __doc_type__ = PlaceholderDocType.CHART
