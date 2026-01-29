@@ -71,7 +71,7 @@ def _validate_layout_or_template(ctx, param, value):
 @click.option('-t', '--token', default=lambda: os.environ.get('SIGRID_CI_TOKEN'),
               help='Sigrid CI token for this customer')
 @click.option('-l', '--layout', type=click.Choice(presets.ids),
-              default='default',
+              default='system-summary',
               help='The type of report (mutually exclusive with the -p/--template option)')
 @click.option('-p', '--template', type=click.File('rb'), callback=_validate_layout_or_template,
               help='A custom report template file (mutually exclusive with the -l/--layout option)')
