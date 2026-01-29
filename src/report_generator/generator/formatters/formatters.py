@@ -15,9 +15,6 @@
 import math
 import logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
-
 _USE_SIG_STERREN = False
 
 
@@ -51,7 +48,7 @@ def calculate_stars(maintainability_rating: float) -> str:
     return ratings[star_rating-1]
 
 def maintainability_round(rating) -> str:
-    logger.warning("maintainability_round is deprecated and will be removed, use star_rating_round instead")
+    logging.warning("maintainability_round is deprecated and will be removed, use star_rating_round instead")
     star_rating_round(rating) 
 
 def star_rating_round(rating) -> str:
