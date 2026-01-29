@@ -302,3 +302,10 @@ def technical_debt_percentage():
     volume_in_py = modernization_data.single_system_candidate.volume_in_py
     technical_debt_in_py = modernization_data.single_system_candidate.technical_debt_in_py
     return f"{(technical_debt_in_py * 100.0 / volume_in_py):.0f}"
+
+@text_placeholder()
+def renovation_effort_percentage():
+    """Renovation effort as a percentage of total system volume."""
+    volume_in_py = modernization_data.single_system_candidate.volume_in_py
+    renovation_effort_in_py = modernization_data.single_system_candidate.estimated_effort_py
+    return f"{(renovation_effort_in_py * 100.0 / volume_in_py):.0f}"

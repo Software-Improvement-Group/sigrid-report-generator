@@ -36,6 +36,8 @@ def generate_debug_pptx(output_path: str) -> None:
 def generate_itdd_light(output_path: str) -> None:
     _generate_report("default-template.pptx", output_path)
 
+def generate_system_summary(output_path: str) -> None:
+    _generate_report("system-summary.pptx", output_path)
 
 def generate_itdd_system_technical_debt_report(output_path: str) -> None:
     _generate_report("itdd-technical-debt.pptx", output_path)
@@ -61,6 +63,7 @@ def generate_portfolio_overview(output_path: str) -> None:
 
 _preset_reports: dict[str, Callable[[str], None]] = {
     'default'                         : generate_itdd_light,
+    'system-summary'                  : generate_system_summary,
     'word-debug'                      : generate_debug_docx,
     'debug'                           : generate_debug_pptx,
     'itdd-technical-debt'             : generate_itdd_system_technical_debt_report,
@@ -73,6 +76,7 @@ _preset_reports: dict[str, Callable[[str], None]] = {
 
 SYSTEM_LEVEL_PRESETS = {
     'default',
+    'system-summary',
     'word-debug',
     'debug',
     'itdd-technical-debt',
