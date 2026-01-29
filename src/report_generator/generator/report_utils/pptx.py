@@ -306,8 +306,7 @@ def replace_paragraph_with_text(paragraph: _Paragraph, text: Union[str, int, flo
     paragraph.clear()
 
     run: _Run = paragraph.add_run()
-    text_value = str(text)
-    run.text = str(text_value) if text_value is not None else ""
+    run.text = "" if text is None else str(text)
 
     if font:
         apply_font_properties(run, font)
