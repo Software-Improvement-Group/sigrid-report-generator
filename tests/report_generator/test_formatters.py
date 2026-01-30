@@ -30,13 +30,13 @@ class TestFormatter:
         assert formatters.calculate_stars(7.5) == "HHHHH"
         assert formatters.calculate_stars(-3) == ""
 
-    def test_maintainability_round(self):
-        assert formatters.maintainability_round(1.50000) == "1.5"
+    def test_star_rating_round(self):
+        assert formatters.star_rating_round(1.50000) == "1.5"
 
-        assert formatters.maintainability_round(1.499999) == "1.4"
-        assert formatters.maintainability_round(5.4) == "5.4"
+        assert formatters.star_rating_round(1.499999) == "1.4"
+        assert formatters.star_rating_round(5.4) == "5.4"
 
-        assert formatters.maintainability_round(3.284) == "3.2"
+        assert formatters.star_rating_round(3.284) == "3.2"
 
     def test_format_diff(self):
         assert formatters.format_diff(None, None) == ""

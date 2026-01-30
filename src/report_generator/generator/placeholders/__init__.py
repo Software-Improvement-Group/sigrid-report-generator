@@ -15,6 +15,7 @@
 from typing import Set, Type
 
 from .base import Placeholder
+from .charts import placeholders as chart_placeholders
 from .misc import placeholders as misc_placeholders
 from .table import placeholders as table_placeholders
 from .text import placeholders as text_placeholders
@@ -22,7 +23,7 @@ from .images import placeholders as image_placeholders
 
 PlaceholderCollection = Set[Type[Placeholder]]
 
-placeholders: PlaceholderCollection = text_placeholders | misc_placeholders | table_placeholders | image_placeholders
+placeholders: PlaceholderCollection = text_placeholders | misc_placeholders | table_placeholders | image_placeholders | chart_placeholders
 
 from .text import text_placeholder, parameterized_text_placeholder
 
