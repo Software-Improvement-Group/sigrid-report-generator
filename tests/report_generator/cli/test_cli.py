@@ -124,7 +124,7 @@ class TestCLIParameters:
     @patch('report_generator.cli.presets')
     @patch('report_generator.cli.sigrid_api')
     def test_layout_defaults_to_default(self, mock_sigrid_api, mock_presets):
-        """Test that --layout defaults to 'default' when not specified."""
+        """Test that --layout defaults to 'system-summary' when not specified."""
         os.environ['SIGRID_REPORT_GENERATOR_RECORD_USAGE'] = '0'
         mock_presets.run = MagicMock()
 
@@ -134,7 +134,7 @@ class TestCLIParameters:
             '--token', 'test-token'
         ])
 
-        mock_presets.run.assert_called_once_with('default', 'out')
+        mock_presets.run.assert_called_once_with('system-summary', 'out')
 
     @patch('report_generator.cli.presets')
     @patch('report_generator.cli.sigrid_api')

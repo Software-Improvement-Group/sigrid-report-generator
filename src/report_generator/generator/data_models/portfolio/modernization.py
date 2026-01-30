@@ -139,7 +139,7 @@ class ModernizationData:
         renovation_effort = get_renovation_effort(scenario, architecture_metrics, volume_in_py)
 
         return ModernizationCandidate(
-            display_name=metadata.get("displayName") or metadata["systemName"],
+            display_name=metadata.get("displayName") or metadata.get("systemName") or system["system"],
             business_criticality=metadata.get("businessCriticality") or "unknown",
             volume_in_py=volume_in_py,
             activity_in_py=get_activity(volume_in_py, architecture_graph),
