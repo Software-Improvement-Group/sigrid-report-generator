@@ -63,7 +63,7 @@ def modernization_technical_debt(index: int):
     """Technical debt of the modernization candidate system in person years."""
     if index >= len(modernization_data.modernization_candidates):
         return ""
-    return f"{modernization_data.modernization_candidates[index].technical_debt_in_py:.1f} PY"
+    return f"{modernization_data.modernization_candidates[index].estimated_effort_py:.1f} PY"
 
 
 @parameterized_text_placeholder(custom_key="MODERNIZATION_CHANGE_SPEED_{parameter}", parameters=range(1, 11))

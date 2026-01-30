@@ -287,7 +287,7 @@ def maintenance_fte():
 @text_placeholder()
 def technical_debt_py():
     """Technical debt of the system in person years."""
-    return f"{modernization_data.single_system_candidate.technical_debt_in_py:.1f}"
+    return f"{modernization_data.single_system_candidate.estimated_effort_py:.1f}"
 
 
 @text_placeholder()
@@ -300,7 +300,7 @@ def renovation_effort_py():
 def technical_debt_percentage():
     """Technical debt as a percentage of total system volume."""
     volume_in_py = modernization_data.single_system_candidate.volume_in_py
-    technical_debt_in_py = modernization_data.single_system_candidate.technical_debt_in_py
+    technical_debt_in_py = modernization_data.single_system_candidate.estimated_effort_py
     if volume_in_py:
         return f"{(technical_debt_in_py * 100.0 / volume_in_py):.0f}"
     return "0"
