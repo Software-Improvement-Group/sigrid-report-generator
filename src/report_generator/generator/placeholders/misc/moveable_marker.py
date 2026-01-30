@@ -117,7 +117,7 @@ class ModernizationTechnicalDebtMarkerPlaceholder(_ManagementSummaryMarkerPlaceh
     @classmethod
     def value(cls, parameter=None) -> tuple[float, str]:
         technical_debt = sum(
-            candidate.technical_debt_in_py for candidate in modernization_data.modernization_candidates)
+            candidate.estimated_effort_py for candidate in modernization_data.modernization_candidates)
         return technical_debt / modernization_data.total_volume, f"{round(technical_debt)} PY"
 
 

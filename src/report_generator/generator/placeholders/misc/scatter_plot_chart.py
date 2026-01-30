@@ -34,7 +34,7 @@ class ModernizationScatterPlotChartPlaceholder(Placeholder):
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, _) -> None:
-        charts = report_utils.pptx.gather_charts(presentation, key)
+        charts = report_utils.pptx.find_charts(presentation, key)
 
         if len(charts) == 0:
             return
@@ -47,7 +47,7 @@ class ModernizationScatterPlotChartPlaceholder(Placeholder):
         for group, candidates in grouped_candidates.items():
             series = chart_data.add_series(group.title())
             for c in candidates:
-                series.add_data_point(c.estimated_effort_py, c.estimated_change_speed, c.technical_debt_in_py)
+                series.add_data_point(c.estimated_effort_py, c.estimated_change_speed, c.volume_in_py)
 
         for chart in charts:
             chart.replace_data(chart_data)

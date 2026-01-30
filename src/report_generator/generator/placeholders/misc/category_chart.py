@@ -137,8 +137,8 @@ class TechnicalDebtSystemsChartPlaceholder(_AbstractCategoryChartPlaceholder):
     @classmethod
     def series(cls):
         candidates = modernization_data.modernization_candidates_by_technical_debt[0:20]
-        technical_debt = [candidate.technical_debt_in_py for candidate in candidates]
-        remaining = [candidate.volume_in_py - candidate.technical_debt_in_py for candidate in candidates]
+        technical_debt = [candidate.estimated_effort_py for candidate in candidates]
+        remaining = [candidate.volume_in_py - candidate.estimated_effort_py for candidate in candidates]
         return [technical_debt, remaining]
 
     @classmethod

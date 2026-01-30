@@ -175,7 +175,7 @@ class ModernizationData:
 
     @cached_property
     def modernization_candidates_by_technical_debt(self) -> list[ModernizationCandidate]:
-        return sorted(self.modernization_candidates, key=lambda candidate: -candidate.technical_debt_in_py)
+        return sorted(self.modernization_candidates, key=lambda candidate: -candidate.estimated_effort_py)
 
     @cached_property
     def total_volume(self):
