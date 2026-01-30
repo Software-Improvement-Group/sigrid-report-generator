@@ -14,11 +14,10 @@
 
 import inspect
 
-from . import chart_image, treemap_image
+from . import treemap_image
 
 _all_implementations = {
-    **chart_image.__dict__,
-    **treemap_image.__dict__
+    **treemap_image.__dict__,
 }
 
 _placeholders_map = {

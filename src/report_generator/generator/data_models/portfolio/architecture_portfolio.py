@@ -16,7 +16,7 @@ from functools import cached_property
 
 from report_generator.generator import sigrid_api
 from report_generator.generator.data_models.portfolio.base import AbstractPortfolioModel
-
+from report_generator.generator.data_models.portfolio import portfolio_utils
 from report_generator.generator.data_models.portfolio.portfolio_arguments import filter_data_on_portfolio_arguments
 
 class ArchitecturePortfolioData(AbstractPortfolioModel):
@@ -31,9 +31,39 @@ class ArchitecturePortfolioData(AbstractPortfolioModel):
     
     @cached_property
     def system_names(self):
-        return AbstractPortfolioModel._system_names_helper(self.data, 'system')
+        return portfolio_utils._system_names_helper(self.data, 'system')
 
     def get_system(self, system):
-        return AbstractPortfolioModel._get_system_helper(system, self.data, 'system')
+        return portfolio_utils._get_system_helper(system, self.data, 'system')
+    
+    @cached_property
+    def get_rating_distribution_percentages(self):
+        """Calculate percentage of systems in each rating category."""
+        return portfolio_utils._get_rating_distribution_percentages(
+            self.data,
+            self._extract_architecture_rating
+        )
+    
+    def _extract_architecture_rating(self, system):
+        """Extract architecture rating from a system."""
+        if 'ratings' not in system or 'architecture' not in system['ratings']:
+            return None
+        return system['ratings']['architecture']
+    
+    def _get_rating_and_volume(self, system):
+        """Extract rating and volume for a system."""
+        return portfolio_utils._get_rating_and_volume_from_system(
+            system,
+            self._extract_architecture_rating,
+            'system'
+        )
+    
+    @cached_property
+    def weighted_average_rating(self):
+        """Calculate volume-weighted average architecture rating across all systems."""
+        return portfolio_utils._calculate_weighted_average_rating(
+            self.data,
+            self._get_rating_and_volume
+        )
 
 architecture_portfolio_data = ArchitecturePortfolioData()

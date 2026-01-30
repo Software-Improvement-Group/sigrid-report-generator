@@ -15,7 +15,7 @@
 from report_generator.generator.constants import OSHMetric
 from report_generator.generator.data_models import *
 from report_generator.generator.formatters import smart_remarks
-from report_generator.generator.formatters.formatters import calculate_stars, maintainability_round
+from report_generator.generator.formatters.formatters import calculate_stars, star_rating_round
 from .base import parameterized_text_placeholder, text_placeholder
 
 
@@ -131,7 +131,7 @@ def osh_relative():
                                 parameters=list(OSHMetric))
 def osh_rating_param(metric: OSHMetric):
     """The 0.5-5.5 star rating for this OSH metric."""
-    return maintainability_round(osh_data.get_rating_for_metric(metric))
+    return star_rating_round(osh_data.get_rating_for_metric(metric))
 
 
 @parameterized_text_placeholder(custom_key="STARS_{parameter}",

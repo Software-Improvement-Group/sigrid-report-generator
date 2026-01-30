@@ -15,9 +15,9 @@
 from datetime import datetime
 
 from report_generator.generator.constants import MaintMetric
-from report_generator.generator.data_models import *
+from report_generator.generator.data_models import maintainability_data, modernization_data
 from report_generator.generator.formatters import smart_remarks
-from report_generator.generator.formatters.formatters import calculate_stars, format_diff, maintainability_round
+from report_generator.generator.formatters.formatters import calculate_stars, format_diff, star_rating_round
 from .base import parameterized_text_placeholder, text_placeholder
 
 
@@ -42,7 +42,7 @@ def report_date():
 @text_placeholder()
 def maint_rating():
     """The 0.5-5.5 star rating provided by SIG's Maintainability Model."""
-    return maintainability_round(maintainability_data.maintainability_rating)
+    return star_rating_round(maintainability_data.maintainability_rating)
 
 
 @text_placeholder()
@@ -260,7 +260,7 @@ def tech_risk(idx: int):
 def maint_rating_param(metric: MaintMetric):
     """The 0.5-5.5 star rating for this metric."""
     metric_key = metric.to_json_name()
-    return maintainability_round(maintainability_data.data[metric_key])
+    return star_rating_round(maintainability_data.data[metric_key])
 
 
 @parameterized_text_placeholder(custom_key="MAINT_DIFF_{parameter}", parameters=list(MaintMetric))
