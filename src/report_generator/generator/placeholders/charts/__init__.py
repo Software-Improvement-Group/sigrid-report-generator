@@ -12,19 +12,20 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from abc import ABC
-from functools import cached_property
+import inspect
 
-from report_generator.generator import sigrid_api
+from . import security_findings, osh_charts
 
-class AbstractPortfolioModel(ABC):
-    @cached_property
-    def metadata(self):
-        return sigrid_api.get_portfolio_metadata()
-    
-    @cached_property
-    def period(self):
-        return sigrid_api.get_period()
+_all_implementations = {
+    **security_findings.__dict__,
+    **osh_charts.__dict__,
+}
 
-    def end_snapshot(self, system):
-        return self.get_system(system)
+_placeholders_map = {
+    name: obj for name, obj in _all_implementations.items()
+    if inspect.isclass(obj) and hasattr(obj, '__placeholder__') and not inspect.isabstract(obj)
+}
+
+placeholders = set(_placeholders_map.values())
+
+__all__ = list(_placeholders_map.keys())

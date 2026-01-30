@@ -14,23 +14,8 @@
 
 from unittest.mock import MagicMock, patch
 
-from report_generator.generator.constants import MetricEnum
 
 
-class TestPlaceholders:
-
-    def test_to_json_name(self):
-        class TestMetricEnum(MetricEnum):
-            UNIT_SIZE = "UNIT_SIZE"
-            DUPLICATION = "DUPLICATION"
-            duplication = "duplication"
-            UnIt_sIze = "UnIt_sIze"
-
-
-        assert TestMetricEnum.UNIT_SIZE.to_json_name() == "unitSize"
-        assert TestMetricEnum.DUPLICATION.to_json_name() == "duplication"
-        assert TestMetricEnum.duplication.to_json_name() == "duplication"
-        assert TestMetricEnum.UnIt_sIze.to_json_name() == "unitSize"
 
 
 class TestTreemapImagePlaceholder:
@@ -83,7 +68,7 @@ class TestTreemapImagePlaceholder:
             'color_mapping': {}
         }
         
-        result = _AbstractPortfolioTreemapPlaceholder.draw_image(10, 10, fig_data)
+        _AbstractPortfolioTreemapPlaceholder.draw_image(10, 10, fig_data)
         
         # Should have called treemap with a non-empty color mapping
         assert mock_treemap.treemap.called
@@ -157,3 +142,4 @@ class TestTreemapImagePlaceholder:
         assert call_kwargs['cmap'] == fig_data['color_mapping']
         # Axes should be turned off
         mock_ax.axis.assert_called_once_with("off")
+

@@ -11,20 +11,3 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-
-from abc import ABC
-from functools import cached_property
-
-from report_generator.generator import sigrid_api
-
-class AbstractPortfolioModel(ABC):
-    @cached_property
-    def metadata(self):
-        return sigrid_api.get_portfolio_metadata()
-    
-    @cached_property
-    def period(self):
-        return sigrid_api.get_period()
-
-    def end_snapshot(self, system):
-        return self.get_system(system)

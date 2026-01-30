@@ -228,12 +228,23 @@ def test_code_ratio_color(ratio):
 
 
 def gather_charts(presentation: Presentation, key: str):
+    """Deprecated but kept for backward compatibility, use find_charts instead so it's not linked to a text box in the slide."""
     charts = []
     for slide in identify_specific_slide(presentation, key):
         for shape in slide.shapes:
             if shape.has_chart:
                 charts.append(shape.chart)
     return charts
+
+
+def find_charts(presentation: Presentation, key: str):
+    """Find charts by shape name. This is the recommended way to locate charts in a presentation."""
+    return [
+        shape.chart
+        for slide in presentation.slides
+        for shape in slide.shapes
+        if shape.has_chart and shape.name == key
+    ]
 
 
 def find_tables(presentation: Presentation, key: str):
@@ -295,8 +306,7 @@ def replace_paragraph_with_text(paragraph: _Paragraph, text: Union[str, int, flo
     paragraph.clear()
 
     run: _Run = paragraph.add_run()
-    text_value = str(text)
-    run.text = str(text_value) if text_value is not None else ""
+    run.text = "" if text is None else str(text)
 
     if font:
         apply_font_properties(run, font)

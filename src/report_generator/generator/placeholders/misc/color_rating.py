@@ -38,7 +38,7 @@ class _AbstractColorRatingPlaceholder(ParameterizedPlaceholder, ABC):
         rating = value_cb()
 
         rating_color = report_utils.pptx.determine_rating_color(rating)
-        rating_rounded = formatters.maintainability_round(rating)
+        rating_rounded = formatters.star_rating_round(rating)
 
         for shape in shapes:
             report_utils.pptx.set_shape_color(shape, rating_color)
