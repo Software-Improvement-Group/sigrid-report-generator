@@ -37,7 +37,7 @@ _team: Optional[list[str]] = None
 _division: Optional[list[str]] = None
 _lifecycle: Optional[list[str]] = None
 _deployment: Optional[list[str]] = None
-_business_crititality: Optional[list[str]] = None
+_business_criticality: Optional[list[str]] = None
 _distribution: Optional[list[str]] = None
 _application_type: Optional[list[str]] = None
 _target_industry: Optional[list[str]] = None
@@ -49,7 +49,7 @@ FILTER_CONFIGURATION = {
     'division': ('_division', None, None),
     'lifecycle': ('_lifecycle', METADATA_LIFECYCLE_MAPPING, 'Lifecycle'),
     'deployment': ('_deployment', METADATA_DEPLOYMENT_MAPPING, 'Deployment'),
-    'business_criticality': ('_business_crititality', METADATA_BUSINESS_CRITICALITY_MAPPING, 'Business criticality'),
+    'business_criticality': ('_business_criticality', METADATA_BUSINESS_CRITICALITY_MAPPING, 'Business criticality'),
     'distribution': ('_distribution', METADATA_DISTRIBUTION_MAPPING, 'Distribution'),
     'application_type': ('_application_type', METADATA_APPLICATION_TYPE_MAPPING, 'Application type'),
     'target_industry': ('_target_industry', METADATA_TARGET_INDUSTRY_MAPPING, 'Target industry'),
@@ -62,7 +62,7 @@ METADATA_FILTER_CHECKS = [
     ('_division', 'divisionName', None),
     ('_lifecycle', 'lifecyclePhase', str.upper),
     ('_deployment', 'deploymentType', lambda x: x.upper().replace('-', '_')),
-    ('_business_crititality', 'businessCriticality', str.upper),
+    ('_business_criticality', 'businessCriticality', str.upper),
     ('_distribution', 'softwareDistributionStrategy', lambda x: x.upper().replace(' ', '_')),
     ('_application_type', 'applicationType', lambda x: x.upper().replace(' ', '_')),
     ('_target_industry', 'targetIndustry', str.upper),
@@ -149,7 +149,7 @@ def _raise_no_systems_found_error():
         (_division, '--division'),
         (_lifecycle, '--lifecycle'),
         (_deployment, '--deployment'),
-        (_business_crititality, '--business-criticality'),
+        (_business_criticality, '--business-criticality'),
         (_distribution, '--distribution'),
         (_application_type, '--application-type'),
         (_target_industry, '--target-industry'),
@@ -237,7 +237,7 @@ def _check_filter_match(filter_value: Optional[list[str]], actual_value, transfo
     return actual_value in clean_filters
 
 def _include(system_name, portfolio_metadata):
-    global _team, _division, _lifecycle, _deployment, _business_crititality, _distribution, _application_type, _target_industry, _technology_category, _main_technology
+    global _team, _division, _lifecycle, _deployment, _business_criticality, _distribution, _application_type, _target_industry, _technology_category, _main_technology
     md = _find_system_metadata(system_name=system_name, portfolio_metadata=portfolio_metadata)
     if md is None:
         return False
@@ -256,7 +256,7 @@ def _are_filters_set():
         _division is not None,
         _lifecycle is not None,
         _deployment is not None,
-        _business_crititality is not None,
+        _business_criticality is not None,
         _distribution is not None,
         _application_type is not None,
         _target_industry is not None,
