@@ -63,10 +63,10 @@ METADATA_FILTER_CHECKS = [
     ('_lifecycle', 'lifecyclePhase', str.upper),
     ('_deployment', 'deploymentType', lambda x: x.upper().replace('-', '_')),
     ('_business_criticality', 'businessCriticality', str.upper),
-    ('_distribution', 'softwareDistributionStrategy', lambda x: x.upper().replace(' ', '_')),
-    ('_application_type', 'applicationType', lambda x: x.upper().replace(' ', '_')),
+    ('_distribution', 'softwareDistributionStrategy', lambda x: x.upper().replace('-', '_')),
+    ('_application_type', 'applicationType', lambda x: x.upper().replace('-', '_')),
     ('_target_industry', 'targetIndustry', str.upper),
-    ('_technology_category', 'technologyCategory', lambda x: x.upper().replace(' ', '_')),
+    ('_technology_category', 'technologyCategory', lambda x: x.upper().replace('-', '_')),
     ('_main_technology', 'mainTechnology', str.lower),
 ]
 
