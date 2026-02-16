@@ -63,10 +63,10 @@ METADATA_FILTER_CHECKS = [
     ('_lifecycle', 'lifecyclePhase', str.upper),
     ('_deployment', 'deploymentType', lambda x: x.upper().replace('-', '_')),
     ('_business_crititality', 'businessCriticality', str.upper),
-    ('_distribution', 'softwareDistributionStrategy', lambda x: x.upper().replace('-', '_')),
-    ('_application_type', 'applicationType', lambda x: x.upper().replace('-', '_')),
+    ('_distribution', 'softwareDistributionStrategy', lambda x: x.upper().replace(' ', '_')),
+    ('_application_type', 'applicationType', lambda x: x.upper().replace(' ', '_')),
     ('_target_industry', 'targetIndustry', str.upper),
-    ('_technology_category', 'technologyCategory', str.upper),
+    ('_technology_category', 'technologyCategory', lambda x: x.upper().replace(' ', '_')),
     ('_main_technology', 'mainTechnology', str.lower),
 ]
 
@@ -251,7 +251,18 @@ def _include(system_name, portfolio_metadata):
     return True
 
 def _are_filters_set():
-    return _team is not None or _division is not None
+    return any([
+        _team is not None,
+        _division is not None,
+        _lifecycle is not None,
+        _deployment is not None,
+        _business_crititality is not None,
+        _distribution is not None,
+        _application_type is not None,
+        _target_industry is not None,
+        _technology_category is not None,
+        _main_technology is not None,
+    ])
 
 def _find_system_metadata(system_name, portfolio_metadata):
     for s in portfolio_metadata:
