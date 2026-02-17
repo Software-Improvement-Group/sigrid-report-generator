@@ -295,10 +295,7 @@ class TestFilterConsistency:
 
     def test_all_filters_have_consistent_configuration(self):
         """Test that all filters are defined in FILTER_CONFIGURATION, METADATA_FILTER_CHECKS, and module globals."""
-        # Extract filter names from FILTER_CONFIGURATION
         config_filters = set(FILTER_CONFIGURATION.keys())
-        
-        # Extract filter names from METADATA_FILTER_CHECKS (strip leading underscore from global var names)
         check_filters = {global_var[1:] for global_var, _, _ in METADATA_FILTER_CHECKS}
         
         # Extract global variable names from portfolio_arguments module (strip leading underscore)
@@ -311,13 +308,11 @@ class TestFilterConsistency:
                          '_target_industry', '_technology_category', '_main_technology']
         }
         
-        # Extract parameter names from set_context function
         sig = inspect.signature(set_context)
         set_context_params = {
             param_name for param_name in sig.parameters.keys()
         }
         
-        # Assertions
         assert config_filters == check_filters, (
             f"Mismatch between FILTER_CONFIGURATION and METADATA_FILTER_CHECKS:\n"
             f"  In FILTER_CONFIGURATION but not METADATA_FILTER_CHECKS: {config_filters - check_filters}\n"
@@ -341,22 +336,16 @@ class TestFilterConsistency:
         import ast
         import inspect
         
-        # Get the source code of _are_filters_set
         source = inspect.getsource(_are_filters_set)
-        
-        # Parse the source code
         tree = ast.parse(source)
         
-        # Extract all variable names that are checked (look for _name pattern)
         checked_vars = set()
         for node in ast.walk(tree):
             if isinstance(node, ast.Name) and node.id.startswith('_') and not node.id.startswith('__'):
                 checked_vars.add(node.id[1:])  # Remove leading underscore
         
-        # Get all filter names from FILTER_CONFIGURATION
         all_filters = set(FILTER_CONFIGURATION.keys())
         
-        # Assert all filters are checked
         assert checked_vars == all_filters, (
             f"Mismatch in _are_filters_set() function:\n"
             f"  Filters not checked: {all_filters - checked_vars}\n"
@@ -369,10 +358,7 @@ class TestFilterConsistency:
         import inspect
         from report_generator.generator.data_models.portfolio.portfolio_arguments import _raise_no_systems_found_error
         
-        # Get the source code of _raise_no_systems_found_error
         source = inspect.getsource(_raise_no_systems_found_error)
-        
-        # Parse the source code
         tree = ast.parse(source)
         
         # Extract all variable names from the active_filters list
@@ -384,10 +370,7 @@ class TestFilterConsistency:
                                '_target_industry', '_technology_category', '_main_technology']:
                     error_filters.add(node.id[1:])  # Remove leading underscore
         
-        # Get all filter names from FILTER_CONFIGURATION
         all_filters = set(FILTER_CONFIGURATION.keys())
-        
-        # Assert all filters are in error message
         assert error_filters == all_filters, (
             f"Mismatch in _raise_no_systems_found_error() function:\n"
             f"  Filters not in error message: {all_filters - error_filters}\n"
@@ -399,13 +382,9 @@ class TestFilterConsistency:
         import ast
         import inspect
         
-        # Get the source code of _include
         source = inspect.getsource(_include)
-        
-        # Parse the source code
         tree = ast.parse(source)
         
-        # Extract global declarations
         global_vars = set()
         for node in ast.walk(tree):
             if isinstance(node, ast.Global):
@@ -413,10 +392,8 @@ class TestFilterConsistency:
                     if name.startswith('_') and not name.startswith('__'):
                         global_vars.add(name[1:])  # Remove leading underscore
         
-        # Get all filter names from FILTER_CONFIGURATION
         all_filters = set(FILTER_CONFIGURATION.keys())
         
-        # Assert all filters are declared as global in _include
         assert global_vars == all_filters, (
             f"Mismatch in _include() global declarations:\n"
             f"  Filters not declared as global: {all_filters - global_vars}\n"
@@ -426,7 +403,6 @@ class TestFilterConsistency:
     def test_filter_configuration_matches_metadata_checks(self):
         """Test that FILTER_CONFIGURATION global var names match METADATA_FILTER_CHECKS."""
         for filter_name, (global_var_name, _, _) in FILTER_CONFIGURATION.items():
-            # Find corresponding entry in METADATA_FILTER_CHECKS
             matching_checks = [
                 (gv, mk, t) for gv, mk, t in METADATA_FILTER_CHECKS 
                 if gv == global_var_name
