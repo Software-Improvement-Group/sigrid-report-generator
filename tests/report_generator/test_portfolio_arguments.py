@@ -309,9 +309,7 @@ class TestFilterConsistency:
         }
         
         sig = inspect.signature(set_context)
-        set_context_params = {
-            param_name for param_name in sig.parameters.keys()
-        }
+        set_context_params = set(sig.parameters.keys())
         
         assert config_filters == check_filters, (
             f"Mismatch between FILTER_CONFIGURATION and METADATA_FILTER_CHECKS:\n"
