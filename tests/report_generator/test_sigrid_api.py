@@ -160,6 +160,27 @@ class TestSigridAPI:
         sigrid_api._request.cache_clear()
         sigrid_api.reset_context()
 
+    def test_request_returns_none_and_logs_warning_on_204(self, caplog):
+        sigrid_api.reset_context()
+        sigrid_api._bearer_token = "eyTesttoken12345678"
+        sigrid_api._customer = "my-customer"
+        sigrid_api._system = "my-system"
+
+        mock_response = MagicMock()
+        mock_response.status_code = 204
+        mock_response.raise_for_status.return_value = None
+
+        import logging
+        with patch("requests.request", return_value=mock_response):
+            sigrid_api._request.cache_clear()
+            with caplog.at_level(logging.WARNING):
+                result = sigrid_api._request("https://sigrid-says.com/rest/some-204-endpoint")
+            assert result is None
+            assert "204" in caplog.text
+
+        sigrid_api._request.cache_clear()
+        sigrid_api.reset_context()
+
     def test_request_returns_none_on_non_403_http_error(self):
         sigrid_api.reset_context()
         sigrid_api._bearer_token = "eyTesttoken12345678"

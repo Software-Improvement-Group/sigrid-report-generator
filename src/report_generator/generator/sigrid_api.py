@@ -140,6 +140,12 @@ def _request(url):
     try:
         response = requests.request('GET', url, headers=headers)
         response.raise_for_status()
+        if response.status_code == 204:
+            logging.warning(
+                f"No data returned for {url} (HTTP 204). "
+                f"The system may not exist or may not have been analysed yet."
+            )
+            return None
         return response.json()
     except requests.HTTPError as e:
         if e.response.status_code == 403:
