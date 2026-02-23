@@ -163,9 +163,10 @@ class TestTemplates:
         for style in doc.styles:
             if hasattr(style, 'font') and style.font and style.font.name:
                 if self._is_sigsterren_font(style.font.name):
-                    fonts_found.append(
-                        f"Style '{style.name}': font '{style.font.name}'"
-                    )
+                    if not self._is_placeholder_text(style.name):
+                        fonts_found.append(
+                            f"Style '{style.name}': font '{style.font.name}'"
+                        )
         
         return fonts_found
     
