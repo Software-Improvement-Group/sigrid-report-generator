@@ -29,7 +29,12 @@ DEFAULT_END_DATE = date.today().strftime('%Y-%m-%d')
 MATOMO_URL = os.environ.get('MATOMO_URL', 'https://sigrid-says.com/usage')
 
 
+def _normalize_name(ctx, param, value):
+    return value.lower() if value else value
+
+
 def _validate_system_requirement(ctx, _, value):
+    value = value.lower() if value else value
     layout = ctx.params.get('layout')
 
     system_required = layout in presets.SYSTEM_LEVEL_PRESETS
@@ -65,7 +70,7 @@ def _validate_layout_or_template(ctx, param, value):
 
 @click.command()
 @click.option('-d', '--debug', is_flag=True, default=False, help='Enable debug messages')
-@click.option('-c', '--customer', required=True, help='Customer name')
+@click.option('-c', '--customer', required=True, callback=_normalize_name, help='Customer name')
 @click.option('-s', '--system', required=False, callback=_validate_system_requirement,
               help='System name (required for: ' + ', '.join(presets.SYSTEM_LEVEL_PRESETS) + ')')
 @click.option('-t', '--token', default=lambda: os.environ.get('SIGRID_CI_TOKEN'),
