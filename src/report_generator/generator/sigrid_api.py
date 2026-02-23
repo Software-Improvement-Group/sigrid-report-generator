@@ -37,6 +37,20 @@ class SigridAPIRequestFailed(Exception):
         super().__init__(self.message)
 
 
+class SigridAccessDenied(Exception):
+    def __init__(self, url: str, customer: str, system: Optional[str]):
+        system_part = f"/{system}" if system else ""
+        sigrid_url = f"https://sigrid-says.com/{customer}{system_part}"
+        message = "\n".join([
+            f"Access denied (403) calling Sigrid API: {url}",
+            f"  - Customer used : '{customer}'",
+            f"  - System used   : '{system or '(none)'}'",
+            f"  - Verify the names are correct: {sigrid_url}",
+            "  - Tokens are customer-specific, so ensure your token has access to this customer.",
+        ])
+        super().__init__(message)
+
+
 def _test_sigrid_token(token):
     if len(token) < 10 or token[0:2] != "ey":
         raise ValueError(
@@ -127,6 +141,11 @@ def _request(url):
         response = requests.request('GET', url, headers=headers)
         response.raise_for_status()
         return response.json()
+    except requests.HTTPError as e:
+        if e.response.status_code == 403:
+            raise SigridAccessDenied(url, _customer, _system)
+        logging.error(f"Failed to make request to Sigrid API endpoint {url}. Error: {e}")
+        return None
     except requests.RequestException as e:
         logging.error(f"Failed to make request to Sigrid API endpoint {url}. Error: {e}")
         return None

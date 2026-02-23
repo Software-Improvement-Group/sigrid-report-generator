@@ -87,11 +87,13 @@ def run(_, debug, customer, system, token, layout, template, start, end, out_fil
     _configure_api(customer, system, token, (start, end), api_url)
     _record_usage_statistics(layout, customer)
 
-    if template:
-        ReportGenerator(template.name).generate(out_file)
-        return
-
-    presets.run(layout, out_file)
+    try:
+        if template:
+            ReportGenerator(template.name).generate(out_file)
+        else:
+            presets.run(layout, out_file)
+    except sigrid_api.SigridAccessDenied as e:
+        raise click.ClickException(str(e))
 
 
 def _configure_api(customer: str, system: str, token: str, period: tuple[str, str], api_url: Optional[str]):
