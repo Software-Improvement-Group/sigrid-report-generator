@@ -26,8 +26,7 @@ class TestTemplates:
 
     def test_templates_should_not_use_sigsterren_font(self):
         """
-        Test that no templates use the Sigsterren font. 
-        If Sigsterren font is used for non-placeholder text, the test will fail.
+        Test that no templates use the Sigsterren font at any point. 
 
         Placeholders should be written in the Calibri font. For stars, the unicode stars (★★★☆☆) should be used with the Calibri font.
         """
