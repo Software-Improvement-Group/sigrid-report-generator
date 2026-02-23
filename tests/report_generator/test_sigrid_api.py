@@ -12,7 +12,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from unittest.mock import MagicMock, patch
+
 import pytest
+import logging
+import requests
 
 import report_generator.generator.sigrid_api as sigrid_api
 
@@ -118,8 +122,80 @@ class TestSigridAPI:
         sigrid_api._bearer_token = "test-token"
         sigrid_api._customer = "test"
         sigrid_api._rest_url = "http://test"
-        
+
         # Should not raise
         sigrid_api._check_context()
-        
+
+        sigrid_api.reset_context()
+
+    def test_sigrid_access_denied_message_contains_customer_and_url(self):
+        exc = sigrid_api.SigridAccessDenied("https://sigrid-says.com/rest/...", "my-customer", "my-system")
+        msg = str(exc)
+        assert "my-customer" in msg
+        assert "https://sigrid-says.com/my-customer/my-system" in msg
+
+    def test_sigrid_access_denied_message_with_no_system(self):
+        exc = sigrid_api.SigridAccessDenied("https://sigrid-says.com/rest/...", "my-customer", None)
+        msg = str(exc)
+        assert "my-customer" in msg
+        assert "(none)" in msg
+        assert "https://sigrid-says.com/my-customer" in msg
+
+    def test_request_raises_sigrid_access_denied_on_403(self):
+        sigrid_api.reset_context()
+        sigrid_api._bearer_token = "eyTesttoken12345678"
+        sigrid_api._customer = "my-customer"
+        sigrid_api._system = "my-system"
+
+        mock_response = MagicMock()
+        mock_response.status_code = 403
+        http_error = requests.HTTPError(response=mock_response)
+        mock_response.raise_for_status.side_effect = http_error
+
+        with patch("requests.request", return_value=mock_response):
+            sigrid_api._request.cache_clear()
+            with pytest.raises(sigrid_api.SigridAccessDenied) as excinfo:
+                sigrid_api._request("https://sigrid-says.com/rest/some-endpoint")
+            assert "my-customer" in str(excinfo.value)
+
+        sigrid_api._request.cache_clear()
+        sigrid_api.reset_context()
+
+    def test_request_returns_none_and_logs_warning_on_204(self, caplog):
+        sigrid_api.reset_context()
+        sigrid_api._bearer_token = "eyTesttoken12345678"
+        sigrid_api._customer = "my-customer"
+        sigrid_api._system = "my-system"
+
+        mock_response = MagicMock()
+        mock_response.status_code = 204
+        mock_response.raise_for_status.return_value = None
+
+        with patch("requests.request", return_value=mock_response):
+            sigrid_api._request.cache_clear()
+            with caplog.at_level(logging.WARNING):
+                result = sigrid_api._request("https://sigrid-says.com/rest/some-204-endpoint")
+            assert result is None
+            assert "204" in caplog.text
+
+        sigrid_api._request.cache_clear()
+        sigrid_api.reset_context()
+
+    def test_request_returns_none_on_non_403_http_error(self):
+        sigrid_api.reset_context()
+        sigrid_api._bearer_token = "eyTesttoken12345678"
+        sigrid_api._customer = "my-customer"
+        sigrid_api._system = "my-system"
+
+        mock_response = MagicMock()
+        mock_response.status_code = 500
+        http_error = requests.HTTPError(response=mock_response)
+        mock_response.raise_for_status.side_effect = http_error
+
+        with patch("requests.request", return_value=mock_response):
+            sigrid_api._request.cache_clear()
+            result = sigrid_api._request("https://sigrid-says.com/rest/some-other-endpoint")
+            assert result is None
+
+        sigrid_api._request.cache_clear()
         sigrid_api.reset_context()
