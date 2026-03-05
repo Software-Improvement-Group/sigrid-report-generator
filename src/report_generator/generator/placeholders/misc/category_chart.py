@@ -19,7 +19,8 @@ from pptx.chart.data import CategoryChartData
 from pptx.presentation import Presentation
 
 from report_generator.generator import report_utils
-from report_generator.generator.data_models import maintainability_data, modernization_data, objectives_data, progress_sigrid_data
+from report_generator.generator.domain import maintainability_data, modernization_data, objectives_data, \
+    progress_sigrid_data
 from report_generator.generator.placeholders import Placeholder
 from report_generator.generator.placeholders.base import PlaceholderDocType
 

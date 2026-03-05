@@ -11,14 +11,13 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-import logging
 from abc import ABC
 from typing import Callable
 
 from pptx.presentation import Presentation
 
 from report_generator.generator import report_utils
-from report_generator.generator.data_models import architecture_data, maintainability_data, modernization_data, \
+from report_generator.generator.domain import architecture_data, maintainability_data, modernization_data, \
     osh_data, security_data
 from report_generator.generator.formatters.formatters import star_rating_round
 from report_generator.generator.placeholders import Placeholder

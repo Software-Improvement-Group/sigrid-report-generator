@@ -15,7 +15,7 @@ from functools import cached_property
 from typing import Callable, Dict
 
 from report_generator.generator import sigrid_api
-from report_generator.generator.data_models import maintainability_data
+from report_generator.generator.domain import maintainability_data
 
 
 class SystemMetadata:

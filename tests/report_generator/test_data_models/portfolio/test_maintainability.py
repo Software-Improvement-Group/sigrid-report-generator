@@ -18,17 +18,17 @@ import pytest
 
 from report_generator.generator.context import portfolio_filters
 # noinspection PyProtectedMember
-from report_generator.generator.data_models.portfolio.maintainability_delta_quality_portfolio import (
+from report_generator.generator.domain.portfolio.maintainability_delta_quality_portfolio import (
     _AbstractMaintainabilityDeltaQualityPortfolioData
 )
 # noinspection PyProtectedMember
-from report_generator.generator.data_models.portfolio.maintainability_portfolio import (MaintainabilityPortfolioData,
-                                                                                        _finalize_change_statistics,
-                                                                                        _initialize_statistics,
-                                                                                        _is_system_active, _parse_date,
-                                                                                        _update_star_statistics,
-                                                                                        _weighted_avg,
-                                                                                        maintainability_portfolio_data)
+from report_generator.generator.domain.portfolio.maintainability_portfolio import (MaintainabilityPortfolioData,
+                                                                                   _finalize_change_statistics,
+                                                                                   _initialize_statistics,
+                                                                                   _is_system_active, _parse_date,
+                                                                                   _update_star_statistics,
+                                                                                   _weighted_avg,
+                                                                                   maintainability_portfolio_data)
 
 
 class TestMaintainabilityStatistics:
@@ -75,7 +75,8 @@ class TestMaintainabilityStatistics:
             for system_name in mock_system_names
         ]
         mocker.patch.object(type(portfolio), 'metadata', new_callable=mocker.PropertyMock, return_value=mock_metadata)
-        mocker.patch('report_generator.generator.data_models.portfolio.portfolio_utils.get_system_metadata', side_effect=mock_get_system_metadata)
+        mocker.patch('report_generator.generator.domain.portfolio.portfolio_utils.get_system_metadata',
+                     side_effect=mock_get_system_metadata)
         mocker.patch.object(portfolio, 'start_snapshot', side_effect=mock_start_snapshot)
         mocker.patch.object(portfolio, 'end_snapshot', side_effect=mock_end_snapshot)
         
@@ -135,7 +136,8 @@ class TestMaintainabilityStatistics:
             for system_name in mock_system_names
         ]
         mocker.patch.object(type(portfolio), 'metadata', new_callable=mocker.PropertyMock, return_value=mock_metadata)
-        mocker.patch('report_generator.generator.data_models.portfolio.portfolio_utils.get_system_metadata', side_effect=mock_get_system_metadata)
+        mocker.patch('report_generator.generator.domain.portfolio.portfolio_utils.get_system_metadata',
+                     side_effect=mock_get_system_metadata)
         mocker.patch.object(portfolio, 'start_snapshot', side_effect=mock_start_snapshot)
         mocker.patch.object(portfolio, 'end_snapshot', side_effect=mock_end_snapshot)
         
@@ -184,7 +186,8 @@ class TestMaintainabilityStatistics:
             for system_name in mock_system_names
         ]
         mocker.patch.object(type(portfolio), 'metadata', new_callable=mocker.PropertyMock, return_value=mock_metadata)
-        mocker.patch('report_generator.generator.data_models.portfolio.portfolio_utils.get_system_metadata', side_effect=mock_get_system_metadata)
+        mocker.patch('report_generator.generator.domain.portfolio.portfolio_utils.get_system_metadata',
+                     side_effect=mock_get_system_metadata)
         mocker.patch.object(portfolio, 'start_snapshot', side_effect=mock_start_snapshot)
         mocker.patch.object(portfolio, 'end_snapshot', side_effect=mock_end_snapshot)
         
@@ -226,7 +229,8 @@ class TestMaintainabilityStatistics:
             for system_name in mock_system_names
         ]
         mocker.patch.object(type(portfolio), 'metadata', new_callable=mocker.PropertyMock, return_value=mock_metadata)
-        mocker.patch('report_generator.generator.data_models.portfolio.portfolio_utils.get_system_metadata', side_effect=mock_get_system_metadata)
+        mocker.patch('report_generator.generator.domain.portfolio.portfolio_utils.get_system_metadata',
+                     side_effect=mock_get_system_metadata)
         mocker.patch.object(portfolio, 'start_snapshot', side_effect=mock_start_snapshot)
         mocker.patch.object(portfolio, 'end_snapshot', side_effect=mock_end_snapshot)
         
@@ -277,7 +281,8 @@ class TestMaintainabilityStatistics:
             for system_name in mock_system_names
         ]
         mocker.patch.object(type(portfolio), 'metadata', new_callable=mocker.PropertyMock, return_value=mock_metadata)
-        mocker.patch('report_generator.generator.data_models.portfolio.portfolio_utils.get_system_metadata', side_effect=mock_get_system_metadata)
+        mocker.patch('report_generator.generator.domain.portfolio.portfolio_utils.get_system_metadata',
+                     side_effect=mock_get_system_metadata)
         mocker.patch.object(portfolio, 'start_snapshot', side_effect=mock_start_snapshot)
         mocker.patch.object(portfolio, 'end_snapshot', side_effect=mock_end_snapshot)
         
@@ -326,7 +331,8 @@ class TestMaintainabilityStatistics:
             for system_name in mock_system_names
         ]
         mocker.patch.object(type(portfolio), 'metadata', new_callable=mocker.PropertyMock, return_value=mock_metadata)
-        mocker.patch('report_generator.generator.data_models.portfolio.portfolio_utils.get_system_metadata', side_effect=mock_get_system_metadata)
+        mocker.patch('report_generator.generator.domain.portfolio.portfolio_utils.get_system_metadata',
+                     side_effect=mock_get_system_metadata)
         mocker.patch.object(portfolio, 'start_snapshot', side_effect=mock_start_snapshot)
         mocker.patch.object(portfolio, 'end_snapshot', side_effect=mock_end_snapshot)
         
@@ -364,7 +370,8 @@ class TestMaintainabilityStatistics:
             for system_name in mock_system_names
         ]
         mocker.patch.object(type(portfolio), 'metadata', new_callable=mocker.PropertyMock, return_value=mock_metadata)
-        mocker.patch('report_generator.generator.data_models.portfolio.portfolio_utils.get_system_metadata', side_effect=mock_get_system_metadata)
+        mocker.patch('report_generator.generator.domain.portfolio.portfolio_utils.get_system_metadata',
+                     side_effect=mock_get_system_metadata)
         mocker.patch.object(portfolio, 'start_snapshot', side_effect=mock_start_snapshot)
         mocker.patch.object(portfolio, 'end_snapshot', side_effect=mock_end_snapshot)
         
@@ -555,7 +562,8 @@ class TestTestCodeRatioDistribution:
             for system_name in mock_system_names
         ]
         mocker.patch.object(type(portfolio), 'metadata', new_callable=mocker.PropertyMock, return_value=mock_metadata)
-        mocker.patch('report_generator.generator.data_models.portfolio.portfolio_utils.get_system_metadata', side_effect=mock_get_system_metadata)
+        mocker.patch('report_generator.generator.domain.portfolio.portfolio_utils.get_system_metadata',
+                     side_effect=mock_get_system_metadata)
         mocker.patch.object(portfolio, 'end_snapshot', side_effect=mock_end_snapshot)
         
         distribution = portfolio.test_code_ratio_distribution_percentages
@@ -588,7 +596,8 @@ class TestTestCodeRatioDistribution:
             for system_name in mock_system_names
         ]
         mocker.patch.object(type(portfolio), 'metadata', new_callable=mocker.PropertyMock, return_value=mock_metadata)
-        mocker.patch('report_generator.generator.data_models.portfolio.portfolio_utils.get_system_metadata', side_effect=mock_get_system_metadata)
+        mocker.patch('report_generator.generator.domain.portfolio.portfolio_utils.get_system_metadata',
+                     side_effect=mock_get_system_metadata)
         mocker.patch.object(portfolio, 'end_snapshot', side_effect=mock_end_snapshot)
         
         distribution = portfolio.test_code_ratio_distribution_percentages
@@ -621,7 +630,8 @@ class TestTestCodeRatioDistribution:
             for system_name in mock_system_names
         ]
         mocker.patch.object(type(portfolio), 'metadata', new_callable=mocker.PropertyMock, return_value=mock_metadata)
-        mocker.patch('report_generator.generator.data_models.portfolio.portfolio_utils.get_system_metadata', side_effect=mock_get_system_metadata)
+        mocker.patch('report_generator.generator.domain.portfolio.portfolio_utils.get_system_metadata',
+                     side_effect=mock_get_system_metadata)
         mocker.patch.object(portfolio, 'end_snapshot', side_effect=mock_end_snapshot)
         
         distribution = portfolio.test_code_ratio_distribution_percentages
@@ -654,7 +664,8 @@ class TestTestCodeRatioDistribution:
             for system_name in mock_system_names
         ]
         mocker.patch.object(type(portfolio), 'metadata', new_callable=mocker.PropertyMock, return_value=mock_metadata)
-        mocker.patch('report_generator.generator.data_models.portfolio.portfolio_utils.get_system_metadata', side_effect=mock_get_system_metadata)
+        mocker.patch('report_generator.generator.domain.portfolio.portfolio_utils.get_system_metadata',
+                     side_effect=mock_get_system_metadata)
         mocker.patch.object(portfolio, 'end_snapshot', side_effect=mock_end_snapshot)
         
         distribution = portfolio.test_code_ratio_distribution_percentages
@@ -700,7 +711,8 @@ class TestTestCodeRatioDistribution:
             for system_name in mock_system_names
         ]
         mocker.patch.object(type(portfolio), 'metadata', new_callable=mocker.PropertyMock, return_value=mock_metadata)
-        mocker.patch('report_generator.generator.data_models.portfolio.portfolio_utils.get_system_metadata', side_effect=mock_get_system_metadata)
+        mocker.patch('report_generator.generator.domain.portfolio.portfolio_utils.get_system_metadata',
+                     side_effect=mock_get_system_metadata)
         mocker.patch.object(portfolio, 'end_snapshot', side_effect=mock_end_snapshot)
         
         distribution = portfolio.test_code_ratio_distribution_percentages
@@ -757,7 +769,8 @@ class TestTestCodeRatioChange:
             for system_name in mock_system_names
         ]
         mocker.patch.object(type(portfolio), 'metadata', new_callable=mocker.PropertyMock, return_value=mock_metadata)
-        mocker.patch('report_generator.generator.data_models.portfolio.portfolio_utils.get_system_metadata', side_effect=mock_get_system_metadata)
+        mocker.patch('report_generator.generator.domain.portfolio.portfolio_utils.get_system_metadata',
+                     side_effect=mock_get_system_metadata)
         mocker.patch.object(portfolio, 'start_snapshot', side_effect=mock_start_snapshot)
         mocker.patch.object(portfolio, 'end_snapshot', side_effect=mock_end_snapshot)
         
@@ -813,7 +826,8 @@ class TestTestCodeRatioChange:
             for system_name in mock_system_names
         ]
         mocker.patch.object(type(portfolio), 'metadata', new_callable=mocker.PropertyMock, return_value=mock_metadata)
-        mocker.patch('report_generator.generator.data_models.portfolio.portfolio_utils.get_system_metadata', side_effect=mock_get_system_metadata)
+        mocker.patch('report_generator.generator.domain.portfolio.portfolio_utils.get_system_metadata',
+                     side_effect=mock_get_system_metadata)
         mocker.patch.object(portfolio, 'start_snapshot', side_effect=mock_start_snapshot)
         mocker.patch.object(portfolio, 'end_snapshot', side_effect=mock_end_snapshot)
         
@@ -850,7 +864,8 @@ class TestTestCodeRatioChange:
             for system_name in mock_system_names
         ]
         mocker.patch.object(type(portfolio), 'metadata', new_callable=mocker.PropertyMock, return_value=mock_metadata)
-        mocker.patch('report_generator.generator.data_models.portfolio.portfolio_utils.get_system_metadata', side_effect=mock_get_system_metadata)
+        mocker.patch('report_generator.generator.domain.portfolio.portfolio_utils.get_system_metadata',
+                     side_effect=mock_get_system_metadata)
         mocker.patch.object(portfolio, 'start_snapshot', side_effect=mock_start_snapshot)
         mocker.patch.object(portfolio, 'end_snapshot', side_effect=mock_end_snapshot)
         
@@ -890,7 +905,7 @@ class TestMaintainabilityPortfolioData:
         for attr in cache_attrs:
             maintainability_portfolio_data.__dict__.pop(attr, None)
 
-    @patch('report_generator.generator.data_models.portfolio.maintainability_portfolio.sigrid_api')
+    @patch('report_generator.generator.domain.portfolio.maintainability_portfolio.sigrid_api')
     def test_data_filters_systems_without_maintainability(self, mock_sigrid_api):
         """Test that systems without maintainability data are filtered out."""
         mock_api_response = {
@@ -912,7 +927,7 @@ class TestMaintainabilityPortfolioData:
         assert data['systems'][0]['system'] == 'system1'
         assert data['systems'][1]['system'] == 'system3'
 
-    @patch('report_generator.generator.data_models.portfolio.maintainability_portfolio.sigrid_api')
+    @patch('report_generator.generator.domain.portfolio.maintainability_portfolio.sigrid_api')
     def test_system_names_returns_filtered_system_list(self, mock_sigrid_api):
         """Test that system_names property returns list of system names."""
         mock_api_response = {
@@ -934,7 +949,7 @@ class TestMaintainabilityPortfolioData:
         assert 'system1' in names
         assert 'system2' in names
 
-    @patch('report_generator.generator.data_models.portfolio.maintainability_portfolio.sigrid_api')
+    @patch('report_generator.generator.domain.portfolio.maintainability_portfolio.sigrid_api')
     def test_get_system_returns_correct_system_data(self, mock_sigrid_api):
         """Test that get_system returns data for specific system."""
         mock_api_response = {
@@ -955,7 +970,7 @@ class TestMaintainabilityPortfolioData:
         assert system['system'] == 'system1'
         assert abs(system['maintainability'] - 4.0) < 0.01
 
-    @patch('report_generator.generator.data_models.portfolio.maintainability_portfolio.sigrid_api')
+    @patch('report_generator.generator.domain.portfolio.maintainability_portfolio.sigrid_api')
     def test_get_system_returns_none_for_unknown_system(self, mock_sigrid_api):
         """Test that get_system returns None for non-existent system."""
         mock_api_response = {

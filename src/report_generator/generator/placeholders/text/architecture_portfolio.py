@@ -12,9 +12,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from report_generator.generator.data_models import architecture_portfolio_data
-from .base import text_placeholder
+from report_generator.generator.domain import architecture_portfolio_data
 from report_generator.generator.formatters.formatters import star_rating_round
+from .base import text_placeholder
+
 
 @text_placeholder()
 def portfolio_arch_above_market():

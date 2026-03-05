@@ -19,7 +19,7 @@ from pptx.chart.data import ChartData
 from pptx.presentation import Presentation
 
 from report_generator.generator import report_utils
-from report_generator.generator.data_models import osh_data, osh_portfolio_data
+from report_generator.generator.domain import osh_data, osh_portfolio_data
 from report_generator.generator.placeholders import Placeholder
 from report_generator.generator.placeholders.base import PlaceholderDocType
 

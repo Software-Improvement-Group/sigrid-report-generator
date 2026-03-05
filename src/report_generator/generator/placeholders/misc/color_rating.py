@@ -19,7 +19,7 @@ from pptx.presentation import Presentation
 
 from report_generator.generator import report_utils
 from report_generator.generator.constants import ArchMetric, ArchSubcharacteristic, MaintMetric, MetricEnum
-from report_generator.generator.data_models import architecture_data, maintainability_data
+from report_generator.generator.domain import architecture_data, maintainability_data
 from report_generator.generator.formatters import formatters
 from report_generator.generator.placeholders.base import ParameterizedPlaceholder
 

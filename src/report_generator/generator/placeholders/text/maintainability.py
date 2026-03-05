@@ -15,7 +15,7 @@
 from datetime import datetime
 
 from report_generator.generator.constants import MaintMetric
-from report_generator.generator.data_models import maintainability_data, modernization_data
+from report_generator.generator.domain import maintainability_data, modernization_data
 from report_generator.generator.formatters import smart_remarks
 from report_generator.generator.formatters.formatters import calculate_stars, format_diff, star_rating_round
 from .base import parameterized_text_placeholder, text_placeholder

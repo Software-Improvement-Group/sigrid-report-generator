@@ -12,11 +12,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from . import data_models, placeholders, report_utils, sigrid_api
+from functools import reduce
+
+from . import domain, placeholders, report_utils, sigrid_api
+from .domain import data_model_arguments
 from .report_generator import ReportGenerator
 
-from .data_models import data_model_arguments
-from functools import reduce
 
 def compose_options(*decorators):
     """

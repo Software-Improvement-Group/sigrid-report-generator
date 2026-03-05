@@ -13,14 +13,8 @@
 #  limitations under the License.
 
 
-from report_generator.generator.data_models.portfolio.modernization import (
-    get_activity,
-    get_renovation_effort,
-    get_change_speed,
-    Scenario
-)
-
-
+from report_generator.generator.domain.portfolio.modernization import (Scenario, get_activity, get_change_speed,
+                                                                       get_renovation_effort)
 
 
 class TestModernizationHelpers:

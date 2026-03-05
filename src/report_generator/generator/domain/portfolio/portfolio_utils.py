@@ -16,6 +16,7 @@ from typing import Callable, Dict, Iterable, Optional, Tuple
 
 from report_generator.generator import sigrid_api
 
+
 def _system_names_helper(data, tag):
     return [x[tag] for x in data]
 

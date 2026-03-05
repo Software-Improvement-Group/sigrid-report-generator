@@ -16,7 +16,7 @@ from pptx.chart.data import XyChartData
 from pptx.presentation import Presentation
 
 from report_generator.generator import report_utils
-from report_generator.generator.data_models import maintainability_data, system_metadata
+from report_generator.generator.domain import maintainability_data, system_metadata
 from report_generator.generator.placeholders import Placeholder
 from report_generator.generator.placeholders.base import PlaceholderDocType
 

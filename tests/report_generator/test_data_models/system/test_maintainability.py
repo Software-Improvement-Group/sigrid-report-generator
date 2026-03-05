@@ -14,7 +14,7 @@
 
 
 # noinspection PyProtectedMember
-from report_generator.generator.data_models.system.maintainability import _sort_and_aggregate_technology_data
+from report_generator.generator.domain.system.maintainability import _sort_and_aggregate_technology_data
 
 
 

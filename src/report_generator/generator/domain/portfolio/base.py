@@ -17,6 +17,7 @@ from functools import cached_property
 
 from report_generator.generator import sigrid_api
 
+
 class AbstractPortfolioModel(ABC):
     @cached_property
     def metadata(self):

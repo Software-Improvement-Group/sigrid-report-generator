@@ -17,7 +17,7 @@ from unittest.mock import patch
 import pytest
 
 from report_generator.generator.context import portfolio_filters
-from report_generator.generator.data_models.portfolio.osh_portfolio import OSHRatingsPortfolioData, osh_portfolio_data
+from report_generator.generator.domain.portfolio.osh_portfolio import OSHRatingsPortfolioData, osh_portfolio_data
 
 
 class TestOSHPortfolioData:
@@ -97,7 +97,7 @@ class TestOSHPortfolioData:
         rating = portfolio._extract_osh_rating(system, 'system')
         assert rating is None
 
-    @patch('report_generator.generator.data_models.portfolio.osh_portfolio.sigrid_api')
+    @patch('report_generator.generator.domain.portfolio.osh_portfolio.sigrid_api')
     def test_get_system_returns_correct_system(self, mock_sigrid_api):
         """Test that get_system returns correct system data."""
         mock_data = {
@@ -116,7 +116,7 @@ class TestOSHPortfolioData:
         assert system['systemName'] == 'system1'
         assert abs(system['oshRating'] - 4.5) < 0.01
 
-    @patch('report_generator.generator.data_models.portfolio.osh_portfolio.sigrid_api')
+    @patch('report_generator.generator.domain.portfolio.osh_portfolio.sigrid_api')
     def test_find_system_returns_correct_system(self, mock_sigrid_api):
         """Test that find_system returns correct system data (alias for get_system)."""
         mock_data = {
@@ -133,7 +133,7 @@ class TestOSHPortfolioData:
         assert system is not None
         assert system['systemName'] == 'system1'
 
-    @patch('report_generator.generator.data_models.portfolio.osh_portfolio.sigrid_api')
+    @patch('report_generator.generator.domain.portfolio.osh_portfolio.sigrid_api')
     def test_system_names_returns_all_systems(self, mock_sigrid_api):
         """Test that system_names property returns all system names."""
         mock_data = {
@@ -163,7 +163,7 @@ class TestOSHMetricsBase:
 
     def test_vulnerabilities_count_calculates_from_risk_distribution(self):
         """Test vulnerabilities_count sums critical to low risk levels (0-3)."""
-        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        from report_generator.generator.domain.osh_base import OSHMetricsBase
         
         class TestMetrics(OSHMetricsBase):
             vulnerability_risk_distribution = [5, 10, 8, 3, 20]  # critical, high, medium, low, no_risk
@@ -174,7 +174,7 @@ class TestOSHMetricsBase:
     
     def test_vulnerabilities_fraction_calculates_correctly(self):
         """Test vulnerabilities_fraction divides count by total dependencies with minimum."""
-        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        from report_generator.generator.domain.osh_base import OSHMetricsBase
         
         class TestMetrics(OSHMetricsBase):
             vulnerability_risk_distribution = [5, 10, 8, 3, 20]
@@ -185,7 +185,7 @@ class TestOSHMetricsBase:
     
     def test_vulnerabilities_fraction_returns_zero_when_no_vulnerabilities(self):
         """Test vulnerabilities_fraction returns 0.0 when count is zero."""
-        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        from report_generator.generator.domain.osh_base import OSHMetricsBase
         
         class TestMetrics(OSHMetricsBase):
             vulnerability_risk_distribution = [0, 0, 0, 0, 46]
@@ -196,7 +196,7 @@ class TestOSHMetricsBase:
     
     def test_vulnerabilities_fraction_has_minimum_floor(self):
         """Test vulnerabilities_fraction has a minimum value of 0.01."""
-        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        from report_generator.generator.domain.osh_base import OSHMetricsBase
         
         class TestMetrics(OSHMetricsBase):
             vulnerability_risk_distribution = [0, 0, 0, 1, 999]
@@ -207,7 +207,7 @@ class TestOSHMetricsBase:
     
     def test_outdated_count_only_includes_critical_to_medium(self):
         """Test outdated_count sums critical to medium freshness risk (0-2), excluding low."""
-        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        from report_generator.generator.domain.osh_base import OSHMetricsBase
         
         class TestMetrics(OSHMetricsBase):
             freshness_risk_distribution = [3, 7, 12, 5, 20]  # critical, high, medium, low, no_risk
@@ -218,7 +218,7 @@ class TestOSHMetricsBase:
     
     def test_outdated_fraction_calculates_correctly(self):
         """Test outdated_fraction divides count by total dependencies with minimum."""
-        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        from report_generator.generator.domain.osh_base import OSHMetricsBase
         
         class TestMetrics(OSHMetricsBase):
             freshness_risk_distribution = [3, 7, 12, 5, 20]
@@ -229,7 +229,7 @@ class TestOSHMetricsBase:
     
     def test_legal_risk_count_only_includes_critical_to_medium(self):
         """Test legal_risk_count sums critical to medium license risk (0-2), excluding low."""
-        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        from report_generator.generator.domain.osh_base import OSHMetricsBase
         
         class TestMetrics(OSHMetricsBase):
             legal_risk_distribution = [2, 5, 8, 10, 25]  # critical, high, medium, low, no_risk
@@ -240,7 +240,7 @@ class TestOSHMetricsBase:
     
     def test_legal_risk_fraction_calculates_correctly(self):
         """Test legal_risk_fraction divides count by total dependencies with minimum."""
-        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        from report_generator.generator.domain.osh_base import OSHMetricsBase
         
         class TestMetrics(OSHMetricsBase):
             legal_risk_distribution = [2, 5, 8, 10, 25]
@@ -251,7 +251,7 @@ class TestOSHMetricsBase:
     
     def test_unmanaged_count_includes_all_risk_levels(self):
         """Test unmanaged_count sums critical to low management risk (0-3)."""
-        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        from report_generator.generator.domain.osh_base import OSHMetricsBase
         
         class TestMetrics(OSHMetricsBase):
             management_risk_distribution = [1, 3, 5, 7, 30]  # critical, high, medium, low, no_risk
@@ -262,7 +262,7 @@ class TestOSHMetricsBase:
     
     def test_unmanaged_fraction_calculates_correctly(self):
         """Test unmanaged_fraction divides count by total dependencies with minimum."""
-        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        from report_generator.generator.domain.osh_base import OSHMetricsBase
         
         class TestMetrics(OSHMetricsBase):
             management_risk_distribution = [1, 3, 5, 7, 30]
@@ -273,7 +273,7 @@ class TestOSHMetricsBase:
     
     def test_activity_risk_count_includes_all_risk_levels(self):
         """Test activity_risk_count sums critical to low activity risk (0-3)."""
-        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        from report_generator.generator.domain.osh_base import OSHMetricsBase
         
         class TestMetrics(OSHMetricsBase):
             activity_risk_distribution = [2, 4, 6, 8, 35]  # critical, high, medium, low, no_risk
@@ -284,7 +284,7 @@ class TestOSHMetricsBase:
     
     def test_activity_risk_fraction_calculates_correctly(self):
         """Test activity_risk_fraction divides count by total dependencies with minimum."""
-        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        from report_generator.generator.domain.osh_base import OSHMetricsBase
         
         class TestMetrics(OSHMetricsBase):
             activity_risk_distribution = [2, 4, 6, 8, 35]
@@ -295,7 +295,7 @@ class TestOSHMetricsBase:
     
     def test_all_fractions_have_minimum_floor_of_0_01(self):
         """Test all fraction methods apply minimum floor of 0.01 when count is non-zero."""
-        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        from report_generator.generator.domain.osh_base import OSHMetricsBase
         
         class TestMetrics(OSHMetricsBase):
             vulnerability_risk_distribution = [0, 0, 0, 1, 9999]
@@ -314,7 +314,7 @@ class TestOSHMetricsBase:
     
     def test_all_fractions_return_zero_when_counts_are_zero(self):
         """Test all fraction methods return 0.0 when respective counts are zero."""
-        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        from report_generator.generator.domain.osh_base import OSHMetricsBase
         
         class TestMetrics(OSHMetricsBase):
             vulnerability_risk_distribution = [0, 0, 0, 0, 100]
@@ -333,7 +333,7 @@ class TestOSHMetricsBase:
     
     def test_properties_are_cached(self):
         """Test that properties use @cached_property decorator and don't recalculate."""
-        from report_generator.generator.data_models.osh_base import OSHMetricsBase
+        from report_generator.generator.domain.osh_base import OSHMetricsBase
         
         call_count = {'vulnerability': 0, 'freshness': 0}
         

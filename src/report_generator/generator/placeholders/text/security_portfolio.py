@@ -12,11 +12,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from report_generator.generator.data_models import (security_ratings_portfolio_data, 
-                                                       security_dashboard_findings_portfolio_data,
-                                                       security_dashboard_resolution_times_portfolio_data)
-from .base import text_placeholder
+from report_generator.generator.domain import (security_dashboard_findings_portfolio_data,
+                                               security_dashboard_resolution_times_portfolio_data,
+                                               security_ratings_portfolio_data)
 from report_generator.generator.formatters.formatters import star_rating_round
+from .base import text_placeholder
 
 
 @text_placeholder()

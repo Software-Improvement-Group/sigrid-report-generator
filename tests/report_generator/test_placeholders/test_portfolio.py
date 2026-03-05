@@ -14,13 +14,8 @@
 
 import pytest
 
-from report_generator.generator.data_models import (
-    osh_portfolio_data,
-    security_ratings_portfolio_data,
-    security_dashboard_findings_portfolio_data
-)
-
-
+from report_generator.generator.domain import (osh_portfolio_data, security_dashboard_findings_portfolio_data,
+                                               security_ratings_portfolio_data)
 
 
 class TestPortfolioPlaceholders:

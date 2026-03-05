@@ -15,7 +15,7 @@
 from unittest.mock import patch
 
 from report_generator.generator.context import portfolio_filters
-from report_generator.generator.data_models.portfolio.architecture_portfolio import (
+from report_generator.generator.domain.portfolio.architecture_portfolio import (
     architecture_portfolio_data
 )
 
@@ -37,7 +37,7 @@ class TestArchitecturePortfolioData:
         for attr in cache_attrs:
             architecture_portfolio_data.__dict__.pop(attr, None)
 
-    @patch('report_generator.generator.data_models.portfolio.architecture_portfolio.sigrid_api')
+    @patch('report_generator.generator.domain.portfolio.architecture_portfolio.sigrid_api')
     def test_get_system_returns_correct_system(self, mock_sigrid_api):
         """Test that get_system returns correct system data."""
         mock_data = [
@@ -54,7 +54,7 @@ class TestArchitecturePortfolioData:
         assert system['system'] == 'system1'
         assert abs(system['architectureQuality'] - 4.5) < 0.01
 
-    @patch('report_generator.generator.data_models.portfolio.architecture_portfolio.sigrid_api')
+    @patch('report_generator.generator.domain.portfolio.architecture_portfolio.sigrid_api')
     def test_system_names_returns_all_systems(self, mock_sigrid_api):
         """Test that system_names property returns all system names."""
         mock_data = [

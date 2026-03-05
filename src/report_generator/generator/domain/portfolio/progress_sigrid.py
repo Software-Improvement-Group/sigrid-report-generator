@@ -12,14 +12,13 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from collections import defaultdict
 from enum import Enum
 from functools import cached_property
 
+import numpy as np
+
 from report_generator.generator import sigrid_api
 from report_generator.generator.report_utils.time_series import Period
-
-import numpy as np
 
 
 class ProgressStatus(Enum):

@@ -21,7 +21,7 @@ import pandas as pd
 
 from report_generator.generator import report_utils
 from report_generator.generator.context import portfolio_filters
-from report_generator.generator.data_models import architecture_portfolio_data, \
+from report_generator.generator.domain import architecture_portfolio_data, \
     maintainability_delta_quality_changed_code, maintainability_delta_quality_new_and_changed_code, \
     maintainability_delta_quality_new_code, maintainability_portfolio_data, osh_portfolio_data, \
     security_ratings_portfolio_data

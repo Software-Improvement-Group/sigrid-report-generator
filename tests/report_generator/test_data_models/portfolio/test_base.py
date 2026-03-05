@@ -19,7 +19,7 @@ class TestAbstractPortfolioModel:
 
     def test_system_names_helper_extracts_names(self):
         """Test _system_names_helper extracts system names from data."""
-        from report_generator.generator.data_models.portfolio import portfolio_utils
+        from report_generator.generator.domain.portfolio import portfolio_utils
         data = [
             {'systemName': 'system1', 'value': 100},
             {'systemName': 'system2', 'value': 200},
@@ -33,7 +33,7 @@ class TestAbstractPortfolioModel:
 
     def test_get_system_helper_finds_correct_system(self):
         """Test _get_system_helper finds the correct system."""
-        from report_generator.generator.data_models.portfolio import portfolio_utils
+        from report_generator.generator.domain.portfolio import portfolio_utils
         data = [
             {'system': 'sys1', 'maintainability': 4.0},
             {'system': 'sys2', 'maintainability': 3.5},
@@ -48,7 +48,7 @@ class TestAbstractPortfolioModel:
 
     def test_get_system_helper_returns_none_for_missing(self):
         """Test _get_system_helper returns None for non-existent system."""
-        from report_generator.generator.data_models.portfolio import portfolio_utils
+        from report_generator.generator.domain.portfolio import portfolio_utils
         data = [
             {'system': 'sys1', 'maintainability': 4.0}
         ]

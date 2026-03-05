@@ -15,8 +15,8 @@
 from unittest.mock import patch
 
 from report_generator.generator.context import portfolio_filters
-from report_generator.generator.data_models.portfolio.objectives import (ObjectiveStatus, ObjectivesData,
-                                                                         objectives_data)
+from report_generator.generator.domain.portfolio.objectives import (ObjectiveStatus, ObjectivesData,
+                                                                    objectives_data)
 
 
 class TestObjectivesData:
@@ -32,7 +32,7 @@ class TestObjectivesData:
         for attr in cache_attrs:
             objectives_data.__dict__.pop(attr, None)
 
-    @patch('report_generator.generator.data_models.portfolio.objectives.sigrid_api')
+    @patch('report_generator.generator.domain.portfolio.objectives.sigrid_api')
     def test_determine_system_status_met(self, mock_sigrid_api):
         """Test that determine_system_status returns MET when target is met."""
         objective = {
@@ -43,7 +43,7 @@ class TestObjectivesData:
         status = ObjectivesData.determine_system_status(objective)
         assert status == ObjectiveStatus.MET
 
-    @patch('report_generator.generator.data_models.portfolio.objectives.sigrid_api')
+    @patch('report_generator.generator.domain.portfolio.objectives.sigrid_api')
     def test_determine_system_status_improved(self, mock_sigrid_api):
         """Test that determine_system_status returns IMPROVED when improving."""
         objective = {
@@ -54,7 +54,7 @@ class TestObjectivesData:
         status = ObjectivesData.determine_system_status(objective)
         assert status == ObjectiveStatus.IMPROVED
 
-    @patch('report_generator.generator.data_models.portfolio.objectives.sigrid_api')
+    @patch('report_generator.generator.domain.portfolio.objectives.sigrid_api')
     def test_determine_system_status_worsened(self, mock_sigrid_api):
         """Test that determine_system_status returns WORSENED when deteriorating."""
         objective = {
@@ -65,7 +65,7 @@ class TestObjectivesData:
         status = ObjectivesData.determine_system_status(objective)
         assert status == ObjectiveStatus.WORSENED
 
-    @patch('report_generator.generator.data_models.portfolio.objectives.sigrid_api')
+    @patch('report_generator.generator.domain.portfolio.objectives.sigrid_api')
     def test_determine_system_status_unchanged(self, mock_sigrid_api):
         """Test that determine_system_status returns UNCHANGED when similar."""
         objective = {
@@ -76,7 +76,7 @@ class TestObjectivesData:
         status = ObjectivesData.determine_system_status(objective)
         assert status == ObjectiveStatus.UNCHANGED
 
-    @patch('report_generator.generator.data_models.portfolio.objectives.sigrid_api')
+    @patch('report_generator.generator.domain.portfolio.objectives.sigrid_api')
     def test_determine_system_status_unknown(self, mock_sigrid_api):
         """Test that determine_system_status returns UNKNOWN for unknown states."""
         objective = {
@@ -87,7 +87,7 @@ class TestObjectivesData:
         status = ObjectivesData.determine_system_status(objective)
         assert status == ObjectiveStatus.UNKNOWN
 
-    @patch('report_generator.generator.data_models.portfolio.objectives.sigrid_api')
+    @patch('report_generator.generator.domain.portfolio.objectives.sigrid_api')
     def test_filter_system_evaluations(self, mock_sigrid_api):
         """Test that filter_system_evaluations filters systems correctly."""
         evaluation = [
@@ -102,7 +102,7 @@ class TestObjectivesData:
         assert filtered[0]["systemName"] == "system1"
         assert filtered[1]["systemName"] == "system3"
 
-    @patch('report_generator.generator.data_models.portfolio.objectives.sigrid_api')
+    @patch('report_generator.generator.domain.portfolio.objectives.sigrid_api')
     def test_get_portfolio_percentage_with_no_objectives(self, mock_sigrid_api):
         """Test that get_portfolio_percentage returns 0 when no objectives exist."""
         evaluations = [{"systemName": "system1", "objectives": []}]
@@ -111,7 +111,7 @@ class TestObjectivesData:
         
         assert percentage == 0
 
-    @patch('report_generator.generator.data_models.portfolio.objectives.sigrid_api')
+    @patch('report_generator.generator.domain.portfolio.objectives.sigrid_api')
     def test_get_portfolio_percentage_calculates_correctly(self, mock_sigrid_api):
         """Test that get_portfolio_percentage calculates percentage correctly."""
         evaluations = [

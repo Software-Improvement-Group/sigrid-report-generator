@@ -12,14 +12,15 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from functools import cached_property
-from abc import ABC, abstractmethod
 import logging
-from typing import Tuple, Optional
+from abc import ABC, abstractmethod
+from functools import cached_property
+from typing import Optional, Tuple
 
 from report_generator.generator import sigrid_api
-from report_generator.generator.data_models.portfolio.base import AbstractPortfolioModel
-from report_generator.generator.data_models.portfolio.maintainability_portfolio import maintainability_portfolio_data
+from report_generator.generator.domain.portfolio.base import AbstractPortfolioModel
+from report_generator.generator.domain.portfolio.maintainability_portfolio import maintainability_portfolio_data
+
 
 def _finalize_change_statistics(statistics, lowest_system, highest_system):
     if lowest_system[0] is not None and lowest_system[1] < 0:
