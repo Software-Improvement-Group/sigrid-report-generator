@@ -135,13 +135,13 @@ class TestWeightedAverageRatings:
             {'systemName': 'system3', 'rating': 2.0},
         ]
         mocker.patch.object(type(portfolio), 'data', new_callable=mocker.PropertyMock, return_value=mock_data)
-        
-        # Mock utils._get_volume to return volume data
+
+        # Mock utils.get_volume to return volume data
         def mock_get_volume(system_name):
             volumes = {'system1': 100, 'system2': 200, 'system3': 100}
             return volumes.get(system_name, 0)
 
-        mocker.patch('report_generator.generator.domain.portfolio.shared.utils._get_volume',
+        mocker.patch('report_generator.generator.domain.portfolio.shared.utils.get_volume',
                      side_effect=mock_get_volume)
         
         # Weighted average = (4.0*100 + 3.0*200 + 2.0*100) / (100+200+100) = 1200/400 = 3.0
@@ -164,7 +164,7 @@ class TestWeightedAverageRatings:
             volumes = {'system1': 100, 'system2': 0}
             return volumes.get(system_name, 0)
 
-        mocker.patch('report_generator.generator.domain.portfolio.shared.utils._get_volume',
+        mocker.patch('report_generator.generator.domain.portfolio.shared.utils.get_volume',
                      side_effect=mock_get_volume)
         
         avg_rating = portfolio.weighted_average_rating
@@ -209,7 +209,7 @@ class TestWeightedAverageRatings:
             volumes = {'system1': 10000, 'system2': 20000}
             return volumes.get(system_name, 0)
 
-        mocker.patch('report_generator.generator.domain.portfolio.shared.utils._get_volume',
+        mocker.patch('report_generator.generator.domain.portfolio.shared.utils.get_volume',
                      side_effect=mock_get_volume)
         
         # Weighted average = (4.0*10000 + 3.0*20000) / (10000+20000) = 100000/30000 = 3.333...
@@ -261,7 +261,7 @@ class TestWeightedAverageRatings:
             volumes = {'system1': 80, 'system2': 40}
             return volumes.get(system_name, 0)
 
-        mocker.patch('report_generator.generator.domain.portfolio.shared.utils._get_volume',
+        mocker.patch('report_generator.generator.domain.portfolio.shared.utils.get_volume',
                      side_effect=mock_get_volume)
         
         # Weighted average = (4.0*80 + 2.0*40) / (80+40) = 400/120 = 3.333...

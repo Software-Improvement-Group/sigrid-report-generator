@@ -26,7 +26,7 @@ class TestAbstractPortfolioModel:
             {'systemName': 'system3', 'value': 150}
         ]
 
-        names = utils._system_names_helper(data, 'systemName')
+        names = utils.system_names_helper(data, 'systemName')
 
         assert len(names) == 3
         assert names == ['system1', 'system2', 'system3']
@@ -40,7 +40,7 @@ class TestAbstractPortfolioModel:
             {'system': 'sys3', 'maintainability': 4.2}
         ]
 
-        result = utils._get_system_helper('sys2', data, 'system')
+        result = utils.get_system_helper('sys2', data, 'system')
 
         assert result is not None
         assert result['system'] == 'sys2'
@@ -53,7 +53,7 @@ class TestAbstractPortfolioModel:
             {'system': 'sys1', 'maintainability': 4.0}
         ]
 
-        result = utils._get_system_helper('unknown', data, 'system')
+        result = utils.get_system_helper('unknown', data, 'system')
 
         assert result is None
 

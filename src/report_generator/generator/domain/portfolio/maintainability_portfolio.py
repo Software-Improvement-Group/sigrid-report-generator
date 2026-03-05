@@ -193,10 +193,10 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
     
     @cached_property
     def system_names(self):
-        return utils._system_names_helper(self.data['systems'], 'system')
+        return utils.system_names_helper(self.data['systems'], 'system')
     
     def get_system(self, system):
-        return utils._get_system_helper(system, self.data['systems'], 'system')
+        return utils.get_system_helper(system, self.data['systems'], 'system')
     
     def get_system_metadata(self, system_name):
         return utils.get_system_metadata(self.metadata, system_name)
@@ -323,7 +323,7 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
     
     @cached_property
     def get_rating_distribution_percentages(self):
-        return utils._get_rating_distribution_percentages(
+        return utils.get_rating_distribution_percentages(
             self.system_names,
             self._extract_maintainability_rating
         )
@@ -340,7 +340,7 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
     
     @cached_property
     def weighted_average_rating(self):
-        return utils._calculate_weighted_average_rating(
+        return utils.calculate_weighted_average_rating(
             self.system_names,
             self._get_rating_and_volume_for_system_name
         )

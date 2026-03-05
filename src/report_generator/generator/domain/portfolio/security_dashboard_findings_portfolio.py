@@ -32,10 +32,10 @@ class SecurityDashboardFindingsPortfolioData(AbstractPortfolioModel):
     
     @cached_property
     def system_names(self):
-        return utils._system_names_helper(self.data['systems'], 'system')
+        return utils.system_names_helper(self.data['systems'], 'system')
     
     def get_system(self, system):
-        return utils._get_system_helper(system, self.data['systems'], 'system')
+        return utils.get_system_helper(system, self.data['systems'], 'system')
     
     def _initialize_severity_stats(self):
         """Initialize statistics structure for all severity levels."""
@@ -50,7 +50,7 @@ class SecurityDashboardFindingsPortfolioData(AbstractPortfolioModel):
         """Accumulate resolved and added counts for all severity levels within the period."""
         for system in self.data.get('systems', []):
             for month_data in system.get('findingRatio', []):
-                if utils._is_month_in_period(month_data.get('month'), self.period):
+                if utils.is_month_in_period(month_data.get('month'), self.period):
                     severities = month_data.get('severities', {})
                     
                     for severity_level in ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']:

@@ -29,10 +29,11 @@ from typing import Callable, Dict, Iterable, Optional, Tuple
 from report_generator.generator import sigrid_api
 
 
-def _system_names_helper(data, tag):
+def system_names_helper(data, tag):
     return [x[tag] for x in data]
 
-def _get_system_helper(system, data, tag):
+
+def get_system_helper(system, data, tag):
     for s in data:
         if s[tag] == system:
             return s
@@ -44,7 +45,8 @@ def get_system_metadata(portfolio_metadata, system):
             return s
     return None
 
-def _categorize_rating(rating):
+
+def categorize_rating(rating):
     """Categorize a rating into market segments."""
     if rating >= 3.5:
         return 'above_market'
@@ -65,7 +67,8 @@ def _calculate_percentages(counts, total):
         'below_market': round(100 * counts['below_market'] / total)
     }
 
-def _is_month_in_period(month: Optional[str], period: Tuple[str, str]) -> bool:
+
+def is_month_in_period(month: Optional[str], period: Tuple[str, str]) -> bool:
     if not month:
         return False
     period_start, period_end = period
@@ -76,7 +79,8 @@ def _is_month_in_period(month: Optional[str], period: Tuple[str, str]) -> bool:
     
     return period_start_ym <= month_ym <= period_end_ym
 
-def _get_volume(system_name: str) -> float:
+
+def get_volume(system_name: str) -> float:
     portfolio_data = sigrid_api.get_portfolio_maintainability()
     systems = portfolio_data.get('systems', []) if isinstance(portfolio_data, dict) else []
     for system in systems:
@@ -84,7 +88,8 @@ def _get_volume(system_name: str) -> float:
             return system.get('volumeInPersonMonths', 0)
     return 0
 
-def _get_rating_and_volume_from_system(
+
+def get_rating_and_volume_from_system(
     system: Dict,
     rating_extractor: Callable[[Dict], Optional[float]],
     system_name_key: str = 'systemName'
@@ -94,11 +99,12 @@ def _get_rating_and_volume_from_system(
     
     if rating is None or system_name is None:
         return None, 0
-    
-    volume = _get_volume(system_name)
+
+    volume = get_volume(system_name)
     return rating, volume
 
-def _calculate_weighted_average_rating(
+
+def calculate_weighted_average_rating(
     data_source: Iterable,
     get_rating_and_volume_func: Callable[[any], Tuple[Optional[float], float]]
 ) -> float:
@@ -118,7 +124,8 @@ def _calculate_weighted_average_rating(
         return total_weighted_rating / total_volume
     return 0.0
 
-def _get_rating_distribution_percentages(
+
+def get_rating_distribution_percentages(
     data_source: Iterable,
     rating_extractor: Callable[[any], Optional[float]]
 ) -> Dict[str, int]:
@@ -129,8 +136,8 @@ def _get_rating_distribution_percentages(
         rating = rating_extractor(item)
         if rating is None:
             continue
-            
-        category = _categorize_rating(rating)
+
+        category = categorize_rating(rating)
         counts[category] += 1
         total += 1
     
