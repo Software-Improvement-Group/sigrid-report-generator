@@ -14,14 +14,9 @@
 
 from unittest.mock import patch
 
-from report_generator.generator.data_models.portfolio import portfolio_arguments
-from report_generator.generator.data_models.portfolio.objectives import (
-    objectives_data,
-    ObjectivesData,
-    ObjectiveStatus
-)
-
-
+from report_generator.generator.context import portfolio_filters
+from report_generator.generator.data_models.portfolio.objectives import (ObjectiveStatus, ObjectivesData,
+                                                                         objectives_data)
 
 
 class TestObjectivesData:
@@ -29,8 +24,8 @@ class TestObjectivesData:
 
     def teardown_method(self):
         """Clean up portfolio context and cached data after each test."""
-        portfolio_arguments._team = None
-        portfolio_arguments._division = None
+        portfolio_filters._team = None
+        portfolio_filters._division = None
         
         cache_attrs = ['periods', 'comparison_period', 'objectives_evaluation_trend', 
                       'objectives_evaluation_status', 'teams']

@@ -12,27 +12,23 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import pytest
 from unittest.mock import patch
 
-from report_generator.generator.data_models.portfolio import portfolio_arguments
-# noinspection PyProtectedMember
-from report_generator.generator.data_models.portfolio.maintainability_portfolio import (
-    MaintainabilityPortfolioData,
-    maintainability_portfolio_data,
-    _initialize_statistics,
-    _is_system_active,
-    _weighted_avg,
-    _parse_date,
-    _update_star_statistics,
-    _finalize_change_statistics
-)
+import pytest
+
+from report_generator.generator.context import portfolio_filters
 # noinspection PyProtectedMember
 from report_generator.generator.data_models.portfolio.maintainability_delta_quality_portfolio import (
     _AbstractMaintainabilityDeltaQualityPortfolioData
 )
-
-
+# noinspection PyProtectedMember
+from report_generator.generator.data_models.portfolio.maintainability_portfolio import (MaintainabilityPortfolioData,
+                                                                                        _finalize_change_statistics,
+                                                                                        _initialize_statistics,
+                                                                                        _is_system_active, _parse_date,
+                                                                                        _update_star_statistics,
+                                                                                        _weighted_avg,
+                                                                                        maintainability_portfolio_data)
 
 
 class TestMaintainabilityStatistics:
@@ -876,8 +872,8 @@ class TestMaintainabilityPortfolioData:
 
     def setup_method(self):
         """Clean up portfolio context before each test."""
-        portfolio_arguments._team = None
-        portfolio_arguments._division = None
+        portfolio_filters._team = None
+        portfolio_filters._division = None
         
         # Clear all cached properties
         cache_attrs = ['data', 'metadata', '_statistics', 'period', 'system_names']
@@ -886,8 +882,8 @@ class TestMaintainabilityPortfolioData:
 
     def teardown_method(self):
         """Clean up portfolio context and cached data after each test."""
-        portfolio_arguments._team = None
-        portfolio_arguments._division = None
+        portfolio_filters._team = None
+        portfolio_filters._division = None
         
         # Clear all cached properties
         cache_attrs = ['data', 'metadata', '_statistics', 'period', 'system_names']

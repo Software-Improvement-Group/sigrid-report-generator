@@ -14,8 +14,7 @@
 
 from unittest.mock import patch
 
-from report_generator.generator.data_models.portfolio import portfolio_arguments
-from report_generator.generator.data_models.portfolio.security_portfolio import security_ratings_portfolio_data
+from report_generator.generator.context import portfolio_filters
 from report_generator.generator.data_models.portfolio.security_dashboard_findings_portfolio import (
     SecurityDashboardFindingsPortfolioData,
     security_dashboard_findings_portfolio_data
@@ -24,8 +23,7 @@ from report_generator.generator.data_models.portfolio.security_dashboard_resolut
     SecurityDashboardResolutionTimesPortfolioData,
     security_dashboard_resolution_times_portfolio_data
 )
-
-
+from report_generator.generator.data_models.portfolio.security_portfolio import security_ratings_portfolio_data
 
 
 class TestSecurityCriticalFindingsStatistics:
@@ -916,8 +914,8 @@ class TestSecurityPortfolioData:
 
     def teardown_method(self):
         """Clean up portfolio context and cached data after each test."""
-        portfolio_arguments._team = None
-        portfolio_arguments._division = None
+        portfolio_filters._team = None
+        portfolio_filters._division = None
         
         cache_attrs = ['data', 'metadata', 'period', 'system_names']
         for attr in cache_attrs:
@@ -968,8 +966,8 @@ class TestSecurityDashboardFindingsPortfolioData:
 
     def teardown_method(self):
         """Clean up portfolio context and cached data after each test."""
-        portfolio_arguments._team = None
-        portfolio_arguments._division = None
+        portfolio_filters._team = None
+        portfolio_filters._division = None
         
         cache_attrs = ['data', 'metadata', 'system_names']
         for attr in cache_attrs:
@@ -1024,8 +1022,8 @@ class TestSecurityDashboardResolutionTimesPortfolioData:
 
     def teardown_method(self):
         """Clean up portfolio context and cached data after each test."""
-        portfolio_arguments._team = None
-        portfolio_arguments._division = None
+        portfolio_filters._team = None
+        portfolio_filters._division = None
         
         cache_attrs = ['data', 'metadata', 'system_names']
         for attr in cache_attrs:

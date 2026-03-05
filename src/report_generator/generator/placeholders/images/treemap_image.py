@@ -11,20 +11,23 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from abc import ABC
-from typing import Tuple, ClassVar, Dict, Callable
 import logging
+from abc import ABC
+from typing import Callable, ClassVar, Dict, Tuple
 
-from report_generator.generator import report_utils
-from report_generator.generator.formatters import formatters
-from report_generator.generator.data_models import maintainability_portfolio_data, security_ratings_portfolio_data, architecture_portfolio_data, osh_portfolio_data
-from report_generator.generator.data_models import maintainability_delta_quality_new_code, maintainability_delta_quality_changed_code, maintainability_delta_quality_new_and_changed_code
-from report_generator.generator.data_models.portfolio import portfolio_arguments
-from report_generator.generator.placeholders.images.base import _AbstractParameterizedImagePlaceholder
-
-import pandas as pd
 import matplotlib.pyplot as plt
 import mpl_extra.treemap as tr
+import pandas as pd
+
+from report_generator.generator import report_utils
+from report_generator.generator.context import portfolio_filters
+from report_generator.generator.data_models import architecture_portfolio_data, \
+    maintainability_delta_quality_changed_code, maintainability_delta_quality_new_and_changed_code, \
+    maintainability_delta_quality_new_code, maintainability_portfolio_data, osh_portfolio_data, \
+    security_ratings_portfolio_data
+from report_generator.generator.formatters import formatters
+from report_generator.generator.placeholders.images.base import _AbstractParameterizedImagePlaceholder
+
 
 class _AbstractTreemapPlaceholder(_AbstractParameterizedImagePlaceholder, ABC):
     @staticmethod
@@ -80,20 +83,20 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
     @staticmethod
     def _process_lifecycle_grouping(metadata):
         if metadata['lifecyclePhase']:
-            return portfolio_arguments.METADATA_LIFECYCLE_MAPPING[metadata['lifecyclePhase']]
+            return portfolio_filters.METADATA_LIFECYCLE_MAPPING[metadata['lifecyclePhase']]
         return "Unset"
     
 
     @staticmethod
     def _process_business_criticality_grouping(metadata):
         if metadata['businessCriticality']:
-            return portfolio_arguments.METADATA_BUSINESS_CRITICALITY_MAPPING[metadata['businessCriticality']]
+            return portfolio_filters.METADATA_BUSINESS_CRITICALITY_MAPPING[metadata['businessCriticality']]
         return "Unset"
     
     @staticmethod
     def _process_deployment_grouping(metadata):
         if metadata['deploymentType']:
-            return portfolio_arguments.METADATA_DEPLOYMENT_MAPPING[metadata['deploymentType']]
+            return portfolio_filters.METADATA_DEPLOYMENT_MAPPING[metadata['deploymentType']]
         return "Unset"
 
     grouping_processors = {

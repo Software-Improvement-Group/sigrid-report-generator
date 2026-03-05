@@ -12,22 +12,17 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from unittest.mock import patch
-import pytest
-import click
 import inspect
+from unittest.mock import patch
 
-from report_generator.generator.data_models.portfolio import portfolio_arguments
-from report_generator.generator.data_models.portfolio.portfolio_arguments import (
-    set_context,
-    filter_data_on_portfolio_arguments,
-    PlaceholderArgumentException,
-    _include,
-    _are_filters_set,
-    _find_system_metadata,
-    FILTER_CONFIGURATION,
-    METADATA_FILTER_CHECKS,
-)
+import click
+import pytest
+
+from report_generator.generator.context import portfolio_filters
+from report_generator.generator.context.portfolio_filters import (FILTER_CONFIGURATION, METADATA_FILTER_CHECKS,
+                                                                  PlaceholderArgumentException, _are_filters_set,
+                                                                  _find_system_metadata, _include,
+                                                                  filter_data_on_portfolio_arguments, set_context)
 
 
 @pytest.fixture
@@ -90,16 +85,16 @@ class TestPortfolioArguments:
 
     def teardown_method(self):
         """Reset portfolio context after each test."""
-        portfolio_arguments._team = None
-        portfolio_arguments._division = None
-        portfolio_arguments._lifecycle = None
-        portfolio_arguments._deployment = None
-        portfolio_arguments._business_criticality = None
-        portfolio_arguments._distribution = None
-        portfolio_arguments._application_type = None
-        portfolio_arguments._target_industry = None
-        portfolio_arguments._technology_category = None
-        portfolio_arguments._main_technology = None
+        portfolio_filters._team = None
+        portfolio_filters._division = None
+        portfolio_filters._lifecycle = None
+        portfolio_filters._deployment = None
+        portfolio_filters._business_criticality = None
+        portfolio_filters._distribution = None
+        portfolio_filters._application_type = None
+        portfolio_filters._target_industry = None
+        portfolio_filters._technology_category = None
+        portfolio_filters._main_technology = None
 
     # Context Management Tests
 
@@ -107,22 +102,22 @@ class TestPortfolioArguments:
         """Test that set_context correctly sets team filter."""
         set_context(team=['TeamA'])
 
-        assert portfolio_arguments._team == ['TeamA']
-        assert portfolio_arguments._division is None
+        assert portfolio_filters._team == ['TeamA']
+        assert portfolio_filters._division is None
 
     def test_set_context_with_division(self):
         """Test that set_context correctly sets division filter."""
         set_context(division=['DivisionX'])
 
-        assert portfolio_arguments._team is None
-        assert portfolio_arguments._division == ['DivisionX']
+        assert portfolio_filters._team is None
+        assert portfolio_filters._division == ['DivisionX']
 
     def test_set_context_with_both(self):
         """Test that set_context correctly sets both team and division filters."""
         set_context(team=['TeamA', 'TeamB'], division=['DivisionX'])
 
-        assert portfolio_arguments._team == ['TeamA', 'TeamB']
-        assert portfolio_arguments._division == ['DivisionX']
+        assert portfolio_filters._team == ['TeamA', 'TeamB']
+        assert portfolio_filters._division == ['DivisionX']
 
     # Filter Checking Tests
 
@@ -211,7 +206,7 @@ class TestPortfolioArguments:
 
     # Decorator Behavior Tests
 
-    @patch('report_generator.generator.data_models.portfolio.portfolio_arguments.sigrid_api')
+    @patch('report_generator.generator.context.portfolio_filters.sigrid_api')
     def test_decorator_returns_unchanged_data_when_no_filters(self, mock_sigrid_api, mock_data_with_data_tag):
         """Test that decorator passes data through unchanged when no filters are set."""
         @filter_data_on_portfolio_arguments(data_tag='systems', system_tag='system')
@@ -223,7 +218,7 @@ class TestPortfolioArguments:
         assert result == mock_data_with_data_tag
         mock_sigrid_api.get_portfolio_metadata.assert_not_called()
 
-    @patch('report_generator.generator.data_models.portfolio.portfolio_arguments.sigrid_api')
+    @patch('report_generator.generator.context.portfolio_filters.sigrid_api')
     def test_decorator_filters_systems_with_data_tag(self, mock_sigrid_api, mock_data_with_data_tag, mock_portfolio_metadata):
         """Test that decorator correctly filters systems when using data_tag."""
         set_context(team=['TeamA'])
@@ -240,7 +235,7 @@ class TestPortfolioArguments:
         assert result['systems'][1]['system'] == 'system3'
         assert result['metadata'] == 'some_metadata'  # Other data preserved
 
-    @patch('report_generator.generator.data_models.portfolio.portfolio_arguments.sigrid_api')
+    @patch('report_generator.generator.context.portfolio_filters.sigrid_api')
     def test_decorator_raises_exception_when_no_systems_match(self, mock_sigrid_api, mock_data_with_data_tag, mock_portfolio_metadata):
         """Test that decorator raises ClickException when filters exclude all systems."""
         set_context(team=['NonExistentTeam'])
@@ -274,7 +269,7 @@ class TestPortfolioArguments:
 
         assert result is False
 
-    @patch('report_generator.generator.data_models.portfolio.portfolio_arguments.sigrid_api')
+    @patch('report_generator.generator.context.portfolio_filters.sigrid_api')
     def test_decorator_with_mixed_matching_systems(self, mock_sigrid_api, mock_data_with_data_tag, mock_portfolio_metadata):
         """Test that decorator correctly handles mix of matching and non-matching systems."""
         set_context(team=['TeamC'])  # Only system2 has TeamC
@@ -300,7 +295,7 @@ class TestFilterConsistency:
         
         # Extract global variable names from portfolio_arguments module (strip leading underscore)
         module_vars = {
-            name[1:] for name in dir(portfolio_arguments)
+            name[1:] for name in dir(portfolio_filters)
             if name.startswith('_') 
             and not name.startswith('__')
             and name in ['_team', '_division', '_lifecycle', '_deployment', 
@@ -354,7 +349,7 @@ class TestFilterConsistency:
         """Test that _raise_no_systems_found_error() includes all filters in error message."""
         import ast
         import inspect
-        from report_generator.generator.data_models.portfolio.portfolio_arguments import _raise_no_systems_found_error
+        from report_generator.generator.context.portfolio_filters import _raise_no_systems_found_error
         
         source = inspect.getsource(_raise_no_systems_found_error)
         tree = ast.parse(source)
