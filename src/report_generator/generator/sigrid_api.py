@@ -19,7 +19,7 @@ from typing import Optional
 import requests
 
 from report_generator.generator.constants import MaintMetric
-from report_generator.generator.report_utils.time_series import Period
+from report_generator.generator.utils.time_series import Period
 
 DEFAULT_BASE_URL = "https://sigrid-says.com"
 BASE_ANALYSIS_RESULTS_ENDPOINT = "analysis-results/api/v1"

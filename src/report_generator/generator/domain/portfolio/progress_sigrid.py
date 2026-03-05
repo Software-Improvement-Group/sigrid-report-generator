@@ -18,7 +18,7 @@ from functools import cached_property
 import numpy as np
 
 from report_generator.generator import sigrid_api
-from report_generator.generator.report_utils.time_series import Period
+from report_generator.generator.utils.time_series import Period
 
 
 class ProgressStatus(Enum):

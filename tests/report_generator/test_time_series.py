@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from report_generator.generator.report_utils.time_series import Period
+from report_generator.generator.utils.time_series import Period
 
 
 class TestTimeSeries:
