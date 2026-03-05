@@ -17,8 +17,8 @@ from functools import cached_property
 from report_generator.generator import sigrid_api
 from report_generator.generator.context.portfolio_filters import filter_data_on_portfolio_arguments
 from report_generator.generator.domain.osh_base import OSHMetricsBase
-from report_generator.generator.domain.portfolio import portfolio_utils
 from report_generator.generator.domain.portfolio.base import AbstractPortfolioModel
+from report_generator.generator.domain.portfolio.shared import utils
 
 
 class OSHRatingsPortfolioData(OSHMetricsBase, AbstractPortfolioModel):
@@ -241,14 +241,14 @@ class OSHRatingsPortfolioData(OSHMetricsBase, AbstractPortfolioModel):
         return None, sigrid_api.get_period()[1]
     
     def get_system(self, system):
-        return portfolio_utils._get_system_helper(system, self.raw_data['systems'], 'systemName')
+        return utils._get_system_helper(system, self.raw_data['systems'], 'systemName')
     
     def find_system(self, system):
         return self.get_system(system)
 
     @cached_property
     def system_names(self):
-        return portfolio_utils._system_names_helper(self.raw_data['systems'], 'systemName')
+        return utils._system_names_helper(self.raw_data['systems'], 'systemName')
     
     def get_score_for_prop(self, prop):
         """Calculate aggregated rating for a specific OSH metric across all systems."""
@@ -278,14 +278,14 @@ class OSHRatingsPortfolioData(OSHMetricsBase, AbstractPortfolioModel):
     @cached_property
     def get_rating_distribution_percentages(self):
         """Calculate the percentage of systems above market, at market average, and below market average."""
-        return portfolio_utils._get_rating_distribution_percentages(
+        return utils._get_rating_distribution_percentages(
             self.raw_data.get('systems', []),
             lambda system: self._extract_osh_rating(system, 'system')
         )
     
     def _get_rating_and_volume(self, system):
         """Extract rating and volume for a system."""
-        return portfolio_utils._get_rating_and_volume_from_system(
+        return utils._get_rating_and_volume_from_system(
             system,
             lambda s: self._extract_osh_rating(s, 'system'),
             'systemName'
@@ -294,7 +294,7 @@ class OSHRatingsPortfolioData(OSHMetricsBase, AbstractPortfolioModel):
     @cached_property
     def weighted_average_rating(self):
         """Calculate volume-weighted average OSH rating across all systems."""
-        return portfolio_utils._calculate_weighted_average_rating(
+        return utils._calculate_weighted_average_rating(
             self.raw_data.get('systems', []),
             self._get_rating_and_volume
         )
