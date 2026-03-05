@@ -13,3 +13,6 @@ addopts = [
     "--import-mode=importlib",
 ]
 pythonpath = "."
+markers = [
+    "integration: requires live Sigrid API and a valid REPORT_GENERATOR_TESTS_TOKEN",
+]
