@@ -19,7 +19,7 @@ from typing import Union
 
 from report_generator.generator import sigrid_api
 from report_generator.generator.constants import MetricEnum, OSHMetric
-from report_generator.generator.domain.osh_base import OSHMetricsBase
+from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
 
 class _SystemMetric(MetricEnum):
