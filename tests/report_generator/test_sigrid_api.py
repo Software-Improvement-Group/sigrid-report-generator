@@ -15,6 +15,7 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+import logging
 import requests
 
 import report_generator.generator.sigrid_api as sigrid_api
@@ -170,7 +171,6 @@ class TestSigridAPI:
         mock_response.status_code = 204
         mock_response.raise_for_status.return_value = None
 
-        import logging
         with patch("requests.request", return_value=mock_response):
             sigrid_api._request.cache_clear()
             with caplog.at_level(logging.WARNING):
