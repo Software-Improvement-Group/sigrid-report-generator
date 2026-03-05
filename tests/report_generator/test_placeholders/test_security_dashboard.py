@@ -23,7 +23,7 @@ class TestSecurityDashboardChartPlaceholders:
     
     def test_add_month_data_row(self):
         """Test _add_month_data_row appends data correctly to arrays."""
-        from report_generator.generator.placeholders.charts.security_findings import _add_month_data_row, MonthData
+        from report_generator.generator.placeholders.implementations.charts import _add_month_data_row, MonthData
         
         arrays = {
             'categories': [],
@@ -43,7 +43,7 @@ class TestSecurityDashboardChartPlaceholders:
     
     def test_build_chart_data_arrays_creates_grouped_structure(self):
         """Test _build_chart_data_arrays creates proper grouped/clustered structure."""
-        from report_generator.generator.placeholders.charts.security_findings import _build_chart_data_arrays
+        from report_generator.generator.placeholders.implementations.charts import _build_chart_data_arrays
         
         data = {
             'columns': ['Jan', 'Feb'],
@@ -89,7 +89,7 @@ class TestSecurityDashboardChartPlaceholders:
     
     def test_build_chart_data_arrays_single_month(self):
         """Test _build_chart_data_arrays handles single month correctly."""
-        from report_generator.generator.placeholders.charts.security_findings import _build_chart_data_arrays
+        from report_generator.generator.placeholders.implementations.charts import _build_chart_data_arrays
         
         data = {
             'columns': ['Mar'],
@@ -104,11 +104,12 @@ class TestSecurityDashboardChartPlaceholders:
         assert len(result['categories']) == 2
         assert result['categories'][0] == 'Mar'
         assert result['categories'][1] == ''
-    
-    @patch('report_generator.generator.placeholders.charts.security_findings.security_dashboard_findings_portfolio_data')
+
+    @patch(
+        'report_generator.generator.placeholders.implementations.charts.security_findings.security_dashboard_findings_portfolio_data')
     def test_create_security_findings_chart_data(self, mock_data):
         """Test _create_security_findings_chart_data creates CategoryChartData."""
-        from report_generator.generator.placeholders.charts.security_findings import _create_security_findings_chart_data
+        from report_generator.generator.placeholders.implementations.charts import _create_security_findings_chart_data
         
         mock_data.chart_findings_by_severity.return_value = {
             'columns': ['Jan'],
@@ -123,11 +124,12 @@ class TestSecurityDashboardChartPlaceholders:
         assert hasattr(result, 'categories')
         assert len(result.categories) == 2  # 2 rows for single month
         mock_data.chart_findings_by_severity.assert_called_once_with('CRITICAL')
-    
-    @patch('report_generator.generator.placeholders.charts.security_findings.report_utils.pptx.find_charts')
+
+    @patch(
+        'report_generator.generator.placeholders.implementations.charts.security_findings.report_utils.pptx.find_charts')
     def test_populate_security_findings_chart_no_slides(self, mock_find_charts):
         """Test _populate_chart returns early when no charts found."""
-        from report_generator.generator.placeholders.charts.security_findings import _populate_chart
+        from report_generator.generator.placeholders.implementations.charts import _populate_chart
         
         mock_find_charts.return_value = []
         mock_presentation = MagicMock()
@@ -137,11 +139,12 @@ class TestSecurityDashboardChartPlaceholders:
         
         # Should not call value_cb if no charts found
         mock_value_cb.assert_not_called()
-    
-    @patch('report_generator.generator.placeholders.charts.security_findings.report_utils.pptx.find_charts')
+
+    @patch(
+        'report_generator.generator.placeholders.implementations.charts.security_findings.report_utils.pptx.find_charts')
     def test_populate_security_findings_chart_updates_chart(self, mock_find_charts):
         """Test _populate_chart updates chart when found."""
-        from report_generator.generator.placeholders.charts.security_findings import _populate_chart
+        from report_generator.generator.placeholders.implementations.charts import _populate_chart
         
         mock_chart = MagicMock()
         mock_find_charts.return_value = [mock_chart]
@@ -157,14 +160,17 @@ class TestSecurityDashboardChartPlaceholders:
     
     def test_security_dashboard_critical_findings_placeholder_key(self):
         """Test SecurityDashboardCriticalFindingsChartPlaceholder has correct key."""
-        from report_generator.generator.placeholders.charts.security_findings import SecurityDashboardCriticalFindingsChartPlaceholder
+        from report_generator.generator.placeholders.implementations.charts import \
+            SecurityDashboardCriticalFindingsChartPlaceholder
         
         assert SecurityDashboardCriticalFindingsChartPlaceholder.key == "PORTFOLIO_SECURITY_FINDINGS_CRITICAL"
-    
-    @patch('report_generator.generator.placeholders.charts.security_findings.security_dashboard_findings_portfolio_data')
+
+    @patch(
+        'report_generator.generator.placeholders.implementations.charts.security_findings.security_dashboard_findings_portfolio_data')
     def test_security_dashboard_high_findings_placeholder_value(self, mock_data):
         """Test SecurityDashboardHighFindingsChartPlaceholder.value returns chart data."""
-        from report_generator.generator.placeholders.charts.security_findings import SecurityDashboardHighFindingsChartPlaceholder
+        from report_generator.generator.placeholders.implementations.charts import \
+            SecurityDashboardHighFindingsChartPlaceholder
         
         mock_data.chart_findings_by_severity.return_value = {
             'columns': ['Jan'],
@@ -177,11 +183,13 @@ class TestSecurityDashboardChartPlaceholders:
         
         assert hasattr(result, 'categories')
         mock_data.chart_findings_by_severity.assert_called_once_with('HIGH')
-    
-    @patch('report_generator.generator.placeholders.charts.security_findings.security_dashboard_resolution_times_portfolio_data')
+
+    @patch(
+        'report_generator.generator.placeholders.implementations.charts.security_findings.security_dashboard_resolution_times_portfolio_data')
     def test_resolution_times_chart_uses_legend_labels(self, mock_data):
         """Test resolution times chart uses API legend labels."""
-        from report_generator.generator.placeholders.charts.security_findings import SecurityDashboardCriticalResolutionTimesChartPlaceholder
+        from report_generator.generator.placeholders.implementations.charts import \
+            SecurityDashboardCriticalResolutionTimesChartPlaceholder
         
         mock_data.chart_resolution_times_by_severity.return_value = {
             'columns': ['Jan'],

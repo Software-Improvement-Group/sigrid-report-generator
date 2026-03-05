@@ -11,21 +11,3 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-
-import inspect
-
-from . import security_findings, osh_charts
-
-_all_implementations = {
-    **security_findings.__dict__,
-    **osh_charts.__dict__,
-}
-
-_placeholders_map = {
-    name: obj for name, obj in _all_implementations.items()
-    if inspect.isclass(obj) and hasattr(obj, '__placeholder__') and not inspect.isabstract(obj)
-}
-
-placeholders = set(_placeholders_map.values())
-
-__all__ = list(_placeholders_map.keys())

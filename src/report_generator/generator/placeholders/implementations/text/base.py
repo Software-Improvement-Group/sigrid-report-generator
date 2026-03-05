@@ -14,7 +14,7 @@
 
 import logging
 from abc import ABC
-from typing import Callable, Type, Any
+from typing import Any, Callable, Type
 
 from docx.document import Document
 from pptx.presentation import Presentation

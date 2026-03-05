@@ -21,11 +21,12 @@ from unittest.mock import MagicMock, patch
 class TestTreemapImagePlaceholder:
     """Test cases for treemap image generation with empty data handling."""
 
-    @patch('report_generator.generator.placeholders.images.treemap_image.plt')
-    @patch('report_generator.generator.placeholders.images.treemap_image.tr')
+    @patch('report_generator.generator.placeholders.implementations.images.treemap_image.plt')
+    @patch('report_generator.generator.placeholders.implementations.images.treemap_image.tr')
     def test_draw_image_with_empty_dataframe_returns_none(self, mock_treemap, mock_plt):
         """Test that draw_image returns None when dataframe is empty."""
-        from report_generator.generator.placeholders.images.treemap_image import _AbstractPortfolioTreemapPlaceholder
+        from report_generator.generator.placeholders.implementations.images.treemap_image import \
+            _AbstractPortfolioTreemapPlaceholder
         
         # Mock figure and axes
         mock_fig = MagicMock()
@@ -48,11 +49,12 @@ class TestTreemapImagePlaceholder:
         # Treemap should not be called with empty data
         mock_treemap.treemap.assert_not_called()
 
-    @patch('report_generator.generator.placeholders.images.treemap_image.plt')
-    @patch('report_generator.generator.placeholders.images.treemap_image.tr')
+    @patch('report_generator.generator.placeholders.implementations.images.treemap_image.plt')
+    @patch('report_generator.generator.placeholders.implementations.images.treemap_image.tr')
     def test_draw_image_with_empty_color_mapping_creates_default(self, mock_treemap, mock_plt):
         """Test that draw_image creates default color mapping when empty."""
-        from report_generator.generator.placeholders.images.treemap_image import _AbstractPortfolioTreemapPlaceholder
+        from report_generator.generator.placeholders.implementations.images.treemap_image import \
+            _AbstractPortfolioTreemapPlaceholder
         
         # Mock figure and axes
         mock_fig = MagicMock()
@@ -78,11 +80,12 @@ class TestTreemapImagePlaceholder:
         assert 'system1' in call_kwargs['cmap']
         assert 'system2' in call_kwargs['cmap']
 
-    @patch('report_generator.generator.placeholders.images.treemap_image.plt')
-    @patch('report_generator.generator.placeholders.images.treemap_image.tr')
+    @patch('report_generator.generator.placeholders.implementations.images.treemap_image.plt')
+    @patch('report_generator.generator.placeholders.implementations.images.treemap_image.tr')
     def test_draw_image_with_invalid_dimensions_returns_none(self, mock_treemap, mock_plt):
         """Test that draw_image returns None with invalid dimensions."""
-        from report_generator.generator.placeholders.images.treemap_image import _AbstractPortfolioTreemapPlaceholder
+        from report_generator.generator.placeholders.implementations.images.treemap_image import \
+            _AbstractPortfolioTreemapPlaceholder
         
         fig_data = {
             'system_names': ['system1'],
@@ -104,19 +107,21 @@ class TestTreemapImagePlaceholder:
         result = _AbstractPortfolioTreemapPlaceholder.draw_image(-1, 0, fig_data)
         assert result is None
 
-    @patch('report_generator.generator.placeholders.images.treemap_image.plt')
+    @patch('report_generator.generator.placeholders.implementations.images.treemap_image.plt')
     def test_draw_image_with_none_fig_data_returns_none(self, mock_plt):
         """Test that draw_image returns None when fig_data is None."""
-        from report_generator.generator.placeholders.images.treemap_image import _AbstractPortfolioTreemapPlaceholder
+        from report_generator.generator.placeholders.implementations.images.treemap_image import \
+            _AbstractPortfolioTreemapPlaceholder
         
         result = _AbstractPortfolioTreemapPlaceholder.draw_image(10, 10, None)
         assert result is None
 
-    @patch('report_generator.generator.placeholders.images.treemap_image.plt')
-    @patch('report_generator.generator.placeholders.images.treemap_image.tr')
+    @patch('report_generator.generator.placeholders.implementations.images.treemap_image.plt')
+    @patch('report_generator.generator.placeholders.implementations.images.treemap_image.tr')
     def test_draw_image_with_valid_data_creates_treemap(self, mock_treemap, mock_plt):
         """Test that draw_image creates treemap with valid data and color mapping."""
-        from report_generator.generator.placeholders.images.treemap_image import _AbstractPortfolioTreemapPlaceholder
+        from report_generator.generator.placeholders.implementations.images.treemap_image import \
+            _AbstractPortfolioTreemapPlaceholder
         
         # Mock figure and axes
         mock_fig = MagicMock()

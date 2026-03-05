@@ -26,7 +26,7 @@ from report_generator.generator.domain import architecture_portfolio_data, \
     maintainability_delta_quality_new_code, maintainability_portfolio_data, osh_portfolio_data, \
     security_ratings_portfolio_data
 from report_generator.generator.formatters import formatters
-from report_generator.generator.placeholders.images.base import _AbstractParameterizedImagePlaceholder
+from report_generator.generator.placeholders.implementations.images.base import _AbstractParameterizedImagePlaceholder
 
 
 class _AbstractTreemapPlaceholder(_AbstractParameterizedImagePlaceholder, ABC):

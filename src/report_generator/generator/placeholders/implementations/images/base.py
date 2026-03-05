@@ -12,19 +12,18 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from typing import Callable
-from abc import ABC
-
-from pptx.presentation import Presentation
-
-from report_generator.generator.placeholders.base import Placeholder, ParameterizedPlaceholder, PlaceholderDocType
-from report_generator.generator import report_utils
-
 import io
-from pptx.util import Inches
 import logging
+from abc import ABC
+from typing import Callable
 
 import matplotlib.pyplot as plt
+from pptx.presentation import Presentation
+from pptx.util import Inches
+
+from report_generator.generator import report_utils
+from report_generator.generator.placeholders.base import ParameterizedPlaceholder, Placeholder, PlaceholderDocType
+
 
 class _AbstractImage:
     BUNDLE_COLOR = f"#{report_utils.pptx.SIG_GREY_COLOR}"
