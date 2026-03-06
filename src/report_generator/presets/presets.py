@@ -16,7 +16,7 @@ from typing import Callable
 
 from importlib_resources import files
 
-from report_generator.generator import ReportGenerator
+from report_generator import ReportGenerator
 
 
 def _generate_report(template_name: str, output_path: str) -> None:
