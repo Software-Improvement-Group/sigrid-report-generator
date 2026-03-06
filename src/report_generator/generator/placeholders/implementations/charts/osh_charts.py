@@ -18,10 +18,9 @@ from typing import Callable, List, Tuple
 from pptx.chart.data import ChartData
 from pptx.presentation import Presentation
 
-from report_generator.generator import report_utils
 from report_generator.generator.domain import osh_data, osh_portfolio_data
-from report_generator.generator.placeholders.base import Placeholder
-from report_generator.generator.placeholders.base import PlaceholderDocType
+from report_generator.generator.placeholders import rendering
+from report_generator.generator.placeholders.base import Placeholder, PlaceholderDocType
 
 
 def _format_osh_chart_data(data, categories: List[Tuple[str, str]]) -> ChartData:
@@ -63,7 +62,7 @@ def _set_chart_data_and_axis(chart, data, axis_max):
 
 def _resolve_single_osh_chart(presentation: Presentation, key: str, value_cb, data_source) -> None:
     """Resolver for a single OSH chart."""
-    charts = report_utils.pptx.find_charts(presentation, key)
+    charts = rendering.pptx.find_charts(presentation, key)
     logging.debug(f"Finds for {key}: {len(charts)}")
     if not charts:
         return

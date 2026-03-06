@@ -18,11 +18,10 @@ from typing import Callable, Dict, List
 from pptx.chart.data import CategoryChartData
 from pptx.presentation import Presentation
 
-from report_generator.generator import report_utils
 from report_generator.generator.domain import security_dashboard_findings_portfolio_data, \
     security_dashboard_resolution_times_portfolio_data
-from report_generator.generator.placeholders.base import Placeholder
-from report_generator.generator.placeholders.base import PlaceholderDocType
+from report_generator.generator.placeholders import rendering
+from report_generator.generator.placeholders.base import Placeholder, PlaceholderDocType
 
 
 @dataclass
@@ -97,7 +96,7 @@ def _create_security_findings_chart_data(severity: str) -> CategoryChartData:
 
 
 def _populate_chart(presentation: Presentation, value_cb: Callable[[], CategoryChartData], key: str) -> None:
-    charts = report_utils.pptx.find_charts(presentation, key)
+    charts = rendering.pptx.find_charts(presentation, key)
     
     if not charts:
         return

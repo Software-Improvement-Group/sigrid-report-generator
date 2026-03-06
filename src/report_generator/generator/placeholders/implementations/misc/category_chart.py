@@ -18,11 +18,10 @@ from typing import Callable
 from pptx.chart.data import CategoryChartData
 from pptx.presentation import Presentation
 
-from report_generator.generator import report_utils
 from report_generator.generator.domain import maintainability_data, modernization_data, objectives_data, \
     progress_sigrid_data
-from report_generator.generator.placeholders.base import Placeholder
-from report_generator.generator.placeholders.base import PlaceholderDocType
+from report_generator.generator.placeholders import rendering
+from report_generator.generator.placeholders.base import Placeholder, PlaceholderDocType
 
 
 class _AbstractCategoryChartPlaceholder(Placeholder, ABC):
@@ -59,7 +58,7 @@ class _AbstractCategoryChartPlaceholder(Placeholder, ABC):
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable):
         charts = []
-        for slide in report_utils.pptx.identify_specific_slide(presentation, key):
+        for slide in rendering.pptx.identify_specific_slide(presentation, key):
             for shape in slide.shapes:
                 if shape.has_chart:
                     charts.append(shape.chart)
@@ -119,7 +118,7 @@ class TestCodeRatioCategoryChartPlaceholder(_AbstractCategoryChartPlaceholder):
 
     @classmethod
     def colors(cls):
-        return [report_utils.pptx.test_code_ratio_color(data["testCodeRatio"]) for data in
+        return [rendering.pptx.test_code_ratio_color(data["testCodeRatio"]) for data in
                 maintainability_data.sorted_tech]
 
     @classmethod

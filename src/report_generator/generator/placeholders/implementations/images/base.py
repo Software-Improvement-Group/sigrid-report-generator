@@ -21,13 +21,13 @@ import matplotlib.pyplot as plt
 from pptx.presentation import Presentation
 from pptx.util import Inches
 
-from report_generator.generator import report_utils
+from report_generator.generator.placeholders import rendering
 from report_generator.generator.placeholders.base import ParameterizedPlaceholder, Placeholder, PlaceholderDocType
 
 
 class _AbstractImage:
-    BUNDLE_COLOR = f"#{report_utils.pptx.SIG_GREY_COLOR}"
-    NA_STAR_COLOR = f"#{report_utils.pptx.NA_STAR_COLOR}"
+    BUNDLE_COLOR = f"#{rendering.pptx.SIG_GREY_COLOR}"
+    NA_STAR_COLOR = f"#{rendering.pptx.NA_STAR_COLOR}"
 
     @staticmethod
     def create_and_add_image_to_slide(shape_placeholder, fig):
@@ -56,19 +56,19 @@ class _AbstractImagePlaceholder(Placeholder, _AbstractImage, ABC):
     __doc_type__ = PlaceholderDocType.IMAGE
     @classmethod
     def resolve_pptx(cls, presentation: Presentation, key: str, value_cb: Callable):
-        shapes = report_utils.pptx.find_shapes(presentation, key)
+        shapes = rendering.pptx.find_shapes(presentation, key)
         if len(shapes) == 0:
             return
 
         for shape in shapes:
             fig = value_cb(parameter={'height':shape.height.inches, 'width':shape.width.inches})
             cls.create_and_add_image_to_slide(shape, fig)
-    
+
 class _AbstractParameterizedImagePlaceholder(ParameterizedPlaceholder, _AbstractImage, ABC):
     __doc_type__ = PlaceholderDocType.IMAGE
     @classmethod
     def resolve_pptx(cls, presentation: Presentation, key: str, value_cb: Callable):
-        shapes = report_utils.pptx.find_shapes(presentation, key)
+        shapes = rendering.pptx.find_shapes(presentation, key)
         if len(shapes) == 0:
             return
 

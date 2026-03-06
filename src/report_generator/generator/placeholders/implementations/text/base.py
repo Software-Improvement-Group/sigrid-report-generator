@@ -19,7 +19,7 @@ from typing import Any, Callable, Type
 from docx.document import Document
 from pptx.presentation import Presentation
 
-from report_generator.generator import report_utils
+from report_generator.generator.placeholders import rendering
 from report_generator.generator.placeholders.base import Parameter, ParameterList, ParameterizedPlaceholder, \
     Placeholder, PlaceholderDocType, function_name_to_placeholder_key
 
@@ -34,13 +34,13 @@ class _AbstractTextPlaceholder(Placeholder, ABC):
     __doc_type__ = PlaceholderDocType.TEXT
 
     _PPTX_ADAPTER = _DocumentAdapter(
-        report_utils.pptx.find_text_in_presentation,
-        report_utils.pptx.update_many_paragraphs
+        rendering.pptx.find_text_in_presentation,
+        rendering.pptx.update_many_paragraphs
     )
 
     _DOCX_ADAPTER = _DocumentAdapter(
-        report_utils.docx.find_text_in_document,
-        report_utils.docx.update_many_paragraphs
+        rendering.docx.find_text_in_document,
+        rendering.docx.update_many_paragraphs
     )
 
     @staticmethod

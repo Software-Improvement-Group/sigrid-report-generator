@@ -19,28 +19,28 @@ import matplotlib.pyplot as plt
 import mpl_extra.treemap as tr
 import pandas as pd
 
-from report_generator.generator import report_utils
 from report_generator.generator.context import portfolio_filters
 from report_generator.generator.domain import architecture_portfolio_data, \
     maintainability_delta_quality_changed_code, maintainability_delta_quality_new_and_changed_code, \
     maintainability_delta_quality_new_code, maintainability_portfolio_data, osh_portfolio_data, \
     security_ratings_portfolio_data
 from report_generator.generator.formatters import formatters
+from report_generator.generator.placeholders import rendering
 from report_generator.generator.placeholders.implementations.images.base import _AbstractParameterizedImagePlaceholder
 
 
 class _AbstractTreemapPlaceholder(_AbstractParameterizedImagePlaceholder, ABC):
     @staticmethod
     def determine_rating_color(rating):
-        return f"#{report_utils.pptx.determine_rating_color(rating)}"
+        return f"#{rendering.pptx.determine_rating_color(rating)}"
 
     @staticmethod    
     def test_code_ratio_color(rating):
-        return f"#{report_utils.pptx.test_code_ratio_color(rating)}"
+        return f"#{rendering.pptx.test_code_ratio_color(rating)}"
 
     @staticmethod
     def interpolate_color(colors, t):
-        return f"#{report_utils.pptx.interpolate_color(colors, t)}"
+        return f"#{rendering.pptx.interpolate_color(colors, t)}"
     
     @staticmethod
     def normalize_clamped(min_val, max_val, val):
@@ -316,8 +316,9 @@ class MaintainabilityChangePortfolioTreemapPlaceholder(PeriodPortfolioTreemapPla
 
     @classmethod
     def value(cls, parameter, additional_parameter=None):
-        fig_data = cls.create_period_portfolio_treemap(grouping=parameter.lower(), metric='maintainability', positive_color_range=report_utils.pptx.MAINTAINABILITY_POS_CHANGE_RANGE_COLORS,
-                                                   negative_color_range=report_utils.pptx.MAINTAINABILITY_NEG_CHANGE_RANGE_COLORS)
+        fig_data = cls.create_period_portfolio_treemap(grouping=parameter.lower(), metric='maintainability',
+                                                       positive_color_range=rendering.pptx.MAINTAINABILITY_POS_CHANGE_RANGE_COLORS,
+                                                       negative_color_range=rendering.pptx.MAINTAINABILITY_NEG_CHANGE_RANGE_COLORS)
         return cls.draw_image(width=additional_parameter['width'], height=additional_parameter['height'], fig_data=fig_data)
 
 
@@ -328,8 +329,9 @@ class VolumeChangePortfolioTreemapPlaceholder(PeriodPortfolioTreemapPlaceholder)
 
     @classmethod
     def value(cls, parameter, additional_parameter=None):
-        fig_data = cls.create_period_portfolio_treemap(grouping=parameter.lower(), metric='volumeInPersonMonths', positive_color_range=report_utils.pptx.VOLUME_POS_CHANGE_RANGE_COLORS,
-                                                   negative_color_range=report_utils.pptx.VOLUME_NEG_CHANGE_RANGE_COLORS)
+        fig_data = cls.create_period_portfolio_treemap(grouping=parameter.lower(), metric='volumeInPersonMonths',
+                                                       positive_color_range=rendering.pptx.VOLUME_POS_CHANGE_RANGE_COLORS,
+                                                       negative_color_range=rendering.pptx.VOLUME_NEG_CHANGE_RANGE_COLORS)
         return cls.draw_image(width=additional_parameter['width'], height=additional_parameter['height'], fig_data=fig_data)
     
 
@@ -353,8 +355,10 @@ class TestCodeChangePortfolioTreemapPlaceholder(PeriodPortfolioTreemapPlaceholde
 
     @classmethod
     def value(cls, parameter, additional_parameter=None):
-        fig_data = cls.create_period_portfolio_treemap(grouping=parameter.lower(), metric='testCodeRatio', positive_color_range=report_utils.pptx.MAINTAINABILITY_POS_CHANGE_RANGE_COLORS,
-                                                   negative_color_range=report_utils.pptx.MAINTAINABILITY_NEG_CHANGE_RANGE_COLORS, is_percentage=True)
+        fig_data = cls.create_period_portfolio_treemap(grouping=parameter.lower(), metric='testCodeRatio',
+                                                       positive_color_range=rendering.pptx.MAINTAINABILITY_POS_CHANGE_RANGE_COLORS,
+                                                       negative_color_range=rendering.pptx.MAINTAINABILITY_NEG_CHANGE_RANGE_COLORS,
+                                                       is_percentage=True)
         return cls.draw_image(width=additional_parameter['width'], height=additional_parameter['height'], fig_data=fig_data)
     
     

@@ -126,7 +126,7 @@ class TestSecurityDashboardChartPlaceholders:
         mock_data.chart_findings_by_severity.assert_called_once_with('CRITICAL')
 
     @patch(
-        'report_generator.generator.placeholders.implementations.charts.security_findings.report_utils.pptx.find_charts')
+        'report_generator.generator.placeholders.implementations.charts.security_findings.rendering.pptx.find_charts')
     def test_populate_security_findings_chart_no_slides(self, mock_find_charts):
         """Test _populate_chart returns early when no charts found."""
         from report_generator.generator.placeholders.implementations.charts import _populate_chart
@@ -141,7 +141,7 @@ class TestSecurityDashboardChartPlaceholders:
         mock_value_cb.assert_not_called()
 
     @patch(
-        'report_generator.generator.placeholders.implementations.charts.security_findings.report_utils.pptx.find_charts')
+        'report_generator.generator.placeholders.implementations.charts.security_findings.rendering.pptx.find_charts')
     def test_populate_security_findings_chart_updates_chart(self, mock_find_charts):
         """Test _populate_chart updates chart when found."""
         from report_generator.generator.placeholders.implementations.charts import _populate_chart

@@ -17,10 +17,10 @@ from typing import Callable
 
 from pptx.presentation import Presentation
 
-from report_generator.generator import report_utils
 from report_generator.generator.constants import ArchMetric, ArchSubcharacteristic, MaintMetric, MetricEnum
 from report_generator.generator.domain import architecture_data, maintainability_data
 from report_generator.generator.formatters import formatters
+from report_generator.generator.placeholders import rendering
 from report_generator.generator.placeholders.base import ParameterizedPlaceholder
 
 
@@ -29,21 +29,21 @@ class _AbstractColorRatingPlaceholder(ParameterizedPlaceholder, ABC):
 
     @classmethod
     def resolve_pptx(cls, presentation: Presentation, key: str, value_cb: Callable):
-        shapes = report_utils.pptx.find_shapes_with_text(presentation, key)
-        paragraphs = report_utils.pptx.find_text_in_presentation(presentation, key)
+        shapes = rendering.pptx.find_shapes_with_text(presentation, key)
+        paragraphs = rendering.pptx.find_text_in_presentation(presentation, key)
 
         if len(shapes) == 0 and len(paragraphs) == 0:
             return
 
         rating = value_cb()
 
-        rating_color = report_utils.pptx.determine_rating_color(rating)
+        rating_color = rendering.pptx.determine_rating_color(rating)
         rating_rounded = formatters.star_rating_round(rating)
 
         for shape in shapes:
-            report_utils.pptx.set_shape_color(shape, rating_color)
+            rendering.pptx.set_shape_color(shape, rating_color)
 
-        report_utils.pptx.update_many_paragraphs(paragraphs, key, rating_rounded)
+        rendering.pptx.update_many_paragraphs(paragraphs, key, rating_rounded)
 
 
 class ArchColorRatingPlaceholder(_AbstractColorRatingPlaceholder):

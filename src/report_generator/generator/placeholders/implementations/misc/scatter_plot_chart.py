@@ -16,10 +16,9 @@ from pptx.chart.data import BubbleChartData
 from pptx.dml.color import RGBColor
 from pptx.presentation import Presentation
 
-from report_generator.generator import report_utils
 from report_generator.generator.domain import modernization_data
-from report_generator.generator.placeholders.base import Placeholder
-from report_generator.generator.placeholders.base import PlaceholderDocType
+from report_generator.generator.placeholders import rendering
+from report_generator.generator.placeholders.base import Placeholder, PlaceholderDocType
 
 BLUE_GRADIENT = ["003DAB", "2E6BFF", "8DA8FF", "DBE1FF", "8A98A8"]
 
@@ -34,7 +33,7 @@ class ModernizationScatterPlotChartPlaceholder(Placeholder):
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, _) -> None:
-        charts = report_utils.pptx.find_charts(presentation, key)
+        charts = rendering.pptx.find_charts(presentation, key)
 
         if len(charts) == 0:
             return

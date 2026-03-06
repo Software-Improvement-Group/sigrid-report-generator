@@ -16,10 +16,10 @@ from typing import Callable
 
 from pptx.presentation import Presentation
 
-from report_generator.generator import report_utils
 from report_generator.generator.domain import architecture_data, maintainability_data, modernization_data, \
     osh_data, security_data
 from report_generator.generator.formatters.formatters import star_rating_round
+from report_generator.generator.placeholders import rendering
 from report_generator.generator.placeholders.base import Placeholder
 
 _RATING_MARKER_MOVE_SIZE = 2200000
@@ -43,7 +43,7 @@ class _AbstractMoveableMarkerPlaceholder(Placeholder, ABC):
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable[[], str]) -> None:
         paragraphs = []
         for slide in presentation.slides:
-            paragraphs.extend(report_utils.pptx.find_text_in_slide(slide, key))
+            paragraphs.extend(rendering.pptx.find_text_in_slide(slide, key))
 
         if len(paragraphs) == 0:
             return
@@ -52,7 +52,7 @@ class _AbstractMoveableMarkerPlaceholder(Placeholder, ABC):
         value_float = float(value)
 
         for paragraph in paragraphs:
-            report_utils.pptx.update_paragraph(paragraph, key, value)
+            rendering.pptx.update_paragraph(paragraph, key, value)
 
             # noinspection PyProtectedMember
             marker = paragraph._parent._parent._parent._parent
@@ -95,9 +95,9 @@ class _ManagementSummaryMarkerPlaceholder(Placeholder, ABC):
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable[[], str]) -> None:
         for slide in presentation.slides:
-            for marker in report_utils.pptx.find_text_in_slide(slide, key):
+            for marker in rendering.pptx.find_text_in_slide(slide, key):
                 value, label = value_cb()
-                report_utils.pptx.update_paragraph(marker, key, f"{label}\n\n\n\n")
+                rendering.pptx.update_paragraph(marker, key, f"{label}\n\n\n\n")
                 # noinspection PyProtectedMember
                 marker._parent._parent.left += int(value * _MANAGEMENT_SUMMARY_MARKER_RANGE)
 

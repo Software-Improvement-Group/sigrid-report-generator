@@ -15,10 +15,9 @@
 from pptx.chart.data import XyChartData
 from pptx.presentation import Presentation
 
-from report_generator.generator import report_utils
 from report_generator.generator.domain import maintainability_data, system_metadata
-from report_generator.generator.placeholders.base import Placeholder
-from report_generator.generator.placeholders.base import PlaceholderDocType
+from report_generator.generator.placeholders import rendering
+from report_generator.generator.placeholders.base import Placeholder, PlaceholderDocType
 
 
 class MaintainabilityGalaxyChartPlaceholder(Placeholder):
@@ -34,7 +33,7 @@ class MaintainabilityGalaxyChartPlaceholder(Placeholder):
     def resolve_pptx(presentation: Presentation, key: str, _) -> None:
         charts = []
 
-        for slide in report_utils.pptx.identify_specific_slide(presentation, key):
+        for slide in rendering.pptx.identify_specific_slide(presentation, key):
             shapes_by_name = dict((s.name, s) for s in slide.shapes)
             # Todo autodetect galaxy chart index. (Or just assume it's the first and only chart on this slide, see tkovac generator implementation)
             charts.append(shapes_by_name["CHART_1"].chart)
