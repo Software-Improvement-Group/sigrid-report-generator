@@ -20,7 +20,7 @@ from pptx.presentation import Presentation
 
 from report_generator.generator.domain import osh_data, osh_portfolio_data
 from report_generator.generator.placeholders import rendering
-from report_generator.generator.placeholders.base import Placeholder, PlaceholderDocType
+from report_generator.generator.placeholders.implementations.base import Placeholder, PlaceholderDocType
 
 
 def _format_osh_chart_data(data, categories: List[Tuple[str, str]]) -> ChartData:

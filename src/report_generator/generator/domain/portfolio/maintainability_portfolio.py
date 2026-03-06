@@ -20,7 +20,7 @@ from report_generator.generator import sigrid_api
 from report_generator.generator.context.portfolio_filters import filter_data_on_portfolio_arguments
 from report_generator.generator.domain.portfolio.base import AbstractPortfolioModel
 from report_generator.generator.domain.portfolio.shared import utils
-from report_generator.generator.formatters.formatters import calculate_star_rating_integer
+from report_generator.generator.placeholders.formatting.formatters import calculate_star_rating_integer
 
 
 def _categorize_test_code_ratio(ratio):

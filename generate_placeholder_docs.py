@@ -19,8 +19,8 @@ from typing import List, Optional, Set
 
 import pandas as pd
 
-from report_generator.generator.placeholders import Placeholder, placeholders as all_placeholders
-from report_generator.generator.placeholders.base import ParameterList, PlaceholderDocType
+from report_generator.generator.placeholders.implementations import Placeholder, placeholders as all_placeholders
+from report_generator.generator.placeholders.implementations.base import ParameterList, PlaceholderDocType
 from report_generator.generator.report import ReportType
 
 SCRIPT_DIR = Path(__file__).parent

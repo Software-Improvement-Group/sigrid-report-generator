@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pytest
 
-from report_generator.generator.placeholders import placeholders as all_placeholders
+from report_generator.generator.placeholders.implementations import placeholders as all_placeholders
 
 FILENAME = "docs/placeholder descriptions.md"
 PROJECT_ROOT = next(

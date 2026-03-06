@@ -14,7 +14,7 @@
 
 from report_generator.generator.domain.portfolio.maintainability_delta_quality_portfolio import \
     maintainability_delta_quality_new_code
-from report_generator.generator.formatters.formatters import star_rating_round
+from report_generator.generator.placeholders.formatting.formatters import star_rating_round
 from .base import text_placeholder
 
 

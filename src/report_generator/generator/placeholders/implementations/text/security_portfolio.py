@@ -15,7 +15,7 @@
 from report_generator.generator.domain import (security_dashboard_findings_portfolio_data,
                                                security_dashboard_resolution_times_portfolio_data,
                                                security_ratings_portfolio_data)
-from report_generator.generator.formatters.formatters import star_rating_round
+from report_generator.generator.placeholders.formatting.formatters import star_rating_round
 from .base import text_placeholder
 
 

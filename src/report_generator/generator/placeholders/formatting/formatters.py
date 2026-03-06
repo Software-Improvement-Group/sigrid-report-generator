@@ -12,8 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import math
 import logging
+import math
 
 _USE_SIG_STERREN = False
 

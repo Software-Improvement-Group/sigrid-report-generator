@@ -20,7 +20,8 @@ from docx.document import Document
 from pptx.presentation import Presentation
 
 from report_generator.generator.placeholders import rendering
-from report_generator.generator.placeholders.base import Parameter, ParameterList, ParameterizedPlaceholder, \
+from report_generator.generator.placeholders.implementations.base import Parameter, ParameterList, \
+    ParameterizedPlaceholder, \
     Placeholder, PlaceholderDocType, function_name_to_placeholder_key
 
 

@@ -19,7 +19,7 @@ import yaml
 from requests.exceptions import RequestException, Timeout
 
 # noinspection PyProtectedMember
-from report_generator.generator.formatters.technologies import (
+from report_generator.generator.placeholders.formatting.technologies import (
     _fetch_technologies_yaml, _get_technology_cache, _load_technologies,
     clear_technology_cache, get_cache_info, get_fallback_technology_name,
     get_technology_category, get_technology_name
@@ -36,8 +36,8 @@ MOCK_YAML_DATA = [
 @pytest.fixture(autouse=True)
 def reset_cache():
     clear_technology_cache()
-    import report_generator.generator.formatters.technologies
-    report_generator.generator.formatters.technologies._has_attempted_load = False
+    import report_generator.generator.placeholders.formatting.technologies
+    report_generator.generator.placeholders.formatting.technologies._has_attempted_load = False
 
 
 def create_mock_response(text_content):
@@ -90,7 +90,7 @@ class TestTechnologyYamlFetch:
 
 
 class TestTechnologyLoader:
-    @patch('report_generator.generator.formatters.technologies._fetch_technologies_yaml')
+    @patch('report_generator.generator.placeholders.formatting.technologies._fetch_technologies_yaml')
     def test_load_success(self, mock_fetch):
         mock_fetch.return_value = MOCK_YAML_DATA
 
@@ -104,7 +104,7 @@ class TestTechnologyLoader:
         }
         assert result == expected
 
-    @patch('report_generator.generator.formatters.technologies._fetch_technologies_yaml')
+    @patch('report_generator.generator.placeholders.formatting.technologies._fetch_technologies_yaml')
     def test_load_filters_malformed_entries(self, mock_fetch):
         malformed_data = [
             {'context': 'good', 'display_name': 'Good', 'category': 'test'},
@@ -124,7 +124,7 @@ class TestTechnologyLoader:
 
 
 class TestTechnologyCache:
-    @patch('report_generator.generator.formatters.technologies._fetch_technologies_yaml')
+    @patch('report_generator.generator.placeholders.formatting.technologies._fetch_technologies_yaml')
     def test_cache_clear_resets_state(self, mock_fetch):
         mock_fetch.return_value = MOCK_YAML_DATA
 
@@ -137,7 +137,7 @@ class TestTechnologyCache:
 
 
 class TestTechnologyLookup:
-    @patch('report_generator.generator.formatters.technologies._fetch_technologies_yaml')
+    @patch('report_generator.generator.placeholders.formatting.technologies._fetch_technologies_yaml')
     def test_technology_name_lookup(self, mock_fetch):
         mock_fetch.return_value = [{'context': 'python', 'display_name': 'Python', 'category': 'modern'}]
 
@@ -145,14 +145,14 @@ class TestTechnologyLookup:
         assert get_technology_name('PYTHON') == 'Python'
         assert get_technology_name('unknown') == 'Unknown'
 
-    @patch('report_generator.generator.formatters.technologies._fetch_technologies_yaml')
+    @patch('report_generator.generator.placeholders.formatting.technologies._fetch_technologies_yaml')
     def test_technology_category_lookup(self, mock_fetch):
         mock_fetch.return_value = [{'context': 'python', 'display_name': 'Python', 'category': 'modern'}]
 
         assert get_technology_category('python') == 'modern'
         assert get_technology_category('unknown') == 'unknown'
 
-    @patch('report_generator.generator.formatters.technologies._fetch_technologies_yaml')
+    @patch('report_generator.generator.placeholders.formatting.technologies._fetch_technologies_yaml')
     @pytest.mark.parametrize("tech_data,lookup_key,expected_name,expected_category", [
         ({'display_name': None, 'category': 'test'}, 'test', 'Test', 'test'),
         ({'display_name': 'Test', 'category': None}, 'test', 'Test', 'unknown')

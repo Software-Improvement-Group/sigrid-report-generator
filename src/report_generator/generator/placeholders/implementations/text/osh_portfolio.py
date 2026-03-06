@@ -14,9 +14,9 @@
 
 from report_generator.generator.constants import OSHMetric
 from report_generator.generator.domain import osh_portfolio_data
-from report_generator.generator.formatters import smart_remarks
-from report_generator.generator.formatters.formatters import calculate_stars, star_rating_round
+from report_generator.generator.placeholders.formatting.formatters import calculate_stars, star_rating_round
 from .base import parameterized_text_placeholder, text_placeholder
+from ...formatting import smart_remarks
 
 
 @text_placeholder()

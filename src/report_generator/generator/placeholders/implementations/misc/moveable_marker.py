@@ -18,9 +18,9 @@ from pptx.presentation import Presentation
 
 from report_generator.generator.domain import architecture_data, maintainability_data, modernization_data, \
     osh_data, security_data
-from report_generator.generator.formatters.formatters import star_rating_round
 from report_generator.generator.placeholders import rendering
-from report_generator.generator.placeholders.base import Placeholder
+from report_generator.generator.placeholders.formatting.formatters import star_rating_round
+from report_generator.generator.placeholders.implementations.base import Placeholder
 
 _RATING_MARKER_MOVE_SIZE = 2200000
 _MANAGEMENT_SUMMARY_MARKER_RANGE = 4000000

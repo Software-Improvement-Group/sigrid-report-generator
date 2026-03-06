@@ -22,7 +22,8 @@ from pptx.presentation import Presentation
 from pptx.util import Inches
 
 from report_generator.generator.placeholders import rendering
-from report_generator.generator.placeholders.base import ParameterizedPlaceholder, Placeholder, PlaceholderDocType
+from report_generator.generator.placeholders.implementations.base import ParameterizedPlaceholder, Placeholder, \
+    PlaceholderDocType
 
 
 class _AbstractImage:

@@ -13,7 +13,7 @@
 #  limitations under the License.
 
 from report_generator.generator.domain import security_data
-from report_generator.generator.formatters.smart_remarks import relative_to_market_average
+from report_generator.generator.placeholders.formatting.smart_remarks import relative_to_market_average
 from .base import text_placeholder
 
 

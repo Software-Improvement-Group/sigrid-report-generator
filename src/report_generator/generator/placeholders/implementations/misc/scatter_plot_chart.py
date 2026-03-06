@@ -18,7 +18,7 @@ from pptx.presentation import Presentation
 
 from report_generator.generator.domain import modernization_data
 from report_generator.generator.placeholders import rendering
-from report_generator.generator.placeholders.base import Placeholder, PlaceholderDocType
+from report_generator.generator.placeholders.implementations.base import Placeholder, PlaceholderDocType
 
 BLUE_GRADIENT = ["003DAB", "2E6BFF", "8DA8FF", "DBE1FF", "8A98A8"]
 

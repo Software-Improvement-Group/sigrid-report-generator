@@ -16,7 +16,7 @@ from abc import abstractmethod
 
 from report_generator.generator.constants import MaintMetric
 from report_generator.generator.domain import refactoring_candidates_data
-from report_generator.generator.formatters.technologies import get_technology_name
+from report_generator.generator.placeholders.formatting.technologies import get_technology_name
 from report_generator.generator.placeholders.implementations.table.base import TableMatrix, TablePlaceholder
 
 

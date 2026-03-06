@@ -19,9 +19,9 @@ from pptx.presentation import Presentation
 
 from report_generator.generator.constants import ArchMetric, ArchSubcharacteristic, MaintMetric, MetricEnum
 from report_generator.generator.domain import architecture_data, maintainability_data
-from report_generator.generator.formatters import formatters
 from report_generator.generator.placeholders import rendering
-from report_generator.generator.placeholders.base import ParameterizedPlaceholder
+from report_generator.generator.placeholders.formatting import formatters
+from report_generator.generator.placeholders.implementations.base import ParameterizedPlaceholder
 
 
 class _AbstractColorRatingPlaceholder(ParameterizedPlaceholder, ABC):

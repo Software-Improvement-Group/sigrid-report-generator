@@ -21,7 +21,7 @@ from pptx.presentation import Presentation
 from report_generator.generator.domain import maintainability_data, modernization_data, objectives_data, \
     progress_sigrid_data
 from report_generator.generator.placeholders import rendering
-from report_generator.generator.placeholders.base import Placeholder, PlaceholderDocType
+from report_generator.generator.placeholders.implementations.base import Placeholder, PlaceholderDocType
 
 
 class _AbstractCategoryChartPlaceholder(Placeholder, ABC):

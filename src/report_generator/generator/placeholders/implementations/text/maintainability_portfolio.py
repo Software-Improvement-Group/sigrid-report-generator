@@ -13,7 +13,7 @@
 #  limitations under the License.
 
 from report_generator.generator.domain import maintainability_portfolio_data
-from report_generator.generator.formatters.formatters import star_rating_round
+from report_generator.generator.placeholders.formatting.formatters import star_rating_round
 from .base import text_placeholder
 
 
