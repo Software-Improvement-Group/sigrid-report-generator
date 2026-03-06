@@ -15,6 +15,8 @@
 import logging
 import math
 
+from report_generator.generator.utils.star_rating import calculate_star_rating_integer
+
 _USE_SIG_STERREN = False
 
 
@@ -30,10 +32,6 @@ def use_sig_sterren(enabled: bool = True) -> None:
     """
     global _USE_SIG_STERREN
     _USE_SIG_STERREN = enabled
-
-
-def calculate_star_rating_integer(rating):
-    return min(5, max(1, int(rating + 0.5)))
 
 
 def calculate_stars(maintainability_rating: float) -> str:
