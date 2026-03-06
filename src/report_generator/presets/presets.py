@@ -63,8 +63,7 @@ def generate_portfolio_overview(output_path: str) -> None:
 
 _preset_reports: dict[str, Callable[[str], None]] = {
     'system-summary'                  : generate_system_summary,
-    'word-debug'                      : generate_debug_docx,
-    'debug'                           : generate_debug_pptx,
+    'debug'                           : generate_debug_docx,
     'itdd-technical-debt'             : generate_itdd_system_technical_debt_report,
     'modernization'                   : generate_modernization_report,
     'objectives'                      : generate_objectives_report,
