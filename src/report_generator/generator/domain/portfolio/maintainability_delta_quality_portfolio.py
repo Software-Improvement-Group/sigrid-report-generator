@@ -24,9 +24,10 @@ from report_generator.generator.domain.portfolio.maintainability_portfolio impor
 
 def _finalize_change_statistics(statistics, lowest_system, highest_system):
     if lowest_system[0] is not None and lowest_system[1] < 0:
-        statistics["lowest-system"] = {lowest_system[0]: int(lowest_system[1]*10)/10}
+        statistics["lowest-system"] = {lowest_system[0]: int(lowest_system[1] * 10) / 10}
     if highest_system[0] is not None and highest_system[1] > 0:
-        statistics["highest-system"] = {highest_system[0]: int(highest_system[1]*10)/10}
+        statistics["highest-system"] = {highest_system[0]: int(highest_system[1] * 10) / 10}
+
 
 class _AbstractMaintainabilityDeltaQualityPortfolioData(AbstractPortfolioModel, ABC):
     @cached_property
@@ -43,18 +44,18 @@ class _AbstractMaintainabilityDeltaQualityPortfolioData(AbstractPortfolioModel, 
                 raise e
             result[system] = temp
         return result
-    
+
     @abstractmethod
     def get_type(self):
         pass
 
     def get_system(self, system):
         return self.data.get(system)
-    
+
     @cached_property
     def system_names(self):
         return list(self.data.keys())
-    
+
     def _process_system_data(self, system_data, stats, lowest_system, highest_system):
         """Process a single system's data and update statistics."""
         rating = system_data.get('filesRatingAtEnd')
@@ -63,21 +64,20 @@ class _AbstractMaintainabilityDeltaQualityPortfolioData(AbstractPortfolioModel, 
             stats['count'] += 1
             return self._update_extremes(rating, stats['system_name'], lowest_system, highest_system)
         return lowest_system, highest_system
-    
-    
+
     def _update_extremes(self, rating, system_name, lowest_system, highest_system):
         """Update lowest and highest rating tracking."""
         if rating < lowest_system[1]:
             lowest_system = (system_name, rating)
-        
+
         if rating > highest_system[1]:
             highest_system = (system_name, rating)
-        
+
         return lowest_system, highest_system
-    
+
     @cached_property
     def statistics(self):
-        #TODO: expand average star rating when volume of new code is available
+        # TODO: expand average star rating when volume of new code is available
         """Calculate statistics for delta quality metrics.
         
         Returns:
@@ -90,40 +90,46 @@ class _AbstractMaintainabilityDeltaQualityPortfolioData(AbstractPortfolioModel, 
         highest_system: Tuple[Optional[str], float] = (None, float("-inf"))
         stats = {
             'total_rating': 0,
-            'count': 0
+            'count'       : 0
         }
-        
+
         for system_name in self.system_names:
             system_data = self.data.get(system_name)
             if system_data:
                 stats['system_name'] = system_name
-                lowest_system, highest_system = self._process_system_data(system_data, stats, lowest_system, highest_system)
-        
+                lowest_system, highest_system = self._process_system_data(system_data, stats, lowest_system,
+                                                                          highest_system)
+
         if stats['count'] > 0:
             stats['avg_stars'] = stats['total_rating'] / stats['count']
         else:
             stats['avg_stars'] = 0
-        
+
         # Add lowest and highest systems to stats
         stats['lowest_system'] = lowest_system if lowest_system[0] is not None else None
         stats['highest_system'] = highest_system if highest_system[0] is not None else None
-        
-        logging.debug(f"Delta quality statistics: avg_stars={stats['avg_stars']}, count={stats['count']}, systems_processed={len([s for s in self.system_names if self.data.get(s)])}")
-        
+
+        logging.debug(
+            f"Delta quality statistics: avg_stars={stats['avg_stars']}, count={stats['count']}, systems_processed={len([s for s in self.system_names if self.data.get(s)])}")
+
         return stats
+
 
 class MaintainabilityDeltaQualityNewCodePortfolioData(_AbstractMaintainabilityDeltaQualityPortfolioData):
     def get_type(self):
         return "NEW_CODE"
 
+
 class MaintainabilityDeltaQualityChangedCodePortfolioData(_AbstractMaintainabilityDeltaQualityPortfolioData):
     def get_type(self):
         return "CHANGED_CODE"
 
+
 class MaintainabilityDeltaQualityNewAndChangedCodePortfolioData(_AbstractMaintainabilityDeltaQualityPortfolioData):
     def get_type(self):
         return "NEW_AND_CHANGED_CODE"
-    
+
+
 maintainability_delta_quality_new_code = MaintainabilityDeltaQualityNewCodePortfolioData()
 maintainability_delta_quality_changed_code = MaintainabilityDeltaQualityChangedCodePortfolioData()
 maintainability_delta_quality_new_and_changed_code = MaintainabilityDeltaQualityNewAndChangedCodePortfolioData()

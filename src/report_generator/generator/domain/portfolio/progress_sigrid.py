@@ -84,9 +84,11 @@ class ProgressSigridData:
                     if self.determine_system_status(objective_evaluation, ProgressStatus.UNKNOWN) == True:
                         with_status_unknown += 1
                     total += 1
-        
-        with_status_at_start = with_status_at_start * 100.0 / (total - with_status_unknown) if (total - with_status_unknown) > 0 else 0
-        with_status_at_end = with_status_at_end * 100.0 / (total - with_status_unknown) if (total - with_status_unknown) > 0 else 0
+
+        with_status_at_start = with_status_at_start * 100.0 / (total - with_status_unknown) if (
+                                                                                                           total - with_status_unknown) > 0 else 0
+        with_status_at_end = with_status_at_end * 100.0 / (total - with_status_unknown) if (
+                                                                                                       total - with_status_unknown) > 0 else 0
 
         if with_status_at_end >= with_status_at_start:
             improved = np.round(with_status_at_end - with_status_at_start, 0)
@@ -103,10 +105,10 @@ class ProgressSigridData:
             return objective_evaluation["targetMetAtEnd"] == "MET"
         if status == ProgressStatus.UNKNOWN:
             return (objective_evaluation["targetMetAtEnd"] == "UNKNOWN"
-                   or (objective_evaluation["targetMetAtEnd"] != "MET"
-                       and objective_evaluation["delta"] != "IMPROVING"
-                       and objective_evaluation["delta"] != "DETERIORATING"
-                       and objective_evaluation["delta"] != "SIMILAR"))
+                    or (objective_evaluation["targetMetAtEnd"] != "MET"
+                        and objective_evaluation["delta"] != "IMPROVING"
+                        and objective_evaluation["delta"] != "DETERIORATING"
+                        and objective_evaluation["delta"] != "SIMILAR"))
 
 
 progress_sigrid_data = ProgressSigridData()

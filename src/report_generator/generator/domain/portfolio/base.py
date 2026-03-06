@@ -22,7 +22,7 @@ class AbstractPortfolioModel(ABC):
     @cached_property
     def metadata(self):
         return sigrid_api.get_portfolio_metadata()
-    
+
     @cached_property
     def period(self):
         return sigrid_api.get_period()

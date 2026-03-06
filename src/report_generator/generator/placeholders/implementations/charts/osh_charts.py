@@ -37,12 +37,12 @@ def _format_osh_chart_data(data, categories: List[Tuple[str, str]]) -> ChartData
     """
     chart_data = ChartData()
     chart_data.categories = [display_name for display_name, _ in categories]
-    
+
     risk_levels = ["Critical risk", "High risk", "Medium risk", "Low risk"]
     for index, risk_level in enumerate(risk_levels):
         values = [data[key][index] for _, key in categories]
         chart_data.add_series(risk_level, values)
-    
+
     return chart_data
 
 
@@ -66,7 +66,7 @@ def _resolve_single_osh_chart(presentation: Presentation, key: str, value_cb, da
     logging.debug(f"Finds for {key}: {len(charts)}")
     if not charts:
         return
-    
+
     chart_data = value_cb()
     chart_axis_max = _determine_chart_axis_max(data_source)
     for chart in charts:

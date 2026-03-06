@@ -30,28 +30,28 @@ def mock_portfolio_metadata():
     """Fixture providing sample portfolio metadata."""
     return [
         {
-            'systemName': 'system1',
-            'teamNames': ['TeamA', 'TeamB'],
+            'systemName'  : 'system1',
+            'teamNames'   : ['TeamA', 'TeamB'],
             'divisionName': 'DivisionX'
         },
         {
-            'systemName': 'system2',
-            'teamNames': ['TeamC'],
+            'systemName'  : 'system2',
+            'teamNames'   : ['TeamC'],
             'divisionName': 'DivisionY'
         },
         {
-            'systemName': 'system3',
-            'teamNames': ['TeamA'],
+            'systemName'  : 'system3',
+            'teamNames'   : ['TeamA'],
             'divisionName': 'DivisionX'
         },
         {
-            'systemName': 'system4',
-            'teamNames': ['TeamA'],
+            'systemName'  : 'system4',
+            'teamNames'   : ['TeamA'],
             'divisionName': 'DivisionY'
         },
         {
-            'systemName': 'system5',
-            'teamNames': ['TeamB'],
+            'systemName'  : 'system5',
+            'teamNames'   : ['TeamB'],
             'divisionName': 'DivisionX'
         }
     ]
@@ -61,7 +61,7 @@ def mock_portfolio_metadata():
 def mock_data_with_data_tag():
     """Fixture providing sample API data with a data_tag wrapper."""
     return {
-        'systems': [
+        'systems' : [
             {'system': 'system1', 'maintainability': 4.0},
             {'system': 'system2', 'maintainability': 3.5},
             {'system': 'system3', 'maintainability': 4.2}
@@ -209,6 +209,7 @@ class TestPortfolioArguments:
     @patch('report_generator.generator.context.portfolio_filters.sigrid_api')
     def test_decorator_returns_unchanged_data_when_no_filters(self, mock_sigrid_api, mock_data_with_data_tag):
         """Test that decorator passes data through unchanged when no filters are set."""
+
         @filter_data_on_portfolio_arguments(data_tag='systems', system_tag='system')
         def mock_function():
             return mock_data_with_data_tag
@@ -219,7 +220,8 @@ class TestPortfolioArguments:
         mock_sigrid_api.get_portfolio_metadata.assert_not_called()
 
     @patch('report_generator.generator.context.portfolio_filters.sigrid_api')
-    def test_decorator_filters_systems_with_data_tag(self, mock_sigrid_api, mock_data_with_data_tag, mock_portfolio_metadata):
+    def test_decorator_filters_systems_with_data_tag(self, mock_sigrid_api, mock_data_with_data_tag,
+                                                     mock_portfolio_metadata):
         """Test that decorator correctly filters systems when using data_tag."""
         set_context(team=['TeamA'])
         mock_sigrid_api.get_portfolio_metadata.return_value = mock_portfolio_metadata
@@ -236,7 +238,8 @@ class TestPortfolioArguments:
         assert result['metadata'] == 'some_metadata'  # Other data preserved
 
     @patch('report_generator.generator.context.portfolio_filters.sigrid_api')
-    def test_decorator_raises_exception_when_no_systems_match(self, mock_sigrid_api, mock_data_with_data_tag, mock_portfolio_metadata):
+    def test_decorator_raises_exception_when_no_systems_match(self, mock_sigrid_api, mock_data_with_data_tag,
+                                                              mock_portfolio_metadata):
         """Test that decorator raises ClickException when filters exclude all systems."""
         set_context(team=['NonExistentTeam'])
         mock_sigrid_api.get_portfolio_metadata.return_value = mock_portfolio_metadata
@@ -252,6 +255,7 @@ class TestPortfolioArguments:
 
     def test_decorator_requires_data_tag_or_system_tag(self):
         """Test that decorator raises exception if neither data_tag nor system_tag is provided."""
+
         @filter_data_on_portfolio_arguments()
         def mock_function():
             return {}
@@ -270,7 +274,8 @@ class TestPortfolioArguments:
         assert result is False
 
     @patch('report_generator.generator.context.portfolio_filters.sigrid_api')
-    def test_decorator_with_mixed_matching_systems(self, mock_sigrid_api, mock_data_with_data_tag, mock_portfolio_metadata):
+    def test_decorator_with_mixed_matching_systems(self, mock_sigrid_api, mock_data_with_data_tag,
+                                                   mock_portfolio_metadata):
         """Test that decorator correctly handles mix of matching and non-matching systems."""
         set_context(team=['TeamC'])  # Only system2 has TeamC
         mock_sigrid_api.get_portfolio_metadata.return_value = mock_portfolio_metadata
@@ -292,32 +297,32 @@ class TestFilterConsistency:
         """Test that all filters are defined in FILTER_CONFIGURATION, METADATA_FILTER_CHECKS, and module globals."""
         config_filters = set(FILTER_CONFIGURATION.keys())
         check_filters = {global_var[1:] for global_var, _, _ in METADATA_FILTER_CHECKS}
-        
+
         # Extract global variable names from portfolio_arguments module (strip leading underscore)
         module_vars = {
             name[1:] for name in dir(portfolio_filters)
-            if name.startswith('_') 
-            and not name.startswith('__')
-            and name in ['_team', '_division', '_lifecycle', '_deployment', 
-                         '_business_criticality', '_distribution', '_application_type',
-                         '_target_industry', '_technology_category', '_main_technology']
+            if name.startswith('_')
+               and not name.startswith('__')
+               and name in ['_team', '_division', '_lifecycle', '_deployment',
+                            '_business_criticality', '_distribution', '_application_type',
+                            '_target_industry', '_technology_category', '_main_technology']
         }
-        
+
         sig = inspect.signature(set_context)
         set_context_params = set(sig.parameters.keys())
-        
+
         assert config_filters == check_filters, (
             f"Mismatch between FILTER_CONFIGURATION and METADATA_FILTER_CHECKS:\n"
             f"  In FILTER_CONFIGURATION but not METADATA_FILTER_CHECKS: {config_filters - check_filters}\n"
             f"  In METADATA_FILTER_CHECKS but not FILTER_CONFIGURATION: {check_filters - config_filters}"
         )
-        
+
         assert config_filters == module_vars, (
             f"Mismatch between FILTER_CONFIGURATION and module global variables:\n"
             f"  In FILTER_CONFIGURATION but no global variable: {config_filters - module_vars}\n"
             f"  Global variable exists but not in FILTER_CONFIGURATION: {module_vars - config_filters}"
         )
-        
+
         assert config_filters == set_context_params, (
             f"Mismatch between FILTER_CONFIGURATION and set_context() parameters:\n"
             f"  In FILTER_CONFIGURATION but not in set_context(): {config_filters - set_context_params}\n"
@@ -328,17 +333,17 @@ class TestFilterConsistency:
         """Test that _are_filters_set() checks all filter variables."""
         import ast
         import inspect
-        
+
         source = inspect.getsource(_are_filters_set)
         tree = ast.parse(source)
-        
+
         checked_vars = set()
         for node in ast.walk(tree):
             if isinstance(node, ast.Name) and node.id.startswith('_') and not node.id.startswith('__'):
                 checked_vars.add(node.id[1:])  # Remove leading underscore
-        
+
         all_filters = set(FILTER_CONFIGURATION.keys())
-        
+
         assert checked_vars == all_filters, (
             f"Mismatch in _are_filters_set() function:\n"
             f"  Filters not checked: {all_filters - checked_vars}\n"
@@ -350,19 +355,19 @@ class TestFilterConsistency:
         import ast
         import inspect
         from report_generator.generator.context.portfolio_filters import _raise_no_systems_found_error
-        
+
         source = inspect.getsource(_raise_no_systems_found_error)
         tree = ast.parse(source)
-        
+
         # Extract all variable names from the active_filters list
         error_filters = set()
         for node in ast.walk(tree):
             if isinstance(node, ast.Name) and node.id.startswith('_') and not node.id.startswith('__'):
-                if node.id in ['_team', '_division', '_lifecycle', '_deployment', 
+                if node.id in ['_team', '_division', '_lifecycle', '_deployment',
                                '_business_criticality', '_distribution', '_application_type',
                                '_target_industry', '_technology_category', '_main_technology']:
                     error_filters.add(node.id[1:])  # Remove leading underscore
-        
+
         all_filters = set(FILTER_CONFIGURATION.keys())
         assert error_filters == all_filters, (
             f"Mismatch in _raise_no_systems_found_error() function:\n"
@@ -374,19 +379,19 @@ class TestFilterConsistency:
         """Test that _include() declares all filter variables as global."""
         import ast
         import inspect
-        
+
         source = inspect.getsource(_include)
         tree = ast.parse(source)
-        
+
         global_vars = set()
         for node in ast.walk(tree):
             if isinstance(node, ast.Global):
                 for name in node.names:
                     if name.startswith('_') and not name.startswith('__'):
                         global_vars.add(name[1:])  # Remove leading underscore
-        
+
         all_filters = set(FILTER_CONFIGURATION.keys())
-        
+
         assert global_vars == all_filters, (
             f"Mismatch in _include() global declarations:\n"
             f"  Filters not declared as global: {all_filters - global_vars}\n"
@@ -397,10 +402,10 @@ class TestFilterConsistency:
         """Test that FILTER_CONFIGURATION global var names match METADATA_FILTER_CHECKS."""
         for filter_name, (global_var_name, _, _) in FILTER_CONFIGURATION.items():
             matching_checks = [
-                (gv, mk, t) for gv, mk, t in METADATA_FILTER_CHECKS 
+                (gv, mk, t) for gv, mk, t in METADATA_FILTER_CHECKS
                 if gv == global_var_name
             ]
-            
+
             assert len(matching_checks) == 1, (
                 f"Filter '{filter_name}' with global var '{global_var_name}' "
                 f"should have exactly one entry in METADATA_FILTER_CHECKS, "

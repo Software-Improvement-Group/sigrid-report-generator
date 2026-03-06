@@ -43,11 +43,13 @@ def calculate_stars(maintainability_rating: float) -> str:
     if maintainability_rating < 0.1:
         return ""
     star_rating = calculate_star_rating_integer(maintainability_rating)
-    return ratings[star_rating-1]
+    return ratings[star_rating - 1]
+
 
 def maintainability_round(rating) -> str:
     logging.warning("maintainability_round is deprecated and will be removed, use star_rating_round instead")
-    star_rating_round(rating) 
+    star_rating_round(rating)
+
 
 def star_rating_round(rating) -> str:
     if isinstance(rating, str):
@@ -60,7 +62,7 @@ def ratio_to_percentage(ratio) -> str:
     if isinstance(ratio, str):
         ratio = float(ratio)
 
-    return f"{round(ratio*100, 1)}%" if ratio < 1 else f"{int(ratio*100)}%"
+    return f"{round(ratio * 100, 1)}%" if ratio < 1 else f"{int(ratio * 100)}%"
 
 
 def format_diff(old_rating: float, new_rating: float) -> str:

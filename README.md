@@ -39,14 +39,17 @@ wherever you specify with the `-o` option.
 ### Generating standard reports
 
 **ITDD report:** Lightweight report that provides general information on a system, suitable for an ITDD setting.
-  - Example: `report-generator -c <your-customer> -s <your-system> --layout default`
+
+- Example: `report-generator -c <your-customer> -s <your-system> --layout default`
 
 <img src="docs/img/sample-mgmt-summary.png" width="300" />
 
-**Objectives report:** Reports on progress towards your [Sigrid objectives](https://docs.sigrid-says.com/capabilities/portfolio-objectives.html).
+**Objectives report:** Reports on progress towards
+your [Sigrid objectives](https://docs.sigrid-says.com/capabilities/portfolio-objectives.html).
 Includes both the overall trend and a breakdown per team.
-  - Example: `report-generator -c <your-customer> --layout objectives`
-  - Optionally, you can use the `--start` argument to configure the reporting period.
+
+- Example: `report-generator -c <your-customer> --layout objectives`
+- Optionally, you can use the `--start` argument to configure the reporting period.
 
 <img src="docs/img/sample-objectives.png" width="300" />
 
@@ -54,24 +57,27 @@ Includes both the overall trend and a breakdown per team.
 modernization initiatives based on factors such as estimated development speed increase and estimated effort.
 The [Sigrid documentation](https://docs.sigrid-says.com/capabilities/reports/modernization-report.html) contains
 more information.
-  - Example: `report-generator -c <your-customer> --layout modernization`
+
+- Example: `report-generator -c <your-customer> --layout modernization`
 
 <img src="docs/img/sample-modernization.png" width="500" />
 
 **System maintainability one-pager:** Simple report that focus on a system's maintainability system, both in terms
 of its current state and its progress over time.
-  - Example: `report-generator -c <your-customer> -s <your-system> --layout system-maintainability-one-pager`
-  - The default reporting period is one month. If you want to change the reporting period, you can use the
-    argument `--start 2025-03-01`.
+
+- Example: `report-generator -c <your-customer> -s <your-system> --layout system-maintainability-one-pager`
+- The default reporting period is one month. If you want to change the reporting period, you can use the
+  argument `--start 2025-03-01`.
 
 <img src="docs/img/sample-system-maintainability-one-pager.png" width="400" />
 
 **Portfolio overview:** Report that visualizes capability and objectives trends using treemaps and bar charts for
 a specified period in time.
-  - Example: `report-generator -c <your-customer> --layout portfolio-overview`.
-  - The default reporting period is one month. If you want to change the reporting period, you can use the
+
+- Example: `report-generator -c <your-customer> --layout portfolio-overview`.
+- The default reporting period is one month. If you want to change the reporting period, you can use the
   arguments `--start 2025-03-01` and `--end 2025-05-21`.
-  - Team and division filters are also available. Multiple teams/divisions can be specified
+- Team and division filters are also available. Multiple teams/divisions can be specified
   using the `--team` and/or `--division` flags, for example: `--team aap --team noot`.
 
 <img src="docs/img/sample-portfolio-overview.png" width="400">
@@ -100,7 +106,9 @@ There are roughly two types of items in a template that report-generator deals w
   templates, but you cannot change their structure. If you think a chart with a different structure is clearly needed,
   or better than the current visualization, reach out to the report-generator team. At the time of writing, only several
   PowerPoint charts are supported.
-- **Images:** The generator currently support the creation of treemaps (ie.: dashboard capabilities) and certain bar charts (ie.: security findings and resolution times). For a full overview, see [docs/placeholder descriptions.md](docs/placeholder%20descriptions.md#image-placeholders)
+- **Images:** The generator currently support the creation of treemaps (ie.: dashboard capabilities) and certain bar
+  charts (ie.: security findings and resolution times). For a full overview,
+  see [docs/placeholder descriptions.md](docs/placeholder%20descriptions.md#image-placeholders)
 
 ## Create custom placeholders
 

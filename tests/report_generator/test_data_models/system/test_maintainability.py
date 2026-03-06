@@ -17,8 +17,6 @@
 from report_generator.generator.domain.system.maintainability import _sort_and_aggregate_technology_data
 
 
-
-
 class TestDataModels:
     def test_sorting_technologies_on_volume_in_pm(self):
         sorted_tech_data = _sort_and_aggregate_technology_data(TestDataModels._mock_tech_data(3))
@@ -75,8 +73,6 @@ class TestDataModels:
         }
 
 
-
-
 class TestSystemMaintainabilityHelpers:
     """Additional tests for system maintainability helper functions."""
 
@@ -130,5 +126,3 @@ class TestSystemMaintainabilityHelpers:
         assert len(result) == 5
         assert result[4]["name"] == "others"
         assert result[4]["technologyRisk"] == "PHASEOUT"  # Worst risk wins
-
-

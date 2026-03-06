@@ -32,8 +32,10 @@ def generate_debug_docx(output_path: str) -> None:
 def generate_debug_pptx(output_path: str) -> None:
     _generate_report("debug-template.pptx", output_path)
 
+
 def generate_system_summary(output_path: str) -> None:
     _generate_report("system-summary.pptx", output_path)
+
 
 def generate_itdd_system_technical_debt_report(output_path: str) -> None:
     _generate_report("itdd-technical-debt.pptx", output_path)
@@ -54,8 +56,10 @@ def generate_refactoring_candidates_report(output_path: str) -> None:
 def generate_system_maintainability_one_pager(output_path: str) -> None:
     _generate_report("system-maintainability-one-pager.pptx", output_path)
 
+
 def generate_portfolio_overview(output_path: str) -> None:
     _generate_report("portfolio-overview.pptx", output_path)
+
 
 _preset_reports: dict[str, Callable[[str], None]] = {
     'system-summary'                  : generate_system_summary,

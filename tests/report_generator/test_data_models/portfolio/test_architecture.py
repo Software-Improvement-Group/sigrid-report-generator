@@ -32,7 +32,7 @@ class TestArchitecturePortfolioData:
         """Clean up portfolio context and cached data after each test."""
         portfolio_filters._team = None
         portfolio_filters._division = None
-        
+
         cache_attrs = ['data', 'metadata', 'period', 'system_names']
         for attr in cache_attrs:
             architecture_portfolio_data.__dict__.pop(attr, None)
@@ -45,11 +45,11 @@ class TestArchitecturePortfolioData:
             {'system': 'system2', 'architectureQuality': 3.8}
         ]
         mock_sigrid_api.get_portfolio_architecture_findings.return_value = mock_data
-        
+
         architecture_portfolio_data.__dict__.pop('data', None)
-        
+
         system = architecture_portfolio_data.get_system('system1')
-        
+
         assert system is not None
         assert system['system'] == 'system1'
         assert abs(system['architectureQuality'] - 4.5) < 0.01
@@ -63,15 +63,13 @@ class TestArchitecturePortfolioData:
             {'system': 'system3', 'architectureQuality': 4.2}
         ]
         mock_sigrid_api.get_portfolio_architecture_findings.return_value = mock_data
-        
+
         for attr in ['data', 'system_names']:
             architecture_portfolio_data.__dict__.pop(attr, None)
-        
+
         names = architecture_portfolio_data.system_names
-        
+
         assert len(names) == 3
         assert 'system1' in names
         assert 'system2' in names
         assert 'system3' in names
-
-

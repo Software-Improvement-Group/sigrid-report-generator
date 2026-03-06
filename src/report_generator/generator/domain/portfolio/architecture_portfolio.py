@@ -29,14 +29,14 @@ class ArchitecturePortfolioData(AbstractPortfolioModel):
     @cached_property
     def period(self):
         return None, sigrid_api.get_period()[1]
-    
+
     @cached_property
     def system_names(self):
         return utils.system_names_helper(self.data, 'system')
 
     def get_system(self, system):
         return utils.get_system_helper(system, self.data, 'system')
-    
+
     @cached_property
     def get_rating_distribution_percentages(self):
         """Calculate percentage of systems in each rating category."""
@@ -44,13 +44,13 @@ class ArchitecturePortfolioData(AbstractPortfolioModel):
             self.data,
             self._extract_architecture_rating
         )
-    
+
     def _extract_architecture_rating(self, system):
         """Extract architecture rating from a system."""
         if 'ratings' not in system or 'architecture' not in system['ratings']:
             return None
         return system['ratings']['architecture']
-    
+
     def _get_rating_and_volume(self, system):
         """Extract rating and volume for a system."""
         return utils.get_rating_and_volume_from_system(
@@ -58,7 +58,7 @@ class ArchitecturePortfolioData(AbstractPortfolioModel):
             self._extract_architecture_rating,
             'system'
         )
-    
+
     @cached_property
     def weighted_average_rating(self):
         """Calculate volume-weighted average architecture rating across all systems."""
@@ -66,5 +66,6 @@ class ArchitecturePortfolioData(AbstractPortfolioModel):
             self.data,
             self._get_rating_and_volume
         )
+
 
 architecture_portfolio_data = ArchitecturePortfolioData()

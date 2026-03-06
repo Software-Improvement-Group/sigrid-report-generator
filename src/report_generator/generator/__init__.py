@@ -25,9 +25,12 @@ def compose_options(*decorators):
     Composes multiple decorators into a single decorator.
     Applied in reverse order so the first in the list is the outermost wrapper.
     """
+
     def composition(func):
         return reduce(lambda f, dec: dec(f), reversed(decorators), func)
+
     return composition
+
 
 _generator_arguments_aggregate = [
     data_model_arguments

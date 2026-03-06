@@ -78,6 +78,7 @@ def fetch_possible_candidates():
     @filter_data_on_portfolio_arguments(data_tag="systems", system_tag="system")
     def get_data():
         return sigrid_api.get_portfolio_maintainability()
+
     portfolio_maintainability = get_data()
 
     for system in portfolio_maintainability["systems"]:

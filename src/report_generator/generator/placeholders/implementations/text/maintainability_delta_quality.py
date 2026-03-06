@@ -26,7 +26,8 @@ def portfolio_new_code_biggest_changes():
     highest_system = stats['highest_system']
     if highest_system:
         rating_str = star_rating_round(highest_system[1])
-        res.append(f"The highest maintainability rating for new code was achieved by {highest_system[0]} ({rating_str} stars).")
+        res.append(
+            f"The highest maintainability rating for new code was achieved by {highest_system[0]} ({rating_str} stars).")
     lowest_system = stats['lowest_system']
     if lowest_system:
         rating_str = star_rating_round(lowest_system[1])

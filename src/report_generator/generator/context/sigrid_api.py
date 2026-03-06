@@ -42,6 +42,7 @@ _system: Optional[str] = None
 _period: Optional[tuple[str, str]] = None
 _rest_url: str = f"{DEFAULT_BASE_URL}/rest"
 
+
 class SigridAPIRequestFailed(Exception):
     def __init__(self, function_name, message="API request failed"):
         self.function_name = function_name

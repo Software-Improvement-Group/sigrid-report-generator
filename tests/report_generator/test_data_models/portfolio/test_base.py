@@ -13,7 +13,6 @@
 #  limitations under the License.
 
 
-
 class TestAbstractPortfolioModel:
     """Test cases for AbstractPortfolioModel base class."""
 
@@ -56,5 +55,3 @@ class TestAbstractPortfolioModel:
         result = utils.get_system_helper('unknown', data, 'system')
 
         assert result is None
-
-

@@ -306,6 +306,7 @@ def technical_debt_percentage():
         return f"{(technical_debt_in_py * 100.0 / volume_in_py):.0f}"
     return "0"
 
+
 @text_placeholder()
 def renovation_effort_percentage():
     """Renovation effort as a percentage of total system volume."""

@@ -16,9 +16,9 @@ import os
 import pytest
 from click.testing import CliRunner
 from importlib_resources import files
-from tests.report_generator.integration.pptx_diff import compare_pptx
 
 from report_generator.cli import run as run_cli
+from tests.report_generator.integration.pptx_diff import compare_pptx
 
 
 @pytest.fixture
@@ -48,11 +48,14 @@ def system_name():
 
 @pytest.fixture
 def token():
-    return os.environ.get('REPORT_GENERATOR_TESTS_TOKEN') or os.environ.get('SIGRID_TOKEN') or os.environ.get('SIGRID_CI_TOKEN')
+    return os.environ.get('REPORT_GENERATOR_TESTS_TOKEN') or os.environ.get('SIGRID_TOKEN') or os.environ.get(
+        'SIGRID_CI_TOKEN')
 
 
 @pytest.mark.integration
-@pytest.mark.skipif(not os.environ.get('REPORT_GENERATOR_TESTS_TOKEN') and not os.environ.get('SIGRID_TOKEN') and not os.environ.get('SIGRID_CI_TOKEN'), reason="Token not set in environment")
+@pytest.mark.skipif(
+    not os.environ.get('REPORT_GENERATOR_TESTS_TOKEN') and not os.environ.get('SIGRID_TOKEN') and not os.environ.get(
+        'SIGRID_CI_TOKEN'), reason="Token not set in environment")
 def test_generate_report(output_file, template, customer_name, system_name, token, reference_file):
     os.environ['SIGRID_REPORT_GENERATOR_RECORD_USAGE'] = '0'
     runner = CliRunner()

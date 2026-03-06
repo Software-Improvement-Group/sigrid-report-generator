@@ -44,17 +44,19 @@ class _AbstractImage:
         with io.BytesIO() as buf:
             fig.savefig(buf, dpi='figure', bbox_inches='tight', transparent=True, pad_inches=0)
             buf.seek(0)
-            
+
             shape_placeholder.part.slide.shapes.add_picture(buf,
-                left=Inches(pos_left), top=Inches(pos_top),
-                width=Inches(pos_width), height=Inches(pos_height))
+                                                            left=Inches(pos_left), top=Inches(pos_top),
+                                                            width=Inches(pos_width), height=Inches(pos_height))
 
         el = shape_placeholder.element
         el.getparent().remove(el)
         plt.close('all')
 
+
 class _AbstractImagePlaceholder(Placeholder, _AbstractImage, ABC):
     __doc_type__ = PlaceholderDocType.IMAGE
+
     @classmethod
     def resolve_pptx(cls, presentation: Presentation, key: str, value_cb: Callable):
         shapes = rendering.pptx.find_shapes(presentation, key)
@@ -62,11 +64,13 @@ class _AbstractImagePlaceholder(Placeholder, _AbstractImage, ABC):
             return
 
         for shape in shapes:
-            fig = value_cb(parameter={'height':shape.height.inches, 'width':shape.width.inches})
+            fig = value_cb(parameter={'height': shape.height.inches, 'width': shape.width.inches})
             cls.create_and_add_image_to_slide(shape, fig)
+
 
 class _AbstractParameterizedImagePlaceholder(ParameterizedPlaceholder, _AbstractImage, ABC):
     __doc_type__ = PlaceholderDocType.IMAGE
+
     @classmethod
     def resolve_pptx(cls, presentation: Presentation, key: str, value_cb: Callable):
         shapes = rendering.pptx.find_shapes(presentation, key)
@@ -74,5 +78,5 @@ class _AbstractParameterizedImagePlaceholder(ParameterizedPlaceholder, _Abstract
             return
 
         for shape in shapes:
-            fig = value_cb({'height':shape.height.inches, 'width':shape.width.inches})
+            fig = value_cb({'height': shape.height.inches, 'width': shape.width.inches})
             cls.create_and_add_image_to_slide(shape, fig)

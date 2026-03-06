@@ -54,62 +54,62 @@ def _build_chart_data_arrays(data: Dict) -> Dict[str, List]:
     new = data['new']
     existing = data['existing']
     resolved = data['resolved']
-    
+
     arrays_dict = {
         'categories': [],
-        'new': [],
-        'existing': [],
-        'resolved': [],
-        'total': []
+        'new'       : [],
+        'existing'  : [],
+        'resolved'  : [],
+        'total'     : []
     }
-    
+
     for i, month in enumerate(columns):
         total = new[i] + existing[i]
-        
+
         # Row 1: Month name with New and Existing stacked (no Resolved here)
         _add_month_data_row(arrays_dict, MonthData(month, new[i], existing[i], 0, total))
-        
+
         # Row 2: Blank for spacing (only Resolved gets value here for clustering effect)
         _add_month_data_row(arrays_dict, MonthData('', 0, 0, resolved[i], resolved[i]))
-        
+
         # Row 3: Blank for spacing (skip for last month)
         if i < len(columns) - 1:
             _add_month_data_row(arrays_dict, MonthData('', 0, 0, 0, 0))
-    
+
     return arrays_dict
 
 
 def _create_security_findings_chart_data(severity: str) -> CategoryChartData:
     aggregated_data = security_dashboard_findings_portfolio_data.chart_findings_by_severity(severity)
     chart_arrays = _build_chart_data_arrays(aggregated_data)
-    
+
     chart_data = CategoryChartData()
     chart_data.categories = chart_arrays['categories']
-    
+
     # New and Existing will be stacked, Resolved will be clustered, Total displays on top
     chart_data.add_series('New', chart_arrays['new'])
     chart_data.add_series('Existing', chart_arrays['existing'])
     chart_data.add_series('Resolved', chart_arrays['resolved'])
     chart_data.add_series('Total', chart_arrays['total'])
-    
+
     return chart_data
 
 
 def _populate_chart(presentation: Presentation, value_cb: Callable[[], CategoryChartData], key: str) -> None:
     charts = rendering.pptx.find_charts(presentation, key)
-    
+
     if not charts:
         return
-    
+
     chart_data = value_cb()
-    
+
     for chart in charts:
         chart.replace_data(chart_data)
 
 
 class SecurityDashboardCriticalFindingsChartPlaceholder(Placeholder):
     """PowerPoint chart showing new, existing, and resolved critical security findings over the last 12 months."""
-    
+
     key = "PORTFOLIO_SECURITY_FINDINGS_CRITICAL"
     __doc_type__ = PlaceholderDocType.CHART
 
@@ -124,7 +124,7 @@ class SecurityDashboardCriticalFindingsChartPlaceholder(Placeholder):
 
 class SecurityDashboardHighFindingsChartPlaceholder(Placeholder):
     """PowerPoint chart showing new, existing, and resolved high security findings over the last 12 months."""
-    
+
     key = "PORTFOLIO_SECURITY_FINDINGS_HIGH"
     __doc_type__ = PlaceholderDocType.CHART
 
@@ -139,7 +139,7 @@ class SecurityDashboardHighFindingsChartPlaceholder(Placeholder):
 
 class SecurityDashboardMediumFindingsChartPlaceholder(Placeholder):
     """PowerPoint chart showing new, existing, and resolved medium security findings over the last 12 months."""
-    
+
     key = "PORTFOLIO_SECURITY_FINDINGS_MEDIUM"
     __doc_type__ = PlaceholderDocType.CHART
 
@@ -164,16 +164,16 @@ def _build_resolution_times_chart_data_arrays(data: Dict) -> Dict[str, List]:
     low_risk = data['lowRisk']
     medium_risk = data['mediumRisk']
     high_risk = data['highRisk']
-    
+
     totals = [no_risk[i] + low_risk[i] + medium_risk[i] + high_risk[i] for i in range(len(columns))]
-    
+
     return {
         'categories': columns,
-        'noRisk': no_risk,
-        'lowRisk': low_risk,
+        'noRisk'    : no_risk,
+        'lowRisk'   : low_risk,
         'mediumRisk': medium_risk,
-        'highRisk': high_risk,
-        'total': totals
+        'highRisk'  : high_risk,
+        'total'     : totals
     }
 
 
@@ -181,23 +181,23 @@ def _create_resolution_times_chart_data(severity: str) -> CategoryChartData:
     aggregated_data = security_dashboard_resolution_times_portfolio_data.chart_resolution_times_by_severity(severity)
     chart_arrays = _build_resolution_times_chart_data_arrays(aggregated_data)
     labels = security_dashboard_resolution_times_portfolio_data.get_legend_labels(severity)
-    
+
     chart_data = CategoryChartData()
     chart_data.categories = chart_arrays['categories']
-    
+
     # All will be stacked, Total displays on top
     chart_data.add_series(labels['noRisk'], chart_arrays['noRisk'])
     chart_data.add_series(labels['lowRisk'], chart_arrays['lowRisk'])
     chart_data.add_series(labels['mediumRisk'], chart_arrays['mediumRisk'])
     chart_data.add_series(labels['highRisk'], chart_arrays['highRisk'])
     chart_data.add_series('Total', chart_arrays['total'])
-    
+
     return chart_data
 
 
 class SecurityDashboardCriticalResolutionTimesChartPlaceholder(Placeholder):
     """PowerPoint chart showing resolution times of critical security findings over the last 12 months."""
-    
+
     key = "PORTFOLIO_SECURITY_RESOLUTION_CRITICAL"
     __doc_type__ = PlaceholderDocType.CHART
 
@@ -212,7 +212,7 @@ class SecurityDashboardCriticalResolutionTimesChartPlaceholder(Placeholder):
 
 class SecurityDashboardHighResolutionTimesChartPlaceholder(Placeholder):
     """PowerPoint chart showing resolution times of high security findings over the last 12 months."""
-    
+
     key = "PORTFOLIO_SECURITY_RESOLUTION_HIGH"
     __doc_type__ = PlaceholderDocType.CHART
 
@@ -227,7 +227,7 @@ class SecurityDashboardHighResolutionTimesChartPlaceholder(Placeholder):
 
 class SecurityDashboardMediumResolutionTimesChartPlaceholder(Placeholder):
     """PowerPoint chart showing resolution times of medium security findings over the last 12 months."""
-    
+
     key = "PORTFOLIO_SECURITY_RESOLUTION_MEDIUM"
     __doc_type__ = PlaceholderDocType.CHART
 
@@ -238,4 +238,3 @@ class SecurityDashboardMediumResolutionTimesChartPlaceholder(Placeholder):
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
         _populate_chart(presentation, value_cb, key)
-

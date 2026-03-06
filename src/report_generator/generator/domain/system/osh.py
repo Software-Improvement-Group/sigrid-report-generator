@@ -35,6 +35,7 @@ def _find_cyclonedx_property_value(properties, key):
             return prop["value"]
     return None
 
+
 class OSHData(OSHMetricsBase):
 
     @cached_property
@@ -75,7 +76,6 @@ class OSHData(OSHMetricsBase):
                 risk_counts[None]]
 
     @cached_property
-
     def vulnerability_risk_distribution(self) -> list[int]:
         return self._get_risk_distribution_for_metric(OSHMetric.VULNERABILITY)
 

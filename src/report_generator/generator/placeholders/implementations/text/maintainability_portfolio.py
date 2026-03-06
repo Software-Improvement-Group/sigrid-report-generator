@@ -24,12 +24,12 @@ def _format_percentage(percentage):
 
 
 def _format_maintainability_statement(amount, number_of_systems, postfix):
-    perc = _format_percentage(int(100*amount/number_of_systems))
+    perc = _format_percentage(int(100 * amount / number_of_systems))
     return f"There {'are' if amount > 1 else 'is'} {amount} ({perc}) {'systems' if amount > 1 else 'system'} that {'score' if amount > 1 else 'scores'} {postfix}."
 
 
 def _format_short_maintainability_statement(amount, number_of_systems, postfix):
-    perc = _format_percentage(int(100*amount/number_of_systems))
+    perc = _format_percentage(int(100 * amount / number_of_systems))
     return f"About {amount} ({perc}) {'systems' if amount > 1 else 'system'} {'score' if amount > 1 else 'scores'} {postfix}"
 
 
@@ -51,11 +51,19 @@ def portfolio_period_maint_summary():
     stats = maintainability_portfolio_data.statistics
     res = []
     if stats['maintainability']['5-star'] + stats['maintainability']['4-star'] > 0:
-        res.append(_format_maintainability_statement(stats['maintainability']['5-star'] + stats['maintainability']['4-star'], stats['maintainability']['number-of-systems'], "above market average (≥ 4 stars)"))
+        res.append(
+            _format_maintainability_statement(stats['maintainability']['5-star'] + stats['maintainability']['4-star'],
+                                              stats['maintainability']['number-of-systems'],
+                                              "above market average (≥ 4 stars)"))
     if stats['maintainability']['3-star'] > 0:
-        res.append(_format_maintainability_statement(stats['maintainability']['3-star'], stats['maintainability']['number-of-systems'], "market average (3 stars)"))
+        res.append(_format_maintainability_statement(stats['maintainability']['3-star'],
+                                                     stats['maintainability']['number-of-systems'],
+                                                     "market average (3 stars)"))
     if stats['maintainability']['2-star'] + stats['maintainability']['1-star'] > 0:
-        res.append(_format_maintainability_statement(stats['maintainability']['2-star']+stats['maintainability']['1-star'], stats['maintainability']['number-of-systems'], "below market average (≤ 2 stars)"))
+        res.append(
+            _format_maintainability_statement(stats['maintainability']['2-star'] + stats['maintainability']['1-star'],
+                                              stats['maintainability']['number-of-systems'],
+                                              "below market average (≤ 2 stars)"))
     return "\n".join(res)
 
 
@@ -64,17 +72,18 @@ def portfolio_period_maint_short_summary():
     """The portfolio maintainability short summary at the period's end date."""
     stats = maintainability_portfolio_data.statistics
     processed_stats = {
-        'above-market-average' : stats['maintainability']['5-star'] + stats['maintainability']['4-star'],
-        'market-average' : stats['maintainability']['3-star'],
-        'below-market-average' : stats['maintainability']['2-star'] + stats['maintainability']['1-star']
+        'above-market-average': stats['maintainability']['5-star'] + stats['maintainability']['4-star'],
+        'market-average'      : stats['maintainability']['3-star'],
+        'below-market-average': stats['maintainability']['2-star'] + stats['maintainability']['1-star']
     }
     postfixes = {
-        'above-market-average' : "above market average on maintainability",
-        'market-average' : "market average on maintainability",
-        'below-market-average' : "below market average on maintainability"
+        'above-market-average': "above market average on maintainability",
+        'market-average'      : "market average on maintainability",
+        'below-market-average': "below market average on maintainability"
     }
     key = max(processed_stats, key=processed_stats.get)
-    res = _format_short_maintainability_statement(processed_stats[key], stats['maintainability']['number-of-systems'], postfixes[key])
+    res = _format_short_maintainability_statement(processed_stats[key], stats['maintainability']['number-of-systems'],
+                                                  postfixes[key])
     return res
 
 
@@ -85,10 +94,12 @@ def portfolio_period_maint_change_summary():
     res = []
     if stats['maintainability-change']['biggest-increase']:
         key = next(iter(stats['maintainability-change']['biggest-increase']))
-        res.append(f"The largest increase in maintainability rating was experienced by {key} ({int(10*stats['maintainability-change']['biggest-increase'][key])/10}).")
+        res.append(
+            f"The largest increase in maintainability rating was experienced by {key} ({int(10 * stats['maintainability-change']['biggest-increase'][key]) / 10}).")
     if stats['maintainability-change']['biggest-decrease']:
         key = next(iter(stats['maintainability-change']['biggest-decrease']))
-        res.append(f"The largest decrease in maintainability rating was experienced by {key} ({int(10*stats['maintainability-change']['decrease'][key])/10}).")
+        res.append(
+            f"The largest decrease in maintainability rating was experienced by {key} ({int(10 * stats['maintainability-change']['decrease'][key]) / 10}).")
     if res:
         return "\n".join(res)
     return "The portfolio remained stable during the measured period."
@@ -98,12 +109,12 @@ def portfolio_period_maint_change_summary():
 def portfolio_period_maint_change_short_summary():
     """The portfolio maintainability change short summary, given the period's start and end dates."""
     stats = maintainability_portfolio_data.statistics
-    start_avg = int(stats['maintainability']['start-average']*10)/10
-    end_avg = int(stats['maintainability']['end-average']*10)/10
-    diff = int((end_avg-start_avg)*10)/10
+    start_avg = int(stats['maintainability']['start-average'] * 10) / 10
+    end_avg = int(stats['maintainability']['end-average'] * 10) / 10
+    diff = int((end_avg - start_avg) * 10) / 10
     if abs(diff) < 0.01:
         return f"The portfolio remained stable ({end_avg}) during the measured period"
-    return f"The portfolio's maintainability has {'increased' if start_avg<end_avg else 'decreased'} (with {diff} to {end_avg}) during the measured period"
+    return f"The portfolio's maintainability has {'increased' if start_avg < end_avg else 'decreased'} (with {diff} to {end_avg}) during the measured period"
 
 
 @text_placeholder()
@@ -112,10 +123,12 @@ def portfolio_maint_above_market():
     distribution = maintainability_portfolio_data.get_rating_distribution_percentages
     return distribution['above_market']
 
+
 @text_placeholder()
 def portfolio_maint_avg_rating():
     """Volume-weighted average maintainability rating across all systems in the portfolio."""
     return star_rating_round(maintainability_portfolio_data.weighted_average_rating)
+
 
 @text_placeholder()
 def portfolio_maint_market_average():
@@ -130,11 +143,13 @@ def portfolio_maint_below_market():
     distribution = maintainability_portfolio_data.get_rating_distribution_percentages
     return distribution['below_market']
 
+
 @text_placeholder()
 def portfolio_maint_increased():
     """Percentage of systems that have seen an increase in maintainability."""
     stats = maintainability_portfolio_data.statistics
-    total = stats['maintainability-change']['systems-increased'] + stats['maintainability-change']['systems-stable'] + stats['maintainability-change']['systems-decreased']
+    total = stats['maintainability-change']['systems-increased'] + stats['maintainability-change']['systems-stable'] + \
+            stats['maintainability-change']['systems-decreased']
     if total == 0:
         return 0
     return round(100 * stats['maintainability-change']['systems-increased'] / total)
@@ -144,7 +159,8 @@ def portfolio_maint_increased():
 def portfolio_maint_stable():
     """Percentage of systems that have remained stable in maintainability."""
     stats = maintainability_portfolio_data.statistics
-    total = stats['maintainability-change']['systems-increased'] + stats['maintainability-change']['systems-stable'] + stats['maintainability-change']['systems-decreased']
+    total = stats['maintainability-change']['systems-increased'] + stats['maintainability-change']['systems-stable'] + \
+            stats['maintainability-change']['systems-decreased']
     if total == 0:
         return 0
     return round(100 * stats['maintainability-change']['systems-stable'] / total)
@@ -154,10 +170,12 @@ def portfolio_maint_stable():
 def portfolio_maint_decreased():
     """Percentage of systems that have seen a decrease in maintainability."""
     stats = maintainability_portfolio_data.statistics
-    total = stats['maintainability-change']['systems-increased'] + stats['maintainability-change']['systems-stable'] + stats['maintainability-change']['systems-decreased']
+    total = stats['maintainability-change']['systems-increased'] + stats['maintainability-change']['systems-stable'] + \
+            stats['maintainability-change']['systems-decreased']
     if total == 0:
         return 0
     return round(100 * stats['maintainability-change']['systems-decreased'] / total)
+
 
 @text_placeholder()
 def portfolio_maint_biggest_changes():
@@ -168,12 +186,14 @@ def portfolio_maint_biggest_changes():
     if biggest_increase:
         system = next(iter(biggest_increase.keys()))
         diff = biggest_increase[system]
-        res.append(f"The largest increase in maintainability rating was experienced by {system} ({int(diff * 10) / 10} stars).")
+        res.append(
+            f"The largest increase in maintainability rating was experienced by {system} ({int(diff * 10) / 10} stars).")
     biggest_decrease = stats['maintainability-change']['biggest-decrease']
     if biggest_decrease:
         system = next(iter(biggest_decrease.keys()))
         diff = biggest_decrease[system]
-        res.append(f"The largest decrease in maintainability rating was experienced by {system} ({int(diff * 10) / 10} stars).")
+        res.append(
+            f"The largest decrease in maintainability rating was experienced by {system} ({int(diff * 10) / 10} stars).")
     if res:
         return " ".join(res)
     return ""
@@ -284,6 +304,7 @@ def portfolio_test_code_high():
     distribution = maintainability_portfolio_data.test_code_ratio_distribution_percentages
     return distribution['high']
 
+
 @text_placeholder()
 def portfolio_relative_test_code_difference():
     """Whether the overall test code ratio increased or decreased."""
@@ -298,10 +319,10 @@ def portfolio_test_code_difference():
     stats = maintainability_portfolio_data.statistics
     total_start = stats['test-code-ratio-change']['total-start']
     total_end = stats['test-code-ratio-change']['total-end']
-    
+
     if total_start == 0:
         return 0
-    
+
     percentage_change = ((total_end - total_start) / total_start) * 100
     if percentage_change > 0:
         return f"+{round(percentage_change, 1)}"
@@ -312,7 +333,8 @@ def portfolio_test_code_difference():
 def portfolio_test_code_increase():
     """Percentage of systems that have seen an increase in test code ratio."""
     stats = maintainability_portfolio_data.statistics
-    total = stats['test-code-ratio-change']['systems-increased'] + stats['test-code-ratio-change']['systems-stable'] + stats['test-code-ratio-change']['systems-decreased']
+    total = stats['test-code-ratio-change']['systems-increased'] + stats['test-code-ratio-change']['systems-stable'] + \
+            stats['test-code-ratio-change']['systems-decreased']
     if total == 0:
         return 0
     return round(100 * stats['test-code-ratio-change']['systems-increased'] / total)
@@ -322,7 +344,8 @@ def portfolio_test_code_increase():
 def portfolio_test_code_decrease():
     """Percentage of systems that have seen a decrease in test code ratio."""
     stats = maintainability_portfolio_data.statistics
-    total = stats['test-code-ratio-change']['systems-increased'] + stats['test-code-ratio-change']['systems-stable'] + stats['test-code-ratio-change']['systems-decreased']
+    total = stats['test-code-ratio-change']['systems-increased'] + stats['test-code-ratio-change']['systems-stable'] + \
+            stats['test-code-ratio-change']['systems-decreased']
     if total == 0:
         return 0
     return round(100 * stats['test-code-ratio-change']['systems-decreased'] / total)

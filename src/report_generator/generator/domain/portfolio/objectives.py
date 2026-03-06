@@ -41,7 +41,7 @@ class ObjectivesData:
     def comparison_period(self):
         period = sigrid_api.get_period()
         return Period(period[0], period[1])
-    
+
     @staticmethod
     @filter_data_on_portfolio_arguments(data_tag="systems", system_tag="systemName")
     def _get_filtered_objectives_evaluation_for_period(period):
@@ -49,7 +49,8 @@ class ObjectivesData:
 
     @cached_property
     def objectives_evaluation_trend(self):
-        return [(period, ObjectivesData._get_filtered_objectives_evaluation_for_period(period)["systems"]) for period in self.periods]
+        return [(period, ObjectivesData._get_filtered_objectives_evaluation_for_period(period)["systems"]) for period in
+                self.periods]
 
     @cached_property
     def objectives_evaluation_status(self):

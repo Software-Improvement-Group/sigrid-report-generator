@@ -15,9 +15,6 @@
 from unittest.mock import MagicMock, patch
 
 
-
-
-
 class TestTreemapImagePlaceholder:
     """Test cases for treemap image generation with empty data handling."""
 
@@ -27,23 +24,23 @@ class TestTreemapImagePlaceholder:
         """Test that draw_image returns None when dataframe is empty."""
         from report_generator.generator.placeholders.implementations.images.treemap_image import \
             _AbstractPortfolioTreemapPlaceholder
-        
+
         # Mock figure and axes
         mock_fig = MagicMock()
         mock_ax = MagicMock()
         mock_plt.subplots.return_value = (mock_fig, mock_ax)
-        
+
         # Create empty fig_data
         fig_data = {
-            'system_names': [],
-            'volumes': [],
-            'labels': [],
-            'root_names': [],
+            'system_names' : [],
+            'volumes'      : [],
+            'labels'       : [],
+            'root_names'   : [],
             'color_mapping': {}
         }
-        
+
         result = _AbstractPortfolioTreemapPlaceholder.draw_image(10, 10, fig_data)
-        
+
         assert result is None
         mock_plt.close.assert_called_once_with(mock_fig)
         # Treemap should not be called with empty data
@@ -55,23 +52,23 @@ class TestTreemapImagePlaceholder:
         """Test that draw_image creates default color mapping when empty."""
         from report_generator.generator.placeholders.implementations.images.treemap_image import \
             _AbstractPortfolioTreemapPlaceholder
-        
+
         # Mock figure and axes
         mock_fig = MagicMock()
         mock_ax = MagicMock()
         mock_plt.subplots.return_value = (mock_fig, mock_ax)
-        
+
         # Create fig_data with systems but empty color_mapping
         fig_data = {
-            'system_names': ['system1', 'system2'],
-            'volumes': [100, 200],
-            'labels': ['System 1', 'System 2'],
-            'root_names': ['root', 'root'],
+            'system_names' : ['system1', 'system2'],
+            'volumes'      : [100, 200],
+            'labels'       : ['System 1', 'System 2'],
+            'root_names'   : ['root', 'root'],
             'color_mapping': {}
         }
-        
+
         _AbstractPortfolioTreemapPlaceholder.draw_image(10, 10, fig_data)
-        
+
         # Should have called treemap with a non-empty color mapping
         assert mock_treemap.treemap.called
         call_kwargs = mock_treemap.treemap.call_args[1]
@@ -86,23 +83,23 @@ class TestTreemapImagePlaceholder:
         """Test that draw_image returns None with invalid dimensions."""
         from report_generator.generator.placeholders.implementations.images.treemap_image import \
             _AbstractPortfolioTreemapPlaceholder
-        
+
         fig_data = {
-            'system_names': ['system1'],
-            'volumes': [100],
-            'labels': ['System 1'],
-            'root_names': ['root'],
+            'system_names' : ['system1'],
+            'volumes'      : [100],
+            'labels'       : ['System 1'],
+            'root_names'   : ['root'],
             'color_mapping': {'system1': '#FF0000'}
         }
-        
+
         # Test with zero width
         result = _AbstractPortfolioTreemapPlaceholder.draw_image(0, 10, fig_data)
         assert result is None
-        
+
         # Test with negative height
         result = _AbstractPortfolioTreemapPlaceholder.draw_image(10, -5, fig_data)
         assert result is None
-        
+
         # Test with both invalid
         result = _AbstractPortfolioTreemapPlaceholder.draw_image(-1, 0, fig_data)
         assert result is None
@@ -112,7 +109,7 @@ class TestTreemapImagePlaceholder:
         """Test that draw_image returns None when fig_data is None."""
         from report_generator.generator.placeholders.implementations.images.treemap_image import \
             _AbstractPortfolioTreemapPlaceholder
-        
+
         result = _AbstractPortfolioTreemapPlaceholder.draw_image(10, 10, None)
         assert result is None
 
@@ -122,23 +119,23 @@ class TestTreemapImagePlaceholder:
         """Test that draw_image creates treemap with valid data and color mapping."""
         from report_generator.generator.placeholders.implementations.images.treemap_image import \
             _AbstractPortfolioTreemapPlaceholder
-        
+
         # Mock figure and axes
         mock_fig = MagicMock()
         mock_ax = MagicMock()
         mock_plt.subplots.return_value = (mock_fig, mock_ax)
-        
+
         # Create valid fig_data
         fig_data = {
-            'system_names': ['system1', 'system2'],
-            'volumes': [100, 200],
-            'labels': ['System 1', 'System 2'],
-            'root_names': ['root', 'root'],
+            'system_names' : ['system1', 'system2'],
+            'volumes'      : [100, 200],
+            'labels'       : ['System 1', 'System 2'],
+            'root_names'   : ['root', 'root'],
             'color_mapping': {'system1': '#FF0000', 'system2': '#00FF00'}
         }
-        
+
         result = _AbstractPortfolioTreemapPlaceholder.draw_image(10, 10, fig_data)
-        
+
         # Should return the figure
         assert result == mock_fig
         # Treemap should be called with the provided color mapping
@@ -147,4 +144,3 @@ class TestTreemapImagePlaceholder:
         assert call_kwargs['cmap'] == fig_data['color_mapping']
         # Axes should be turned off
         mock_ax.axis.assert_called_once_with("off")
-

@@ -21,8 +21,7 @@ import click
 import requests
 from dateutil.relativedelta import relativedelta
 
-from report_generator import presets
-from report_generator import ReportGenerator
+from report_generator import ReportGenerator, presets
 from report_generator.generator import generator_arguments
 from report_generator.generator.context import sigrid_api
 

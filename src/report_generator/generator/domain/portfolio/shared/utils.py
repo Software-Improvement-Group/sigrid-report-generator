@@ -39,6 +39,7 @@ def get_system_helper(system, data, tag):
             return s
     return None
 
+
 def get_system_metadata(portfolio_metadata, system):
     for s in portfolio_metadata:
         if s['systemName'] == system:
@@ -60,11 +61,11 @@ def _calculate_percentages(counts, total):
     """Calculate percentages from counts."""
     if total == 0:
         return {'above_market': 0, 'market_average': 0, 'below_market': 0}
-    
+
     return {
-        'above_market': round(100 * counts['above_market'] / total),
+        'above_market'  : round(100 * counts['above_market'] / total),
         'market_average': round(100 * counts['market_average'] / total),
-        'below_market': round(100 * counts['below_market'] / total)
+        'below_market'  : round(100 * counts['below_market'] / total)
     }
 
 
@@ -72,11 +73,11 @@ def is_month_in_period(month: Optional[str], period: Tuple[str, str]) -> bool:
     if not month:
         return False
     period_start, period_end = period
-    
+
     month_ym = month[:7]
     period_start_ym = period_start[:7]
     period_end_ym = period_end[:7]
-    
+
     return period_start_ym <= month_ym <= period_end_ym
 
 
@@ -90,13 +91,13 @@ def get_volume(system_name: str) -> float:
 
 
 def get_rating_and_volume_from_system(
-    system: Dict,
-    rating_extractor: Callable[[Dict], Optional[float]],
-    system_name_key: str = 'systemName'
+        system: Dict,
+        rating_extractor: Callable[[Dict], Optional[float]],
+        system_name_key: str = 'systemName'
 ) -> Tuple[Optional[float], float]:
     rating = rating_extractor(system)
     system_name = system.get(system_name_key)
-    
+
     if rating is None or system_name is None:
         return None, 0
 
@@ -105,33 +106,33 @@ def get_rating_and_volume_from_system(
 
 
 def calculate_weighted_average_rating(
-    data_source: Iterable,
-    get_rating_and_volume_func: Callable[[any], Tuple[Optional[float], float]]
+        data_source: Iterable,
+        get_rating_and_volume_func: Callable[[any], Tuple[Optional[float], float]]
 ) -> float:
     total_weighted_rating = 0
     total_volume = 0
-    
+
     for item in data_source:
         rating, volume = get_rating_and_volume_func(item)
-        
+
         if rating is None or volume == 0:
             continue
-        
+
         total_weighted_rating += rating * volume
         total_volume += volume
-    
+
     if total_volume > 0:
         return total_weighted_rating / total_volume
     return 0.0
 
 
 def get_rating_distribution_percentages(
-    data_source: Iterable,
-    rating_extractor: Callable[[any], Optional[float]]
+        data_source: Iterable,
+        rating_extractor: Callable[[any], Optional[float]]
 ) -> Dict[str, int]:
     counts = {'above_market': 0, 'market_average': 0, 'below_market': 0}
     total = 0
-    
+
     for item in data_source:
         rating = rating_extractor(item)
         if rating is None:
@@ -140,5 +141,5 @@ def get_rating_distribution_percentages(
         category = categorize_rating(rating)
         counts[category] += 1
         total += 1
-    
+
     return _calculate_percentages(counts, total)

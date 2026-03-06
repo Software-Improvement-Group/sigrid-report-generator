@@ -52,6 +52,7 @@ DASHBOARD_RESOLUTION_LOW_RISK_COLOR = RGBColor(0x3A, 0xA4, 0x98)
 DASHBOARD_RESOLUTION_MEDIUM_RISK_COLOR = RGBColor(0x34, 0x8A, 0xC7)
 DASHBOARD_RESOLUTION_HIGH_RISK_COLOR = DASHBOARD_NEW_FINDINGS_COLOR
 
+
 def print_slide_ids(slide):
     # Print slide IDs and names for debugging purposes
     logging.debug("Placeholders:")
@@ -94,12 +95,14 @@ def find_shapes_with_text(presentation, search_text):
         shapes += [paragraph._parent._parent for paragraph in paragraphs]
     return shapes
 
+
 def find_shapes_with_text_in_slide(slide, search_text):
     shapes = []
     paragraphs = find_text_in_slide(slide, search_text)
     # A paragraph is typically in a TextGroup which is in a Shape, so we call getparent() twice
     shapes += [paragraph._parent._parent for paragraph in paragraphs]
     return shapes
+
 
 def find_text_in_presentation(presentation, search_text):
     paragraphs = []
@@ -311,20 +314,21 @@ def replace_paragraph_with_text(paragraph: _Paragraph, text: Union[str, int, flo
     if font:
         apply_font_properties(run, font)
 
+
 def interpolate_color(colors, t):
     # Map t to position in color list
     position = t * (len(colors) - 1)
-    index = int(position)           # lower bound index
-    frac = position - index         # fraction between colors
-    
+    index = int(position)  # lower bound index
+    frac = position - index  # fraction between colors
+
     # If exactly at the last color
     if index >= len(colors) - 1:
         return colors[-1]
-    
+
     # Interpolate between the two colors
-    r = int(colors[index][0] + (colors[index+1][0] - colors[index][0]) * frac)
-    g = int(colors[index][1] + (colors[index+1][1] - colors[index][1]) * frac)
-    b = int(colors[index][2] + (colors[index+1][2] - colors[index][2]) * frac)
-    
+    r = int(colors[index][0] + (colors[index + 1][0] - colors[index][0]) * frac)
+    g = int(colors[index][1] + (colors[index + 1][1] - colors[index][1]) * frac)
+    b = int(colors[index][2] + (colors[index + 1][2] - colors[index][2]) * frac)
+
     # Convert back to hex
     return RGBColor(r, g, b)

@@ -25,18 +25,18 @@ class SecurityRatingsPortfolioData(AbstractPortfolioModel):
     @filter_data_on_portfolio_arguments(system_tag="systemName")
     def data(self):
         return sigrid_api.get_portfolio_security_ratings()
-    
+
     @cached_property
     def period(self):
         return None, sigrid_api.get_period()[1]
-    
+
     def get_system(self, system):
         return utils.get_system_helper(system, self.data, 'systemName')
-    
+
     @cached_property
     def system_names(self):
         return utils.system_names_helper(self.data, 'systemName')
-    
+
     @cached_property
     def get_rating_distribution_percentages(self):
         """Calculate percentage of systems in each rating category."""
@@ -44,7 +44,7 @@ class SecurityRatingsPortfolioData(AbstractPortfolioModel):
             self.data,
             lambda system: system.get('rating')
         )
-    
+
     def _get_rating_and_volume(self, system):
         """Extract rating and volume for a system."""
         return utils.get_rating_and_volume_from_system(
@@ -52,7 +52,7 @@ class SecurityRatingsPortfolioData(AbstractPortfolioModel):
             lambda s: s.get('rating'),
             'systemName'
         )
-    
+
     @cached_property
     def weighted_average_rating(self):
         """Calculate volume-weighted average security rating across all systems."""
@@ -60,5 +60,6 @@ class SecurityRatingsPortfolioData(AbstractPortfolioModel):
             self.data,
             self._get_rating_and_volume
         )
-    
+
+
 security_ratings_portfolio_data = SecurityRatingsPortfolioData()

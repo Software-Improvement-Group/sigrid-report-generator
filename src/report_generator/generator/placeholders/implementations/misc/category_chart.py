@@ -272,7 +272,7 @@ class ObjectivesCapabilitiesChartPlaceholder(_AbstractCategoryChartPlaceholder):
     @classmethod
     def axis_label(cls):
         return "Percentage of portfolio"
-    
+
 
 class ObjectivesOverallChartSigridPlaceholder(_AbstractCategoryChartPlaceholder):
     key = "PROGRESS_TIME_CHART"
@@ -352,7 +352,7 @@ class ObjectivesOpenSourceHealthChartSigridPlaceholder(_AbstractCategoryChartPla
     @classmethod
     def axis_label(cls):
         return "Percentage of portfolio"
-    
+
 
 class ObjectivesCapabilitiesChartSigridPlaceholder(_AbstractCategoryChartPlaceholder):
     key = "PROGRESS_CAPABILITY_CHART"
@@ -384,4 +384,3 @@ class ObjectivesStatusChartSigridPlaceholder(_AbstractCategoryChartPlaceholder):
     @classmethod
     def axis_label(cls):
         return "Percentage of portfolio"
-

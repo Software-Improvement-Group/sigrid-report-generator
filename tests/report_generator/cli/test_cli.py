@@ -12,9 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 import os
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
-import pytest
 from click.testing import CliRunner
 
 from report_generator.cli import run as run_cli
@@ -177,7 +176,7 @@ class TestCLIParameters:
     def test_system_parameter_required_for_system_level_presets(self, mock_sigrid_api, mock_presets):
         """Test that --system is required for system-level layouts."""
         os.environ['SIGRID_REPORT_GENERATOR_RECORD_USAGE'] = '0'
-        
+
         # Assuming 'default' is a system-level preset
         with patch('report_generator.cli.presets.SYSTEM_LEVEL_PRESETS', {'default'}):
             runner = CliRunner()
@@ -195,7 +194,7 @@ class TestCLIParameters:
     def test_system_parameter_not_allowed_for_portfolio_presets(self, mock_sigrid_api, mock_presets):
         """Test that --system is not allowed for portfolio-level layouts."""
         os.environ['SIGRID_REPORT_GENERATOR_RECORD_USAGE'] = '0'
-        
+
         with patch('report_generator.cli.presets.SYSTEM_LEVEL_PRESETS', set()):
             runner = CliRunner()
             result = runner.invoke(run_cli, [
@@ -221,7 +220,7 @@ class TestCLIParameters:
             # Create a dummy template file
             with open('template.pptx', 'wb') as f:
                 f.write(b'dummy content')
-            
+
             runner.invoke(run_cli, [
                 '--customer', 'test-customer',
                 '--token', 'test-token',
@@ -240,7 +239,7 @@ class TestCLIParameters:
         with runner.isolated_filesystem():
             with open('template.pptx', 'wb') as f:
                 f.write(b'dummy content')
-            
+
             result = runner.invoke(run_cli, [
                 '--customer', 'test-customer',
                 '--token', 'test-token',

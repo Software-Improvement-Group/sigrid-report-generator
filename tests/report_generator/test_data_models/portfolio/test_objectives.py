@@ -26,9 +26,9 @@ class TestObjectivesData:
         """Clean up portfolio context and cached data after each test."""
         portfolio_filters._team = None
         portfolio_filters._division = None
-        
-        cache_attrs = ['periods', 'comparison_period', 'objectives_evaluation_trend', 
-                      'objectives_evaluation_status', 'teams']
+
+        cache_attrs = ['periods', 'comparison_period', 'objectives_evaluation_trend',
+                       'objectives_evaluation_status', 'teams']
         for attr in cache_attrs:
             objectives_data.__dict__.pop(attr, None)
 
@@ -37,9 +37,9 @@ class TestObjectivesData:
         """Test that determine_system_status returns MET when target is met."""
         objective = {
             "targetMetAtEnd": "MET",
-            "delta": "SIMILAR"
+            "delta"         : "SIMILAR"
         }
-        
+
         status = ObjectivesData.determine_system_status(objective)
         assert status == ObjectiveStatus.MET
 
@@ -48,9 +48,9 @@ class TestObjectivesData:
         """Test that determine_system_status returns IMPROVED when improving."""
         objective = {
             "targetMetAtEnd": "NOT_MET",
-            "delta": "IMPROVING"
+            "delta"         : "IMPROVING"
         }
-        
+
         status = ObjectivesData.determine_system_status(objective)
         assert status == ObjectiveStatus.IMPROVED
 
@@ -59,9 +59,9 @@ class TestObjectivesData:
         """Test that determine_system_status returns WORSENED when deteriorating."""
         objective = {
             "targetMetAtEnd": "NOT_MET",
-            "delta": "DETERIORATING"
+            "delta"         : "DETERIORATING"
         }
-        
+
         status = ObjectivesData.determine_system_status(objective)
         assert status == ObjectiveStatus.WORSENED
 
@@ -70,9 +70,9 @@ class TestObjectivesData:
         """Test that determine_system_status returns UNCHANGED when similar."""
         objective = {
             "targetMetAtEnd": "NOT_MET",
-            "delta": "SIMILAR"
+            "delta"         : "SIMILAR"
         }
-        
+
         status = ObjectivesData.determine_system_status(objective)
         assert status == ObjectiveStatus.UNCHANGED
 
@@ -81,9 +81,9 @@ class TestObjectivesData:
         """Test that determine_system_status returns UNKNOWN for unknown states."""
         objective = {
             "targetMetAtEnd": "UNKNOWN",
-            "delta": "SIMILAR"
+            "delta"         : "SIMILAR"
         }
-        
+
         status = ObjectivesData.determine_system_status(objective)
         assert status == ObjectiveStatus.UNKNOWN
 
@@ -95,9 +95,9 @@ class TestObjectivesData:
             {"systemName": "system2", "objectives": []},
             {"systemName": "system3", "objectives": []}
         ]
-        
+
         filtered = ObjectivesData.filter_system_evaluations(evaluation, ["system1", "system3"])
-        
+
         assert len(filtered) == 2
         assert filtered[0]["systemName"] == "system1"
         assert filtered[1]["systemName"] == "system3"
@@ -106,9 +106,9 @@ class TestObjectivesData:
     def test_get_portfolio_percentage_with_no_objectives(self, mock_sigrid_api):
         """Test that get_portfolio_percentage returns 0 when no objectives exist."""
         evaluations = [{"systemName": "system1", "objectives": []}]
-        
+
         percentage = objectives_data.get_portfolio_percentage(evaluations, None, ObjectiveStatus.MET)
-        
+
         assert percentage == 0
 
     @patch('report_generator.generator.domain.portfolio.objectives.sigrid_api')
@@ -124,13 +124,11 @@ class TestObjectivesData:
                 ]
             }
         ]
-        
+
         # 1 out of 3 is MET = 33.33%
         met_percentage = objectives_data.get_portfolio_percentage(evaluations, None, ObjectiveStatus.MET)
         assert abs(met_percentage - 33.333333) < 0.01
-        
+
         # 1 out of 3 is IMPROVED = 33.33%
         improved_percentage = objectives_data.get_portfolio_percentage(evaluations, None, ObjectiveStatus.IMPROVED)
         assert abs(improved_percentage - 33.333333) < 0.01
-
-

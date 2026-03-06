@@ -35,29 +35,29 @@ def _categorize_test_code_ratio(ratio):
 
 def _initialize_statistics():
     return {
-        'maintainability': {
-            '1-star': 0, '2-star': 0, '3-star': 0, '4-star': 0, '5-star': 0,
+        'maintainability'       : {
+            '1-star'           : 0, '2-star': 0, '3-star': 0, '4-star': 0, '5-star': 0,
             'number-of-systems': 0
         },
         'maintainability-change': {
-            'systems-increased': 0,  'systems-stable': 0, 'systems-decreased': 0,
-            'biggest-increase': {}, 
-            'biggest-decrease': {}
+            'systems-increased': 0, 'systems-stable': 0, 'systems-decreased': 0,
+            'biggest-increase' : {},
+            'biggest-decrease' : {}
         },
-        'volume-change': {
-            'total-start': 0,
-            'total-end': 0,
+        'volume-change'         : {
+            'total-start'          : 0,
+            'total-end'            : 0,
             'biggest-change-system': None,
             'biggest-change-amount': 0
         },
         'test-code-ratio-change': {
-            'total-start': 0,
-            'total-end': 0,
+            'total-start'      : 0,
+            'total-end'        : 0,
             'systems-increased': 0,
-            'systems-stable': 0,
+            'systems-stable'   : 0,
             'systems-decreased': 0,
-            'biggest-increase': {},
-            'biggest-decrease': {}
+            'biggest-increase' : {},
+            'biggest-decrease' : {}
         }
     }
 
@@ -73,7 +73,7 @@ def _update_star_statistics(statistics, end_snapshot):
 
 
 def _update_best_changes(system_name, start_snapshot, end_snapshot, start_date,
-                        end_date, period_start, best_inc, best_dec):
+                         end_date, period_start, best_inc, best_dec):
     diff = 0
     if start_date != end_date and start_date >= period_start:
         diff = end_snapshot["maintainability"] - start_snapshot["maintainability"]
@@ -85,8 +85,8 @@ def _update_best_changes(system_name, start_snapshot, end_snapshot, start_date,
 
 
 def _collect_averages_data(start_snapshot, end_snapshot, start_date, period_start,
-                          start_maintainability_ratings, end_maintainability_ratings,
-                          start_volumes, end_volumes):
+                           start_maintainability_ratings, end_maintainability_ratings,
+                           start_volumes, end_volumes):
     if start_date < period_start:
         start_maintainability_ratings.append(start_snapshot['maintainability'])
         start_volumes.append(start_snapshot['volumeInPersonMonths'])
@@ -98,10 +98,10 @@ def _update_volume_change(statistics, system_name, start_snapshot, end_snapshot)
     """Track volume changes across the portfolio."""
     start_volume = start_snapshot.get('volumeInPersonMonths', 0)
     end_volume = end_snapshot.get('volumeInPersonMonths', 0)
-    
+
     statistics['volume-change']['total-start'] += start_volume
     statistics['volume-change']['total-end'] += end_volume
-    
+
     volume_change = end_volume - start_volume
     if abs(volume_change) > abs(statistics['volume-change']['biggest-change-amount']):
         statistics['volume-change']['biggest-change-system'] = system_name
@@ -112,10 +112,12 @@ def _get_test_code_ratios(start_snapshot, end_snapshot):
     """Extract test code ratios from snapshots."""
     return start_snapshot.get('testCodeRatio'), end_snapshot.get('testCodeRatio')
 
+
 def _accumulate_test_code_totals(statistics, start_ratio, end_ratio):
     """Add ratios to running totals."""
     statistics['test-code-ratio-change']['total-start'] += start_ratio
     statistics['test-code-ratio-change']['total-end'] += end_ratio
+
 
 def _track_test_code_change_direction(statistics, diff):
     """Count systems by change direction."""
@@ -125,6 +127,7 @@ def _track_test_code_change_direction(statistics, diff):
         statistics['test-code-ratio-change']['systems-decreased'] += 1
     else:
         statistics['test-code-ratio-change']['systems-stable'] += 1
+
 
 def _update_biggest_changes(statistics, system_name, diff):
     """Track systems with largest increases and decreases."""
@@ -137,15 +140,16 @@ def _update_biggest_changes(statistics, system_name, diff):
         if not biggest or diff < list(biggest.values())[0]:
             statistics['test-code-ratio-change']['biggest-decrease'] = {system_name: diff}
 
+
 def _update_test_code_ratio_change(statistics, system_name, start_snapshot, end_snapshot, start_date, end_date):
     """Track test code ratio changes across the portfolio."""
     start_ratio, end_ratio = _get_test_code_ratios(start_snapshot, end_snapshot)
-    
+
     if start_ratio is None or end_ratio is None:
         return
-    
+
     _accumulate_test_code_totals(statistics, start_ratio, end_ratio)
-    
+
     if start_date != end_date:
         diff = end_ratio - start_ratio
         _track_test_code_change_direction(statistics, diff)
@@ -154,9 +158,10 @@ def _update_test_code_ratio_change(statistics, system_name, start_snapshot, end_
 
 def _finalize_change_statistics(statistics, best_inc, best_dec):
     if best_dec[0] is not None and best_dec[1] < 0:
-        statistics["maintainability-change"]["biggest-decrease"] = {best_dec[0]: int(best_dec[1]*10)/10}
+        statistics["maintainability-change"]["biggest-decrease"] = {best_dec[0]: int(best_dec[1] * 10) / 10}
     if best_inc[0] is not None and best_inc[1] > 0:
-        statistics["maintainability-change"]["biggest-increase"] = {best_inc[0]: int(best_inc[1]*10)/10}
+        statistics["maintainability-change"]["biggest-increase"] = {best_inc[0]: int(best_inc[1] * 10) / 10}
+
 
 def _update_change_count(statistics, diff):
     if diff > 0:
@@ -166,8 +171,9 @@ def _update_change_count(statistics, diff):
     else:
         statistics["maintainability-change"]["systems-stable"] += 1
 
+
 def _calculate_averages(statistics, start_maintainability_ratings, end_maintainability_ratings,
-                       start_volumes, end_volumes):
+                        start_volumes, end_volumes):
     statistics['maintainability']['start-average'] = _weighted_avg(
         start_maintainability_ratings, start_volumes
     )
@@ -175,12 +181,15 @@ def _calculate_averages(statistics, start_maintainability_ratings, end_maintaina
         end_maintainability_ratings, end_volumes
     )
 
+
 def _weighted_avg(values, weights):
     tw = sum(weights)
     return (sum(v * w for v, w in zip(values, weights)) / tw) if tw else 0.000001
 
+
 def _parse_date(s):
     return datetime.strptime(s, "%Y-%m-%d")
+
 
 class MaintainabilityPortfolioData(AbstractPortfolioModel):
     @cached_property
@@ -190,36 +199,36 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
         filtered_data = data
         filtered_data['systems'] = [system for system in data['systems'] if 'maintainability' in system]
         return filtered_data
-    
+
     @cached_property
     def system_names(self):
         return utils.system_names_helper(self.data['systems'], 'system')
-    
+
     def get_system(self, system):
         return utils.get_system_helper(system, self.data['systems'], 'system')
-    
+
     def get_system_metadata(self, system_name):
         return utils.get_system_metadata(self.metadata, system_name)
-    
+
     @staticmethod
     def _get_head_entry(system):
         return {
-                "maintainability": system["maintainability"],
-                "componentBalance": system["componentBalance"],
-                "componentIndependence": system["componentIndependence"],
-                "componentEntanglement": system["componentEntanglement"],
-                "duplication": system["duplication"],
-                "moduleCoupling": system["moduleCoupling"],
-                "testCodeRatio": system["testCodeRatio"],
-                "unitComplexity": system["unitComplexity"],
-                "unitInterfacing": system["unitInterfacing"],
-                "unitSize": system["unitSize"],
-                "volume": system["volume"],
-                "volumeInPersonMonths": system["volumeInPersonMonths"],
-                "volumeInLoc": system["volumeInLoc"],
-                "maintainabilityDate": system["maintainabilityDate"]
-            }
-    
+            "maintainability"      : system["maintainability"],
+            "componentBalance"     : system["componentBalance"],
+            "componentIndependence": system["componentIndependence"],
+            "componentEntanglement": system["componentEntanglement"],
+            "duplication"          : system["duplication"],
+            "moduleCoupling"       : system["moduleCoupling"],
+            "testCodeRatio"        : system["testCodeRatio"],
+            "unitComplexity"       : system["unitComplexity"],
+            "unitInterfacing"      : system["unitInterfacing"],
+            "unitSize"             : system["unitSize"],
+            "volume"               : system["volume"],
+            "volumeInPersonMonths" : system["volumeInPersonMonths"],
+            "volumeInLoc"          : system["volumeInLoc"],
+            "maintainabilityDate"  : system["maintainabilityDate"]
+        }
+
     @staticmethod
     def _get_snapshot_closest_to_date(date, snapshots):
         input_dt = datetime.strptime(date, "%Y-%m-%d")
@@ -227,7 +236,7 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
             snapshots,
             key=lambda x: abs(datetime.strptime(x["maintainabilityDate"], "%Y-%m-%d") - input_dt)
         )
-    
+
     @staticmethod
     def _return_closest_date(prime_date, date1, date2):
         input_dt = datetime.strptime(prime_date, "%Y-%m-%d")
@@ -313,31 +322,31 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
         )
 
         return statistics
-    
+
     def _extract_maintainability_rating(self, system_name):
         md = utils.get_system_metadata(self.metadata, system_name)
         if not _is_system_active(md):
             return None
         end_snapshot = self.end_snapshot(system_name)
         return end_snapshot['maintainability']
-    
+
     @cached_property
     def get_rating_distribution_percentages(self):
         return utils.get_rating_distribution_percentages(
             self.system_names,
             self._extract_maintainability_rating
         )
-    
+
     def _get_rating_and_volume_for_system_name(self, system_name):
         md = utils.get_system_metadata(self.metadata, system_name)
         if not _is_system_active(md):
             return None, 0
-            
+
         end_snapshot = self.end_snapshot(system_name)
         rating = end_snapshot['maintainability']
         volume = end_snapshot.get('volumeInPersonMonths', 0)
         return rating, volume
-    
+
     @cached_property
     def weighted_average_rating(self):
         return utils.calculate_weighted_average_rating(
@@ -350,30 +359,31 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
         """Calculate percentage of systems in each test code ratio category."""
         counts = {'low': 0, 'medium': 0, 'high': 0}
         total = 0
-        
+
         for system_name in self.system_names:
             md = utils.get_system_metadata(self.metadata, system_name)
             if not _is_system_active(md):
                 continue
-                
+
             end_snapshot = self.end_snapshot(system_name)
             test_code_ratio = end_snapshot.get('testCodeRatio')
-            
+
             if test_code_ratio is None:
                 continue
-            
+
             category = _categorize_test_code_ratio(test_code_ratio)
             counts[category] += 1
             total += 1
-        
+
         # Calculate percentages
         if total == 0:
             return {'low': 0, 'medium': 0, 'high': 0}
-        
+
         return {
-            'low': round(100 * counts['low'] / total),
+            'low'   : round(100 * counts['low'] / total),
             'medium': round(100 * counts['medium'] / total),
-            'high': round(100 * counts['high'] / total)
+            'high'  : round(100 * counts['high'] / total)
         }
+
 
 maintainability_portfolio_data = MaintainabilityPortfolioData()
