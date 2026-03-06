@@ -12,13 +12,13 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import logging
 from unittest.mock import MagicMock, patch
 
 import pytest
-import logging
 import requests
 
-import report_generator.generator.sigrid_api as sigrid_api
+import report_generator.generator.context.sigrid_api as sigrid_api
 
 
 class TestSigridAPI:

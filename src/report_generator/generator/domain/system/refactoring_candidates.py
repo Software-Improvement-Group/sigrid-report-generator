@@ -13,8 +13,8 @@
 #  limitations under the License.
 from functools import lru_cache
 
-from report_generator.generator import sigrid_api
-from report_generator.generator.constants import MaintMetric
+from report_generator.generator.context import sigrid_api
+from report_generator.generator.utils.constants import MaintMetric
 
 
 class RefactoringCandidatesData:

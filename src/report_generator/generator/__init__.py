@@ -14,7 +14,8 @@
 
 from functools import reduce
 
-from . import domain, placeholders, sigrid_api
+from . import domain, placeholders
+from .context import sigrid_api
 from .domain import data_model_arguments
 from .placeholders import rendering
 from .report_generator import ReportGenerator

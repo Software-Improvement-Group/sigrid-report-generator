@@ -13,7 +13,7 @@
 #  limitations under the License.
 from typing import List
 
-from report_generator.generator.constants import ArchMetric, MaintMetric, MetricEnum
+from report_generator.generator.utils.constants import ArchMetric, MaintMetric, MetricEnum
 
 MAINT_BEST_METRIC_TEXT = {
     MaintMetric.VOLUME                : "The system is small and therefore easier to maintain.",

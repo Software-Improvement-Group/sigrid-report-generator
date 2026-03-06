@@ -17,7 +17,7 @@ from typing import Optional
 
 import click
 
-from report_generator.generator import sigrid_api
+from report_generator.generator.context import sigrid_api
 
 METADATA_LIFECYCLE_MAPPING = {
     "INITIAL" : "Initial development",

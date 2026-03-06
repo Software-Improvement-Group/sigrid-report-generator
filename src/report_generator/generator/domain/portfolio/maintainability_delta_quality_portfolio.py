@@ -17,7 +17,7 @@ from abc import ABC, abstractmethod
 from functools import cached_property
 from typing import Optional, Tuple
 
-from report_generator.generator import sigrid_api
+from report_generator.generator.context import sigrid_api
 from report_generator.generator.domain.portfolio.base import AbstractPortfolioModel
 from report_generator.generator.domain.portfolio.maintainability_portfolio import maintainability_portfolio_data
 

@@ -17,9 +17,9 @@ from datetime import datetime
 from functools import cached_property, lru_cache
 from typing import Union
 
-from report_generator.generator import sigrid_api
-from report_generator.generator.constants import MetricEnum, OSHMetric
+from report_generator.generator.context import sigrid_api
 from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
+from report_generator.generator.utils.constants import MetricEnum, OSHMetric
 
 
 class _SystemMetric(MetricEnum):

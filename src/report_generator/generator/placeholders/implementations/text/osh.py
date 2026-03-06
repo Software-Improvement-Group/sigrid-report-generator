@@ -12,9 +12,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from report_generator.generator.constants import OSHMetric
 from report_generator.generator.domain import *
 from report_generator.generator.placeholders.formatting.formatters import calculate_stars, star_rating_round
+from report_generator.generator.utils.constants import OSHMetric
 from .base import parameterized_text_placeholder, text_placeholder
 from ...formatting import smart_remarks
 

@@ -13,7 +13,7 @@
 #  limitations under the License.
 
 
-from report_generator.generator.constants import MetricEnum
+from report_generator.generator.utils.constants import MetricEnum
 
 
 

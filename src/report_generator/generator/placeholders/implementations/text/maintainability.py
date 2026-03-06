@@ -14,10 +14,10 @@
 
 from datetime import datetime
 
-from report_generator.generator.constants import MaintMetric
 from report_generator.generator.domain import maintainability_data, modernization_data
 from report_generator.generator.placeholders.formatting.formatters import calculate_stars, format_diff, \
     star_rating_round
+from report_generator.generator.utils.constants import MaintMetric
 from .base import parameterized_text_placeholder, text_placeholder
 from ...formatting import smart_remarks
 

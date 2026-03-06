@@ -26,7 +26,7 @@
 
 from typing import Callable, Dict, Iterable, Optional, Tuple
 
-from report_generator.generator import sigrid_api
+from report_generator.generator.context import sigrid_api
 
 
 def system_names_helper(data, tag):
