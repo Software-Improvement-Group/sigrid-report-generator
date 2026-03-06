@@ -21,7 +21,7 @@ from pptx.presentation import Presentation
 from report_generator.generator import report_utils
 from report_generator.generator.domain import security_dashboard_findings_portfolio_data, \
     security_dashboard_resolution_times_portfolio_data
-from report_generator.generator.placeholders import Placeholder
+from report_generator.generator.placeholders.base import Placeholder
 from report_generator.generator.placeholders.base import PlaceholderDocType
 
 

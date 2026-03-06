@@ -16,7 +16,7 @@ import logging
 from abc import ABC
 from typing import Union
 
-from report_generator.generator.placeholders import Placeholder
+from report_generator.generator.placeholders.base import Placeholder
 from report_generator.generator.placeholders.base import PlaceholderDocType
 from report_generator.generator.report_utils.pptx import find_tables, update_table
 
