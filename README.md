@@ -149,7 +149,7 @@ def week_number():
 #### Parameterized text placeholder
 
 ```python
-from report_generator.placeholders import parameterized_text_placeholder
+from report_generator.generator.placeholders import parameterized_text_placeholder
 
 
 # Custom parameterized placeholder (e.g. LIST_VALUE_1, LIST_VALUE_2, ..., LIST_VALUE_5)
@@ -164,8 +164,7 @@ def list_value_for_idx(idx: int):
 ```python
 from pptx.chart.data import CategoryChartData
 
-from report_generator.placeholders import Placeholder
-from report_generator import report_utils
+from report_generator.generator.placeholders import Placeholder, rendering
 
 
 class ComplexChartPlaceholder(Placeholder):
@@ -179,7 +178,7 @@ class ComplexChartPlaceholder(Placeholder):
     def resolve_pptx(presentation, key: str, value_cb) -> None:
         charts = [
             shape.chart
-            for slide in report_utils.pptx.identify_specific_slide(presentation, key)
+            for slide in rendering.pptx.identify_specific_slide(presentation, key)
             for shape in slide.shapes
             if shape.has_chart
         ]
@@ -204,6 +203,11 @@ generator.register_additional_placeholders({
 
 generator.generate("out.pptx")
 ```
+
+## Upgrading
+
+If you use the `report_generator` Python API directly (custom placeholders, programmatic `ReportGenerator` usage),
+see [docs/upgrade-v1.md](docs/upgrade-v1.md) for the migration guide. CLI-only users are unaffected.
 
 ## Contact and support
 
