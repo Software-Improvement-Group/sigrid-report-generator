@@ -18,8 +18,10 @@ from report_generator.generator.context import sigrid_api
 from report_generator.generator.context.portfolio_filters import (
     filter_data_on_portfolio_arguments,
 )
-from report_generator.generator.domain.portfolio.shared.rated_mixin import RatedPortfolioMixin
 from report_generator.generator.domain.portfolio.shared import utils
+from report_generator.generator.domain.portfolio.shared.rated_mixin import (
+    RatedPortfolioMixin,
+)
 from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
 

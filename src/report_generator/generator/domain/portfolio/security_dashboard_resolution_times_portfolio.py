@@ -47,7 +47,9 @@ class SecurityDashboardResolutionTimesPortfolioData:
         """Accumulate resolution time counts for all severity levels within the period."""
         for system in self.data.get("systems", []):
             for month_data in system.get("resolutionTimes", []):
-                if utils.is_month_in_period(month_data.get("month"), sigrid_api.get_period()):
+                if utils.is_month_in_period(
+                    month_data.get("month"), sigrid_api.get_period()
+                ):
                     severities = month_data.get("severities", {})
 
                     for severity_level in ["CRITICAL", "HIGH", "MEDIUM", "LOW"]:
