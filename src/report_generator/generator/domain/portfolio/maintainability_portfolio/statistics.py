@@ -15,7 +15,9 @@
 from functools import cached_property
 from typing import Optional
 
-from report_generator.generator.domain import maintainability_portfolio_data
+from report_generator.generator.domain.portfolio.maintainability_portfolio import (
+    maintainability_portfolio_data,
+)
 from report_generator.generator.domain.portfolio.maintainability_portfolio.data import (
     is_system_active,
     parse_date,
