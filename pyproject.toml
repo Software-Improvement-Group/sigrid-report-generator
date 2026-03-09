@@ -29,6 +29,9 @@ ignore = [
 [tool.ruff.format]
 # ruff format defaults are fine
 
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"] # allow unused imports to specify module interface
+
 [tool.pytest.ini_options]
 testpaths = [
     "tests"
