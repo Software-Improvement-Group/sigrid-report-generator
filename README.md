@@ -221,6 +221,15 @@ ruff format . # Add --check to not autofix
 
 **PyCharm integration:** Settings → Tools → Ruff. Enable all settings.
 
+### Architecture linting
+
+This project uses [import-linter](https://import-linter.readthedocs.io/) to enforce the architecture rules defined in `sigrid.yaml`. Install it via `pip install -e ".[test]"`.
+
+**Check for violations:**
+```bash
+lint-imports
+```
+
 ## Contact and support
 
 Feel free to contact SIG’s [support department](mailto:support@softwareimprovementgroup.com) for any questions or

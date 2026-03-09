@@ -43,3 +43,79 @@ pythonpath = "."
 markers = [
     "integration: requires live Sigrid API and a valid REPORT_GENERATOR_TESTS_TOKEN",
 ]
+
+[tool.importlinter]
+root_packages = ["report_generator"]
+
+# Rule: generator ↔ presets
+[[tool.importlinter.contracts]]
+name = "generator and presets are independent"
+type = "independence"
+modules = [
+    "report_generator.generator",
+    "report_generator.presets",
+]
+
+# Rule: context → domain
+[[tool.importlinter.contracts]]
+name = "context must not import domain"
+type = "forbidden"
+source_modules = ["report_generator.generator.context"]
+forbidden_modules = ["report_generator.generator.domain"]
+
+# Rule: context → placeholders
+[[tool.importlinter.contracts]]
+name = "context must not import placeholders"
+type = "forbidden"
+source_modules = ["report_generator.generator.context"]
+forbidden_modules = ["report_generator.generator.placeholders"]
+
+# Rule: domain → placeholders
+[[tool.importlinter.contracts]]
+name = "domain must not import placeholders"
+type = "forbidden"
+source_modules = ["report_generator.generator.domain"]
+forbidden_modules = ["report_generator.generator.placeholders"]
+
+# Rule: domain/portfolio ↔ domain/system
+[[tool.importlinter.contracts]]
+name = "portfolio and system are independent"
+type = "independence"
+modules = [
+    "report_generator.generator.domain.portfolio",
+    "report_generator.generator.domain.system",
+]
+
+# Rule: utils → generator/.*/.*
+[[tool.importlinter.contracts]]
+name = "utils must not import from other generator subpackages"
+type = "forbidden"
+source_modules = ["report_generator.generator.utils"]
+forbidden_modules = [
+    "report_generator.generator.context",
+    "report_generator.generator.domain",
+    "report_generator.generator.placeholders",
+]
+
+# Rule: placeholders/formatting ↔ placeholders/rendering
+[[tool.importlinter.contracts]]
+name = "formatting and rendering are independent"
+type = "independence"
+modules = [
+    "report_generator.generator.placeholders.formatting",
+    "report_generator.generator.placeholders.rendering",
+]
+
+# Rule: formatting → implementations
+[[tool.importlinter.contracts]]
+name = "formatting must not import implementations"
+type = "forbidden"
+source_modules = ["report_generator.generator.placeholders.formatting"]
+forbidden_modules = ["report_generator.generator.placeholders.implementations"]
+
+# Rule: rendering → implementations
+[[tool.importlinter.contracts]]
+name = "rendering must not import implementations"
+type = "forbidden"
+source_modules = ["report_generator.generator.placeholders.rendering"]
+forbidden_modules = ["report_generator.generator.placeholders.implementations"]
