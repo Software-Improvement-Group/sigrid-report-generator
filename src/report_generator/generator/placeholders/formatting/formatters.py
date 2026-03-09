@@ -50,7 +50,7 @@ def maintainability_round(rating) -> str:
     logging.warning(
         "maintainability_round is deprecated and will be removed, use star_rating_round instead"
     )
-    star_rating_round(rating)
+    return star_rating_round(rating)
 
 
 def star_rating_round(rating) -> str:
