@@ -13,6 +13,9 @@
 #  limitations under the License.
 
 from report_generator.generator.domain import maintainability_portfolio_data
+from report_generator.generator.domain.portfolio.maintainability_portfolio.statistics import (
+    maintainability_portfolio_stats,
+)
 from report_generator.generator.placeholders.formatting.formatters import (
     star_rating_round,
 )
@@ -51,7 +54,7 @@ def portfolio_period_end_date():
 @text_placeholder()
 def portfolio_period_maint_summary():
     """The portfolio maintainability summary at the period's end date."""
-    stats = maintainability_portfolio_data.statistics
+    stats = maintainability_portfolio_stats.statistics
     res = []
     if stats["maintainability"]["5-star"] + stats["maintainability"]["4-star"] > 0:
         res.append(
@@ -83,7 +86,7 @@ def portfolio_period_maint_summary():
 @text_placeholder()
 def portfolio_period_maint_short_summary():
     """The portfolio maintainability short summary at the period's end date."""
-    stats = maintainability_portfolio_data.statistics
+    stats = maintainability_portfolio_stats.statistics
     processed_stats = {
         "above-market-average": stats["maintainability"]["5-star"]
         + stats["maintainability"]["4-star"],
@@ -108,7 +111,7 @@ def portfolio_period_maint_short_summary():
 @text_placeholder()
 def portfolio_period_maint_change_summary():
     """The portfolio maintainability change summary, given the period's start and end dates."""
-    stats = maintainability_portfolio_data.statistics
+    stats = maintainability_portfolio_stats.statistics
     res = []
     if stats["maintainability-change"]["biggest-increase"]:
         key = next(iter(stats["maintainability-change"]["biggest-increase"]))
@@ -128,7 +131,7 @@ def portfolio_period_maint_change_summary():
 @text_placeholder()
 def portfolio_period_maint_change_short_summary():
     """The portfolio maintainability change short summary, given the period's start and end dates."""
-    stats = maintainability_portfolio_data.statistics
+    stats = maintainability_portfolio_stats.statistics
     start_avg = int(stats["maintainability"]["start-average"] * 10) / 10
     end_avg = int(stats["maintainability"]["end-average"] * 10) / 10
     diff = int((end_avg - start_avg) * 10) / 10
@@ -167,7 +170,7 @@ def portfolio_maint_below_market():
 @text_placeholder()
 def portfolio_maint_increased():
     """Percentage of systems that have seen an increase in maintainability."""
-    stats = maintainability_portfolio_data.statistics
+    stats = maintainability_portfolio_stats.statistics
     total = (
         stats["maintainability-change"]["systems-increased"]
         + stats["maintainability-change"]["systems-stable"]
@@ -181,7 +184,7 @@ def portfolio_maint_increased():
 @text_placeholder()
 def portfolio_maint_stable():
     """Percentage of systems that have remained stable in maintainability."""
-    stats = maintainability_portfolio_data.statistics
+    stats = maintainability_portfolio_stats.statistics
     total = (
         stats["maintainability-change"]["systems-increased"]
         + stats["maintainability-change"]["systems-stable"]
@@ -195,7 +198,7 @@ def portfolio_maint_stable():
 @text_placeholder()
 def portfolio_maint_decreased():
     """Percentage of systems that have seen a decrease in maintainability."""
-    stats = maintainability_portfolio_data.statistics
+    stats = maintainability_portfolio_stats.statistics
     total = (
         stats["maintainability-change"]["systems-increased"]
         + stats["maintainability-change"]["systems-stable"]
@@ -209,7 +212,7 @@ def portfolio_maint_decreased():
 @text_placeholder()
 def portfolio_maint_biggest_changes():
     """Descriptive summary of the biggest maintainability changes in the portfolio."""
-    stats = maintainability_portfolio_data.statistics
+    stats = maintainability_portfolio_stats.statistics
     res = []
     biggest_increase = stats["maintainability-change"]["biggest-increase"]
     if biggest_increase:
@@ -233,7 +236,7 @@ def portfolio_maint_biggest_changes():
 @text_placeholder()
 def portfolio_maint_largest_increase_system():
     """Name of the system with the largest increase in maintainability rating."""
-    stats = maintainability_portfolio_data.statistics
+    stats = maintainability_portfolio_stats.statistics
     biggest_increase = stats["maintainability-change"]["biggest-increase"]
     if biggest_increase:
         return next(iter(biggest_increase.keys()))
@@ -243,7 +246,7 @@ def portfolio_maint_largest_increase_system():
 @text_placeholder()
 def portfolio_maint_largest_increase_stars():
     """Star rating increase of the system with the largest improvement."""
-    stats = maintainability_portfolio_data.statistics
+    stats = maintainability_portfolio_stats.statistics
     biggest_increase = stats["maintainability-change"]["biggest-increase"]
     if biggest_increase:
         system = next(iter(biggest_increase.keys()))
@@ -254,7 +257,7 @@ def portfolio_maint_largest_increase_stars():
 @text_placeholder()
 def portfolio_maint_largest_decrease_system():
     """Name of the system with the largest decrease in maintainability rating."""
-    stats = maintainability_portfolio_data.statistics
+    stats = maintainability_portfolio_stats.statistics
     biggest_decrease = stats["maintainability-change"]["biggest-decrease"]
     if biggest_decrease:
         return next(iter(biggest_decrease.keys()))
@@ -264,7 +267,7 @@ def portfolio_maint_largest_decrease_system():
 @text_placeholder()
 def portfolio_maint_largest_decrease_stars():
     """Star rating decrease of the system with the largest decline."""
-    stats = maintainability_portfolio_data.statistics
+    stats = maintainability_portfolio_stats.statistics
     biggest_decrease = stats["maintainability-change"]["biggest-decrease"]
     if biggest_decrease:
         system = next(iter(biggest_decrease.keys()))
@@ -275,7 +278,7 @@ def portfolio_maint_largest_decrease_stars():
 @text_placeholder()
 def portfolio_relative_volume_change():
     """Whether the overall portfolio volume increased or decreased."""
-    stats = maintainability_portfolio_data.statistics
+    stats = maintainability_portfolio_stats.statistics
     total_change = (
         stats["volume-change"]["total-end"] - stats["volume-change"]["total-start"]
     )
@@ -285,7 +288,7 @@ def portfolio_relative_volume_change():
 @text_placeholder()
 def portfolio_volume_change():
     """The absolute change in portfolio volume in person months."""
-    stats = maintainability_portfolio_data.statistics
+    stats = maintainability_portfolio_stats.statistics
     total_change = (
         stats["volume-change"]["total-end"] - stats["volume-change"]["total-start"]
     )
@@ -297,14 +300,14 @@ def portfolio_volume_change():
 @text_placeholder()
 def portfolio_system_biggest_volume_change():
     """Name of the system with the biggest volume change."""
-    stats = maintainability_portfolio_data.statistics
+    stats = maintainability_portfolio_stats.statistics
     return stats["volume-change"]["biggest-change-system"]
 
 
 @text_placeholder()
 def portfolio_relative_biggest_volume_change():
     """Whether the biggest volume change was an increase or decrease."""
-    stats = maintainability_portfolio_data.statistics
+    stats = maintainability_portfolio_stats.statistics
     amount = stats["volume-change"]["biggest-change-amount"]
     return "an increase" if amount >= 0 else "a decrease"
 
@@ -312,7 +315,7 @@ def portfolio_relative_biggest_volume_change():
 @text_placeholder()
 def portfolio_system_pm_biggest_volume_change():
     """The volume change amount for the system with the biggest change."""
-    stats = maintainability_portfolio_data.statistics
+    stats = maintainability_portfolio_stats.statistics
     amount = stats["volume-change"]["biggest-change-amount"]
     if amount > 12:
         return f"{round(abs(amount / 12), 1)} person years"
@@ -323,7 +326,7 @@ def portfolio_system_pm_biggest_volume_change():
 def portfolio_test_code_low():
     """Percentage of systems with test code ratio < 50%."""
     distribution = (
-        maintainability_portfolio_data.test_code_ratio_distribution_percentages
+        maintainability_portfolio_stats.test_code_ratio_distribution_percentages
     )
     return distribution["low"]
 
@@ -332,7 +335,7 @@ def portfolio_test_code_low():
 def portfolio_test_code_medium():
     """Percentage of systems with test code ratio between 50% and 100%."""
     distribution = (
-        maintainability_portfolio_data.test_code_ratio_distribution_percentages
+        maintainability_portfolio_stats.test_code_ratio_distribution_percentages
     )
     return distribution["medium"]
 
@@ -341,7 +344,7 @@ def portfolio_test_code_medium():
 def portfolio_test_code_high():
     """Percentage of systems with test code ratio ≥ 100%."""
     distribution = (
-        maintainability_portfolio_data.test_code_ratio_distribution_percentages
+        maintainability_portfolio_stats.test_code_ratio_distribution_percentages
     )
     return distribution["high"]
 
@@ -349,7 +352,7 @@ def portfolio_test_code_high():
 @text_placeholder()
 def portfolio_relative_test_code_difference():
     """Whether the overall test code ratio increased or decreased."""
-    stats = maintainability_portfolio_data.statistics
+    stats = maintainability_portfolio_stats.statistics
     total_change = (
         stats["test-code-ratio-change"]["total-end"]
         - stats["test-code-ratio-change"]["total-start"]
@@ -360,7 +363,7 @@ def portfolio_relative_test_code_difference():
 @text_placeholder()
 def portfolio_test_code_difference():
     """The percentage difference in test code ratio."""
-    stats = maintainability_portfolio_data.statistics
+    stats = maintainability_portfolio_stats.statistics
     total_start = stats["test-code-ratio-change"]["total-start"]
     total_end = stats["test-code-ratio-change"]["total-end"]
 
@@ -376,7 +379,7 @@ def portfolio_test_code_difference():
 @text_placeholder()
 def portfolio_test_code_increase():
     """Percentage of systems that have seen an increase in test code ratio."""
-    stats = maintainability_portfolio_data.statistics
+    stats = maintainability_portfolio_stats.statistics
     total = (
         stats["test-code-ratio-change"]["systems-increased"]
         + stats["test-code-ratio-change"]["systems-stable"]
@@ -390,7 +393,7 @@ def portfolio_test_code_increase():
 @text_placeholder()
 def portfolio_test_code_decrease():
     """Percentage of systems that have seen a decrease in test code ratio."""
-    stats = maintainability_portfolio_data.statistics
+    stats = maintainability_portfolio_stats.statistics
     total = (
         stats["test-code-ratio-change"]["systems-increased"]
         + stats["test-code-ratio-change"]["systems-stable"]
@@ -404,7 +407,7 @@ def portfolio_test_code_decrease():
 @text_placeholder()
 def portfolio_test_code_biggest_changes():
     """Descriptive summary of the biggest test code ratio changes in the portfolio."""
-    stats = maintainability_portfolio_data.statistics
+    stats = maintainability_portfolio_stats.statistics
     res = []
     biggest_increase = stats["test-code-ratio-change"]["biggest-increase"]
     if biggest_increase:

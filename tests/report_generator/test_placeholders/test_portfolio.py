@@ -78,7 +78,6 @@ class TestPortfolioPlaceholders:
 
     def test_portfolio_security_critical_findings_placeholders(self, mocker):
         """Test security critical findings placeholders return correct values."""
-        mock_period = ("2025-01-01", "2025-12-31")
         mock_statistics = {
             "resolved": 25,
             "added": 18,
@@ -87,19 +86,10 @@ class TestPortfolioPlaceholders:
 
         mocker.patch.object(
             type(security_dashboard_findings_portfolio_data),
-            "period",
-            new_callable=mocker.PropertyMock,
-            return_value=mock_period,
-        )
-        mocker.patch.object(
-            type(security_dashboard_findings_portfolio_data),
             "critical_findings_statistics",
             new_callable=mocker.PropertyMock,
             return_value=mock_statistics,
         )
-
-        # Test period start date
-        assert security_dashboard_findings_portfolio_data.period[0] == "2025-01-01"
 
         # Test statistics values
         assert (
