@@ -31,8 +31,8 @@ flowchart TB
 
         subgraph domain["domain/"]
             direction LR
-            shared["shared/"] --> system["system/"]
-            shared --> portfolio["portfolio/"]
+            system["system/"] --> shared["shared/"]
+            portfolio["portfolio/"] --> shared
         end
 
         subgraph ph["placeholders/"]
@@ -51,7 +51,7 @@ flowchart TB
     utils["utils/<br/>constants · enums<br/>math helpers"]
     presets["presets/<br/>ReportGenerator<br/>wrappers"]
 
-    presets -->|uses built-in placeholders| impl
+    presets -->|public API only| impl
     domain -.->|pure helpers| utils
     ph -.->|pure helpers| utils
 ```
