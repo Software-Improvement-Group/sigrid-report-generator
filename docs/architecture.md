@@ -24,6 +24,39 @@ context → domain → placeholders → rendering
 **The direction is never reversed.** Domain does not know placeholders exist.
 Each layer depends only on the layers to its left.
 
+```mermaid
+flowchart LR
+    utils["utils/\n─────────────\nconstants · enums\nmath helpers"]
+
+    subgraph generator["generator internals"]
+        direction LR
+        context["context/\n─────────────\nHTTP calls\nURL construction\ncaching"]
+
+        subgraph domain["domain/"]
+            direction TB
+            shared["shared/"] --> system["system/"]
+            shared --> portfolio["portfolio/"]
+        end
+
+        subgraph ph["placeholders/"]
+            direction TB
+            impl["implementations/"]
+            fmt["formatting/"]
+            rend["rendering/"]
+            impl --> fmt
+            impl --> rend
+        end
+
+        context --> domain
+        domain --> impl
+    end
+
+    presets["presets/\n─────────────\nReportGenerator\nwrappers"]
+
+    presets -->|public API only| generator
+    utils -. no upstream deps .-> generator
+```
+
 ---
 
 ## Layer-by-layer reference
