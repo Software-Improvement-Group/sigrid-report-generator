@@ -20,7 +20,11 @@ select = [
     "UP",   # pyupgrade (modernise Python syntax for the target version)
     "PERF", # perflint (performance anti-patterns)
     "RUF",  # ruff-specific rules
+    "PLC2701"  # import private name (_)
 ]
+preview = true
+explicit-preview-rules = true
+extend-select = ["PLC2701"]
 ignore = [
     "E501",  # line too long — ruff format handles wrapping; remaining long lines (e.g. strings) cannot be auto-wrapped
     "B008",  # function call in default argument — Click evaluates defaults lazily at parse time
@@ -31,6 +35,8 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"] # allow unused imports to specify module interface
+"tests/**" = ["PLC2701"]
+"src/report_generator/generator/placeholders/**" = ["PLC2701"]
 
 [tool.pytest.ini_options]
 testpaths = [
