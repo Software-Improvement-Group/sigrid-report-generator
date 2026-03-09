@@ -39,10 +39,10 @@ class Report:
     type: ReportType
 
     @classmethod
-    def from_template(cls, template_path: str) -> 'Report':
-        if template_path.endswith('.docx'):
+    def from_template(cls, template_path: str) -> "Report":
+        if template_path.endswith(".docx"):
             return cls(Document(template_path), ReportType.DOCUMENT)
-        elif template_path.endswith('.pptx'):
+        elif template_path.endswith(".pptx"):
             return cls(Presentation(template_path), ReportType.PRESENTATION)
         else:
             raise ValueError(f"Unsupported file format: {template_path.split('.')[-1]}")

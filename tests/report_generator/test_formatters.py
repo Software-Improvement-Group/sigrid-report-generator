@@ -11,11 +11,10 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from report_generator.generator.formatters import formatters
+from report_generator.generator.placeholders.formatting import formatters
 
 
 class TestFormatter:
-
     def test_calc_stars_works(self):
         assert formatters.calculate_stars(1.5) == "★★☆☆☆"
         assert formatters.calculate_stars(1.499999) == "★☆☆☆☆"
@@ -52,8 +51,10 @@ class TestMaintainabilityPortfolioFormatting:
 
     def test_format_maintainability_statement_with_normal_values(self):
         """Test formatting with normal values."""
-        from report_generator.generator.placeholders.text.maintainability_portfolio import _format_maintainability_statement
-        
+        from report_generator.generator.placeholders.implementations.text.maintainability_portfolio import (
+            _format_maintainability_statement,
+        )
+
         result = _format_maintainability_statement(5, 10, "above 4 stars")
         assert "5" in result
         assert "(50%)" in result
@@ -61,8 +62,10 @@ class TestMaintainabilityPortfolioFormatting:
 
     def test_format_maintainability_statement_singular(self):
         """Test formatting uses singular form correctly."""
-        from report_generator.generator.placeholders.text.maintainability_portfolio import _format_maintainability_statement
-        
+        from report_generator.generator.placeholders.implementations.text.maintainability_portfolio import (
+            _format_maintainability_statement,
+        )
+
         result = _format_maintainability_statement(1, 10, "above 4 stars")
         assert "is 1" in result
         assert "system" in result
@@ -70,8 +73,10 @@ class TestMaintainabilityPortfolioFormatting:
 
     def test_format_short_maintainability_statement_with_normal_values(self):
         """Test short formatting with normal values."""
-        from report_generator.generator.placeholders.text.maintainability_portfolio import _format_short_maintainability_statement
-        
+        from report_generator.generator.placeholders.implementations.text.maintainability_portfolio import (
+            _format_short_maintainability_statement,
+        )
+
         result = _format_short_maintainability_statement(3, 10, "above 4 stars")
         assert "About 3" in result
         assert "(30%)" in result

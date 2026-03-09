@@ -13,48 +13,46 @@
 #  limitations under the License.
 
 
-
-class TestAbstractPortfolioModel:
-    """Test cases for AbstractPortfolioModel base class."""
+class TestPortfolioModelMixin:
+    """Test cases for PortfolioModelMixin base class."""
 
     def test_system_names_helper_extracts_names(self):
         """Test _system_names_helper extracts system names from data."""
-        from report_generator.generator.data_models.portfolio import portfolio_utils
+        from report_generator.generator.domain.portfolio.shared import utils
+
         data = [
-            {'systemName': 'system1', 'value': 100},
-            {'systemName': 'system2', 'value': 200},
-            {'systemName': 'system3', 'value': 150}
+            {"systemName": "system1", "value": 100},
+            {"systemName": "system2", "value": 200},
+            {"systemName": "system3", "value": 150},
         ]
 
-        names = portfolio_utils._system_names_helper(data, 'systemName')
+        names = utils.system_names_helper(data, "systemName")
 
         assert len(names) == 3
-        assert names == ['system1', 'system2', 'system3']
+        assert names == ["system1", "system2", "system3"]
 
     def test_get_system_helper_finds_correct_system(self):
         """Test _get_system_helper finds the correct system."""
-        from report_generator.generator.data_models.portfolio import portfolio_utils
+        from report_generator.generator.domain.portfolio.shared import utils
+
         data = [
-            {'system': 'sys1', 'maintainability': 4.0},
-            {'system': 'sys2', 'maintainability': 3.5},
-            {'system': 'sys3', 'maintainability': 4.2}
+            {"system": "sys1", "maintainability": 4.0},
+            {"system": "sys2", "maintainability": 3.5},
+            {"system": "sys3", "maintainability": 4.2},
         ]
 
-        result = portfolio_utils._get_system_helper('sys2', data, 'system')
+        result = utils.get_system_helper("sys2", data, "system")
 
         assert result is not None
-        assert result['system'] == 'sys2'
-        assert abs(result['maintainability'] - 3.5) < 0.01
+        assert result["system"] == "sys2"
+        assert abs(result["maintainability"] - 3.5) < 0.01
 
     def test_get_system_helper_returns_none_for_missing(self):
         """Test _get_system_helper returns None for non-existent system."""
-        from report_generator.generator.data_models.portfolio import portfolio_utils
-        data = [
-            {'system': 'sys1', 'maintainability': 4.0}
-        ]
+        from report_generator.generator.domain.portfolio.shared import utils
 
-        result = portfolio_utils._get_system_helper('unknown', data, 'system')
+        data = [{"system": "sys1", "maintainability": 4.0}]
+
+        result = utils.get_system_helper("unknown", data, "system")
 
         assert result is None
-
-

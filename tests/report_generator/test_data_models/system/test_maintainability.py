@@ -14,14 +14,16 @@
 
 
 # noinspection PyProtectedMember
-from report_generator.generator.data_models.system.maintainability import _sort_and_aggregate_technology_data
-
-
+from report_generator.generator.domain.system.maintainability import (
+    _sort_and_aggregate_technology_data,
+)
 
 
 class TestDataModels:
     def test_sorting_technologies_on_volume_in_pm(self):
-        sorted_tech_data = _sort_and_aggregate_technology_data(TestDataModels._mock_tech_data(3))
+        sorted_tech_data = _sort_and_aggregate_technology_data(
+            TestDataModels._mock_tech_data(3)
+        )
 
         assert len(sorted_tech_data) == 3
         assert sorted_tech_data[0]["name"] == "noot"
@@ -29,7 +31,9 @@ class TestDataModels:
         assert sorted_tech_data[2]["name"] == "aap"
 
     def test_aggregate_small_technologies_if_more_than_5(self):
-        sorted_tech_data = _sort_and_aggregate_technology_data(TestDataModels._mock_tech_data(7))
+        sorted_tech_data = _sort_and_aggregate_technology_data(
+            TestDataModels._mock_tech_data(7)
+        )
 
         assert len(sorted_tech_data) == 5
         assert sorted_tech_data[0]["name"] == "teun"
@@ -44,7 +48,9 @@ class TestDataModels:
 
     def test_aggregate_removes_technologies_with_zero_loc(self):
         mock_data = TestDataModels._mock_tech_data(3)
-        mock_data.append(TestDataModels._mock_technology("zeroLoc", 0, 0, 3.0, 0.13, "TARGET"))
+        mock_data.append(
+            TestDataModels._mock_technology("zeroLoc", 0, 0, 3.0, 0.13, "TARGET")
+        )
 
         sorted_tech_data = _sort_and_aggregate_technology_data(mock_data)
 
@@ -52,29 +58,29 @@ class TestDataModels:
 
     @staticmethod
     def _mock_tech_data(size):
-        mock_data = [TestDataModels._mock_technology("aap", 1, 15, 3.0, 45.0, "TARGET"),
-                     TestDataModels._mock_technology("noot", 3, 2, 3.0, 15.0, "TARGET"),
-                     TestDataModels._mock_technology("mies", 2, 87, 4.0, 15.0, "TARGET"),
-                     TestDataModels._mock_technology("wim", 15, 87, 3.0, 15.0, "TARGET"),
-                     TestDataModels._mock_technology("zus", 7, 87, 3.0, 15.0, "TARGET"),
-                     TestDataModels._mock_technology("jet", 1, 87, 3.0, 30.0, "TOLERATE"),
-                     TestDataModels._mock_technology("teun", 18, 87, 3.0, 15.0, "TARGET"), ]
+        mock_data = [
+            TestDataModels._mock_technology("aap", 1, 15, 3.0, 45.0, "TARGET"),
+            TestDataModels._mock_technology("noot", 3, 2, 3.0, 15.0, "TARGET"),
+            TestDataModels._mock_technology("mies", 2, 87, 4.0, 15.0, "TARGET"),
+            TestDataModels._mock_technology("wim", 15, 87, 3.0, 15.0, "TARGET"),
+            TestDataModels._mock_technology("zus", 7, 87, 3.0, 15.0, "TARGET"),
+            TestDataModels._mock_technology("jet", 1, 87, 3.0, 30.0, "TOLERATE"),
+            TestDataModels._mock_technology("teun", 18, 87, 3.0, 15.0, "TARGET"),
+        ]
 
         return mock_data[0:size]
 
     @staticmethod
     def _mock_technology(name, pm, loc, maint, test_ratio, tech_risk):
         return {
-            "name"                : name,
-            "displayName"         : name,
+            "name": name,
+            "displayName": name,
             "volumeInPersonMonths": pm,
-            "volumeInLoc"         : loc,
-            "maintainability"     : maint,
-            "testCodeRatio"       : test_ratio,
-            "technologyRisk"      : tech_risk
+            "volumeInLoc": loc,
+            "maintainability": maint,
+            "testCodeRatio": test_ratio,
+            "technologyRisk": tech_risk,
         }
-
-
 
 
 class TestSystemMaintainabilityHelpers:
@@ -130,5 +136,3 @@ class TestSystemMaintainabilityHelpers:
         assert len(result) == 5
         assert result[4]["name"] == "others"
         assert result[4]["technologyRisk"] == "PHASEOUT"  # Worst risk wins
-
-

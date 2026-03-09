@@ -13,13 +13,10 @@
 #  limitations under the License.
 
 
-from report_generator.generator.constants import MetricEnum
-
-
+from report_generator.generator.utils.constants import MetricEnum
 
 
 class TestPlaceholders:
-
     def test_to_json_name(self):
         class TestMetricEnum(MetricEnum):
             UNIT_SIZE = "UNIT_SIZE"
@@ -27,10 +24,7 @@ class TestPlaceholders:
             duplication = "duplication"
             UnIt_sIze = "UnIt_sIze"
 
-
         assert TestMetricEnum.UNIT_SIZE.to_json_name() == "unitSize"
         assert TestMetricEnum.DUPLICATION.to_json_name() == "duplication"
         assert TestMetricEnum.duplication.to_json_name() == "duplication"
         assert TestMetricEnum.UnIt_sIze.to_json_name() == "unitSize"
-
-
