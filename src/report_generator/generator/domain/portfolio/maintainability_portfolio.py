@@ -20,7 +20,7 @@ from report_generator.generator.context import sigrid_api
 from report_generator.generator.context.portfolio_filters import (
     filter_data_on_portfolio_arguments,
 )
-from report_generator.generator.domain.portfolio.base import AbstractPortfolioModel
+from report_generator.generator.domain.portfolio.shared.rated_mixin import RatedPortfolioMixin
 from report_generator.generator.domain.portfolio.shared import utils
 from report_generator.generator.utils.star_rating import calculate_star_rating_integer
 
@@ -229,7 +229,15 @@ def _parse_date(s):
     return datetime.strptime(s, "%Y-%m-%d")
 
 
-class MaintainabilityPortfolioData(AbstractPortfolioModel):
+class MaintainabilityPortfolioData(RatedPortfolioMixin):
+    @cached_property
+    def metadata(self):
+        return sigrid_api.get_portfolio_metadata()
+
+    @property
+    def period(self):
+        return sigrid_api.get_period()
+
     @cached_property
     @filter_data_on_portfolio_arguments(data_tag="systems", system_tag="system")
     def data(self):
@@ -394,20 +402,17 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
 
         return statistics
 
-    def _extract_maintainability_rating(self, system_name):
+    def _rated_systems(self):
+        return self.system_names
+
+    def _extract_rating(self, system_name):
         md = utils.get_system_metadata(self.metadata, system_name)
         if not _is_system_active(md):
             return None
         end_snapshot = self.end_snapshot(system_name)
         return end_snapshot["maintainability"]
 
-    @cached_property
-    def get_rating_distribution_percentages(self):
-        return utils.get_rating_distribution_percentages(
-            self.system_names, self._extract_maintainability_rating
-        )
-
-    def _get_rating_and_volume_for_system_name(self, system_name):
+    def _get_rating_and_volume(self, system_name):
         md = utils.get_system_metadata(self.metadata, system_name)
         if not _is_system_active(md):
             return None, 0
@@ -416,12 +421,6 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
         rating = end_snapshot["maintainability"]
         volume = end_snapshot.get("volumeInPersonMonths", 0)
         return rating, volume
-
-    @cached_property
-    def weighted_average_rating(self):
-        return utils.calculate_weighted_average_rating(
-            self.system_names, self._get_rating_and_volume_for_system_name
-        )
 
     @cached_property
     def test_code_ratio_distribution_percentages(self):

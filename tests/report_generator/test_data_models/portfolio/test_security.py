@@ -78,10 +78,8 @@ class TestSecurityCriticalFindingsStatistics:
             new_callable=mocker.PropertyMock,
             return_value=mock_data,
         )
-        mocker.patch.object(
-            type(portfolio),
-            "period",
-            new_callable=mocker.PropertyMock,
+        mocker.patch(
+            "report_generator.generator.context.sigrid_api.get_period",
             return_value=("2025-01-01", "2025-12-31"),
         )
 
@@ -134,10 +132,8 @@ class TestSecurityCriticalFindingsStatistics:
             new_callable=mocker.PropertyMock,
             return_value=mock_data,
         )
-        mocker.patch.object(
-            type(portfolio),
-            "period",
-            new_callable=mocker.PropertyMock,
+        mocker.patch(
+            "report_generator.generator.context.sigrid_api.get_period",
             return_value=("2025-01-01", "2025-12-31"),
         )
 
@@ -186,10 +182,8 @@ class TestSecurityCriticalFindingsStatistics:
             new_callable=mocker.PropertyMock,
             return_value=mock_data,
         )
-        mocker.patch.object(
-            type(portfolio),
-            "period",
-            new_callable=mocker.PropertyMock,
+        mocker.patch(
+            "report_generator.generator.context.sigrid_api.get_period",
             return_value=("2025-01-01", "2025-12-31"),
         )
 
@@ -229,10 +223,8 @@ class TestSecurityCriticalFindingsStatistics:
             new_callable=mocker.PropertyMock,
             return_value=mock_data,
         )
-        mocker.patch.object(
-            type(portfolio),
-            "period",
-            new_callable=mocker.PropertyMock,
+        mocker.patch(
+            "report_generator.generator.context.sigrid_api.get_period",
             return_value=("2025-01-01", "2025-12-31"),
         )
 
@@ -256,10 +248,8 @@ class TestSecurityCriticalFindingsStatistics:
             new_callable=mocker.PropertyMock,
             return_value=mock_data,
         )
-        mocker.patch.object(
-            type(portfolio),
-            "period",
-            new_callable=mocker.PropertyMock,
+        mocker.patch(
+            "report_generator.generator.context.sigrid_api.get_period",
             return_value=("2025-01-01", "2025-12-31"),
         )
 
@@ -304,10 +294,8 @@ class TestSecurityCriticalFindingsStatistics:
             new_callable=mocker.PropertyMock,
             return_value=mock_data,
         )
-        mocker.patch.object(
-            type(portfolio),
-            "period",
-            new_callable=mocker.PropertyMock,
+        mocker.patch(
+            "report_generator.generator.context.sigrid_api.get_period",
             return_value=("2025-01-01", "2025-12-31"),
         )
 
@@ -368,10 +356,8 @@ class TestSecurityHighMediumLowFindingsStatistics:
             new_callable=mocker.PropertyMock,
             return_value=mock_data,
         )
-        mocker.patch.object(
-            type(portfolio),
-            "period",
-            new_callable=mocker.PropertyMock,
+        mocker.patch(
+            "report_generator.generator.context.sigrid_api.get_period",
             return_value=("2025-01-01", "2025-12-31"),
         )
 
@@ -429,10 +415,8 @@ class TestSecurityHighMediumLowFindingsStatistics:
             new_callable=mocker.PropertyMock,
             return_value=mock_data,
         )
-        mocker.patch.object(
-            type(portfolio),
-            "period",
-            new_callable=mocker.PropertyMock,
+        mocker.patch(
+            "report_generator.generator.context.sigrid_api.get_period",
             return_value=("2025-01-01", "2025-12-31"),
         )
 
@@ -489,10 +473,8 @@ class TestSecurityHighMediumLowFindingsStatistics:
             new_callable=mocker.PropertyMock,
             return_value=mock_data,
         )
-        mocker.patch.object(
-            type(portfolio),
-            "period",
-            new_callable=mocker.PropertyMock,
+        mocker.patch(
+            "report_generator.generator.context.sigrid_api.get_period",
             return_value=("2025-01-01", "2025-12-31"),
         )
 
@@ -535,10 +517,8 @@ class TestSecurityHighMediumLowFindingsStatistics:
             new_callable=mocker.PropertyMock,
             return_value=mock_data,
         )
-        mocker.patch.object(
-            type(portfolio),
-            "period",
-            new_callable=mocker.PropertyMock,
+        mocker.patch(
+            "report_generator.generator.context.sigrid_api.get_period",
             return_value=("2025-01-01", "2025-12-31"),
         )
 
@@ -588,10 +568,8 @@ class TestSecurityHighMediumLowFindingsStatistics:
             new_callable=mocker.PropertyMock,
             return_value=mock_data,
         )
-        mocker.patch.object(
-            type(portfolio),
-            "period",
-            new_callable=mocker.PropertyMock,
+        mocker.patch(
+            "report_generator.generator.context.sigrid_api.get_period",
             return_value=("2025-01-01", "2025-12-31"),
         )
 
@@ -632,10 +610,8 @@ class TestSecurityHighMediumLowFindingsStatistics:
             new_callable=mocker.PropertyMock,
             return_value=mock_data,
         )
-        mocker.patch.object(
-            type(portfolio),
-            "period",
-            new_callable=mocker.PropertyMock,
+        mocker.patch(
+            "report_generator.generator.context.sigrid_api.get_period",
             return_value=("2025-01-01", "2025-12-31"),
         )
 
@@ -720,10 +696,8 @@ class TestSecurityHighMediumLowFindingsStatistics:
             new_callable=mocker.PropertyMock,
             return_value=mock_data,
         )
-        mocker.patch.object(
-            type(portfolio),
-            "period",
-            new_callable=mocker.PropertyMock,
+        mocker.patch(
+            "report_generator.generator.context.sigrid_api.get_period",
             return_value=("2025-01-01", "2025-12-31"),
         )
 
@@ -786,10 +760,8 @@ class TestSecurityHighMediumLowFindingsStatistics:
             new_callable=mocker.PropertyMock,
             return_value=mock_data,
         )
-        mocker.patch.object(
-            type(portfolio),
-            "period",
-            new_callable=mocker.PropertyMock,
+        mocker.patch(
+            "report_generator.generator.context.sigrid_api.get_period",
             return_value=("2025-01-15", "2025-01-31"),
         )
 
@@ -876,10 +848,8 @@ class TestSecurityCriticalResolutionTimes:
             new_callable=mocker.PropertyMock,
             return_value=mock_data,
         )
-        mocker.patch.object(
-            type(portfolio),
-            "period",
-            new_callable=mocker.PropertyMock,
+        mocker.patch(
+            "report_generator.generator.context.sigrid_api.get_period",
             return_value=("2025-01-01", "2025-12-31"),
         )
 
@@ -935,10 +905,8 @@ class TestSecurityCriticalResolutionTimes:
             new_callable=mocker.PropertyMock,
             return_value=mock_data,
         )
-        mocker.patch.object(
-            type(portfolio),
-            "period",
-            new_callable=mocker.PropertyMock,
+        mocker.patch(
+            "report_generator.generator.context.sigrid_api.get_period",
             return_value=("2025-01-01", "2025-12-31"),
         )
 
@@ -1010,10 +978,8 @@ class TestSecurityCriticalResolutionTimes:
             new_callable=mocker.PropertyMock,
             return_value=mock_data,
         )
-        mocker.patch.object(
-            type(portfolio),
-            "period",
-            new_callable=mocker.PropertyMock,
+        mocker.patch(
+            "report_generator.generator.context.sigrid_api.get_period",
             return_value=("2025-01-01", "2025-12-31"),
         )
 
@@ -1048,10 +1014,8 @@ class TestSecurityCriticalResolutionTimes:
             new_callable=mocker.PropertyMock,
             return_value=mock_data,
         )
-        mocker.patch.object(
-            type(portfolio),
-            "period",
-            new_callable=mocker.PropertyMock,
+        mocker.patch(
+            "report_generator.generator.context.sigrid_api.get_period",
             return_value=("2025-01-01", "2025-12-31"),
         )
 
@@ -1127,10 +1091,8 @@ class TestSecurityCriticalResolutionTimes:
             new_callable=mocker.PropertyMock,
             return_value=mock_data,
         )
-        mocker.patch.object(
-            type(portfolio),
-            "period",
-            new_callable=mocker.PropertyMock,
+        mocker.patch(
+            "report_generator.generator.context.sigrid_api.get_period",
             return_value=("2025-01-15", "2025-01-31"),
         )
 

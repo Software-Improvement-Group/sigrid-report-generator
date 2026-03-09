@@ -18,7 +18,6 @@ from functools import cached_property
 from typing import Optional
 
 from report_generator.generator.context import sigrid_api
-from report_generator.generator.domain.portfolio.base import AbstractPortfolioModel
 from report_generator.generator.domain.portfolio.maintainability_portfolio import (
     maintainability_portfolio_data,
 )
@@ -35,7 +34,7 @@ def _finalize_change_statistics(statistics, lowest_system, highest_system):
         }
 
 
-class _AbstractMaintainabilityDeltaQualityPortfolioData(AbstractPortfolioModel, ABC):
+class _AbstractMaintainabilityDeltaQualityPortfolioData(ABC):
     @cached_property
     def data(self):
         result = {}
