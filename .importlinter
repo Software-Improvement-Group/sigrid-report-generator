@@ -2,32 +2,15 @@
 root_packages =
     report_generator
 
-# Rule: context → domain
-[importlinter:contract:context-domain]
-name = context must not import domain
-type = forbidden
-source_modules =
-    report_generator.generator.context
-forbidden_modules =
-    report_generator.generator.domain
-
-# Rule: context → placeholders
-[importlinter:contract:context-placeholders]
-name = context must not import placeholders
-type = forbidden
-source_modules =
-    report_generator.generator.context
-forbidden_modules =
+# Rule: data flows one way through the generator layers
+[importlinter:contract:generator-layers]
+name = Generator layers — data flows one way
+type = layers
+layers =
     report_generator.generator.placeholders
-
-# Rule: domain → placeholders
-[importlinter:contract:domain-placeholders]
-name = domain must not import placeholders
-type = forbidden
-source_modules =
     report_generator.generator.domain
-forbidden_modules =
-    report_generator.generator.placeholders
+    report_generator.generator.context
+    report_generator.generator.utils
 
 # Rule: domain/portfolio ↔ domain/system
 [importlinter:contract:portfolio-system]
@@ -37,16 +20,15 @@ modules =
     report_generator.generator.domain.portfolio
     report_generator.generator.domain.system
 
-# Rule: utils → generator/.*/.*
-[importlinter:contract:utils]
-name = utils must not import from other generator subpackages
+# Rule: domain/shared is a base — it cannot depend on system or portfolio
+[importlinter:contract:domain-shared-isolation]
+name = domain shared must not import system or portfolio
 type = forbidden
 source_modules =
-    report_generator.generator.utils
+    report_generator.generator.domain.shared
 forbidden_modules =
-    report_generator.generator.context
-    report_generator.generator.domain
-    report_generator.generator.placeholders
+    report_generator.generator.domain.system
+    report_generator.generator.domain.portfolio
 
 # Rule: placeholders/formatting ↔ placeholders/rendering
 [importlinter:contract:formatting-rendering]
@@ -73,3 +55,16 @@ source_modules =
     report_generator.generator.placeholders.rendering
 forbidden_modules =
     report_generator.generator.placeholders.implementations
+
+# Rule: presets must only use the public API
+[importlinter:contract:presets-isolation]
+name = presets must not import generator internals
+type = forbidden
+source_modules =
+    report_generator.presets
+forbidden_modules =
+    report_generator.generator.context
+    report_generator.generator.domain
+    report_generator.generator.placeholders
+    report_generator.generator.utils
+allow_indirect_imports = True
