@@ -26,8 +26,6 @@ Each layer depends only on the layers to its left.
 
 ```mermaid
 flowchart TB
-    utils["utils/<br/>constants · enums<br/>math helpers"]
-
     subgraph generator["generator internals"]
         context["context/<br/>HTTP calls<br/>URL construction<br/>caching"]
 
@@ -50,10 +48,12 @@ flowchart TB
         domain --> impl
     end
 
+    utils["utils/<br/>constants · enums<br/>math helpers"]
     presets["presets/<br/>ReportGenerator<br/>wrappers"]
 
-    presets -->|public API only| generator
-    utils -.->|no upstream deps| generator
+    presets -->|public API only| impl
+    domain -.->|pure helpers| utils
+    ph -.->|pure helpers| utils
 ```
 
 ---
