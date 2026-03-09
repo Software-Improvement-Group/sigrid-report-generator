@@ -74,7 +74,6 @@ _preset_reports: dict[str, Callable[[str], None]] = {
 
 SYSTEM_LEVEL_PRESETS = {
     "system-summary",
-    "word-debug",
     "debug",
     "itdd-technical-debt",
     "refactoring-candidates",
