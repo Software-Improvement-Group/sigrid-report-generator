@@ -1631,7 +1631,7 @@ class TestMaintainabilityPortfolioHelpers:
         assert abs(result - 0.000001) < 0.00001
 
     def test_parse_date_converts_string_to_datetime(self):
-        """Test that _arse_date correctly parses date strings."""
+        """Test that parse_date correctly parses date strings."""
         from datetime import datetime
 
         result = parse_date("2024-01-15")
