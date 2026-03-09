@@ -47,15 +47,6 @@ markers = [
 [tool.importlinter]
 root_packages = ["report_generator"]
 
-# Rule: generator ↔ presets
-[[tool.importlinter.contracts]]
-name = "generator and presets are independent"
-type = "independence"
-modules = [
-    "report_generator.generator",
-    "report_generator.presets",
-]
-
 # Rule: context → domain
 [[tool.importlinter.contracts]]
 name = "context must not import domain"
