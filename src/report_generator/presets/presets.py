@@ -29,10 +29,6 @@ def generate_debug_docx(output_path: str) -> None:
     _generate_report("debug-template.docx", output_path)
 
 
-def generate_debug_pptx(output_path: str) -> None:
-    _generate_report("debug-template.pptx", output_path)
-
-
 def generate_system_summary(output_path: str) -> None:
     _generate_report("system-summary.pptx", output_path)
 
