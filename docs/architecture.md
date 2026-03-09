@@ -25,24 +25,21 @@ context → domain → placeholders → rendering
 Each layer depends only on the layers to its left.
 
 ```mermaid
-flowchart LR
-    utils["utils/\nconstants · enums\nmath helpers"]
+flowchart TD
+    utils["utils/<br/>constants · enums<br/>math helpers"]
 
     subgraph generator["generator internals"]
-        direction LR
-        context["context/\nHTTP calls\nURL construction\ncaching"]
+        direction TD
+        context["context/<br/>HTTP calls<br/>URL construction<br/>caching"]
 
         subgraph domain["domain/"]
-            direction TB
-            shared["shared/"]
-            system["system/"]
-            portfolio["portfolio/"]
-            shared --> system
-            shared --> portfolio
+            direction LR
+            shared["shared/"] --> system["system/"]
+            shared --> portfolio["portfolio/"]
         end
 
         subgraph ph["placeholders/"]
-            direction TB
+            direction LR
             impl["implementations/"]
             fmt["formatting/"]
             rend["rendering/"]
@@ -54,7 +51,7 @@ flowchart LR
         domain --> impl
     end
 
-    presets["presets/\nReportGenerator\nwrappers"]
+    presets["presets/<br/>ReportGenerator<br/>wrappers"]
 
     presets -->|public API only| generator
     utils -.->|no upstream deps| generator
