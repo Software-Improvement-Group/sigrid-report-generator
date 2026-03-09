@@ -16,7 +16,7 @@ import logging
 
 from tqdm import tqdm
 
-from report_generator.generator.placeholders.implementations import PlaceholderCollection, \
+from report_generator.generator.placeholders import PlaceholderCollection, \
     placeholders as default_placeholders
 from report_generator.generator.report import Report
 
