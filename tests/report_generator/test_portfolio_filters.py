@@ -19,10 +19,16 @@ import click
 import pytest
 
 from report_generator.generator.context import portfolio_filters
-from report_generator.generator.context.portfolio_filters import (FILTER_CONFIGURATION, METADATA_FILTER_CHECKS,
-                                                                  PlaceholderArgumentException, _are_filters_set,
-                                                                  _find_system_metadata, _include,
-                                                                  filter_data_on_portfolio_arguments, set_context)
+from report_generator.generator.context.portfolio_filters import (
+    FILTER_CONFIGURATION,
+    METADATA_FILTER_CHECKS,
+    PlaceholderArgumentError,
+    _are_filters_set,
+    _find_system_metadata,
+    _include,
+    filter_data_on_portfolio_arguments,
+    set_context,
+)
 
 
 @pytest.fixture
@@ -30,30 +36,14 @@ def mock_portfolio_metadata():
     """Fixture providing sample portfolio metadata."""
     return [
         {
-            'systemName'  : 'system1',
-            'teamNames'   : ['TeamA', 'TeamB'],
-            'divisionName': 'DivisionX'
+            "systemName": "system1",
+            "teamNames": ["TeamA", "TeamB"],
+            "divisionName": "DivisionX",
         },
-        {
-            'systemName'  : 'system2',
-            'teamNames'   : ['TeamC'],
-            'divisionName': 'DivisionY'
-        },
-        {
-            'systemName'  : 'system3',
-            'teamNames'   : ['TeamA'],
-            'divisionName': 'DivisionX'
-        },
-        {
-            'systemName'  : 'system4',
-            'teamNames'   : ['TeamA'],
-            'divisionName': 'DivisionY'
-        },
-        {
-            'systemName'  : 'system5',
-            'teamNames'   : ['TeamB'],
-            'divisionName': 'DivisionX'
-        }
+        {"systemName": "system2", "teamNames": ["TeamC"], "divisionName": "DivisionY"},
+        {"systemName": "system3", "teamNames": ["TeamA"], "divisionName": "DivisionX"},
+        {"systemName": "system4", "teamNames": ["TeamA"], "divisionName": "DivisionY"},
+        {"systemName": "system5", "teamNames": ["TeamB"], "divisionName": "DivisionX"},
     ]
 
 
@@ -61,12 +51,12 @@ def mock_portfolio_metadata():
 def mock_data_with_data_tag():
     """Fixture providing sample API data with a data_tag wrapper."""
     return {
-        'systems' : [
-            {'system': 'system1', 'maintainability': 4.0},
-            {'system': 'system2', 'maintainability': 3.5},
-            {'system': 'system3', 'maintainability': 4.2}
+        "systems": [
+            {"system": "system1", "maintainability": 4.0},
+            {"system": "system2", "maintainability": 3.5},
+            {"system": "system3", "maintainability": 4.2},
         ],
-        'metadata': 'some_metadata'
+        "metadata": "some_metadata",
     }
 
 
@@ -74,9 +64,9 @@ def mock_data_with_data_tag():
 def mock_data_without_data_tag():
     """Fixture providing sample API data without a data_tag wrapper."""
     return [
-        {'systemName': 'system1', 'value': 100},
-        {'systemName': 'system2', 'value': 200},
-        {'systemName': 'system3', 'value': 150}
+        {"systemName": "system1", "value": 100},
+        {"systemName": "system2", "value": 200},
+        {"systemName": "system3", "value": 150},
     ]
 
 
@@ -100,24 +90,24 @@ class TestPortfolioArguments:
 
     def test_set_context_with_team(self):
         """Test that set_context correctly sets team filter."""
-        set_context(team=['TeamA'])
+        set_context(team=["TeamA"])
 
-        assert portfolio_filters._team == ['TeamA']
+        assert portfolio_filters._team == ["TeamA"]
         assert portfolio_filters._division is None
 
     def test_set_context_with_division(self):
         """Test that set_context correctly sets division filter."""
-        set_context(division=['DivisionX'])
+        set_context(division=["DivisionX"])
 
         assert portfolio_filters._team is None
-        assert portfolio_filters._division == ['DivisionX']
+        assert portfolio_filters._division == ["DivisionX"]
 
     def test_set_context_with_both(self):
         """Test that set_context correctly sets both team and division filters."""
-        set_context(team=['TeamA', 'TeamB'], division=['DivisionX'])
+        set_context(team=["TeamA", "TeamB"], division=["DivisionX"])
 
-        assert portfolio_filters._team == ['TeamA', 'TeamB']
-        assert portfolio_filters._division == ['DivisionX']
+        assert portfolio_filters._team == ["TeamA", "TeamB"]
+        assert portfolio_filters._division == ["DivisionX"]
 
     # Filter Checking Tests
 
@@ -127,13 +117,13 @@ class TestPortfolioArguments:
 
     def test_are_filters_set_returns_true_with_team(self):
         """Test that _are_filters_set returns True when team filter is set."""
-        set_context(team=['TeamA'])
+        set_context(team=["TeamA"])
 
         assert _are_filters_set() is True
 
     def test_are_filters_set_returns_true_with_division(self):
         """Test that _are_filters_set returns True when division filter is set."""
-        set_context(division=['DivisionX'])
+        set_context(division=["DivisionX"])
 
         assert _are_filters_set() is True
 
@@ -141,47 +131,51 @@ class TestPortfolioArguments:
 
     def test_include_matches_team(self, mock_portfolio_metadata):
         """Test that _include returns True when system matches team filter."""
-        set_context(team=['TeamA'])
+        set_context(team=["TeamA"])
 
-        result = _include('system1', mock_portfolio_metadata)
+        result = _include("system1", mock_portfolio_metadata)
 
         assert result is True
 
     def test_include_matches_division(self, mock_portfolio_metadata):
         """Test that _include returns True when system matches division filter."""
-        set_context(division=['DivisionY'])
+        set_context(division=["DivisionY"])
 
-        result = _include('system2', mock_portfolio_metadata)
+        result = _include("system2", mock_portfolio_metadata)
 
         assert result is True
 
     def test_include_matches_multiple_teams(self, mock_portfolio_metadata):
         """Test that _include returns True when system matches one of multiple team filters."""
-        set_context(team=['TeamB', 'TeamC'])
+        set_context(team=["TeamB", "TeamC"])
 
-        result1 = _include('system1', mock_portfolio_metadata)
-        result2 = _include('system2', mock_portfolio_metadata)
+        result1 = _include("system1", mock_portfolio_metadata)
+        result2 = _include("system2", mock_portfolio_metadata)
 
         assert result1 is True  # system1 has TeamB
         assert result2 is True  # system2 has TeamC
 
     def test_include_no_match(self, mock_portfolio_metadata):
         """Test that _include returns False when system doesn't match any filters."""
-        set_context(team=['TeamD'])
+        set_context(team=["TeamD"])
 
-        result = _include('system1', mock_portfolio_metadata)
+        result = _include("system1", mock_portfolio_metadata)
 
         assert result is False
 
     def test_include_matches_team_and_division(self, mock_portfolio_metadata):
         """Test that _include uses AND logic between team and division filters."""
-        set_context(team=['TeamA'], division=['DivisionX'])
+        set_context(team=["TeamA"], division=["DivisionX"])
 
-        result1 = _include('system1', mock_portfolio_metadata)  # Matches both team and division
-        result2 = _include('system2', mock_portfolio_metadata)  # Matches nothing
-        result3 = _include('system3', mock_portfolio_metadata)  # Matches both team and division
-        result4 = _include('system4', mock_portfolio_metadata)  # Matches team only
-        result5 = _include('system5', mock_portfolio_metadata)  # Matches division only
+        result1 = _include(
+            "system1", mock_portfolio_metadata
+        )  # Matches both team and division
+        result2 = _include("system2", mock_portfolio_metadata)  # Matches nothing
+        result3 = _include(
+            "system3", mock_portfolio_metadata
+        )  # Matches both team and division
+        result4 = _include("system4", mock_portfolio_metadata)  # Matches team only
+        result5 = _include("system5", mock_portfolio_metadata)  # Matches division only
 
         assert result1 is True
         assert result2 is False
@@ -189,28 +183,34 @@ class TestPortfolioArguments:
         assert result4 is False
         assert result5 is False
 
-    def test_find_system_metadata_returns_none_for_unknown_system(self, mock_portfolio_metadata):
+    def test_find_system_metadata_returns_none_for_unknown_system(
+        self, mock_portfolio_metadata
+    ):
         """Test that _find_system_metadata returns None for systems not in portfolio."""
-        result = _find_system_metadata('unknown_system', mock_portfolio_metadata)
+        result = _find_system_metadata("unknown_system", mock_portfolio_metadata)
 
         assert result is None
 
-    def test_find_system_metadata_returns_metadata_for_known_system(self, mock_portfolio_metadata):
+    def test_find_system_metadata_returns_metadata_for_known_system(
+        self, mock_portfolio_metadata
+    ):
         """Test that _find_system_metadata returns correct metadata for known systems."""
-        result = _find_system_metadata('system2', mock_portfolio_metadata)
+        result = _find_system_metadata("system2", mock_portfolio_metadata)
 
         assert result is not None
-        assert result['systemName'] == 'system2'
-        assert result['teamNames'] == ['TeamC']
-        assert result['divisionName'] == 'DivisionY'
+        assert result["systemName"] == "system2"
+        assert result["teamNames"] == ["TeamC"]
+        assert result["divisionName"] == "DivisionY"
 
     # Decorator Behavior Tests
 
-    @patch('report_generator.generator.context.portfolio_filters.sigrid_api')
-    def test_decorator_returns_unchanged_data_when_no_filters(self, mock_sigrid_api, mock_data_with_data_tag):
+    @patch("report_generator.generator.context.portfolio_filters.sigrid_api")
+    def test_decorator_returns_unchanged_data_when_no_filters(
+        self, mock_sigrid_api, mock_data_with_data_tag
+    ):
         """Test that decorator passes data through unchanged when no filters are set."""
 
-        @filter_data_on_portfolio_arguments(data_tag='systems', system_tag='system')
+        @filter_data_on_portfolio_arguments(data_tag="systems", system_tag="system")
         def mock_function():
             return mock_data_with_data_tag
 
@@ -219,32 +219,34 @@ class TestPortfolioArguments:
         assert result == mock_data_with_data_tag
         mock_sigrid_api.get_portfolio_metadata.assert_not_called()
 
-    @patch('report_generator.generator.context.portfolio_filters.sigrid_api')
-    def test_decorator_filters_systems_with_data_tag(self, mock_sigrid_api, mock_data_with_data_tag,
-                                                     mock_portfolio_metadata):
+    @patch("report_generator.generator.context.portfolio_filters.sigrid_api")
+    def test_decorator_filters_systems_with_data_tag(
+        self, mock_sigrid_api, mock_data_with_data_tag, mock_portfolio_metadata
+    ):
         """Test that decorator correctly filters systems when using data_tag."""
-        set_context(team=['TeamA'])
+        set_context(team=["TeamA"])
         mock_sigrid_api.get_portfolio_metadata.return_value = mock_portfolio_metadata
 
-        @filter_data_on_portfolio_arguments(data_tag='systems', system_tag='system')
+        @filter_data_on_portfolio_arguments(data_tag="systems", system_tag="system")
         def mock_function():
             return mock_data_with_data_tag
 
         result = mock_function()
 
-        assert len(result['systems']) == 2  # system1 and system3 match TeamA
-        assert result['systems'][0]['system'] == 'system1'
-        assert result['systems'][1]['system'] == 'system3'
-        assert result['metadata'] == 'some_metadata'  # Other data preserved
+        assert len(result["systems"]) == 2  # system1 and system3 match TeamA
+        assert result["systems"][0]["system"] == "system1"
+        assert result["systems"][1]["system"] == "system3"
+        assert result["metadata"] == "some_metadata"  # Other data preserved
 
-    @patch('report_generator.generator.context.portfolio_filters.sigrid_api')
-    def test_decorator_raises_exception_when_no_systems_match(self, mock_sigrid_api, mock_data_with_data_tag,
-                                                              mock_portfolio_metadata):
+    @patch("report_generator.generator.context.portfolio_filters.sigrid_api")
+    def test_decorator_raises_exception_when_no_systems_match(
+        self, mock_sigrid_api, mock_data_with_data_tag, mock_portfolio_metadata
+    ):
         """Test that decorator raises ClickException when filters exclude all systems."""
-        set_context(team=['NonExistentTeam'])
+        set_context(team=["NonExistentTeam"])
         mock_sigrid_api.get_portfolio_metadata.return_value = mock_portfolio_metadata
 
-        @filter_data_on_portfolio_arguments(data_tag='systems', system_tag='system')
+        @filter_data_on_portfolio_arguments(data_tag="systems", system_tag="system")
         def mock_function():
             return mock_data_with_data_tag
 
@@ -260,34 +262,35 @@ class TestPortfolioArguments:
         def mock_function():
             return {}
 
-        with pytest.raises(PlaceholderArgumentException):
+        with pytest.raises(PlaceholderArgumentError):
             mock_function()
 
     # Edge Cases
 
     def test_empty_portfolio_metadata(self):
         """Test that _include returns False when portfolio metadata is empty."""
-        set_context(team=['TeamA'])
+        set_context(team=["TeamA"])
 
-        result = _include('system1', [])
+        result = _include("system1", [])
 
         assert result is False
 
-    @patch('report_generator.generator.context.portfolio_filters.sigrid_api')
-    def test_decorator_with_mixed_matching_systems(self, mock_sigrid_api, mock_data_with_data_tag,
-                                                   mock_portfolio_metadata):
+    @patch("report_generator.generator.context.portfolio_filters.sigrid_api")
+    def test_decorator_with_mixed_matching_systems(
+        self, mock_sigrid_api, mock_data_with_data_tag, mock_portfolio_metadata
+    ):
         """Test that decorator correctly handles mix of matching and non-matching systems."""
-        set_context(team=['TeamC'])  # Only system2 has TeamC
+        set_context(team=["TeamC"])  # Only system2 has TeamC
         mock_sigrid_api.get_portfolio_metadata.return_value = mock_portfolio_metadata
 
-        @filter_data_on_portfolio_arguments(data_tag='systems', system_tag='system')
+        @filter_data_on_portfolio_arguments(data_tag="systems", system_tag="system")
         def mock_function():
             return mock_data_with_data_tag
 
         result = mock_function()
 
-        assert len(result['systems']) == 1
-        assert result['systems'][0]['system'] == 'system2'
+        assert len(result["systems"]) == 1
+        assert result["systems"][0]["system"] == "system2"
 
 
 class TestFilterConsistency:
@@ -300,12 +303,23 @@ class TestFilterConsistency:
 
         # Extract global variable names from portfolio_arguments module (strip leading underscore)
         module_vars = {
-            name[1:] for name in dir(portfolio_filters)
-            if name.startswith('_')
-               and not name.startswith('__')
-               and name in ['_team', '_division', '_lifecycle', '_deployment',
-                            '_business_criticality', '_distribution', '_application_type',
-                            '_target_industry', '_technology_category', '_main_technology']
+            name[1:]
+            for name in dir(portfolio_filters)
+            if name.startswith("_")
+            and not name.startswith("__")
+            and name
+            in [
+                "_team",
+                "_division",
+                "_lifecycle",
+                "_deployment",
+                "_business_criticality",
+                "_distribution",
+                "_application_type",
+                "_target_industry",
+                "_technology_category",
+                "_main_technology",
+            ]
         }
 
         sig = inspect.signature(set_context)
@@ -339,7 +353,11 @@ class TestFilterConsistency:
 
         checked_vars = set()
         for node in ast.walk(tree):
-            if isinstance(node, ast.Name) and node.id.startswith('_') and not node.id.startswith('__'):
+            if (
+                isinstance(node, ast.Name)
+                and node.id.startswith("_")
+                and not node.id.startswith("__")
+            ):
                 checked_vars.add(node.id[1:])  # Remove leading underscore
 
         all_filters = set(FILTER_CONFIGURATION.keys())
@@ -354,7 +372,10 @@ class TestFilterConsistency:
         """Test that _raise_no_systems_found_error() includes all filters in error message."""
         import ast
         import inspect
-        from report_generator.generator.context.portfolio_filters import _raise_no_systems_found_error
+
+        from report_generator.generator.context.portfolio_filters import (
+            _raise_no_systems_found_error,
+        )
 
         source = inspect.getsource(_raise_no_systems_found_error)
         tree = ast.parse(source)
@@ -362,10 +383,23 @@ class TestFilterConsistency:
         # Extract all variable names from the active_filters list
         error_filters = set()
         for node in ast.walk(tree):
-            if isinstance(node, ast.Name) and node.id.startswith('_') and not node.id.startswith('__'):
-                if node.id in ['_team', '_division', '_lifecycle', '_deployment',
-                               '_business_criticality', '_distribution', '_application_type',
-                               '_target_industry', '_technology_category', '_main_technology']:
+            if (
+                isinstance(node, ast.Name)
+                and node.id.startswith("_")
+                and not node.id.startswith("__")
+            ):
+                if node.id in [
+                    "_team",
+                    "_division",
+                    "_lifecycle",
+                    "_deployment",
+                    "_business_criticality",
+                    "_distribution",
+                    "_application_type",
+                    "_target_industry",
+                    "_technology_category",
+                    "_main_technology",
+                ]:
                     error_filters.add(node.id[1:])  # Remove leading underscore
 
         all_filters = set(FILTER_CONFIGURATION.keys())
@@ -387,7 +421,7 @@ class TestFilterConsistency:
         for node in ast.walk(tree):
             if isinstance(node, ast.Global):
                 for name in node.names:
-                    if name.startswith('_') and not name.startswith('__'):
+                    if name.startswith("_") and not name.startswith("__"):
                         global_vars.add(name[1:])  # Remove leading underscore
 
         all_filters = set(FILTER_CONFIGURATION.keys())
@@ -402,7 +436,8 @@ class TestFilterConsistency:
         """Test that FILTER_CONFIGURATION global var names match METADATA_FILTER_CHECKS."""
         for filter_name, (global_var_name, _, _) in FILTER_CONFIGURATION.items():
             matching_checks = [
-                (gv, mk, t) for gv, mk, t in METADATA_FILTER_CHECKS
+                (gv, mk, t)
+                for gv, mk, t in METADATA_FILTER_CHECKS
                 if gv == global_var_name
             ]
 

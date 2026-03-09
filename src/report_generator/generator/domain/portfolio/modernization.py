@@ -16,10 +16,12 @@ import logging
 from dataclasses import dataclass
 from enum import Enum
 from functools import cached_property
-from typing import Optional
+from typing import ClassVar, Optional
 
 from report_generator.generator.context import sigrid_api
-from report_generator.generator.context.portfolio_filters import filter_data_on_portfolio_arguments
+from report_generator.generator.context.portfolio_filters import (
+    filter_data_on_portfolio_arguments,
+)
 
 
 @dataclass
@@ -60,7 +62,9 @@ def get_renovation_effort(scenario, architecture_metrics, volume_in_py):
 
 
 def get_activity(volume_in_py, architecture_graph):
-    churn = architecture_graph["systemElements"][0]["measurementTimeSeries"].get("YEARLY_CHURN_PERCENTAGE")
+    churn = architecture_graph["systemElements"][0]["measurementTimeSeries"].get(
+        "YEARLY_CHURN_PERCENTAGE"
+    )
     if churn is None:
         return None
     return (churn["averageValue"] / 100.0 * 52) * volume_in_py
@@ -73,7 +77,10 @@ def get_change_speed(scenario, architecture_metrics):
 
 
 def fetch_possible_candidates():
-    portfolio_metadata = {metadata["systemName"]: metadata for metadata in sigrid_api.get_portfolio_metadata()}
+    portfolio_metadata = {
+        metadata["systemName"]: metadata
+        for metadata in sigrid_api.get_portfolio_metadata()
+    }
 
     @filter_data_on_portfolio_arguments(data_tag="systems", system_tag="system")
     def get_data():
@@ -83,7 +90,11 @@ def fetch_possible_candidates():
 
     for system in portfolio_maintainability["systems"]:
         metadata = portfolio_metadata[system["system"]]
-        if metadata["active"] and not metadata["isDevelopmentOnly"] and system.get("maintainability"):
+        if (
+            metadata["active"]
+            and not metadata["isDevelopmentOnly"]
+            and system.get("maintainability")
+        ):
             yield CandidateSystem(metadata, system)
 
 
@@ -92,17 +103,17 @@ class ModernizationData:
     MIN_DEV_SPEED_IMPROVEMENT = 5.0
     MIN_EFFORT = 0.25
 
-    BUSINESS_CRITICALITY_FACTOR = {
+    BUSINESS_CRITICALITY_FACTOR: ClassVar[dict] = {
         "CRITICAL": 2.0,
-        "HIGH"    : 1.5,
-        "LOW"     : 0.0
+        "HIGH": 1.5,
+        "LOW": 0.0,
     }
 
-    PREDETERMINED_SCENARIOS = {
-        "INITIAL"       : Scenario.KEEP_AS_IS,
-        "EOL"           : Scenario.REBUILD,
-        "EVOLUTION"     : Scenario.RENOVATE,
-        "DECOMMISSIONED": Scenario.REPLACE
+    PREDETERMINED_SCENARIOS: ClassVar[dict] = {
+        "INITIAL": Scenario.KEEP_AS_IS,
+        "EOL": Scenario.REBUILD,
+        "EVOLUTION": Scenario.RENOVATE,
+        "DECOMMISSIONED": Scenario.REPLACE,
     }
 
     @cached_property
@@ -113,44 +124,67 @@ class ModernizationData:
     def modernization_candidates(self) -> list[ModernizationCandidate]:
         systems = self.possible_candidates.copy()
         systems.sort(key=lambda e: -e.maintainability_data["volumeInPersonMonths"])
-        systems = systems[0:self.MAX_SYSTEMS]
+        systems = systems[0 : self.MAX_SYSTEMS]
 
-        candidates = [self.to_modernization_candidate(system.maintainability_data, system.metadata) for system in
-                      systems]
-        candidates = [candidate for candidate in candidates if self.is_viable_candidate(candidate)]
+        candidates = [
+            self.to_modernization_candidate(
+                system.maintainability_data, system.metadata
+            )
+            for system in systems
+        ]
+        candidates = [
+            candidate for candidate in candidates if self.is_viable_candidate(candidate)
+        ]
         candidates.sort(key=lambda candidate: -candidate.priority)
         return candidates
 
-    def to_modernization_candidate(self, system, metadata) -> Optional[ModernizationCandidate]:
+    def to_modernization_candidate(
+        self, system, metadata
+    ) -> Optional[ModernizationCandidate]:
         volume_in_py = system["volumeInPersonMonths"] / 12.0
 
         try:
             architecture_graph = sigrid_api.get_architecture_graph(system["system"])
-        except sigrid_api.SigridAPIRequestFailed as e:
-            logging.warning("Skipping system %s due to Sigrid API request failure: %s", metadata["systemName"], e)
+        except sigrid_api.SigridAPIRequestFailedError as e:
+            logging.warning(
+                "Skipping system %s due to Sigrid API request failure: %s",
+                metadata["systemName"],
+                e,
+            )
             return None
 
         if system.get("maintainability") is None:
-            logging.warning("Skipping system %s due to missing maintainability data", metadata["systemName"])
+            logging.warning(
+                "Skipping system %s due to missing maintainability data",
+                metadata["systemName"],
+            )
             return None
 
-        architecture_metrics = architecture_graph["systemElements"][0]["measurementValues"]
+        architecture_metrics = architecture_graph["systemElements"][0][
+            "measurementValues"
+        ]
         scenario = self.determine_scenario(metadata)
         change_speed = get_change_speed(scenario, architecture_metrics)
-        renovation_effort = get_renovation_effort(scenario, architecture_metrics, volume_in_py)
+        renovation_effort = get_renovation_effort(
+            scenario, architecture_metrics, volume_in_py
+        )
 
         return ModernizationCandidate(
-            display_name=metadata.get("displayName") or metadata.get("systemName") or system["system"],
+            display_name=metadata.get("displayName")
+            or metadata.get("systemName")
+            or system["system"],
             business_criticality=metadata.get("businessCriticality") or "unknown",
             volume_in_py=volume_in_py,
             activity_in_py=get_activity(volume_in_py, architecture_graph),
             maintainability_rating=system["maintainability"],
             architecture_rating=architecture_metrics["ARCHITECTURE_RATING"],
-            technical_debt_in_py=min(architecture_metrics.get("TECHNICAL_DEBT", 0.0), volume_in_py),
+            technical_debt_in_py=min(
+                architecture_metrics.get("TECHNICAL_DEBT", 0.0), volume_in_py
+            ),
             scenario=scenario,
             estimated_change_speed=change_speed,
             estimated_effort_py=renovation_effort,
-            priority=self.calculate_priority(metadata, volume_in_py, change_speed)
+            priority=self.calculate_priority(metadata, volume_in_py, change_speed),
         )
 
     def determine_scenario(self, metadata):
@@ -158,15 +192,19 @@ class ModernizationData:
         return self.PREDETERMINED_SCENARIOS.get(lifecycle, Scenario.RENOVATE)
 
     def calculate_priority(self, metadata, volume_in_py, change_speed):
-        business_criticality_factor = self.BUSINESS_CRITICALITY_FACTOR.get(metadata.get("businessCriticality"), 1.0)
+        business_criticality_factor = self.BUSINESS_CRITICALITY_FACTOR.get(
+            metadata.get("businessCriticality"), 1.0
+        )
         return (change_speed * volume_in_py) * business_criticality_factor
 
     def is_viable_candidate(self, candidate: ModernizationCandidate):
         if candidate is None:
             return False
 
-        return candidate.estimated_change_speed >= self.MIN_DEV_SPEED_IMPROVEMENT and \
-            candidate.estimated_effort_py >= self.MIN_EFFORT
+        return (
+            candidate.estimated_change_speed >= self.MIN_DEV_SPEED_IMPROVEMENT
+            and candidate.estimated_effort_py >= self.MIN_EFFORT
+        )
 
     @cached_property
     def single_system_candidate(self) -> ModernizationCandidate:
@@ -175,12 +213,20 @@ class ModernizationData:
         return self.to_modernization_candidate(maintainability, metadata)
 
     @cached_property
-    def modernization_candidates_by_estimated_effort(self) -> list[ModernizationCandidate]:
-        return sorted(self.modernization_candidates, key=lambda candidate: -candidate.estimated_effort_py)
+    def modernization_candidates_by_estimated_effort(
+        self,
+    ) -> list[ModernizationCandidate]:
+        return sorted(
+            self.modernization_candidates,
+            key=lambda candidate: -candidate.estimated_effort_py,
+        )
 
     @cached_property
     def total_volume(self):
-        return sum(system.maintainability_data["volumeInPersonMonths"] / 12.0 for system in self.possible_candidates)
+        return sum(
+            system.maintainability_data["volumeInPersonMonths"] / 12.0
+            for system in self.possible_candidates
+        )
 
 
 modernization_data = ModernizationData()

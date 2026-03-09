@@ -12,20 +12,41 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from typing import Set, Type
-
 from report_generator.generator.placeholders.implementations.base import Placeholder
-from report_generator.generator.placeholders.implementations.charts import placeholders as chart_placeholders
-from report_generator.generator.placeholders.implementations.images import placeholders as image_placeholders
-from report_generator.generator.placeholders.implementations.misc import placeholders as misc_placeholders
-from report_generator.generator.placeholders.implementations.table import placeholders as table_placeholders
-from report_generator.generator.placeholders.implementations.text import placeholders as text_placeholders
+from report_generator.generator.placeholders.implementations.charts import (
+    placeholders as chart_placeholders,
+)
+from report_generator.generator.placeholders.implementations.images import (
+    placeholders as image_placeholders,
+)
+from report_generator.generator.placeholders.implementations.misc import (
+    placeholders as misc_placeholders,
+)
+from report_generator.generator.placeholders.implementations.table import (
+    placeholders as table_placeholders,
+)
+from report_generator.generator.placeholders.implementations.text import (
+    parameterized_text_placeholder,
+    text_placeholder,
+)
+from report_generator.generator.placeholders.implementations.text import (
+    placeholders as text_placeholders,
+)
 
-PlaceholderCollection = Set[Type[Placeholder]]
+PlaceholderCollection = set[type[Placeholder]]
 
-placeholders: PlaceholderCollection = text_placeholders | misc_placeholders | table_placeholders | image_placeholders | chart_placeholders
+placeholders: PlaceholderCollection = (
+    text_placeholders
+    | misc_placeholders
+    | table_placeholders
+    | image_placeholders
+    | chart_placeholders
+)
 
-from report_generator.generator.placeholders.implementations.text import text_placeholder, \
-    parameterized_text_placeholder
-
-__all__ = ['Placeholder', 'text_placeholder', 'parameterized_text_placeholder', 'PlaceholderCollection', 'placeholders']
+__all__ = [
+    "Placeholder",
+    "PlaceholderCollection",
+    "parameterized_text_placeholder",
+    "placeholders",
+    "text_placeholder",
+]

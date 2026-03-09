@@ -12,12 +12,16 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from typing import ClassVar
 from unittest.mock import patch
 
 import pytest
 
 from report_generator.generator.context import portfolio_filters
-from report_generator.generator.domain.portfolio.osh_portfolio import OSHRatingsPortfolioData, osh_portfolio_data
+from report_generator.generator.domain.portfolio.osh_portfolio import (
+    OSHRatingsPortfolioData,
+    osh_portfolio_data,
+)
 
 
 class TestOSHPortfolioData:
@@ -33,7 +37,7 @@ class TestOSHPortfolioData:
         portfolio_filters._team = None
         portfolio_filters._division = None
 
-        cache_attrs = ['raw_data', 'metadata', 'period', 'system_names']
+        cache_attrs = ["raw_data", "metadata", "period", "system_names"]
         for attr in cache_attrs:
             osh_portfolio_data.__dict__.pop(attr, None)
 
@@ -41,119 +45,115 @@ class TestOSHPortfolioData:
         """Test _extract_osh_rating extracts ratings correctly from SBOM metadata."""
         portfolio = OSHRatingsPortfolioData()
         system = {
-            'sbom': {
-                'metadata': {
-                    'properties': [
-                        {'name': 'sigrid:ratings:system', 'value': '4.5'},
-                        {'name': 'sigrid:ratings:vulnerability', 'value': '3.2'}
+            "sbom": {
+                "metadata": {
+                    "properties": [
+                        {"name": "sigrid:ratings:system", "value": "4.5"},
+                        {"name": "sigrid:ratings:vulnerability", "value": "3.2"},
                     ]
                 }
             }
         }
 
-        rating = portfolio._extract_osh_rating(system, 'system')
+        rating = portfolio._extract_osh_rating(system, "system")
         assert rating == pytest.approx(4.5)
 
-        rating = portfolio._extract_osh_rating(system, 'vulnerability')
+        rating = portfolio._extract_osh_rating(system, "vulnerability")
         assert rating == pytest.approx(3.2)
 
     def test_extract_osh_rating_with_missing_metadata(self):
         """Test _extract_osh_rating returns None when metadata is missing."""
         portfolio = OSHRatingsPortfolioData()
-        system = {'sbom': {}}
+        system = {"sbom": {}}
 
-        rating = portfolio._extract_osh_rating(system, 'system')
+        rating = portfolio._extract_osh_rating(system, "system")
         assert rating is None
 
     def test_extract_osh_rating_with_missing_property(self):
         """Test _extract_osh_rating returns None when requested property doesn't exist."""
         portfolio = OSHRatingsPortfolioData()
         system = {
-            'sbom': {
-                'metadata': {
-                    'properties': [
-                        {'name': 'sigrid:ratings:vulnerability', 'value': '3.2'}
+            "sbom": {
+                "metadata": {
+                    "properties": [
+                        {"name": "sigrid:ratings:vulnerability", "value": "3.2"}
                     ]
                 }
             }
         }
 
-        rating = portfolio._extract_osh_rating(system, 'system')
+        rating = portfolio._extract_osh_rating(system, "system")
         assert rating is None
 
     def test_extract_osh_rating_with_invalid_value(self):
         """Test _extract_osh_rating returns None when rating value is not a valid float."""
         portfolio = OSHRatingsPortfolioData()
         system = {
-            'sbom': {
-                'metadata': {
-                    'properties': [
-                        {'name': 'sigrid:ratings:system', 'value': 'invalid'}
+            "sbom": {
+                "metadata": {
+                    "properties": [
+                        {"name": "sigrid:ratings:system", "value": "invalid"}
                     ]
                 }
             }
         }
 
-        rating = portfolio._extract_osh_rating(system, 'system')
+        rating = portfolio._extract_osh_rating(system, "system")
         assert rating is None
 
-    @patch('report_generator.generator.domain.portfolio.osh_portfolio.sigrid_api')
+    @patch("report_generator.generator.domain.portfolio.osh_portfolio.sigrid_api")
     def test_get_system_returns_correct_system(self, mock_sigrid_api):
         """Test that get_system returns correct system data."""
         mock_data = {
-            'systems': [
-                {'systemName': 'system1', 'oshRating': 4.5},
-                {'systemName': 'system2', 'oshRating': 3.8}
+            "systems": [
+                {"systemName": "system1", "oshRating": 4.5},
+                {"systemName": "system2", "oshRating": 3.8},
             ]
         }
         mock_sigrid_api.get_portfolio_osh_findings.return_value = mock_data
 
-        osh_portfolio_data.__dict__.pop('raw_data', None)
+        osh_portfolio_data.__dict__.pop("raw_data", None)
 
-        system = osh_portfolio_data.get_system('system1')
+        system = osh_portfolio_data.get_system("system1")
 
         assert system is not None
-        assert system['systemName'] == 'system1'
-        assert abs(system['oshRating'] - 4.5) < 0.01
+        assert system["systemName"] == "system1"
+        assert abs(system["oshRating"] - 4.5) < 0.01
 
-    @patch('report_generator.generator.domain.portfolio.osh_portfolio.sigrid_api')
+    @patch("report_generator.generator.domain.portfolio.osh_portfolio.sigrid_api")
     def test_find_system_returns_correct_system(self, mock_sigrid_api):
         """Test that find_system returns correct system data (alias for get_system)."""
-        mock_data = {
-            'systems': [
-                {'systemName': 'system1', 'oshRating': 4.5}
-            ]
-        }
+        mock_data = {"systems": [{"systemName": "system1", "oshRating": 4.5}]}
         mock_sigrid_api.get_portfolio_osh_findings.return_value = mock_data
 
-        osh_portfolio_data.__dict__.pop('raw_data', None)
+        osh_portfolio_data.__dict__.pop("raw_data", None)
 
-        system = osh_portfolio_data.find_system('system1')
+        system = osh_portfolio_data.find_system("system1")
 
         assert system is not None
-        assert system['systemName'] == 'system1'
+        assert system["systemName"] == "system1"
 
-    @patch('report_generator.generator.domain.portfolio.osh_portfolio.sigrid_api')
+    @patch("report_generator.generator.domain.portfolio.osh_portfolio.sigrid_api")
     def test_system_names_returns_all_systems(self, mock_sigrid_api):
         """Test that system_names property returns all system names."""
         mock_data = {
-            'systems': [
-                {'systemName': 'system1', 'oshRating': 4.5},
-                {'systemName': 'system2', 'oshRating': 3.8},
-                {'systemName': 'system3', 'oshRating': 4.2}
+            "systems": [
+                {"systemName": "system1", "oshRating": 4.5},
+                {"systemName": "system2", "oshRating": 3.8},
+                {"systemName": "system3", "oshRating": 4.2},
             ]
         }
         mock_sigrid_api.get_portfolio_osh_findings.return_value = mock_data
 
-        for attr in ['raw_data', 'data', 'system_names']:
+        for attr in ["raw_data", "data", "system_names"]:
             osh_portfolio_data.__dict__.pop(attr, None)
 
         names = osh_portfolio_data.system_names
 
         assert len(names) == 3
-        assert 'system1' in names
-        assert 'system2' in names
-        assert 'system3' in names
+        assert "system1" in names
+        assert "system2" in names
+        assert "system3" in names
 
 
 class TestOSHMetricsBase:
@@ -164,9 +164,14 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            vulnerability_risk_distribution = [5, 10, 8, 3, 20]  # critical, high, medium, low, no_risk
+            vulnerability_risk_distribution: ClassVar[list] = [
+                5,
+                10,
+                8,
+                3,
+                20,
+            ]  # critical, high, medium, low, no_risk
             dependencies_count = 46
-
 
         metrics = TestMetrics()
         assert metrics.vulnerabilities_count == 26  # 5 + 10 + 8 + 3
@@ -176,9 +181,8 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            vulnerability_risk_distribution = [5, 10, 8, 3, 20]
+            vulnerability_risk_distribution: ClassVar[list] = [5, 10, 8, 3, 20]
             dependencies_count = 46
-
 
         metrics = TestMetrics()
         assert metrics.vulnerabilities_fraction == pytest.approx(26 / 46)
@@ -188,9 +192,8 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            vulnerability_risk_distribution = [0, 0, 0, 0, 46]
+            vulnerability_risk_distribution: ClassVar[list] = [0, 0, 0, 0, 46]
             dependencies_count = 46
-
 
         metrics = TestMetrics()
         assert metrics.vulnerabilities_fraction == pytest.approx(0.0)
@@ -200,9 +203,8 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            vulnerability_risk_distribution = [0, 0, 0, 1, 999]
+            vulnerability_risk_distribution: ClassVar[list] = [0, 0, 0, 1, 999]
             dependencies_count = 1000
-
 
         metrics = TestMetrics()
         assert metrics.vulnerabilities_fraction == pytest.approx(0.01)
@@ -212,9 +214,14 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            freshness_risk_distribution = [3, 7, 12, 5, 20]  # critical, high, medium, low, no_risk
+            freshness_risk_distribution: ClassVar[list] = [
+                3,
+                7,
+                12,
+                5,
+                20,
+            ]  # critical, high, medium, low, no_risk
             dependencies_count = 47
-
 
         metrics = TestMetrics()
         assert metrics.outdated_count == 22  # 3 + 7 + 12 (excludes low=5)
@@ -224,9 +231,8 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            freshness_risk_distribution = [3, 7, 12, 5, 20]
+            freshness_risk_distribution: ClassVar[list] = [3, 7, 12, 5, 20]
             dependencies_count = 47
-
 
         metrics = TestMetrics()
         assert metrics.outdated_fraction == pytest.approx(22 / 47)
@@ -236,9 +242,14 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            legal_risk_distribution = [2, 5, 8, 10, 25]  # critical, high, medium, low, no_risk
+            legal_risk_distribution: ClassVar[list] = [
+                2,
+                5,
+                8,
+                10,
+                25,
+            ]  # critical, high, medium, low, no_risk
             dependencies_count = 50
-
 
         metrics = TestMetrics()
         assert metrics.legal_risk_count == 15  # 2 + 5 + 8 (excludes low=10)
@@ -248,9 +259,8 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            legal_risk_distribution = [2, 5, 8, 10, 25]
+            legal_risk_distribution: ClassVar[list] = [2, 5, 8, 10, 25]
             dependencies_count = 50
-
 
         metrics = TestMetrics()
         assert metrics.legal_risk_fraction == pytest.approx(15 / 50)
@@ -260,9 +270,14 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            management_risk_distribution = [1, 3, 5, 7, 30]  # critical, high, medium, low, no_risk
+            management_risk_distribution: ClassVar[list] = [
+                1,
+                3,
+                5,
+                7,
+                30,
+            ]  # critical, high, medium, low, no_risk
             dependencies_count = 46
-
 
         metrics = TestMetrics()
         assert metrics.unmanaged_count == 16  # 1 + 3 + 5 + 7
@@ -272,9 +287,8 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            management_risk_distribution = [1, 3, 5, 7, 30]
+            management_risk_distribution: ClassVar[list] = [1, 3, 5, 7, 30]
             dependencies_count = 46
-
 
         metrics = TestMetrics()
         assert metrics.unmanaged_fraction == pytest.approx(16 / 46)
@@ -284,9 +298,14 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            activity_risk_distribution = [2, 4, 6, 8, 35]  # critical, high, medium, low, no_risk
+            activity_risk_distribution: ClassVar[list] = [
+                2,
+                4,
+                6,
+                8,
+                35,
+            ]  # critical, high, medium, low, no_risk
             dependencies_count = 55
-
 
         metrics = TestMetrics()
         assert metrics.activity_risk_count == 20  # 2 + 4 + 6 + 8
@@ -296,9 +315,8 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            activity_risk_distribution = [2, 4, 6, 8, 35]
+            activity_risk_distribution: ClassVar[list] = [2, 4, 6, 8, 35]
             dependencies_count = 55
-
 
         metrics = TestMetrics()
         assert metrics.activity_risk_fraction == pytest.approx(20 / 55)
@@ -308,13 +326,12 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            vulnerability_risk_distribution = [0, 0, 0, 1, 9999]
-            freshness_risk_distribution = [1, 0, 0, 0, 9999]
-            legal_risk_distribution = [0, 1, 0, 0, 9999]
-            management_risk_distribution = [0, 0, 0, 1, 9999]
-            activity_risk_distribution = [0, 0, 1, 0, 9999]
+            vulnerability_risk_distribution: ClassVar[list] = [0, 0, 0, 1, 9999]
+            freshness_risk_distribution: ClassVar[list] = [1, 0, 0, 0, 9999]
+            legal_risk_distribution: ClassVar[list] = [0, 1, 0, 0, 9999]
+            management_risk_distribution: ClassVar[list] = [0, 0, 0, 1, 9999]
+            activity_risk_distribution: ClassVar[list] = [0, 0, 1, 0, 9999]
             dependencies_count = 10000
-
 
         metrics = TestMetrics()
         assert metrics.vulnerabilities_fraction == pytest.approx(0.01)
@@ -328,13 +345,12 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            vulnerability_risk_distribution = [0, 0, 0, 0, 100]
-            freshness_risk_distribution = [0, 0, 0, 50, 50]
-            legal_risk_distribution = [0, 0, 0, 50, 50]
-            management_risk_distribution = [0, 0, 0, 0, 100]
-            activity_risk_distribution = [0, 0, 0, 0, 100]
+            vulnerability_risk_distribution: ClassVar[list] = [0, 0, 0, 0, 100]
+            freshness_risk_distribution: ClassVar[list] = [0, 0, 0, 50, 50]
+            legal_risk_distribution: ClassVar[list] = [0, 0, 0, 50, 50]
+            management_risk_distribution: ClassVar[list] = [0, 0, 0, 0, 100]
+            activity_risk_distribution: ClassVar[list] = [0, 0, 0, 0, 100]
             dependencies_count = 100
-
 
         metrics = TestMetrics()
         assert metrics.vulnerabilities_fraction == pytest.approx(0.0)
@@ -347,20 +363,19 @@ class TestOSHMetricsBase:
         """Test that properties use @cached_property decorator and don't recalculate."""
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
-        call_count = {'vulnerability': 0, 'freshness': 0}
-
+        call_count = {"vulnerability": 0, "freshness": 0}
 
         class TestMetrics(OSHMetricsBase):
             dependencies_count = 100
 
             @property
             def vulnerability_risk_distribution(self):
-                call_count['vulnerability'] += 1
+                call_count["vulnerability"] += 1
                 return [5, 10, 8, 3, 74]
 
             @property
             def freshness_risk_distribution(self):
-                call_count['freshness'] += 1
+                call_count["freshness"] += 1
                 return [3, 7, 12, 5, 73]
 
             @property
@@ -375,15 +390,14 @@ class TestOSHMetricsBase:
             def activity_risk_distribution(self):
                 return [0, 0, 0, 0, 100]
 
-
         metrics = TestMetrics()
 
         # Access vulnerabilities_count multiple times
         _ = metrics.vulnerabilities_count
         _ = metrics.vulnerabilities_count
-        assert call_count['vulnerability'] == 1  # Should only calculate once
+        assert call_count["vulnerability"] == 1  # Should only calculate once
 
         # Access outdated_count multiple times
         _ = metrics.outdated_count
         _ = metrics.outdated_count
-        assert call_count['freshness'] == 1  # Should only calculate once
+        assert call_count["freshness"] == 1  # Should only calculate once

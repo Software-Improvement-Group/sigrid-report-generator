@@ -14,11 +14,12 @@
 
 from functools import reduce
 
-from . import domain, placeholders
-from .context import sigrid_api
+from . import domain as domain
+from . import placeholders as placeholders
+from .context import sigrid_api as sigrid_api
 from .domain import data_model_arguments
-from .placeholders import rendering
-from .utils import constants
+from .placeholders import rendering as rendering
+from .utils import constants as constants
 
 
 def compose_options(*decorators):
@@ -33,8 +34,6 @@ def compose_options(*decorators):
     return composition
 
 
-_generator_arguments_aggregate = [
-    data_model_arguments
-]
+_generator_arguments_aggregate = [data_model_arguments]
 
 generator_arguments = compose_options(*_generator_arguments_aggregate)

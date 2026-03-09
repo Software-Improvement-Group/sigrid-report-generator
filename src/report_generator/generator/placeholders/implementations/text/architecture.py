@@ -12,11 +12,19 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from report_generator.generator.domain import *
-from report_generator.generator.placeholders.formatting.formatters import calculate_stars, star_rating_round
-from report_generator.generator.utils.constants import ArchMetric, ArchSubcharacteristic, MetricEnum
-from .base import parameterized_text_placeholder, text_placeholder
+from report_generator.generator.domain import architecture_data
+from report_generator.generator.placeholders.formatting.formatters import (
+    calculate_stars,
+    star_rating_round,
+)
+from report_generator.generator.utils.constants import (
+    ArchMetric,
+    ArchSubcharacteristic,
+    MetricEnum,
+)
+
 from ...formatting import smart_remarks
+from .base import parameterized_text_placeholder, text_placeholder
 
 
 @text_placeholder()
@@ -64,7 +72,9 @@ def arch_stars():
 @text_placeholder()
 def arch_at_below():
     """Remark about Architecture Quality being below a certain threshold."""
-    return smart_remarks.relative_to_market_average(architecture_data.ratings["architecture"])
+    return smart_remarks.relative_to_market_average(
+        architecture_data.ratings["architecture"]
+    )
 
 
 @text_placeholder()
@@ -76,25 +86,35 @@ def arch_observation():
 @text_placeholder()
 def arch_worst_metric_remark():
     """Remark about the lowest rating metric in the system's Architecture Quality analysis."""
-    return smart_remarks.arch_worst_metric_remark(architecture_data.ratings["systemProperties"])
+    return smart_remarks.arch_worst_metric_remark(
+        architecture_data.ratings["systemProperties"]
+    )
 
 
 @text_placeholder()
 def arch_best_metric_remark():
     """Remark about the highest rating metric in the system's Architecture Quality analysis."""
-    return smart_remarks.arch_best_metric_remark(architecture_data.ratings["systemProperties"])
+    return smart_remarks.arch_best_metric_remark(
+        architecture_data.ratings["systemProperties"]
+    )
 
 
-@parameterized_text_placeholder(custom_key="ARCH_RATING_{parameter}",
-                                parameters=list(ArchMetric) + list(ArchSubcharacteristic))
+@parameterized_text_placeholder(
+    custom_key="ARCH_RATING_{parameter}",
+    parameters=list(ArchMetric) + list(ArchSubcharacteristic),
+)
 def arch_rating_param(metric: MetricEnum):
     """The 0.5-5.5 star rating for this metric or subcharacteristic."""
     metric_key = metric.to_json_name()
-    return star_rating_round(architecture_data.get_score_for_prop_or_subchar(metric_key))
+    return star_rating_round(
+        architecture_data.get_score_for_prop_or_subchar(metric_key)
+    )
 
 
-@parameterized_text_placeholder(custom_key="STARS_{parameter}",
-                                parameters=list(ArchMetric) + list(ArchSubcharacteristic))
+@parameterized_text_placeholder(
+    custom_key="STARS_{parameter}",
+    parameters=list(ArchMetric) + list(ArchSubcharacteristic),
+)
 def arch_stars_param(metric: MetricEnum):
     """Stars corresponding to this metric or subcharacteristic rating."""
     metric_key = metric.to_json_name()

@@ -18,10 +18,17 @@ from typing import Callable
 from pptx.chart.data import CategoryChartData
 from pptx.presentation import Presentation
 
-from report_generator.generator.domain import maintainability_data, modernization_data, objectives_data, \
-    progress_sigrid_data
+from report_generator.generator.domain import (
+    maintainability_data,
+    modernization_data,
+    objectives_data,
+    progress_sigrid_data,
+)
 from report_generator.generator.placeholders import rendering
-from report_generator.generator.placeholders.implementations.base import Placeholder, PlaceholderDocType
+from report_generator.generator.placeholders.implementations.base import (
+    Placeholder,
+    PlaceholderDocType,
+)
 
 
 class _AbstractCategoryChartPlaceholder(Placeholder, ABC):
@@ -49,19 +56,20 @@ class _AbstractCategoryChartPlaceholder(Placeholder, ABC):
     @classmethod
     def value(cls, placeholder=None):
         return {
-            "labels"   : cls.labels(),
-            "series"   : cls.series(),
-            "colors"   : cls.colors(),
+            "labels": cls.labels(),
+            "series": cls.series(),
+            "colors": cls.colors(),
             "axisLabel": cls.axis_label(),
         }
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable):
-        charts = []
-        for slide in rendering.pptx.identify_specific_slide(presentation, key):
-            for shape in slide.shapes:
-                if shape.has_chart:
-                    charts.append(shape.chart)
+        charts = [
+            shape.chart
+            for slide in rendering.pptx.identify_specific_slide(presentation, key)
+            for shape in slide.shapes
+            if shape.has_chart
+        ]
 
         if len(charts) == 0:
             return
@@ -87,6 +95,7 @@ class _AbstractCategoryChartPlaceholder(Placeholder, ABC):
 
 class TechnologyCategoryChartPlaceholder(_AbstractCategoryChartPlaceholder):
     """Chart with volume (in % of person months of code) per technology."""
+
     key = "TECHNOLOGY_CHART"
 
     @classmethod
@@ -95,8 +104,12 @@ class TechnologyCategoryChartPlaceholder(_AbstractCategoryChartPlaceholder):
 
     @classmethod
     def series(cls):
-        return [[data["volumeInPersonMonths"] / maintainability_data.tech_total_volume_pm for data in
-                 maintainability_data.sorted_tech]]
+        return [
+            [
+                data["volumeInPersonMonths"] / maintainability_data.tech_total_volume_pm
+                for data in maintainability_data.sorted_tech
+            ]
+        ]
 
     @classmethod
     def axis_label(cls):
@@ -105,6 +118,7 @@ class TechnologyCategoryChartPlaceholder(_AbstractCategoryChartPlaceholder):
 
 class TestCodeRatioCategoryChartPlaceholder(_AbstractCategoryChartPlaceholder):
     """Pie chart with volume and % of test code per technology, colored in line with the SIG test code benchmark."""
+
     key = "TEST_CODE_RATIO_CHART"
 
     @classmethod
@@ -113,13 +127,19 @@ class TestCodeRatioCategoryChartPlaceholder(_AbstractCategoryChartPlaceholder):
 
     @classmethod
     def series(cls):
-        return [[data["volumeInPersonMonths"] / maintainability_data.tech_total_volume_pm for data in
-                 maintainability_data.sorted_tech]]
+        return [
+            [
+                data["volumeInPersonMonths"] / maintainability_data.tech_total_volume_pm
+                for data in maintainability_data.sorted_tech
+            ]
+        ]
 
     @classmethod
     def colors(cls):
-        return [rendering.pptx.test_code_ratio_color(data["testCodeRatio"]) for data in
-                maintainability_data.sorted_tech]
+        return [
+            rendering.pptx.test_code_ratio_color(data["testCodeRatio"])
+            for data in maintainability_data.sorted_tech
+        ]
 
     @classmethod
     def axis_label(cls):
@@ -131,14 +151,21 @@ class TechnicalDebtSystemsChartPlaceholder(_AbstractCategoryChartPlaceholder):
 
     @classmethod
     def labels(cls):
-        candidates = modernization_data.modernization_candidates_by_estimated_effort[0:20]
+        candidates = modernization_data.modernization_candidates_by_estimated_effort[
+            0:20
+        ]
         return [candidate.display_name for candidate in candidates]
 
     @classmethod
     def series(cls):
-        candidates = modernization_data.modernization_candidates_by_estimated_effort[0:20]
+        candidates = modernization_data.modernization_candidates_by_estimated_effort[
+            0:20
+        ]
         technical_debt = [candidate.estimated_effort_py for candidate in candidates]
-        remaining = [candidate.volume_in_py - candidate.estimated_effort_py for candidate in candidates]
+        remaining = [
+            candidate.volume_in_py - candidate.estimated_effort_py
+            for candidate in candidates
+        ]
         return [technical_debt, remaining]
 
     @classmethod
@@ -263,7 +290,10 @@ class ObjectivesCapabilitiesChartPlaceholder(_AbstractCategoryChartPlaceholder):
 
     @classmethod
     def labels(cls):
-        return [capability.title().replace("_", " ") for capability in objectives_data.capabilities]
+        return [
+            capability.title().replace("_", " ")
+            for capability in objectives_data.capabilities
+        ]
 
     @classmethod
     def series(cls):
@@ -279,7 +309,9 @@ class ObjectivesOverallChartSigridPlaceholder(_AbstractCategoryChartPlaceholder)
 
     @classmethod
     def labels(cls):
-        return [period.start.strftime("%m/%Y") for period in progress_sigrid_data.periods]
+        return [
+            period.start.strftime("%m/%Y") for period in progress_sigrid_data.periods
+        ]
 
     @classmethod
     def series(cls):
@@ -290,12 +322,16 @@ class ObjectivesOverallChartSigridPlaceholder(_AbstractCategoryChartPlaceholder)
         return "Percentage of portfolio"
 
 
-class ObjectivesMaintainabilityChartSigridPlaceholder(_AbstractCategoryChartPlaceholder):
+class ObjectivesMaintainabilityChartSigridPlaceholder(
+    _AbstractCategoryChartPlaceholder
+):
     key = "PROGRESS_MAINTAINABILITY_TIME_CHART"
 
     @classmethod
     def labels(cls):
-        return [period.start.strftime("%m/%Y") for period in progress_sigrid_data.periods]
+        return [
+            period.start.strftime("%m/%Y") for period in progress_sigrid_data.periods
+        ]
 
     @classmethod
     def series(cls):
@@ -311,7 +347,9 @@ class ObjectivesArchitectureChartSigridPlaceholder(_AbstractCategoryChartPlaceho
 
     @classmethod
     def labels(cls):
-        return [period.start.strftime("%m/%Y") for period in progress_sigrid_data.periods]
+        return [
+            period.start.strftime("%m/%Y") for period in progress_sigrid_data.periods
+        ]
 
     @classmethod
     def series(cls):
@@ -327,7 +365,9 @@ class ObjectivesSecurityChartSigridPlaceholder(_AbstractCategoryChartPlaceholder
 
     @classmethod
     def labels(cls):
-        return [period.start.strftime("%m/%Y") for period in progress_sigrid_data.periods]
+        return [
+            period.start.strftime("%m/%Y") for period in progress_sigrid_data.periods
+        ]
 
     @classmethod
     def series(cls):
@@ -338,12 +378,16 @@ class ObjectivesSecurityChartSigridPlaceholder(_AbstractCategoryChartPlaceholder
         return "Percentage of portfolio"
 
 
-class ObjectivesOpenSourceHealthChartSigridPlaceholder(_AbstractCategoryChartPlaceholder):
+class ObjectivesOpenSourceHealthChartSigridPlaceholder(
+    _AbstractCategoryChartPlaceholder
+):
     key = "PROGRESS_OSH_TIME_CHART"
 
     @classmethod
     def labels(cls):
-        return [period.start.strftime("%m/%Y") for period in progress_sigrid_data.periods]
+        return [
+            period.start.strftime("%m/%Y") for period in progress_sigrid_data.periods
+        ]
 
     @classmethod
     def series(cls):
@@ -359,7 +403,10 @@ class ObjectivesCapabilitiesChartSigridPlaceholder(_AbstractCategoryChartPlaceho
 
     @classmethod
     def labels(cls):
-        return [capability.title().replace("_", " ") for capability in progress_sigrid_data.capabilities]
+        return [
+            capability.title().replace("_", " ")
+            for capability in progress_sigrid_data.capabilities
+        ]
 
     @classmethod
     def series(cls):

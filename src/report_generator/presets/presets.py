@@ -62,23 +62,22 @@ def generate_portfolio_overview(output_path: str) -> None:
 
 
 _preset_reports: dict[str, Callable[[str], None]] = {
-    'system-summary'                  : generate_system_summary,
-    'debug'                           : generate_debug_docx,
-    'itdd-technical-debt'             : generate_itdd_system_technical_debt_report,
-    'modernization'                   : generate_modernization_report,
-    'objectives'                      : generate_objectives_report,
-    'refactoring-candidates'          : generate_refactoring_candidates_report,
-    'system-maintainability-one-pager': generate_system_maintainability_one_pager,
-    'portfolio-overview'              : generate_portfolio_overview
+    "system-summary": generate_system_summary,
+    "debug": generate_debug_docx,
+    "itdd-technical-debt": generate_itdd_system_technical_debt_report,
+    "modernization": generate_modernization_report,
+    "objectives": generate_objectives_report,
+    "refactoring-candidates": generate_refactoring_candidates_report,
+    "system-maintainability-one-pager": generate_system_maintainability_one_pager,
+    "portfolio-overview": generate_portfolio_overview,
 }
 
 SYSTEM_LEVEL_PRESETS = {
-    'system-summary',
-    'word-debug',
-    'debug',
-    'itdd-technical-debt',
-    'refactoring-candidates',
-    'system-maintainability-one-pager'
+    "system-summary",
+    "debug",
+    "itdd-technical-debt",
+    "refactoring-candidates",
+    "system-maintainability-one-pager",
 }
 
 ids = set(_preset_reports.keys())

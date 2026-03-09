@@ -12,5 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+
 def calculate_star_rating_integer(rating):
     return min(5, max(1, int(rating + 0.5)))

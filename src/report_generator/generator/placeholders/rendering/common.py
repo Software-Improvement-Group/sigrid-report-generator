@@ -18,11 +18,21 @@ from xmlrpc.client import Boolean
 from docx.enum.dml import MSO_THEME_COLOR as MSO_THEME_COLOR_DOCX
 from docx.shared import RGBColor as DocxRGBColor
 from docx.text.paragraph import Paragraph as DocxParagraph
-from docx.text.run import Font as DocxFont, Run as DocxRun
+from docx.text.run import Font as DocxFont
+from docx.text.run import Run as DocxRun
 from pptx.dml.color import RGBColor as PptxRGBColor
 from pptx.enum.dml import MSO_THEME_COLOR as MSO_THEME_COLOR_PPTX
+
 # noinspection PyProtectedMember
-from pptx.text.text import Font as PptxFont, _Paragraph as _PptxParagraph, _Run as _PptxRun
+from pptx.text.text import (
+    Font as PptxFont,
+)
+from pptx.text.text import (
+    _Paragraph as _PptxParagraph,
+)
+from pptx.text.text import (
+    _Run as _PptxRun,
+)
 
 CommonParagraph = Union[_PptxParagraph, DocxParagraph]
 CommonRun = Union[_PptxRun, DocxRun]
@@ -91,12 +101,15 @@ def get_font_properties(run: CommonRun) -> Optional[FontProperties]:
     color = font.color
 
     props.color = FontColor(
-        rgb=color.rgb if hasattr(color, 'rgb') else None,
-        theme_color=(color.theme_color if hasattr(color, 'theme_color')
-                                          and color.theme_color is not MSO_THEME_COLOR_PPTX.NOT_THEME_COLOR
-                                          and color.theme_color is not MSO_THEME_COLOR_DOCX.NOT_THEME_COLOR
-                     else None),
-        brightness=color.brightness if hasattr(color, 'brightness') else None
+        rgb=color.rgb if hasattr(color, "rgb") else None,
+        theme_color=(
+            color.theme_color
+            if hasattr(color, "theme_color")
+            and color.theme_color is not MSO_THEME_COLOR_PPTX.NOT_THEME_COLOR
+            and color.theme_color is not MSO_THEME_COLOR_DOCX.NOT_THEME_COLOR
+            else None
+        ),
+        brightness=color.brightness if hasattr(color, "brightness") else None,
     )
 
     return props

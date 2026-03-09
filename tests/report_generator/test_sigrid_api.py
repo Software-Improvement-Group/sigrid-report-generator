@@ -22,7 +22,6 @@ import report_generator.generator.context.sigrid_api as sigrid_api
 
 
 class TestSigridAPI:
-
     def test_short_sigrid_token_is_invalid(self):
         with pytest.raises(Exception) as excinfo:
             sigrid_api._test_sigrid_token("eyo")
@@ -48,7 +47,9 @@ class TestSigridAPI:
 
         sigrid_api.set_context(customer="test-customer")
         assert sigrid_api._customer == "test-customer"
-        assert custom_base_url in sigrid_api._rest_url, "existing context (base_url) should be preserved"
+        assert custom_base_url in sigrid_api._rest_url, (
+            "existing context (base_url) should be preserved"
+        )
 
         sigrid_api.reset_context()
 
@@ -129,13 +130,17 @@ class TestSigridAPI:
         sigrid_api.reset_context()
 
     def test_sigrid_access_denied_message_contains_customer_and_url(self):
-        exc = sigrid_api.SigridAccessDenied("https://sigrid-says.com/rest/...", "my-customer", "my-system")
+        exc = sigrid_api.SigridAccessDeniedError(
+            "https://sigrid-says.com/rest/...", "my-customer", "my-system"
+        )
         msg = str(exc)
         assert "my-customer" in msg
         assert "https://sigrid-says.com/my-customer/my-system" in msg
 
     def test_sigrid_access_denied_message_with_no_system(self):
-        exc = sigrid_api.SigridAccessDenied("https://sigrid-says.com/rest/...", "my-customer", None)
+        exc = sigrid_api.SigridAccessDeniedError(
+            "https://sigrid-says.com/rest/...", "my-customer", None
+        )
         msg = str(exc)
         assert "my-customer" in msg
         assert "(none)" in msg
@@ -154,7 +159,7 @@ class TestSigridAPI:
 
         with patch("requests.request", return_value=mock_response):
             sigrid_api._request.cache_clear()
-            with pytest.raises(sigrid_api.SigridAccessDenied) as excinfo:
+            with pytest.raises(sigrid_api.SigridAccessDeniedError) as excinfo:
                 sigrid_api._request("https://sigrid-says.com/rest/some-endpoint")
             assert "my-customer" in str(excinfo.value)
 
@@ -174,7 +179,9 @@ class TestSigridAPI:
         with patch("requests.request", return_value=mock_response):
             sigrid_api._request.cache_clear()
             with caplog.at_level(logging.WARNING):
-                result = sigrid_api._request("https://sigrid-says.com/rest/some-204-endpoint")
+                result = sigrid_api._request(
+                    "https://sigrid-says.com/rest/some-204-endpoint"
+                )
             assert result is None
             assert "204" in caplog.text
 
@@ -194,7 +201,9 @@ class TestSigridAPI:
 
         with patch("requests.request", return_value=mock_response):
             sigrid_api._request.cache_clear()
-            result = sigrid_api._request("https://sigrid-says.com/rest/some-other-endpoint")
+            result = sigrid_api._request(
+                "https://sigrid-says.com/rest/some-other-endpoint"
+            )
             assert result is None
 
         sigrid_api._request.cache_clear()

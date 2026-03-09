@@ -18,7 +18,10 @@ from pptx.presentation import Presentation
 
 from report_generator.generator.domain import modernization_data
 from report_generator.generator.placeholders import rendering
-from report_generator.generator.placeholders.implementations.base import Placeholder, PlaceholderDocType
+from report_generator.generator.placeholders.implementations.base import (
+    Placeholder,
+    PlaceholderDocType,
+)
 
 BLUE_GRADIENT = ["003DAB", "2E6BFF", "8DA8FF", "DBE1FF", "8A98A8"]
 
@@ -38,7 +41,10 @@ class ModernizationScatterPlotChartPlaceholder(Placeholder):
         if len(charts) == 0:
             return
 
-        grouped_candidates = {criticality: [] for criticality in ["CRITICAL", "HIGH", "MEDIUM", "LOW", "UNKNOWN"]}
+        grouped_candidates = {
+            criticality: []
+            for criticality in ["CRITICAL", "HIGH", "MEDIUM", "LOW", "UNKNOWN"]
+        }
         for candidate in modernization_data.modernization_candidates:
             grouped_candidates[candidate.business_criticality.upper()].append(candidate)
 
@@ -46,15 +52,25 @@ class ModernizationScatterPlotChartPlaceholder(Placeholder):
         for group, candidates in grouped_candidates.items():
             series = chart_data.add_series(group.title())
             for c in candidates:
-                series.add_data_point(c.estimated_effort_py, c.estimated_change_speed, c.volume_in_py)
+                series.add_data_point(
+                    c.estimated_effort_py, c.estimated_change_speed, c.volume_in_py
+                )
 
         for chart in charts:
             chart.replace_data(chart_data)
             for i, group in enumerate(grouped_candidates):
                 for j, candidate in enumerate(grouped_candidates[group]):
-                    chart.series[i].points[j].data_label.text_frame.text = candidate.display_name
-                    chart.series[i].points[j].format.line.color.rgb = RGBColor(255, 255, 255)
+                    chart.series[i].points[
+                        j
+                    ].data_label.text_frame.text = candidate.display_name
+                    chart.series[i].points[j].format.line.color.rgb = RGBColor(
+                        255, 255, 255
+                    )
                     chart.series[i].points[j].format.fill.solid()
-                    chart.series[i].points[j].format.fill.fore_color.rgb = RGBColor.from_string(BLUE_GRADIENT[i])
+                    chart.series[i].points[
+                        j
+                    ].format.fill.fore_color.rgb = RGBColor.from_string(
+                        BLUE_GRADIENT[i]
+                    )
             chart.value_axis.minimum_scale = 0
             chart.category_axis.minimum_scale = 0

@@ -209,6 +209,10 @@ generator.generate("out.pptx")
 If you use the `report_generator` Python API directly (custom placeholders, programmatic `ReportGenerator` usage),
 see [docs/upgrade-v1.md](docs/upgrade-v1.md) for the migration guide. CLI-only users are unaffected.
 
+## Contributing
+
+For developer instructions (linting, testing, architecture overview), see [docs/developers.md](docs/developers.md).
+
 ## Contact and support
 
 Feel free to contact SIG’s [support department](mailto:support@softwareimprovementgroup.com) for any questions or

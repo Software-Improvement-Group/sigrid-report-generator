@@ -37,43 +37,53 @@ def _find_cyclonedx_property_value(properties, key):
 
 
 class OSHData(OSHMetricsBase):
-
     @cached_property
     def raw_data(self):
         return sigrid_api.get_osh_findings()
 
     @cached_property
     def date(self) -> datetime:
-        return datetime.strptime(self.raw_data["metadata"]["timestamp"], "%Y-%m-%dT%H:%M:%SZ")
+        return datetime.strptime(
+            self.raw_data["metadata"]["timestamp"], "%Y-%m-%dT%H:%M:%SZ"
+        )
 
     @cached_property
     def system_rating(self) -> float:
         return self.get_rating_for_metric(_SystemMetric.SYSTEM)
 
-    @lru_cache
+    @lru_cache  # noqa: B019
     def get_rating_for_metric(self, metric: OSHMetricOrSystem) -> float:
-        for prop in self.raw_data['metadata']['properties']:
-            if prop['name'] == f"sigrid:ratings:{metric.to_json_name()}":
+        for prop in self.raw_data["metadata"]["properties"]:
+            if prop["name"] == f"sigrid:ratings:{metric.to_json_name()}":
                 return float(prop["value"])
 
         logging.warning(f"OSH rating not found for property {metric.to_json_name()}")
         return 0.0
 
-    @lru_cache
+    @lru_cache  # noqa: B019
     def _get_risk_distribution_for_metric(self, metric: OSHMetric) -> list[int]:
         """Returns risk distribution as [critical, high, medium, low, no_risk] counts."""
         metric_key = metric.to_json_name()
-        metric_key = "legal" if metric_key == "licenses" else metric_key  # Sigrid API uses "legal" only in risk context
+        metric_key = (
+            "legal" if metric_key == "licenses" else metric_key
+        )  # Sigrid API uses "legal" only in risk context
         property_name = f"sigrid:risk:{metric_key}"
 
         risk_counts = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0, None: 0}
 
         for component in self.raw_data.get("components", []):
-            risk = _find_cyclonedx_property_value(component["properties"], property_name)
+            risk = _find_cyclonedx_property_value(
+                component["properties"], property_name
+            )
             risk_counts[risk if risk in risk_counts else None] += 1
 
-        return [risk_counts["CRITICAL"], risk_counts["HIGH"], risk_counts["MEDIUM"], risk_counts["LOW"],
-                risk_counts[None]]
+        return [
+            risk_counts["CRITICAL"],
+            risk_counts["HIGH"],
+            risk_counts["MEDIUM"],
+            risk_counts["LOW"],
+            risk_counts[None],
+        ]
 
     @cached_property
     def vulnerability_risk_distribution(self) -> list[int]:

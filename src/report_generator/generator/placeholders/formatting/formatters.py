@@ -47,8 +47,10 @@ def calculate_stars(maintainability_rating: float) -> str:
 
 
 def maintainability_round(rating) -> str:
-    logging.warning("maintainability_round is deprecated and will be removed, use star_rating_round instead")
-    star_rating_round(rating)
+    logging.warning(
+        "maintainability_round is deprecated and will be removed, use star_rating_round instead"
+    )
+    return star_rating_round(rating)
 
 
 def star_rating_round(rating) -> str:

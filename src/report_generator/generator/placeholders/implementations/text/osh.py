@@ -12,11 +12,15 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from report_generator.generator.domain import *
-from report_generator.generator.placeholders.formatting.formatters import calculate_stars, star_rating_round
+from report_generator.generator.domain import osh_data
+from report_generator.generator.placeholders.formatting.formatters import (
+    calculate_stars,
+    star_rating_round,
+)
 from report_generator.generator.utils.constants import OSHMetric
-from .base import parameterized_text_placeholder, text_placeholder
+
 from ...formatting import smart_remarks
+from .base import parameterized_text_placeholder, text_placeholder
 
 
 @text_placeholder()
@@ -127,15 +131,17 @@ def osh_relative():
     return smart_remarks.osh_relative_rating(osh_data.system_rating)
 
 
-@parameterized_text_placeholder(custom_key="OSH_RATING_{parameter}",
-                                parameters=list(OSHMetric))
+@parameterized_text_placeholder(
+    custom_key="OSH_RATING_{parameter}", parameters=list(OSHMetric)
+)
 def osh_rating_param(metric: OSHMetric):
     """The 0.5-5.5 star rating for this OSH metric."""
     return star_rating_round(osh_data.get_rating_for_metric(metric))
 
 
-@parameterized_text_placeholder(custom_key="STARS_{parameter}",
-                                parameters=list(OSHMetric))
+@parameterized_text_placeholder(
+    custom_key="STARS_{parameter}", parameters=list(OSHMetric)
+)
 def osh_stars_param(metric: OSHMetric):
     """Stars corresponding to this OSH metric rating."""
     return calculate_stars(osh_data.get_rating_for_metric(metric))

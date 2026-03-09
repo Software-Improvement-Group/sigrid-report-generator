@@ -15,8 +15,13 @@
 from abc import abstractmethod
 
 from report_generator.generator.domain import refactoring_candidates_data
-from report_generator.generator.placeholders.formatting.technologies import get_technology_name
-from report_generator.generator.placeholders.implementations.table.base import TableMatrix, TablePlaceholder
+from report_generator.generator.placeholders.formatting.technologies import (
+    get_technology_name,
+)
+from report_generator.generator.placeholders.implementations.table.base import (
+    TableMatrix,
+    TablePlaceholder,
+)
 from report_generator.generator.utils.constants import MaintMetric
 
 
@@ -30,130 +35,156 @@ class _AbstractRefactoringCandidatesTablePlaceholder(TablePlaceholder):
 
     @classmethod
     def value(cls, parameter=None) -> TableMatrix:
-        return cls._to_table_matrix(refactoring_candidates_data.get_candidates(cls.metric))
+        return cls._to_table_matrix(
+            refactoring_candidates_data.get_candidates(cls.metric)
+        )
 
 
-class RefactoringCandidatesTableDuplication(_AbstractRefactoringCandidatesTablePlaceholder):
+class RefactoringCandidatesTableDuplication(
+    _AbstractRefactoringCandidatesTablePlaceholder
+):
     """Table for refactoring candidates related to code duplication. Headers are: Description, Redundant LOC, Level, Technology."""
+
     metric = MaintMetric.DUPLICATION
-    key = 'REFACTORING_CANDIDATES_TABLE_DUPLICATION'
+    key = "REFACTORING_CANDIDATES_TABLE_DUPLICATION"
 
     @classmethod
     def _to_table_matrix(cls, data) -> TableMatrix:
-        rows = [['Description', 'Redundant LOC', 'Level', 'Technology']]
+        rows = [["Description", "Redundant LOC", "Level", "Technology"]]
 
         for finding in data:
-            locs: list = finding['locations']
+            locs: list = finding["locations"]
 
-            unique_filenames = sorted({loc['file'].split('/')[-1] for loc in locs})
+            unique_filenames = sorted({loc["file"].split("/")[-1] for loc in locs})
 
-            rows.append([
-                f"{finding['loc']} lines occurring {len(locs)} times in {', '.join(unique_filenames)}",
-                finding['loc'] * (len(locs) - 1),
-                "File" if finding['sameFile'] else "Component" if finding['sameComponent'] else "System",
-                get_technology_name(finding['technology'])
-            ])
+            rows.append(
+                [
+                    f"{finding['loc']} lines occurring {len(locs)} times in {', '.join(unique_filenames)}",
+                    finding["loc"] * (len(locs) - 1),
+                    "File"
+                    if finding["sameFile"]
+                    else "Component"
+                    if finding["sameComponent"]
+                    else "System",
+                    get_technology_name(finding["technology"]),
+                ]
+            )
 
         return rows
 
 
-class RefactoringCandidatesTableUnitSize(_AbstractRefactoringCandidatesTablePlaceholder):
+class RefactoringCandidatesTableUnitSize(
+    _AbstractRefactoringCandidatesTablePlaceholder
+):
     """Table for refactoring candidates related to unit size. Headers are: Unit name, LOC, McCabe, Parameters, Component, Technology."""
+
     metric = MaintMetric.UNIT_SIZE
-    key = 'REFACTORING_CANDIDATES_TABLE_UNIT_SIZE'
+    key = "REFACTORING_CANDIDATES_TABLE_UNIT_SIZE"
 
     @classmethod
     def _to_table_matrix(cls, data) -> TableMatrix:
-        rows = [['Unit name', 'LOC', 'McCabe', 'Parameters', 'Component', 'Technology']]
-
-        for finding in data:
-            rows.append([
+        rows = [["Unit name", "LOC", "McCabe", "Parameters", "Component", "Technology"]]
+        rows.extend(
+            [
                 finding["name"],
                 finding["loc"],
                 finding.get("mcCabe", "-"),
                 finding.get("parameters", "-"),
                 finding["component"],
-                get_technology_name(finding['technology'])
-            ])
-
+                get_technology_name(finding["technology"]),
+            ]
+            for finding in data
+        )
         return rows
 
 
-class RefactoringCandidatesTableUnitComplexity(_AbstractRefactoringCandidatesTablePlaceholder):
+class RefactoringCandidatesTableUnitComplexity(
+    _AbstractRefactoringCandidatesTablePlaceholder
+):
     """Table for refactoring candidates related to unit complexity. Headers are: Unit name, LOC, McCabe, Parameters, Component, Technology."""
+
     metric = MaintMetric.UNIT_COMPLEXITY
-    key = 'REFACTORING_CANDIDATES_TABLE_UNIT_COMPLEXITY'
+    key = "REFACTORING_CANDIDATES_TABLE_UNIT_COMPLEXITY"
 
     @classmethod
     def _to_table_matrix(cls, data) -> TableMatrix:
-        rows = [['Unit name', 'LOC', 'McCabe', 'Parameters', 'Component', 'Technology']]
-
-        for finding in data:
-            rows.append([
+        rows = [["Unit name", "LOC", "McCabe", "Parameters", "Component", "Technology"]]
+        rows.extend(
+            [
                 finding["name"],
                 finding.get("loc", "-"),
                 finding["mcCabe"],
                 finding.get("parameters", "-"),
                 finding["component"],
-                get_technology_name(finding['technology'])
-            ])
-
+                get_technology_name(finding["technology"]),
+            ]
+            for finding in data
+        )
         return rows
 
 
-class RefactoringCandidatesTableUnitInterfacing(_AbstractRefactoringCandidatesTablePlaceholder):
+class RefactoringCandidatesTableUnitInterfacing(
+    _AbstractRefactoringCandidatesTablePlaceholder
+):
     """Table for refactoring candidates related to unit interfacing. Headers are: Unit name, LOC, McCabe, Parameters, Component, Technology."""
+
     metric = MaintMetric.UNIT_INTERFACING
-    key = 'REFACTORING_CANDIDATES_TABLE_UNIT_INTERFACING'
+    key = "REFACTORING_CANDIDATES_TABLE_UNIT_INTERFACING"
 
     @classmethod
     def _to_table_matrix(cls, data) -> TableMatrix:
-        rows = [['Unit name', 'LOC', 'McCabe', 'Parameters', 'Component', 'Technology']]
-
-        for finding in data:
-            rows.append([
+        rows = [["Unit name", "LOC", "McCabe", "Parameters", "Component", "Technology"]]
+        rows.extend(
+            [
                 finding["name"],
                 finding.get("loc", "-"),
                 finding.get("mcCabe", "-"),
                 finding["parameters"],
                 finding["component"],
-                get_technology_name(finding['technology'])
-            ])
-
+                get_technology_name(finding["technology"]),
+            ]
+            for finding in data
+        )
         return rows
 
 
-class RefactoringCandidatesTableModuleCoupling(_AbstractRefactoringCandidatesTablePlaceholder):
+class RefactoringCandidatesTableModuleCoupling(
+    _AbstractRefactoringCandidatesTablePlaceholder
+):
     """Table for refactoring candidates related to module coupling. Headers are: File name, LOC, Fan-in, Component, Technology."""
+
     metric = MaintMetric.MODULE_COUPLING
-    key = 'REFACTORING_CANDIDATES_TABLE_MODULE_COUPLING'
+    key = "REFACTORING_CANDIDATES_TABLE_MODULE_COUPLING"
 
     @classmethod
     def _to_table_matrix(cls, data) -> TableMatrix:
-        rows = [['File name', 'LOC', 'Fan-in', 'Component', 'Technology']]
-
-        for finding in data:
-            rows.append([
+        rows = [["File name", "LOC", "Fan-in", "Component", "Technology"]]
+        rows.extend(
+            [
                 finding["file"].split("/")[-1],
                 finding.get("loc", "-"),
                 finding["fanIn"],
                 finding["component"],
-                get_technology_name(finding['technology'])
-            ])
-
+                get_technology_name(finding["technology"]),
+            ]
+            for finding in data
+        )
         return rows
 
 
-class RefactoringCandidatesTableComponentEntanglement(_AbstractRefactoringCandidatesTablePlaceholder):
+class RefactoringCandidatesTableComponentEntanglement(
+    _AbstractRefactoringCandidatesTablePlaceholder
+):
     """Table for refactoring candidates related to component entanglement. Headers are: Description, Weight."""
+
     metric = MaintMetric.COMPONENT_ENTANGLEMENT
-    key = 'REFACTORING_CANDIDATES_TABLE_COMPONENT_ENTANGLEMENT'
+    key = "REFACTORING_CANDIDATES_TABLE_COMPONENT_ENTANGLEMENT"
 
     @staticmethod
     def _generate_description(finding) -> str:
         entanglement_type = finding["type"]
 
-        if entanglement_type == 'COMMUNICATION_DENSITY':
+        if entanglement_type == "COMMUNICATION_DENSITY":
             severity = finding["severity"].replace("_", " ").capitalize()
             component_name = finding["component"]
             return f"{severity} communication density on {component_name}"
@@ -163,8 +194,9 @@ class RefactoringCandidatesTableComponentEntanglement(_AbstractRefactoringCandid
             "LAYER_BYPASSING_DEPENDENCY": "transitive dependency",
         }
 
-        base_description = special_type_names.get(entanglement_type,
-                                                  entanglement_type.replace("_", " ").lower()).capitalize()
+        base_description = special_type_names.get(
+            entanglement_type, entanglement_type.replace("_", " ").lower()
+        ).capitalize()
         source_component = finding["sourceComponent"]
         target_component = finding["targetComponent"]
 
@@ -172,32 +204,37 @@ class RefactoringCandidatesTableComponentEntanglement(_AbstractRefactoringCandid
 
     @classmethod
     def _to_table_matrix(cls, data) -> TableMatrix:
-        rows = [['Description', 'Weight']]
-
-        for finding in data:
-            rows.append([
-                RefactoringCandidatesTableComponentEntanglement._generate_description(finding),
-                finding['weight']
-            ])
-
+        rows = [["Description", "Weight"]]
+        rows.extend(
+            [
+                RefactoringCandidatesTableComponentEntanglement._generate_description(
+                    finding
+                ),
+                finding["weight"],
+            ]
+            for finding in data
+        )
         return rows
 
 
-class RefactoringCandidatesTableComponentIndependence(_AbstractRefactoringCandidatesTablePlaceholder):
+class RefactoringCandidatesTableComponentIndependence(
+    _AbstractRefactoringCandidatesTablePlaceholder
+):
     """Table for refactoring candidates related to component independence. Headers are: File name, LOC, Component, Technology."""
+
     metric = MaintMetric.COMPONENT_INDEPENDENCE
-    key = 'REFACTORING_CANDIDATES_TABLE_COMPONENT_INDEPENDENCE'
+    key = "REFACTORING_CANDIDATES_TABLE_COMPONENT_INDEPENDENCE"
 
     @classmethod
     def _to_table_matrix(cls, data) -> TableMatrix:
-        rows = [['File name', 'LOC', 'Component', 'Technology']]
-
-        for finding in data:
-            rows.append([
+        rows = [["File name", "LOC", "Component", "Technology"]]
+        rows.extend(
+            [
                 finding["file"].split("/")[-1],
                 finding.get("loc", "-"),
                 finding["component"],
-                get_technology_name(finding['technology'])
-            ])
-
+                get_technology_name(finding["technology"]),
+            ]
+            for finding in data
+        )
         return rows

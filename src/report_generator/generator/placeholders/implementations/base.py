@@ -15,21 +15,24 @@
 import logging
 import re
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from dataclasses import dataclass
 from enum import Enum
-from typing import Iterable, Union
+from typing import Union
 
-from report_generator.generator.context.sigrid_api import SigridAPIRequestFailed
+from report_generator.generator.context.sigrid_api import SigridAPIRequestFailedError
 from report_generator.generator.report import Report, ReportType
 
 Parameter = Union[str, int, Enum]
 ParameterList = Iterable[Parameter]
 
-CAMEL_TO_SNAKE_PATTERN = re.compile(r'(?<!^)(?=[A-Z][a-z])|(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])')
+CAMEL_TO_SNAKE_PATTERN = re.compile(
+    r"(?<!^)(?=[A-Z][a-z])|(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])"
+)
 
 
 def class_name_to_placeholder_key(class_name: str):
-    return CAMEL_TO_SNAKE_PATTERN.sub('_', class_name).upper()
+    return CAMEL_TO_SNAKE_PATTERN.sub("_", class_name).upper()
 
 
 def function_name_to_placeholder_key(function_name: str):
@@ -37,11 +40,11 @@ def function_name_to_placeholder_key(function_name: str):
 
 
 class PlaceholderDocType(Enum):
-    TEXT = 'Text'
-    CHART = 'Chart'
-    TABLE = 'Table'
-    IMAGE = 'Image'
-    OTHER = 'Other'
+    TEXT = "Text"
+    CHART = "Chart"
+    TABLE = "Table"
+    IMAGE = "Image"
+    OTHER = "Other"
 
 
 @dataclass
@@ -58,6 +61,7 @@ class Placeholder(ABC):
         __doc_type__ (PlaceholderDocType): The type of content this placeholder produces.
                                            Defaults to PlaceholderDocType.OTHER.
     """
+
     key: str
     __doc_type__: PlaceholderDocType = PlaceholderDocType.OTHER
     __placeholder__ = True
@@ -76,17 +80,19 @@ class Placeholder(ABC):
 
         try:
             getattr(cls, resolve_method_name)(report, cls.key, cls.value)
-        except SigridAPIRequestFailed as e:
-            logging.info(f'Failed to resolve {cls.key}: {e}')
+        except SigridAPIRequestFailedError as e:
+            logging.info(f"Failed to resolve {cls.key}: {e}")
         except (KeyError, AttributeError, ValueError) as e:
-            logging.warning(f'Failed to resolve {cls.key}: Value not found ({type(e).__name__}: {e})')
+            logging.warning(
+                f"Failed to resolve {cls.key}: Value not found ({type(e).__name__}: {e})"
+            )
 
     @classmethod
     def _determine_resolve_method(cls, report_type: ReportType):
-        if report_type == ReportType.PRESENTATION and hasattr(cls, 'resolve_pptx'):
-            return 'resolve_pptx'
-        elif report_type == ReportType.DOCUMENT and hasattr(cls, 'resolve_docx'):
-            return 'resolve_docx'
+        if report_type == ReportType.PRESENTATION and hasattr(cls, "resolve_pptx"):
+            return "resolve_pptx"
+        elif report_type == ReportType.DOCUMENT and hasattr(cls, "resolve_docx"):
+            return "resolve_docx"
         else:
             return None
 
@@ -96,7 +102,7 @@ class Placeholder(ABC):
 
     @classmethod
     def is_parameterized(cls):
-        return getattr(cls, '__parameterized_placeholder__', False)
+        return getattr(cls, "__parameterized_placeholder__", False)
 
 
 class ParameterizedPlaceholder(Placeholder, ABC):
@@ -111,6 +117,7 @@ class ParameterizedPlaceholder(Placeholder, ABC):
         allowed_parameters (ParameterList): A list of values (str, int, or Enum) used to
                                             generate unique keys and calculate values.
     """
+
     __parameterized_placeholder__ = True
     allowed_parameters: ParameterList
 
@@ -128,7 +135,7 @@ class ParameterizedPlaceholder(Placeholder, ABC):
         underlying report generator (e.g., the PowerPoint resolver) to pass additional
         context or configuration—such as chart filters or formatting options—back into
         `cls.value` during execution.
-        
+
         Args:
             report (Report): The report instance where the placeholders should be resolved.
         """
@@ -138,10 +145,13 @@ class ParameterizedPlaceholder(Placeholder, ABC):
             return
 
         for parameter in cls.allowed_parameters:
-            key_p = cls.key.replace('{parameter}', str(parameter))
+            key_p = cls.key.replace("{parameter}", str(parameter))
 
             try:
-                value_p = lambda optional_parameter=None, p=parameter: cls.value(p, optional_parameter)
+
+                def value_p(optional_parameter=None, p=parameter):
+                    return cls.value(p, optional_parameter)
+
                 getattr(cls, resolve_method_name)(report, key_p, value_p)
-            except SigridAPIRequestFailed as e:
-                logging.info(f'Failed to resolve {key_p}: {e}')
+            except SigridAPIRequestFailedError as e:
+                logging.info(f"Failed to resolve {key_p}: {e}")

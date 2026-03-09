@@ -17,7 +17,9 @@ from enum import Enum
 from functools import cached_property
 
 from report_generator.generator.context import sigrid_api
-from report_generator.generator.context.portfolio_filters import filter_data_on_portfolio_arguments
+from report_generator.generator.context.portfolio_filters import (
+    filter_data_on_portfolio_arguments,
+)
 from report_generator.generator.utils.time_series import Period
 
 
@@ -31,7 +33,12 @@ class ObjectiveStatus(Enum):
 
 class ObjectivesData:
     def __init__(self):
-        self.capabilities = ["ARCHITECTURE_QUALITY", "MAINTAINABILITY", "OPEN_SOURCE_HEALTH", "SECURITY"]
+        self.capabilities = [
+            "ARCHITECTURE_QUALITY",
+            "MAINTAINABILITY",
+            "OPEN_SOURCE_HEALTH",
+            "SECURITY",
+        ]
 
     @cached_property
     def periods(self):
@@ -49,13 +56,22 @@ class ObjectivesData:
 
     @cached_property
     def objectives_evaluation_trend(self):
-        return [(period, ObjectivesData._get_filtered_objectives_evaluation_for_period(period)["systems"]) for period in
-                self.periods]
+        return [
+            (
+                period,
+                ObjectivesData._get_filtered_objectives_evaluation_for_period(period)[
+                    "systems"
+                ],
+            )
+            for period in self.periods
+        ]
 
     @cached_property
     def objectives_evaluation_status(self):
         period = self.comparison_period
-        return ObjectivesData._get_filtered_objectives_evaluation_for_period(period)["systems"]
+        return ObjectivesData._get_filtered_objectives_evaluation_for_period(period)[
+            "systems"
+        ]
 
     @cached_property
     def teams(self):
@@ -76,29 +92,37 @@ class ObjectivesData:
         series = []
         for status in ObjectiveStatus:
             row = []
-            for period, evaluation in self.objectives_evaluation_trend:
-                row.append(self.get_portfolio_percentage(evaluation, capability, status))
+            for _period, evaluation in self.objectives_evaluation_trend:
+                row.append(
+                    self.get_portfolio_percentage(evaluation, capability, status)
+                )
             series.append(row)
         return series
 
     def get_portfolio_status_series(self):
         evaluation = self.objectives_evaluation_status
-        return [[self.get_portfolio_percentage(evaluation, None, status)] for status in ObjectiveStatus]
+        return [
+            [self.get_portfolio_percentage(evaluation, None, status)]
+            for status in ObjectiveStatus
+        ]
 
     def get_team_status_series(self):
         series = []
         for status in ObjectiveStatus:
             row = []
-            for team, system_names in self.teams.items():
-                evaluation = self.filter_system_evaluations(self.objectives_evaluation_status, system_names)
+            for system_names in self.teams.values():
+                evaluation = self.filter_system_evaluations(
+                    self.objectives_evaluation_status, system_names
+                )
                 row.append(self.get_portfolio_percentage(evaluation, None, status))
             series.append(row)
         return series
 
     def get_capability_status_series(self):
         evaluation = self.objectives_evaluation_status
-        mapper = lambda capability, current_status: self.get_portfolio_percentage(evaluation, capability,
-                                                                                  current_status)
+
+        def mapper(capability, current_status):
+            return self.get_portfolio_percentage(evaluation, capability, current_status)
 
         series = []
         for status in ObjectiveStatus:

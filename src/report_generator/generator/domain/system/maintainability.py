@@ -19,25 +19,48 @@ from report_generator.generator.context import sigrid_api
 
 
 def _sort_and_aggregate_technology_data(tech_data):
-    sorted_tech_data = sorted(tech_data, key=lambda d: d['volumeInPersonMonths'], reverse=True)
-    sorted_and_filtered_tech_data = list(filter(lambda d: d['volumeInPersonMonths'] > 0.0, sorted_tech_data))
+    sorted_tech_data = sorted(
+        tech_data, key=lambda d: d["volumeInPersonMonths"], reverse=True
+    )
+    sorted_and_filtered_tech_data = list(
+        filter(lambda d: d["volumeInPersonMonths"] > 0.0, sorted_tech_data)
+    )
 
     if (len(sorted_and_filtered_tech_data)) > 5:
-        pm_sum = sum([d['volumeInPersonMonths'] for d in sorted_and_filtered_tech_data[4:]])
-        loc_sum = sum([d['volumeInLoc'] for d in sorted_and_filtered_tech_data[4:]])
+        pm_sum = sum(
+            [d["volumeInPersonMonths"] for d in sorted_and_filtered_tech_data[4:]]
+        )
+        loc_sum = sum([d["volumeInLoc"] for d in sorted_and_filtered_tech_data[4:]])
         # Maintainability and test code ratio are weighted by volume in person month
-        maint_aggregate = sum([d['maintainability'] * (d['volumeInPersonMonths'] / pm_sum) for d in
-                               sorted_and_filtered_tech_data[4:]])
-        test_code_aggregate = sum([d['testCodeRatio'] * (d['volumeInPersonMonths'] / pm_sum) for d in
-                                   sorted_and_filtered_tech_data[4:]])
+        maint_aggregate = sum(
+            [
+                d["maintainability"] * (d["volumeInPersonMonths"] / pm_sum)
+                for d in sorted_and_filtered_tech_data[4:]
+            ]
+        )
+        test_code_aggregate = sum(
+            [
+                d["testCodeRatio"] * (d["volumeInPersonMonths"] / pm_sum)
+                for d in sorted_and_filtered_tech_data[4:]
+            ]
+        )
         # technology risk aggregate is the worst individual rating
-        tech_risk_aggregate = _worst_tech_risk([d['technologyRisk'] for d in sorted_and_filtered_tech_data[4:]])
-        small_technologies_aggregate = {"name"                : "others", "displayName": "Others",
-                                        "volumeInPersonMonths": pm_sum,
-                                        "volumeInLoc"         : loc_sum, "maintainability": maint_aggregate,
-                                        "testCodeRatio"       : test_code_aggregate,
-                                        "technologyRisk"      : tech_risk_aggregate}
-        sorted_and_filtered_tech_data = sorted_and_filtered_tech_data[0:4] + [small_technologies_aggregate]
+        tech_risk_aggregate = _worst_tech_risk(
+            [d["technologyRisk"] for d in sorted_and_filtered_tech_data[4:]]
+        )
+        small_technologies_aggregate = {
+            "name": "others",
+            "displayName": "Others",
+            "volumeInPersonMonths": pm_sum,
+            "volumeInLoc": loc_sum,
+            "maintainability": maint_aggregate,
+            "testCodeRatio": test_code_aggregate,
+            "technologyRisk": tech_risk_aggregate,
+        }
+        sorted_and_filtered_tech_data = [
+            *sorted_and_filtered_tech_data[0:4],
+            small_technologies_aggregate,
+        ]
     return sorted_and_filtered_tech_data
 
 
@@ -61,15 +84,15 @@ class MaintainabilityData:
 
     @cached_property
     def maintainability_rating(self):
-        return self.data['maintainability']
+        return self.data["maintainability"]
 
     @cached_property
     def date(self):
-        return datetime.strptime(self.data["maintainabilityDate"], '%Y-%m-%d')
+        return datetime.strptime(self.data["maintainabilityDate"], "%Y-%m-%d")
 
     @cached_property
     def tech(self):
-        return self.data['technologies']
+        return self.data["technologies"]
 
     @cached_property
     def sorted_tech(self):
@@ -96,17 +119,33 @@ class MaintainabilityData:
                 return 0
 
         return sum(
-            [target_ratio_for_technology(d['technologyRisk'], d["volumeInPersonMonths"] / self.tech_total_volume_pm) for
-             d in self.tech])
+            [
+                target_ratio_for_technology(
+                    d["technologyRisk"],
+                    d["volumeInPersonMonths"] / self.tech_total_volume_pm,
+                )
+                for d in self.tech
+            ]
+        )
 
     @cached_property
     def tech_phaseout_ratio(self):
-        return sum([d["volumeInPersonMonths"] for d in self.tech if
-                    d["technologyRisk"] == "PHASEOUT"]) / self.tech_total_volume_pm
+        return (
+            sum(
+                [
+                    d["volumeInPersonMonths"]
+                    for d in self.tech
+                    if d["technologyRisk"] == "PHASEOUT"
+                ]
+            )
+            / self.tech_total_volume_pm
+        )
 
     @cached_property
     def tech_phaseout_technologies(self):
-        return [d["displayName"] for d in self.tech if d["technologyRisk"] == "PHASEOUT"]
+        return [
+            d["displayName"] for d in self.tech if d["technologyRisk"] == "PHASEOUT"
+        ]
 
     @cached_property
     def system_py(self):
@@ -128,16 +167,22 @@ class MaintainabilityData:
     @cached_property
     def customer_name(self):
         try:
-            return self.data['customer'].capitalize()
+            return self.data["customer"].capitalize()
         except ValueError:
             # TODO: Temporary fix; this will be retrieved from an endpoint in the future.
-            return sigrid_api._customer.capitalize() if len(sigrid_api._customer) > 3 else sigrid_api._customer.upper()
+            return (
+                sigrid_api._customer.capitalize()
+                if len(sigrid_api._customer) > 3
+                else sigrid_api._customer.upper()
+            )
 
     @cached_property
     def start_snapshot(self):
         snapshots = list(self.snapshots_in_period)
         if len(snapshots) == 0:
-            raise Exception(f"There is no usable start snapshot in the reporting period: {self.period}")
+            raise Exception(
+                f"There is no usable start snapshot in the reporting period: {self.period}"
+            )
         return snapshots[0]
 
     @cached_property
@@ -146,7 +191,9 @@ class MaintainabilityData:
         period_end_date = datetime.strptime(self.period[1], "%Y-%m-%d")
 
         for snapshot in reversed(self.data["allRatings"]):
-            snapshot_date = datetime.strptime(snapshot["maintainabilityDate"], "%Y-%m-%d")
+            snapshot_date = datetime.strptime(
+                snapshot["maintainabilityDate"], "%Y-%m-%d"
+            )
             if period_start_date <= snapshot_date <= period_end_date:
                 yield snapshot
 

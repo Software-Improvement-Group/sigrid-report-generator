@@ -12,33 +12,34 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 from functools import cached_property
-from typing import Callable, Dict
+from typing import Callable, ClassVar
 
 from report_generator.generator.context import sigrid_api
-from report_generator.generator.domain import maintainability_data
+
+from .maintainability import maintainability_data
 
 
 class SystemMetadata:
-    _attributes: Dict[str, str] = {
-        'display_name'                  : 'displayName',
-        'external_display_name'         : 'externalDisplayName',
-        'division_name'                 : 'divisionName',
-        'supplier_names'                : 'supplierNames',
-        'team_names'                    : 'teamNames',
-        'in_production_since'           : 'inProductionSince',
-        'business_criticality'          : 'businessCriticality',
-        'lifecycle_phase'               : 'lifecyclePhase',
-        'target_industry'               : 'targetIndustry',
-        'deployment_type'               : 'deploymentType',
-        'application_type'              : 'applicationType',
-        'software_distribution_strategy': 'softwareDistributionStrategy',
-        'is_development_only'           : 'isDevelopmentOnly',
-        'remark'                        : 'remark',
-        'external_id'                   : 'externalID'
+    _attributes: ClassVar[dict[str, str]] = {
+        "display_name": "displayName",
+        "external_display_name": "externalDisplayName",
+        "division_name": "divisionName",
+        "supplier_names": "supplierNames",
+        "team_names": "teamNames",
+        "in_production_since": "inProductionSince",
+        "business_criticality": "businessCriticality",
+        "lifecycle_phase": "lifecyclePhase",
+        "target_industry": "targetIndustry",
+        "deployment_type": "deploymentType",
+        "application_type": "applicationType",
+        "software_distribution_strategy": "softwareDistributionStrategy",
+        "is_development_only": "isDevelopmentOnly",
+        "remark": "remark",
+        "external_id": "externalID",
     }
 
-    _fallbacks: Dict[str, Callable[[], str]] = {
-        'display_name': lambda: maintainability_data.system_name
+    _fallbacks: ClassVar[dict[str, Callable[[], str]]] = {
+        "display_name": lambda: maintainability_data.system_name
     }
 
     @cached_property

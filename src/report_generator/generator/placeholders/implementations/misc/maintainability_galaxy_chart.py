@@ -17,11 +17,15 @@ from pptx.presentation import Presentation
 
 from report_generator.generator.domain import maintainability_data, system_metadata
 from report_generator.generator.placeholders import rendering
-from report_generator.generator.placeholders.implementations.base import Placeholder, PlaceholderDocType
+from report_generator.generator.placeholders.implementations.base import (
+    Placeholder,
+    PlaceholderDocType,
+)
 
 
 class MaintainabilityGalaxyChartPlaceholder(Placeholder):
     """Traditional SIG benchmark galaxy chart."""
+
     key = "GALAXY_SLIDE"
     __doc_type__ = PlaceholderDocType.CHART
 

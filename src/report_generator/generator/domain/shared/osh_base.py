@@ -17,7 +17,7 @@ from functools import cached_property
 
 class OSHMetricsBase:
     """Base class for OSH (Open Source Health) metrics.
-    
+
     Provides common metrics calculations for both system-level and portfolio-level OSH data.
     Subclasses must provide risk distribution properties and dependencies_count.
     """
@@ -82,9 +82,9 @@ class OSHMetricsBase:
         """Dictionary of all risk distributions for chart rendering."""
         return {
             "vulnerability": self.vulnerability_risk_distribution,
-            "legal"        : self.legal_risk_distribution,
-            "freshness"    : self.freshness_risk_distribution,
-            "stability"    : self.stability_risk_distribution,
-            "management"   : self.management_risk_distribution,
-            "activity"     : self.activity_risk_distribution,
+            "legal": self.legal_risk_distribution,
+            "freshness": self.freshness_risk_distribution,
+            "stability": self.stability_risk_distribution,
+            "management": self.management_risk_distribution,
+            "activity": self.activity_risk_distribution,
         }

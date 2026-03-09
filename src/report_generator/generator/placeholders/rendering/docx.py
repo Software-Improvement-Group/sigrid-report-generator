@@ -18,20 +18,21 @@ from typing import Union
 
 
 def find_text_in_document(document, search_text):
-    paragraphs = []
-    for paragraph in document.paragraphs:
-        for run in paragraph.runs:
-            if re.match(rf".*\b{search_text}\b.*", run.text):
-                paragraphs.append(paragraph)
-
-    for table in document.tables:
-        for row in table.rows:
-            for cell in row.cells:
-                for paragraph in cell.paragraphs:
-                    for run in paragraph.runs:
-                        if re.match(rf".*\b{search_text}\b.*", run.text):
-                            paragraphs.append(paragraph)
-
+    paragraphs = [
+        paragraph
+        for paragraph in document.paragraphs
+        for run in paragraph.runs
+        if re.match(rf".*\b{search_text}\b.*", run.text)
+    ]
+    paragraphs.extend(
+        paragraph
+        for table in document.tables
+        for row in table.rows
+        for cell in row.cells
+        for paragraph in cell.paragraphs
+        for run in paragraph.runs
+        if re.match(rf".*\b{search_text}\b.*", run.text)
+    )
     return paragraphs
 
 
@@ -40,15 +41,24 @@ def update_many_paragraphs(paragraphs, placeholder_id, replacement_text):
         update_paragraph(paragraph, placeholder_id, replacement_text)
 
 
-def update_paragraph(paragraph, placeholder_id, replacement_text: Union[str, int, float]):
+def update_paragraph(
+    paragraph, placeholder_id, replacement_text: Union[str, int, float]
+):
     replacement_text = str(replacement_text)
 
     try:
-        run_with_placeholder = next(run for run in paragraph.runs if placeholder_id in run.text)
+        run_with_placeholder = next(
+            run for run in paragraph.runs if placeholder_id in run.text
+        )
     except StopIteration:
         logging.warning(
-            f"Attempt to update placeholder '{placeholder_id}', but not found in paragraph: {paragraph.text}")
+            f"Attempt to update placeholder '{placeholder_id}', but not found in paragraph: {paragraph.text}"
+        )
         return
 
-    logging.debug(f"Replacing: {placeholder_id} with \"{replacement_text}\". New text: {run_with_placeholder.text}")
-    run_with_placeholder.text = run_with_placeholder.text.replace(placeholder_id, replacement_text)
+    logging.debug(
+        f'Replacing: {placeholder_id} with "{replacement_text}". New text: {run_with_placeholder.text}'
+    )
+    run_with_placeholder.text = run_with_placeholder.text.replace(
+        placeholder_id, replacement_text
+    )
