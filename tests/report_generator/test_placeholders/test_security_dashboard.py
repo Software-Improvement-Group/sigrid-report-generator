@@ -20,7 +20,7 @@ class TestSecurityDashboardChartPlaceholders:
 
     def test_add_month_data_row(self):
         """Test _add_month_data_row appends data correctly to arrays."""
-        from report_generator.generator.placeholders.implementations.charts import (
+        from report_generator.generator.placeholders.implementations.charts.security_findings import (
             MonthData,
             _add_month_data_row,
         )
@@ -43,7 +43,7 @@ class TestSecurityDashboardChartPlaceholders:
 
     def test_build_chart_data_arrays_creates_grouped_structure(self):
         """Test _build_chart_data_arrays creates proper grouped/clustered structure."""
-        from report_generator.generator.placeholders.implementations.charts import (
+        from report_generator.generator.placeholders.implementations.charts.security_findings import (
             _build_chart_data_arrays,
         )
 
@@ -91,7 +91,7 @@ class TestSecurityDashboardChartPlaceholders:
 
     def test_build_chart_data_arrays_single_month(self):
         """Test _build_chart_data_arrays handles single month correctly."""
-        from report_generator.generator.placeholders.implementations.charts import (
+        from report_generator.generator.placeholders.implementations.charts.security_findings import (
             _build_chart_data_arrays,
         )
 
@@ -109,7 +109,7 @@ class TestSecurityDashboardChartPlaceholders:
     )
     def test_create_security_findings_chart_data(self, mock_data):
         """Test _create_security_findings_chart_data creates CategoryChartData."""
-        from report_generator.generator.placeholders.implementations.charts import (
+        from report_generator.generator.placeholders.implementations.charts.security_findings import (
             _create_security_findings_chart_data,
         )
 
@@ -132,7 +132,7 @@ class TestSecurityDashboardChartPlaceholders:
     )
     def test_populate_security_findings_chart_no_slides(self, mock_find_charts):
         """Test _populate_chart returns early when no charts found."""
-        from report_generator.generator.placeholders.implementations.charts import (
+        from report_generator.generator.placeholders.implementations.charts.security_findings import (
             _populate_chart,
         )
 
@@ -150,7 +150,7 @@ class TestSecurityDashboardChartPlaceholders:
     )
     def test_populate_security_findings_chart_updates_chart(self, mock_find_charts):
         """Test _populate_chart updates chart when found."""
-        from report_generator.generator.placeholders.implementations.charts import (
+        from report_generator.generator.placeholders.implementations.charts.security_findings import (
             _populate_chart,
         )
 
@@ -168,7 +168,7 @@ class TestSecurityDashboardChartPlaceholders:
 
     def test_security_dashboard_critical_findings_placeholder_key(self):
         """Test SecurityDashboardCriticalFindingsChartPlaceholder has correct key."""
-        from report_generator.generator.placeholders.implementations.charts import (
+        from report_generator.generator.placeholders.implementations.charts.security_findings import (
             SecurityDashboardCriticalFindingsChartPlaceholder,
         )
 
@@ -182,7 +182,7 @@ class TestSecurityDashboardChartPlaceholders:
     )
     def test_security_dashboard_high_findings_placeholder_value(self, mock_data):
         """Test SecurityDashboardHighFindingsChartPlaceholder.value returns chart data."""
-        from report_generator.generator.placeholders.implementations.charts import (
+        from report_generator.generator.placeholders.implementations.charts.security_findings import (
             SecurityDashboardHighFindingsChartPlaceholder,
         )
 
@@ -203,7 +203,7 @@ class TestSecurityDashboardChartPlaceholders:
     )
     def test_resolution_times_chart_uses_legend_labels(self, mock_data):
         """Test resolution times chart uses API legend labels."""
-        from report_generator.generator.placeholders.implementations.charts import (
+        from report_generator.generator.placeholders.implementations.charts.security_findings import (
             SecurityDashboardCriticalResolutionTimesChartPlaceholder,
         )
 

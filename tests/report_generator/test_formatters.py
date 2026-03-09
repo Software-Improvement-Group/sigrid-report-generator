@@ -51,7 +51,7 @@ class TestMaintainabilityPortfolioFormatting:
 
     def test_format_maintainability_statement_with_normal_values(self):
         """Test formatting with normal values."""
-        from report_generator.generator.placeholders.implementations.text import (
+        from report_generator.generator.placeholders.implementations.text.maintainability_portfolio import (
             _format_maintainability_statement,
         )
 
@@ -62,7 +62,7 @@ class TestMaintainabilityPortfolioFormatting:
 
     def test_format_maintainability_statement_singular(self):
         """Test formatting uses singular form correctly."""
-        from report_generator.generator.placeholders.implementations.text import (
+        from report_generator.generator.placeholders.implementations.text.maintainability_portfolio import (
             _format_maintainability_statement,
         )
 
@@ -73,7 +73,7 @@ class TestMaintainabilityPortfolioFormatting:
 
     def test_format_short_maintainability_statement_with_normal_values(self):
         """Test short formatting with normal values."""
-        from report_generator.generator.placeholders.implementations.text import (
+        from report_generator.generator.placeholders.implementations.text.maintainability_portfolio import (
             _format_short_maintainability_statement,
         )
 
