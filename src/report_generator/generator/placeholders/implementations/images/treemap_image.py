@@ -245,7 +245,7 @@ class PeriodPortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder, AB
                 continue
 
             if entry['start_date_data']['maintainabilityDate'] == entry['end_date_data']['maintainabilityDate'] or not \
-            entry['end_date_data'][metric] or not entry['start_date_data'][metric]:
+                    entry['end_date_data'][metric] or not entry['start_date_data'][metric]:
                 differences[system_name] = None
             else:
                 differences[system_name] = entry['end_date_data'][metric] - entry['start_date_data'][metric]
@@ -411,8 +411,8 @@ class MaintainabilityDeltaQualityNewCodePortfolioTreemapPlaceholder(EndDatePortf
     @classmethod
     def value(cls, parameter, additional_parameter=None):
         f = lambda t: maintainability_delta_quality_new_code.data[t]['filesRatingAtEnd'] if \
-        maintainability_delta_quality_new_code.data[t] and maintainability_delta_quality_new_code.data[t][
-            'filesRatingAtEnd'] else 0
+            maintainability_delta_quality_new_code.data[t] and maintainability_delta_quality_new_code.data[t][
+                'filesRatingAtEnd'] else 0
         fig_data = cls.create_end_date_portfolio_treemap(grouping=parameter.lower(), rating_func=f,
                                                          rating_rounding_func=formatters.star_rating_round,
                                                          determine_color_function=cls.determine_rating_color)
@@ -428,8 +428,8 @@ class MaintainabilityDeltaQualityChangedCodePortfolioTreemapPlaceholder(EndDateP
     @classmethod
     def value(cls, parameter, additional_parameter=None):
         f = lambda t: maintainability_delta_quality_changed_code.data[t]['filesRatingAtEnd'] if \
-        maintainability_delta_quality_changed_code.data[t] and maintainability_delta_quality_changed_code.data[t][
-            'filesRatingAtEnd'] else 0
+            maintainability_delta_quality_changed_code.data[t] and maintainability_delta_quality_changed_code.data[t][
+                'filesRatingAtEnd'] else 0
         fig_data = cls.create_end_date_portfolio_treemap(grouping=parameter.lower(), rating_func=f,
                                                          rating_rounding_func=formatters.star_rating_round,
                                                          determine_color_function=cls.determine_rating_color)
@@ -445,8 +445,8 @@ class MaintainabilityDeltaQualityNewAndChangedCodePortfolioTreemapPlaceholder(En
     @classmethod
     def value(cls, parameter, additional_parameter=None):
         f = lambda t: maintainability_delta_quality_new_and_changed_code.data[t]['filesRatingAtEnd'] if \
-        maintainability_delta_quality_new_and_changed_code.data[t] and \
-        maintainability_delta_quality_new_and_changed_code.data[t]['filesRatingAtEnd'] else 0
+            maintainability_delta_quality_new_and_changed_code.data[t] and \
+            maintainability_delta_quality_new_and_changed_code.data[t]['filesRatingAtEnd'] else 0
         fig_data = cls.create_end_date_portfolio_treemap(grouping=parameter.lower(), rating_func=f,
                                                          rating_rounding_func=formatters.star_rating_round,
                                                          determine_color_function=cls.determine_rating_color)
