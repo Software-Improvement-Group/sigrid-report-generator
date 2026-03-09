@@ -14,18 +14,26 @@
 
 import logging
 import re
-from typing import Iterable, Union
+from collections.abc import Iterable
+from typing import Union
 
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 from pptx.oxml.xmlchemy import OxmlElement
 from pptx.presentation import Presentation
+
 # noinspection PyProtectedMember
 from pptx.table import Table, _Row
+
 # noinspection PyProtectedMember
 from pptx.text.text import _Paragraph, _Run
 
-from .common import FontProperties, apply_font_properties, get_font_properties, merge_runs_with_same_formatting
+from .common import (
+    FontProperties,
+    apply_font_properties,
+    get_font_properties,
+    merge_runs_with_same_formatting,
+)
 
 NA_STAR_COLOR = RGBColor(0x91, 0x90, 0x92)
 ONE_STAR_COLOR = RGBColor(0xE0, 0x6C, 0x4F)
@@ -40,8 +48,14 @@ SIG_GREY_COLOR = RGBColor(0xDF, 0xE2, 0xE7)
 MAINTAINABILITY_POS_CHANGE_RANGE_COLORS = [RGBColor(0xD9, 0xEE, 0xDD), FIVE_STAR_COLOR]
 MAINTAINABILITY_NEG_CHANGE_RANGE_COLORS = [RGBColor(0xF3, 0xDD, 0xD7), ONE_STAR_COLOR]
 
-VOLUME_POS_CHANGE_RANGE_COLORS = [RGBColor(0xEB, 0xF3, 0xF5), RGBColor(0x71, 0xB6, 0xC9)]
-VOLUME_NEG_CHANGE_RANGE_COLORS = [RGBColor(0xFA, 0xF1, 0xE1), RGBColor(0xE8, 0x99, 0x36)]
+VOLUME_POS_CHANGE_RANGE_COLORS = [
+    RGBColor(0xEB, 0xF3, 0xF5),
+    RGBColor(0x71, 0xB6, 0xC9),
+]
+VOLUME_NEG_CHANGE_RANGE_COLORS = [
+    RGBColor(0xFA, 0xF1, 0xE1),
+    RGBColor(0xE8, 0x99, 0x36),
+]
 
 DASHBOARD_EXISTING_FINDINGS_COLOR = RGBColor(0xB5, 0xC4, 0xFF)
 DASHBOARD_NEW_FINDINGS_COLOR = RGBColor(0x2E, 0x6B, 0xFF)
@@ -57,30 +71,48 @@ def print_slide_ids(slide):
     # Print slide IDs and names for debugging purposes
     logging.debug("Placeholders:")
     for shape in slide.placeholders:
-        logging.debug('%d %s' % (shape.placeholder_format.idx, shape.name))
+        logging.debug("%d %s" % (shape.placeholder_format.idx, shape.name))
     logging.debug("----\n")
     logging.debug("Shapes:")
     for shape in slide.shapes:
-        logging.debug('%d [%s] %s' % (shape.shape_id, shape.name, "(This is a chart)" if shape.has_chart else ""))
+        logging.debug(
+            "%d [%s] %s"
+            % (
+                shape.shape_id,
+                shape.name,
+                "(This is a chart)" if shape.has_chart else "",
+            )
+        )
 
 
-def update_many_paragraphs(paragraphs, placeholder_id, replacement_text, font: FontProperties = None):
+def update_many_paragraphs(
+    paragraphs, placeholder_id, replacement_text, font: FontProperties = None
+):
     for paragraph in paragraphs:
         update_paragraph(paragraph, placeholder_id, replacement_text, font)
 
 
-def update_paragraph(paragraph: _Paragraph, placeholder_id, replacement_text, font: FontProperties = None):
+def update_paragraph(
+    paragraph: _Paragraph, placeholder_id, replacement_text, font: FontProperties = None
+):
     merge_runs_with_same_formatting(paragraph)
 
     try:
-        run_with_placeholder = next(run for run in (paragraph.runs or []) if placeholder_id in run.text)
+        run_with_placeholder = next(
+            run for run in (paragraph.runs or []) if placeholder_id in run.text
+        )
     except StopIteration:
         logging.warning(
-            f"Attempt to update placeholder '{placeholder_id}', but not found in paragraph: {paragraph.text}")
+            f"Attempt to update placeholder '{placeholder_id}', but not found in paragraph: {paragraph.text}"
+        )
         return
 
-    logging.debug(f"Replacing: {placeholder_id} with \"{replacement_text}\". New text: {run_with_placeholder.text}")
-    run_with_placeholder.text = run_with_placeholder.text.replace(placeholder_id, str(replacement_text))
+    logging.debug(
+        f'Replacing: {placeholder_id} with "{replacement_text}". New text: {run_with_placeholder.text}'
+    )
+    run_with_placeholder.text = run_with_placeholder.text.replace(
+        placeholder_id, str(replacement_text)
+    )
 
     if font:
         apply_font_properties(run_with_placeholder, font)
@@ -124,7 +156,7 @@ def find_text_in_slide(slide, search_text):
 def find_text_in_table(shape, search_text):
     if shape.has_table:
         for cell in shape.table.iter_cells():
-            if re.match(fr".*\b{search_text}\b.*", cell.text):
+            if re.match(rf".*\b{search_text}\b.*", cell.text):
                 return cell.text_frame.paragraphs[0]
     return None
 
@@ -132,7 +164,7 @@ def find_text_in_table(shape, search_text):
 def find_text_in_text_frame(shape, search_text):
     if shape.has_text_frame:
         for paragraph in shape.text_frame.paragraphs:
-            if re.match(fr".*\b{search_text}\b.*", paragraph.text):
+            if re.match(rf".*\b{search_text}\b.*", paragraph.text):
                 return paragraph
     return None
 
@@ -176,11 +208,11 @@ def set_sig_marker(paragraph, marker):
 
     # Red, yellow and green colors are taken from the SIG pptx template Signal colors
     if marker == "-":
-        run.font.color.rgb = RGBColor(0xcb, 0x55, 0x45)
+        run.font.color.rgb = RGBColor(0xCB, 0x55, 0x45)
     if marker == "=":
-        run.font.color.rgb = RGBColor(0xf0, 0xc8, 0x5a)
+        run.font.color.rgb = RGBColor(0xF0, 0xC8, 0x5A)
     if marker == "+":
-        run.font.color.rgb = RGBColor(0x77, 0xc6, 0x73)
+        run.font.color.rgb = RGBColor(0x77, 0xC6, 0x73)
 
 
 def add_xml_element(parent_xml, tag, **attrs):
@@ -302,10 +334,14 @@ def update_table(table: Table, value: list[list[Union[str, int, float]]]):
             if paragraph.runs:
                 column_fonts[col_idx] = get_font_properties(paragraph.runs[0])
 
-            replace_paragraph_with_text(paragraph, value[row_idx][col_idx], column_fonts.get(col_idx))
+            replace_paragraph_with_text(
+                paragraph, value[row_idx][col_idx], column_fonts.get(col_idx)
+            )
 
 
-def replace_paragraph_with_text(paragraph: _Paragraph, text: Union[str, int, float], font: FontProperties = None):
+def replace_paragraph_with_text(
+    paragraph: _Paragraph, text: Union[str, int, float], font: FontProperties = None
+):
     paragraph.clear()
 
     run: _Run = paragraph.add_run()

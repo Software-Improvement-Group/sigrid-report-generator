@@ -13,10 +13,13 @@
 #  limitations under the License.
 
 from report_generator.generator.domain import *
+
 from .base import parameterized_text_placeholder, text_placeholder
 
 
-@parameterized_text_placeholder(custom_key="MODERNIZATION_SYSTEM_{parameter}", parameters=range(1, 11))
+@parameterized_text_placeholder(
+    custom_key="MODERNIZATION_SYSTEM_{parameter}", parameters=range(1, 11)
+)
 def modernization_system_name(index: int):
     """Name of the modernization candidate system."""
     if index >= len(modernization_data.modernization_candidates):
@@ -24,15 +27,21 @@ def modernization_system_name(index: int):
     return modernization_data.modernization_candidates[index].display_name
 
 
-@parameterized_text_placeholder(custom_key="MODERNIZATION_BUSINESS_{parameter}", parameters=range(1, 11))
+@parameterized_text_placeholder(
+    custom_key="MODERNIZATION_BUSINESS_{parameter}", parameters=range(1, 11)
+)
 def modernization_business_criticality(index: int):
     """Business criticality of the modernization candidate system."""
     if index >= len(modernization_data.modernization_candidates):
         return ""
-    return modernization_data.modernization_candidates[index].business_criticality.title()
+    return modernization_data.modernization_candidates[
+        index
+    ].business_criticality.title()
 
 
-@parameterized_text_placeholder(custom_key="MODERNIZATION_PY_{parameter}", parameters=range(1, 11))
+@parameterized_text_placeholder(
+    custom_key="MODERNIZATION_PY_{parameter}", parameters=range(1, 11)
+)
 def modernization_volume(index: int):
     """Volume of the modernization candidate system in person years."""
     if index >= len(modernization_data.modernization_candidates):
@@ -40,7 +49,9 @@ def modernization_volume(index: int):
     return f"{modernization_data.modernization_candidates[index].volume_in_py:.1f} PY"
 
 
-@parameterized_text_placeholder(custom_key="MODERNIZATION_ACTIVITY_{parameter}", parameters=range(1, 11))
+@parameterized_text_placeholder(
+    custom_key="MODERNIZATION_ACTIVITY_{parameter}", parameters=range(1, 11)
+)
 def modernization_activity(index: int):
     """Activity level of the modernization candidate system in person years."""
     if index >= len(modernization_data.modernization_candidates):
@@ -50,7 +61,9 @@ def modernization_activity(index: int):
     return "Unknown" if activity is None else f"{activity:.1f} PY"
 
 
-@parameterized_text_placeholder(custom_key="MODERNIZATION_SCENARIO_{parameter}", parameters=range(1, 11))
+@parameterized_text_placeholder(
+    custom_key="MODERNIZATION_SCENARIO_{parameter}", parameters=range(1, 11)
+)
 def modernization_scenario(index: int):
     """Modernization scenario for the candidate system."""
     if index >= len(modernization_data.modernization_candidates):
@@ -58,7 +71,9 @@ def modernization_scenario(index: int):
     return modernization_data.modernization_candidates[index].scenario.value.upper()
 
 
-@parameterized_text_placeholder(custom_key="MODERNIZATION_TECHNICAL_DEBT_{parameter}", parameters=range(1, 11))
+@parameterized_text_placeholder(
+    custom_key="MODERNIZATION_TECHNICAL_DEBT_{parameter}", parameters=range(1, 11)
+)
 def modernization_technical_debt(index: int):
     """Technical debt of the modernization candidate system in person years."""
     if index >= len(modernization_data.modernization_candidates):
@@ -66,7 +81,9 @@ def modernization_technical_debt(index: int):
     return f"{modernization_data.modernization_candidates[index].estimated_effort_py:.1f} PY"
 
 
-@parameterized_text_placeholder(custom_key="MODERNIZATION_CHANGE_SPEED_{parameter}", parameters=range(1, 11))
+@parameterized_text_placeholder(
+    custom_key="MODERNIZATION_CHANGE_SPEED_{parameter}", parameters=range(1, 11)
+)
 def modernization_change_speed(index: int):
     """Estimated change speed improvement for the modernization candidate."""
     if index >= len(modernization_data.modernization_candidates):
@@ -74,7 +91,9 @@ def modernization_change_speed(index: int):
     return f"+ {modernization_data.modernization_candidates[index].estimated_change_speed:.0f}%"
 
 
-@parameterized_text_placeholder(custom_key="MODERNIZATION_EFFORT_{parameter}", parameters=range(1, 11))
+@parameterized_text_placeholder(
+    custom_key="MODERNIZATION_EFFORT_{parameter}", parameters=range(1, 11)
+)
 def modernization_effort(index: int):
     """Estimated modernization effort in person years."""
     if index >= len(modernization_data.modernization_candidates):
@@ -82,7 +101,9 @@ def modernization_effort(index: int):
     return f"{modernization_data.modernization_candidates[index].estimated_effort_py:.1f} PY"
 
 
-@parameterized_text_placeholder(custom_key="MODERNIZATION_N_{parameter}", parameters=range(1, 11))
+@parameterized_text_placeholder(
+    custom_key="MODERNIZATION_N_{parameter}", parameters=range(1, 11)
+)
 def modernization_index(index: int):
     """Index number for the modernization candidate."""
     if index >= len(modernization_data.modernization_candidates):

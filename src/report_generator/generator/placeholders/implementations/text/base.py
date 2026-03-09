@@ -14,15 +14,20 @@
 
 import logging
 from abc import ABC
-from typing import Any, Callable, Type
+from typing import Any, Callable, Optional
 
 from docx.document import Document
 from pptx.presentation import Presentation
 
 from report_generator.generator.placeholders import rendering
-from report_generator.generator.placeholders.implementations.base import Parameter, ParameterList, \
-    ParameterizedPlaceholder, \
-    Placeholder, PlaceholderDocType, function_name_to_placeholder_key
+from report_generator.generator.placeholders.implementations.base import (
+    Parameter,
+    ParameterizedPlaceholder,
+    ParameterList,
+    Placeholder,
+    PlaceholderDocType,
+    function_name_to_placeholder_key,
+)
 
 
 class _DocumentAdapter:
@@ -35,17 +40,17 @@ class _AbstractTextPlaceholder(Placeholder, ABC):
     __doc_type__ = PlaceholderDocType.TEXT
 
     _PPTX_ADAPTER = _DocumentAdapter(
-        rendering.pptx.find_text_in_presentation,
-        rendering.pptx.update_many_paragraphs
+        rendering.pptx.find_text_in_presentation, rendering.pptx.update_many_paragraphs
     )
 
     _DOCX_ADAPTER = _DocumentAdapter(
-        rendering.docx.find_text_in_document,
-        rendering.docx.update_many_paragraphs
+        rendering.docx.find_text_in_document, rendering.docx.update_many_paragraphs
     )
 
     @staticmethod
-    def _resolve_with_adapter(adapter: _DocumentAdapter, document, key: str, value_cb: Callable[[], str]) -> None:
+    def _resolve_with_adapter(
+        adapter: _DocumentAdapter, document, key: str, value_cb: Callable[[], str]
+    ) -> None:
         paragraphs = adapter.find_text(document, key)
 
         logging.debug(f"Finds for {key}: {len(paragraphs)}")
@@ -59,47 +64,62 @@ class _AbstractTextPlaceholder(Placeholder, ABC):
         adapter.update_paragraphs(paragraphs, key, value)
 
     @staticmethod
-    def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable[[], str]) -> None:
-        _AbstractTextPlaceholder._resolve_with_adapter(_AbstractTextPlaceholder._PPTX_ADAPTER, presentation, key,
-                                                       value_cb)
+    def resolve_pptx(
+        presentation: Presentation, key: str, value_cb: Callable[[], str]
+    ) -> None:
+        _AbstractTextPlaceholder._resolve_with_adapter(
+            _AbstractTextPlaceholder._PPTX_ADAPTER, presentation, key, value_cb
+        )
 
     @staticmethod
     def resolve_docx(document: Document, key: str, value_cb: Callable[[], str]) -> None:
-        _AbstractTextPlaceholder._resolve_with_adapter(_AbstractTextPlaceholder._DOCX_ADAPTER, document, key, value_cb)
+        _AbstractTextPlaceholder._resolve_with_adapter(
+            _AbstractTextPlaceholder._DOCX_ADAPTER, document, key, value_cb
+        )
 
 
-def text_placeholder(custom_key: str = None) -> Callable[[Callable[[], str]], Type[Placeholder]]:
-    def decorator(value_func: Callable[[], str]) -> Type[Placeholder]:
+def text_placeholder(
+    custom_key: Optional[str] = None,
+) -> Callable[[Callable[[], str]], type[Placeholder]]:
+    def decorator(value_func: Callable[[], str]) -> type[Placeholder]:
         class TextPlaceholder(_AbstractTextPlaceholder):
             __doc__ = value_func.__doc__ if value_func.__doc__ else None
-            key = custom_key if custom_key else function_name_to_placeholder_key(value_func.__name__)
+            key = (
+                custom_key
+                if custom_key
+                else function_name_to_placeholder_key(value_func.__name__)
+            )
 
             @classmethod
             def value(cls, parameter=None) -> str:
                 return value_func()
-
 
         return TextPlaceholder
 
     return decorator
 
 
-def parameterized_text_placeholder(custom_key: str, parameters: ParameterList) -> Callable[
-    [Callable[[Parameter], str]], Type[ParameterizedPlaceholder]]:
-    def decorator(value_func: Callable[[Parameter], str]) -> Type[ParameterizedPlaceholder]:
+def parameterized_text_placeholder(
+    custom_key: str, parameters: ParameterList
+) -> Callable[[Callable[[Parameter], str]], type[ParameterizedPlaceholder]]:
+    def decorator(
+        value_func: Callable[[Parameter], str],
+    ) -> type[ParameterizedPlaceholder]:
         if "{parameter}" not in custom_key:
             raise ValueError("Parameterized text placeholder must have '{parameter}'")
 
-
-        class ParameterizedTextPlaceholder(ParameterizedPlaceholder, _AbstractTextPlaceholder):
+        class ParameterizedTextPlaceholder(
+            ParameterizedPlaceholder, _AbstractTextPlaceholder
+        ):
             __doc__ = value_func.__doc__ if value_func.__doc__ else None
             key = custom_key
             allowed_parameters = parameters
 
             @classmethod
-            def value(cls, parameter: Parameter = None, optional_parameter: Any = None) -> str:
+            def value(
+                cls, parameter: Parameter = None, optional_parameter: Any = None
+            ) -> str:
                 return value_func(parameter)
-
 
         return ParameterizedTextPlaceholder
 

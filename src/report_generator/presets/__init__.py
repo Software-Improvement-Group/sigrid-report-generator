@@ -14,4 +14,4 @@
 
 from .presets import SYSTEM_LEVEL_PRESETS, ids, run
 
-__all__ = ['ids', 'run', 'SYSTEM_LEVEL_PRESETS']
+__all__ = ["SYSTEM_LEVEL_PRESETS", "ids", "run"]

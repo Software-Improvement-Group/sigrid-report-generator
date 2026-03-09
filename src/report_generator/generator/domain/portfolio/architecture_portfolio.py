@@ -15,7 +15,9 @@
 from functools import cached_property
 
 from report_generator.generator.context import sigrid_api
-from report_generator.generator.context.portfolio_filters import filter_data_on_portfolio_arguments
+from report_generator.generator.context.portfolio_filters import (
+    filter_data_on_portfolio_arguments,
+)
 from report_generator.generator.domain.portfolio.base import AbstractPortfolioModel
 from report_generator.generator.domain.portfolio.shared import utils
 
@@ -32,39 +34,35 @@ class ArchitecturePortfolioData(AbstractPortfolioModel):
 
     @cached_property
     def system_names(self):
-        return utils.system_names_helper(self.data, 'system')
+        return utils.system_names_helper(self.data, "system")
 
     def get_system(self, system):
-        return utils.get_system_helper(system, self.data, 'system')
+        return utils.get_system_helper(system, self.data, "system")
 
     @cached_property
     def get_rating_distribution_percentages(self):
         """Calculate percentage of systems in each rating category."""
         return utils.get_rating_distribution_percentages(
-            self.data,
-            self._extract_architecture_rating
+            self.data, self._extract_architecture_rating
         )
 
     def _extract_architecture_rating(self, system):
         """Extract architecture rating from a system."""
-        if 'ratings' not in system or 'architecture' not in system['ratings']:
+        if "ratings" not in system or "architecture" not in system["ratings"]:
             return None
-        return system['ratings']['architecture']
+        return system["ratings"]["architecture"]
 
     def _get_rating_and_volume(self, system):
         """Extract rating and volume for a system."""
         return utils.get_rating_and_volume_from_system(
-            system,
-            self._extract_architecture_rating,
-            'system'
+            system, self._extract_architecture_rating, "system"
         )
 
     @cached_property
     def weighted_average_rating(self):
         """Calculate volume-weighted average architecture rating across all systems."""
         return utils.calculate_weighted_average_rating(
-            self.data,
-            self._get_rating_and_volume
+            self.data, self._get_rating_and_volume
         )
 
 

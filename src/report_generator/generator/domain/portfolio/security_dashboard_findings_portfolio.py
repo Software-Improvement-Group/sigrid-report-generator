@@ -15,7 +15,9 @@
 from functools import cached_property
 
 from report_generator.generator.context import sigrid_api
-from report_generator.generator.context.portfolio_filters import filter_data_on_portfolio_arguments
+from report_generator.generator.context.portfolio_filters import (
+    filter_data_on_portfolio_arguments,
+)
 from report_generator.generator.domain.portfolio.base import AbstractPortfolioModel
 from report_generator.generator.domain.portfolio.shared import utils
 
@@ -32,49 +34,53 @@ class SecurityDashboardFindingsPortfolioData(AbstractPortfolioModel):
 
     @cached_property
     def system_names(self):
-        return utils.system_names_helper(self.data['systems'], 'system')
+        return utils.system_names_helper(self.data["systems"], "system")
 
     def get_system(self, system):
-        return utils.get_system_helper(system, self.data['systems'], 'system')
+        return utils.get_system_helper(system, self.data["systems"], "system")
 
     def _initialize_severity_stats(self):
         """Initialize statistics structure for all severity levels."""
         return {
-            'CRITICAL': {'resolved': 0, 'added': 0},
-            'HIGH'    : {'resolved': 0, 'added': 0},
-            'MEDIUM'  : {'resolved': 0, 'added': 0},
-            'LOW'     : {'resolved': 0, 'added': 0}
+            "CRITICAL": {"resolved": 0, "added": 0},
+            "HIGH": {"resolved": 0, "added": 0},
+            "MEDIUM": {"resolved": 0, "added": 0},
+            "LOW": {"resolved": 0, "added": 0},
         }
 
     def _accumulate_severity_counts(self, stats):
         """Accumulate resolved and added counts for all severity levels within the period."""
-        for system in self.data.get('systems', []):
-            for month_data in system.get('findingRatio', []):
-                if utils.is_month_in_period(month_data.get('month'), self.period):
-                    severities = month_data.get('severities', {})
+        for system in self.data.get("systems", []):
+            for month_data in system.get("findingRatio", []):
+                if utils.is_month_in_period(month_data.get("month"), self.period):
+                    severities = month_data.get("severities", {})
 
-                    for severity_level in ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']:
+                    for severity_level in ["CRITICAL", "HIGH", "MEDIUM", "LOW"]:
                         severity_data = severities.get(severity_level, {})
-                        stats[severity_level]['resolved'] += severity_data.get('resolved', 0)
-                        stats[severity_level]['added'] += severity_data.get('new', 0)
+                        stats[severity_level]["resolved"] += severity_data.get(
+                            "resolved", 0
+                        )
+                        stats[severity_level]["added"] += severity_data.get("new", 0)
 
     def _calculate_net_changes(self, stats):
         """Calculate net change for each severity level."""
         for severity_level in stats:
-            net_change = stats[severity_level]['added'] - stats[severity_level]['resolved']
-            stats[severity_level]['net_change'] = net_change
+            net_change = (
+                stats[severity_level]["added"] - stats[severity_level]["resolved"]
+            )
+            stats[severity_level]["net_change"] = net_change
 
     def _get_earliest_month(self):
         """Get the earliest month from the actual API data.
-        
+
         Returns:
             str: The earliest month date (always first of the month), or period start if no data.
         """
         earliest_month = None
 
-        for system in self.data.get('systems', []):
-            for month_data in system.get('findingRatio', []):
-                month = month_data.get('month')
+        for system in self.data.get("systems", []):
+            for month_data in system.get("findingRatio", []):
+                month = month_data.get("month")
                 if month and (earliest_month is None or month < earliest_month):
                     earliest_month = month
 
@@ -84,7 +90,7 @@ class SecurityDashboardFindingsPortfolioData(AbstractPortfolioModel):
     def _all_findings_statistics(self):
         """
         Calculate statistics for all severity levels in a single loop for efficiency.
-        
+
         Returns:
             dict: Statistics for each severity level (CRITICAL, HIGH, MEDIUM, LOW).
         """
@@ -97,52 +103,51 @@ class SecurityDashboardFindingsPortfolioData(AbstractPortfolioModel):
     def critical_findings_statistics(self):
         """
         Calculate statistics for critical security findings across the portfolio.
-        
+
         Returns:
             dict: Statistics including total resolved, new, and net change in critical findings.
         """
-        return self._all_findings_statistics['CRITICAL']
+        return self._all_findings_statistics["CRITICAL"]
 
     @cached_property
     def high_findings_statistics(self):
         """
         Calculate statistics for high severity security findings across the portfolio.
-        
+
         Returns:
             dict: Statistics including total resolved, new, and net change in high severity findings.
         """
-        return self._all_findings_statistics['HIGH']
+        return self._all_findings_statistics["HIGH"]
 
     @cached_property
     def medium_findings_statistics(self):
         """
         Calculate statistics for medium severity security findings across the portfolio.
-        
+
         Returns:
             dict: Statistics including total resolved, new, and net change in medium severity findings.
         """
-        return self._all_findings_statistics['MEDIUM']
+        return self._all_findings_statistics["MEDIUM"]
 
     @cached_property
     def low_findings_statistics(self):
         """
         Calculate statistics for low severity security findings across the portfolio.
-        
+
         Returns:
             dict: Statistics including total resolved, new, and net change in low severity findings.
         """
-        return self._all_findings_statistics['LOW']
+        return self._all_findings_statistics["LOW"]
 
     @cached_property
     def unique_months(self):
-        """Extract unique month labels from findings data
-        """
+        """Extract unique month labels from findings data"""
         from datetime import datetime
 
         columns = []
-        for system in self.data['systems']:
-            for ratio in system.get('findingRatio', []):
-                month = datetime.strptime(ratio['month'], "%Y-%m-%d").strftime("%b")
+        for system in self.data["systems"]:
+            for ratio in system.get("findingRatio", []):
+                month = datetime.strptime(ratio["month"], "%Y-%m-%d").strftime("%b")
                 if month not in columns:
                     columns.append(month)
         return columns
@@ -152,36 +157,36 @@ class SecurityDashboardFindingsPortfolioData(AbstractPortfolioModel):
         from datetime import datetime
 
         findings = {
-            'new'     : [0] * len(columns),
-            'existing': [0] * len(columns),
-            'resolved': [0] * len(columns)
+            "new": [0] * len(columns),
+            "existing": [0] * len(columns),
+            "resolved": [0] * len(columns),
         }
 
-        for system in self.data['systems']:
-            for ratio in system.get('findingRatio', []):
-                month = datetime.strptime(ratio['month'], "%Y-%m-%d").strftime("%b")
+        for system in self.data["systems"]:
+            for ratio in system.get("findingRatio", []):
+                month = datetime.strptime(ratio["month"], "%Y-%m-%d").strftime("%b")
                 month_idx = columns.index(month)
 
-                severities = ratio.get('severities', {}).get(severity, {})
-                findings['new'][month_idx] += severities.get('new', 0)
-                findings['existing'][month_idx] += severities.get('existing', 0)
-                findings['resolved'][month_idx] += severities.get('resolved', 0)
+                severities = ratio.get("severities", {}).get(severity, {})
+                findings["new"][month_idx] += severities.get("new", 0)
+                findings["existing"][month_idx] += severities.get("existing", 0)
+                findings["resolved"][month_idx] += severities.get("resolved", 0)
 
         return findings
 
     def chart_findings_by_severity(self, severity):
         """
         Get aggregated findings data by severity level for chart display.
-        
+
         Args:
             severity: Severity level ('CRITICAL', 'HIGH', 'MEDIUM', 'LOW')
-        
+
         Returns:
             dict: Contains 'columns' (month labels), 'new', 'existing', and 'resolved' arrays
         """
         columns = self.unique_months
         findings = self._aggregate_findings_for_severity(severity, columns)
-        findings['columns'] = columns
+        findings["columns"] = columns
         return findings
 
 

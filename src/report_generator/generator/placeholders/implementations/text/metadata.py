@@ -13,6 +13,7 @@
 #  limitations under the License.
 
 from report_generator.generator.domain import *
+
 from .base import text_placeholder
 
 

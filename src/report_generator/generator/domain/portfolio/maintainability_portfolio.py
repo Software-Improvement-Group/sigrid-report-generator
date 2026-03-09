@@ -14,10 +14,12 @@
 
 from datetime import datetime
 from functools import cached_property
-from typing import Optional, Tuple
+from typing import Optional
 
 from report_generator.generator.context import sigrid_api
-from report_generator.generator.context.portfolio_filters import filter_data_on_portfolio_arguments
+from report_generator.generator.context.portfolio_filters import (
+    filter_data_on_portfolio_arguments,
+)
 from report_generator.generator.domain.portfolio.base import AbstractPortfolioModel
 from report_generator.generator.domain.portfolio.shared import utils
 from report_generator.generator.utils.star_rating import calculate_star_rating_integer
@@ -26,54 +28,68 @@ from report_generator.generator.utils.star_rating import calculate_star_rating_i
 def _categorize_test_code_ratio(ratio):
     """Categorize test code ratio into low/medium/high."""
     if ratio < 0.5:
-        return 'low'
+        return "low"
     elif ratio < 1.0:
-        return 'medium'
+        return "medium"
     else:  # >= 1.0
-        return 'high'
+        return "high"
 
 
 def _initialize_statistics():
     return {
-        'maintainability'       : {
-            '1-star'           : 0, '2-star': 0, '3-star': 0, '4-star': 0, '5-star': 0,
-            'number-of-systems': 0
+        "maintainability": {
+            "1-star": 0,
+            "2-star": 0,
+            "3-star": 0,
+            "4-star": 0,
+            "5-star": 0,
+            "number-of-systems": 0,
         },
-        'maintainability-change': {
-            'systems-increased': 0, 'systems-stable': 0, 'systems-decreased': 0,
-            'biggest-increase' : {},
-            'biggest-decrease' : {}
+        "maintainability-change": {
+            "systems-increased": 0,
+            "systems-stable": 0,
+            "systems-decreased": 0,
+            "biggest-increase": {},
+            "biggest-decrease": {},
         },
-        'volume-change'         : {
-            'total-start'          : 0,
-            'total-end'            : 0,
-            'biggest-change-system': None,
-            'biggest-change-amount': 0
+        "volume-change": {
+            "total-start": 0,
+            "total-end": 0,
+            "biggest-change-system": None,
+            "biggest-change-amount": 0,
         },
-        'test-code-ratio-change': {
-            'total-start'      : 0,
-            'total-end'        : 0,
-            'systems-increased': 0,
-            'systems-stable'   : 0,
-            'systems-decreased': 0,
-            'biggest-increase' : {},
-            'biggest-decrease' : {}
-        }
+        "test-code-ratio-change": {
+            "total-start": 0,
+            "total-end": 0,
+            "systems-increased": 0,
+            "systems-stable": 0,
+            "systems-decreased": 0,
+            "biggest-increase": {},
+            "biggest-decrease": {},
+        },
     }
 
 
 def _is_system_active(metadata):
-    return metadata['active'] and not metadata['isDevelopmentOnly']
+    return metadata["active"] and not metadata["isDevelopmentOnly"]
 
 
 def _update_star_statistics(statistics, end_snapshot):
-    star_rating_integer = calculate_star_rating_integer(end_snapshot['maintainability'])
-    statistics['maintainability'][f"{star_rating_integer}-star"] += 1
-    statistics['maintainability']['number-of-systems'] += 1
+    star_rating_integer = calculate_star_rating_integer(end_snapshot["maintainability"])
+    statistics["maintainability"][f"{star_rating_integer}-star"] += 1
+    statistics["maintainability"]["number-of-systems"] += 1
 
 
-def _update_best_changes(system_name, start_snapshot, end_snapshot, start_date,
-                         end_date, period_start, best_inc, best_dec):
+def _update_best_changes(
+    system_name,
+    start_snapshot,
+    end_snapshot,
+    start_date,
+    end_date,
+    period_start,
+    best_inc,
+    best_dec,
+):
     diff = 0
     if start_date != end_date and start_date >= period_start:
         diff = end_snapshot["maintainability"] - start_snapshot["maintainability"]
@@ -84,64 +100,77 @@ def _update_best_changes(system_name, start_snapshot, end_snapshot, start_date,
     return best_inc, best_dec, diff
 
 
-def _collect_averages_data(start_snapshot, end_snapshot, start_date, period_start,
-                           start_maintainability_ratings, end_maintainability_ratings,
-                           start_volumes, end_volumes):
+def _collect_averages_data(
+    start_snapshot,
+    end_snapshot,
+    start_date,
+    period_start,
+    start_maintainability_ratings,
+    end_maintainability_ratings,
+    start_volumes,
+    end_volumes,
+):
     if start_date < period_start:
-        start_maintainability_ratings.append(start_snapshot['maintainability'])
-        start_volumes.append(start_snapshot['volumeInPersonMonths'])
-    end_maintainability_ratings.append(end_snapshot['maintainability'])
-    end_volumes.append(end_snapshot['volumeInPersonMonths'])
+        start_maintainability_ratings.append(start_snapshot["maintainability"])
+        start_volumes.append(start_snapshot["volumeInPersonMonths"])
+    end_maintainability_ratings.append(end_snapshot["maintainability"])
+    end_volumes.append(end_snapshot["volumeInPersonMonths"])
 
 
 def _update_volume_change(statistics, system_name, start_snapshot, end_snapshot):
     """Track volume changes across the portfolio."""
-    start_volume = start_snapshot.get('volumeInPersonMonths', 0)
-    end_volume = end_snapshot.get('volumeInPersonMonths', 0)
+    start_volume = start_snapshot.get("volumeInPersonMonths", 0)
+    end_volume = end_snapshot.get("volumeInPersonMonths", 0)
 
-    statistics['volume-change']['total-start'] += start_volume
-    statistics['volume-change']['total-end'] += end_volume
+    statistics["volume-change"]["total-start"] += start_volume
+    statistics["volume-change"]["total-end"] += end_volume
 
     volume_change = end_volume - start_volume
-    if abs(volume_change) > abs(statistics['volume-change']['biggest-change-amount']):
-        statistics['volume-change']['biggest-change-system'] = system_name
-        statistics['volume-change']['biggest-change-amount'] = volume_change
+    if abs(volume_change) > abs(statistics["volume-change"]["biggest-change-amount"]):
+        statistics["volume-change"]["biggest-change-system"] = system_name
+        statistics["volume-change"]["biggest-change-amount"] = volume_change
 
 
 def _get_test_code_ratios(start_snapshot, end_snapshot):
     """Extract test code ratios from snapshots."""
-    return start_snapshot.get('testCodeRatio'), end_snapshot.get('testCodeRatio')
+    return start_snapshot.get("testCodeRatio"), end_snapshot.get("testCodeRatio")
 
 
 def _accumulate_test_code_totals(statistics, start_ratio, end_ratio):
     """Add ratios to running totals."""
-    statistics['test-code-ratio-change']['total-start'] += start_ratio
-    statistics['test-code-ratio-change']['total-end'] += end_ratio
+    statistics["test-code-ratio-change"]["total-start"] += start_ratio
+    statistics["test-code-ratio-change"]["total-end"] += end_ratio
 
 
 def _track_test_code_change_direction(statistics, diff):
     """Count systems by change direction."""
     if diff > 0.01:
-        statistics['test-code-ratio-change']['systems-increased'] += 1
+        statistics["test-code-ratio-change"]["systems-increased"] += 1
     elif diff < -0.01:
-        statistics['test-code-ratio-change']['systems-decreased'] += 1
+        statistics["test-code-ratio-change"]["systems-decreased"] += 1
     else:
-        statistics['test-code-ratio-change']['systems-stable'] += 1
+        statistics["test-code-ratio-change"]["systems-stable"] += 1
 
 
 def _update_biggest_changes(statistics, system_name, diff):
     """Track systems with largest increases and decreases."""
     if diff > 0.01:
-        biggest = statistics['test-code-ratio-change']['biggest-increase']
-        if not biggest or diff > list(biggest.values())[0]:
-            statistics['test-code-ratio-change']['biggest-increase'] = {system_name: diff}
+        biggest = statistics["test-code-ratio-change"]["biggest-increase"]
+        if not biggest or diff > next(iter(biggest.values())):
+            statistics["test-code-ratio-change"]["biggest-increase"] = {
+                system_name: diff
+            }
     elif diff < -0.01:
-        biggest = statistics['test-code-ratio-change']['biggest-decrease']
-        if not biggest or diff < list(biggest.values())[0]:
-            statistics['test-code-ratio-change']['biggest-decrease'] = {system_name: diff}
+        biggest = statistics["test-code-ratio-change"]["biggest-decrease"]
+        if not biggest or diff < next(iter(biggest.values())):
+            statistics["test-code-ratio-change"]["biggest-decrease"] = {
+                system_name: diff
+            }
 
 
-def _update_test_code_ratio_change(statistics, system_name, start_snapshot, end_snapshot, start_date, end_date):
+def _update_test_code_ratio_change(
+    statistics, system_name, start_snapshot, end_snapshot, start_date, end_date
+):
     """Track test code ratio changes across the portfolio."""
     start_ratio, end_ratio = _get_test_code_ratios(start_snapshot, end_snapshot)
 
@@ -158,9 +187,13 @@ def _update_test_code_ratio_change(statistics, system_name, start_snapshot, end_
 
 def _finalize_change_statistics(statistics, best_inc, best_dec):
     if best_dec[0] is not None and best_dec[1] < 0:
-        statistics["maintainability-change"]["biggest-decrease"] = {best_dec[0]: int(best_dec[1] * 10) / 10}
+        statistics["maintainability-change"]["biggest-decrease"] = {
+            best_dec[0]: int(best_dec[1] * 10) / 10
+        }
     if best_inc[0] is not None and best_inc[1] > 0:
-        statistics["maintainability-change"]["biggest-increase"] = {best_inc[0]: int(best_inc[1] * 10) / 10}
+        statistics["maintainability-change"]["biggest-increase"] = {
+            best_inc[0]: int(best_inc[1] * 10) / 10
+        }
 
 
 def _update_change_count(statistics, diff):
@@ -172,12 +205,17 @@ def _update_change_count(statistics, diff):
         statistics["maintainability-change"]["systems-stable"] += 1
 
 
-def _calculate_averages(statistics, start_maintainability_ratings, end_maintainability_ratings,
-                        start_volumes, end_volumes):
-    statistics['maintainability']['start-average'] = _weighted_avg(
+def _calculate_averages(
+    statistics,
+    start_maintainability_ratings,
+    end_maintainability_ratings,
+    start_volumes,
+    end_volumes,
+):
+    statistics["maintainability"]["start-average"] = _weighted_avg(
         start_maintainability_ratings, start_volumes
     )
-    statistics['maintainability']['end-average'] = _weighted_avg(
+    statistics["maintainability"]["end-average"] = _weighted_avg(
         end_maintainability_ratings, end_volumes
     )
 
@@ -197,15 +235,17 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
     def data(self):
         data = sigrid_api.get_portfolio_maintainability()
         filtered_data = data
-        filtered_data['systems'] = [system for system in data['systems'] if 'maintainability' in system]
+        filtered_data["systems"] = [
+            system for system in data["systems"] if "maintainability" in system
+        ]
         return filtered_data
 
     @cached_property
     def system_names(self):
-        return utils.system_names_helper(self.data['systems'], 'system')
+        return utils.system_names_helper(self.data["systems"], "system")
 
     def get_system(self, system):
-        return utils.get_system_helper(system, self.data['systems'], 'system')
+        return utils.get_system_helper(system, self.data["systems"], "system")
 
     def get_system_metadata(self, system_name):
         return utils.get_system_metadata(self.metadata, system_name)
@@ -213,20 +253,20 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
     @staticmethod
     def _get_head_entry(system):
         return {
-            "maintainability"      : system["maintainability"],
-            "componentBalance"     : system["componentBalance"],
+            "maintainability": system["maintainability"],
+            "componentBalance": system["componentBalance"],
             "componentIndependence": system["componentIndependence"],
             "componentEntanglement": system["componentEntanglement"],
-            "duplication"          : system["duplication"],
-            "moduleCoupling"       : system["moduleCoupling"],
-            "testCodeRatio"        : system["testCodeRatio"],
-            "unitComplexity"       : system["unitComplexity"],
-            "unitInterfacing"      : system["unitInterfacing"],
-            "unitSize"             : system["unitSize"],
-            "volume"               : system["volume"],
-            "volumeInPersonMonths" : system["volumeInPersonMonths"],
-            "volumeInLoc"          : system["volumeInLoc"],
-            "maintainabilityDate"  : system["maintainabilityDate"]
+            "duplication": system["duplication"],
+            "moduleCoupling": system["moduleCoupling"],
+            "testCodeRatio": system["testCodeRatio"],
+            "unitComplexity": system["unitComplexity"],
+            "unitInterfacing": system["unitInterfacing"],
+            "unitSize": system["unitSize"],
+            "volume": system["volume"],
+            "volumeInPersonMonths": system["volumeInPersonMonths"],
+            "volumeInLoc": system["volumeInLoc"],
+            "maintainabilityDate": system["maintainabilityDate"],
         }
 
     @staticmethod
@@ -234,14 +274,20 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
         input_dt = datetime.strptime(date, "%Y-%m-%d")
         return min(
             snapshots,
-            key=lambda x: abs(datetime.strptime(x["maintainabilityDate"], "%Y-%m-%d") - input_dt)
+            key=lambda x: abs(
+                datetime.strptime(x["maintainabilityDate"], "%Y-%m-%d") - input_dt
+            ),
         )
 
     @staticmethod
     def _return_closest_date(prime_date, date1, date2):
         input_dt = datetime.strptime(prime_date, "%Y-%m-%d")
-        abs_date_1 = abs(datetime.strptime(date1["maintainabilityDate"], "%Y-%m-%d") - input_dt)
-        abs_date_2 = abs(datetime.strptime(date2["maintainabilityDate"], "%Y-%m-%d") - input_dt)
+        abs_date_1 = abs(
+            datetime.strptime(date1["maintainabilityDate"], "%Y-%m-%d") - input_dt
+        )
+        abs_date_2 = abs(
+            datetime.strptime(date2["maintainabilityDate"], "%Y-%m-%d") - input_dt
+        )
         if abs_date_1 < abs_date_2:
             return date1
         else:
@@ -250,12 +296,16 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
     def get_closest_snapshot(self, system, snapshot_date, ignore_head_entry=False):
         s = self.get_system(system)
         head_entry = MaintainabilityPortfolioData._get_head_entry(s)
-        if not s['allRatings']:
+        if not s["allRatings"]:
             return head_entry
-        snapshot = MaintainabilityPortfolioData._get_snapshot_closest_to_date(snapshot_date, s['allRatings'])
+        snapshot = MaintainabilityPortfolioData._get_snapshot_closest_to_date(
+            snapshot_date, s["allRatings"]
+        )
         if ignore_head_entry:
             return snapshot
-        snapshot = MaintainabilityPortfolioData._return_closest_date(snapshot_date, snapshot, head_entry)
+        snapshot = MaintainabilityPortfolioData._return_closest_date(
+            snapshot_date, snapshot, head_entry
+        )
         return snapshot
 
     def start_snapshot(self, system):
@@ -268,7 +318,7 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
     def statistics(self):
         """
         Calculate comprehensive maintainability statistics for the portfolio.
-        
+
         Returns:
             dict: A dictionary containing:
                 - 'maintainability': Star rating distribution and averages
@@ -279,15 +329,15 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
                 - 'maintainability-change': Best performing systems
                     - 'systems-increased': Count of systems with increased ratings
                     - 'systems-stable': Count of systems with stable ratings
-                    - 'systems-decreased': Count of systems with decreased ratings  
+                    - 'systems-decreased': Count of systems with decreased ratings
                     - 'biggest-increase': Dict with system name and largest positive change
                     - 'biggest-decrease': Dict with system name and largest negative change
         """
         statistics = _initialize_statistics()
         period_start = _parse_date(self.period[0])
 
-        best_inc: Tuple[Optional[str], float] = (None, float("-inf"))
-        best_dec: Tuple[Optional[str], float] = (None, float("inf"))
+        best_inc: tuple[Optional[str], float] = (None, float("-inf"))
+        best_dec: tuple[Optional[str], float] = (None, float("inf"))
         start_maintainability_ratings, end_maintainability_ratings = [], []
         start_volumes, end_volumes = [], []
 
@@ -303,22 +353,43 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
 
             _update_star_statistics(statistics, end_snapshot)
             best_inc, best_dec, diff = _update_best_changes(
-                system_name, start_snapshot, end_snapshot, start_date, end_date,
-                period_start, best_inc, best_dec
+                system_name,
+                start_snapshot,
+                end_snapshot,
+                start_date,
+                end_date,
+                period_start,
+                best_inc,
+                best_dec,
             )
             _update_change_count(statistics, diff)
             _update_volume_change(statistics, system_name, start_snapshot, end_snapshot)
-            _update_test_code_ratio_change(statistics, system_name, start_snapshot, end_snapshot, start_date, end_date)
+            _update_test_code_ratio_change(
+                statistics,
+                system_name,
+                start_snapshot,
+                end_snapshot,
+                start_date,
+                end_date,
+            )
             _collect_averages_data(
-                start_snapshot, end_snapshot, start_date, period_start,
-                start_maintainability_ratings, end_maintainability_ratings,
-                start_volumes, end_volumes
+                start_snapshot,
+                end_snapshot,
+                start_date,
+                period_start,
+                start_maintainability_ratings,
+                end_maintainability_ratings,
+                start_volumes,
+                end_volumes,
             )
 
         _finalize_change_statistics(statistics, best_inc, best_dec)
         _calculate_averages(
-            statistics, start_maintainability_ratings, end_maintainability_ratings,
-            start_volumes, end_volumes
+            statistics,
+            start_maintainability_ratings,
+            end_maintainability_ratings,
+            start_volumes,
+            end_volumes,
         )
 
         return statistics
@@ -328,13 +399,12 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
         if not _is_system_active(md):
             return None
         end_snapshot = self.end_snapshot(system_name)
-        return end_snapshot['maintainability']
+        return end_snapshot["maintainability"]
 
     @cached_property
     def get_rating_distribution_percentages(self):
         return utils.get_rating_distribution_percentages(
-            self.system_names,
-            self._extract_maintainability_rating
+            self.system_names, self._extract_maintainability_rating
         )
 
     def _get_rating_and_volume_for_system_name(self, system_name):
@@ -343,21 +413,20 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
             return None, 0
 
         end_snapshot = self.end_snapshot(system_name)
-        rating = end_snapshot['maintainability']
-        volume = end_snapshot.get('volumeInPersonMonths', 0)
+        rating = end_snapshot["maintainability"]
+        volume = end_snapshot.get("volumeInPersonMonths", 0)
         return rating, volume
 
     @cached_property
     def weighted_average_rating(self):
         return utils.calculate_weighted_average_rating(
-            self.system_names,
-            self._get_rating_and_volume_for_system_name
+            self.system_names, self._get_rating_and_volume_for_system_name
         )
 
     @cached_property
     def test_code_ratio_distribution_percentages(self):
         """Calculate percentage of systems in each test code ratio category."""
-        counts = {'low': 0, 'medium': 0, 'high': 0}
+        counts = {"low": 0, "medium": 0, "high": 0}
         total = 0
 
         for system_name in self.system_names:
@@ -366,7 +435,7 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
                 continue
 
             end_snapshot = self.end_snapshot(system_name)
-            test_code_ratio = end_snapshot.get('testCodeRatio')
+            test_code_ratio = end_snapshot.get("testCodeRatio")
 
             if test_code_ratio is None:
                 continue
@@ -377,12 +446,12 @@ class MaintainabilityPortfolioData(AbstractPortfolioModel):
 
         # Calculate percentages
         if total == 0:
-            return {'low': 0, 'medium': 0, 'high': 0}
+            return {"low": 0, "medium": 0, "high": 0}
 
         return {
-            'low'   : round(100 * counts['low'] / total),
-            'medium': round(100 * counts['medium'] / total),
-            'high'  : round(100 * counts['high'] / total)
+            "low": round(100 * counts["low"] / total),
+            "medium": round(100 * counts["medium"] / total),
+            "high": round(100 * counts["high"] / total),
         }
 
 

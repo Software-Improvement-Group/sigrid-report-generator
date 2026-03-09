@@ -13,6 +13,7 @@
 #  limitations under the License.
 
 from pptx.oxml.text import CT_TextParagraph
+
 # noinspection PyProtectedMember
 from pptx.text.text import _Paragraph
 
@@ -20,7 +21,6 @@ import report_generator.generator.placeholders.rendering.pptx
 
 
 class TestReportUtils:
-
     def test_merge_similar_runs(self):
         p = _Paragraph(CT_TextParagraph(), None)
         r1 = p.add_run()
@@ -33,7 +33,9 @@ class TestReportUtils:
         f2 = r2.font
         f2.bold = True
 
-        report_generator.generator.placeholders.rendering.pptx.merge_runs_with_same_formatting(p)
+        report_generator.generator.placeholders.rendering.pptx.merge_runs_with_same_formatting(
+            p
+        )
 
         assert len(p.runs) == 1
         assert p.text == "aapnoot"
@@ -49,7 +51,9 @@ class TestReportUtils:
         f2 = r2.font
         f2.bold = False
 
-        report_generator.generator.placeholders.rendering.pptx.merge_runs_with_same_formatting(p)
+        report_generator.generator.placeholders.rendering.pptx.merge_runs_with_same_formatting(
+            p
+        )
 
         assert len(p.runs) == 2
         assert p.runs[0].text == "aap"

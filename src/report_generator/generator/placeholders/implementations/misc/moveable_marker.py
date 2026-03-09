@@ -16,10 +16,17 @@ from typing import Callable
 
 from pptx.presentation import Presentation
 
-from report_generator.generator.domain import architecture_data, maintainability_data, modernization_data, \
-    osh_data, security_data
+from report_generator.generator.domain import (
+    architecture_data,
+    maintainability_data,
+    modernization_data,
+    osh_data,
+    security_data,
+)
 from report_generator.generator.placeholders import rendering
-from report_generator.generator.placeholders.formatting.formatters import star_rating_round
+from report_generator.generator.placeholders.formatting.formatters import (
+    star_rating_round,
+)
 from report_generator.generator.placeholders.implementations.base import Placeholder
 
 _RATING_MARKER_MOVE_SIZE = 2200000
@@ -40,7 +47,9 @@ class _AbstractMoveableMarkerPlaceholder(Placeholder, ABC):
     """Used for the rating indicator on SIG metric rating slides. It adds the rating, but also moves the marker to the correct position on the slide."""
 
     @staticmethod
-    def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable[[], str]) -> None:
+    def resolve_pptx(
+        presentation: Presentation, key: str, value_cb: Callable[[], str]
+    ) -> None:
         paragraphs = []
         for slide in presentation.slides:
             paragraphs.extend(rendering.pptx.find_text_in_slide(slide, key))
@@ -56,7 +65,10 @@ class _AbstractMoveableMarkerPlaceholder(Placeholder, ABC):
 
             # noinspection PyProtectedMember
             marker = paragraph._parent._parent._parent._parent
-            marker.left = int(marker.left + _RATING_MARKER_MOVE_SIZE * _distance_to_average(value_float))
+            marker.left = int(
+                marker.left
+                + _RATING_MARKER_MOVE_SIZE * _distance_to_average(value_float)
+            )
 
 
 class MaintainabilityMovableMarkerPlaceholder(_AbstractMoveableMarkerPlaceholder):
@@ -93,13 +105,17 @@ class SecurityMovableMarkerPlaceholder(_AbstractMoveableMarkerPlaceholder):
 
 class _ManagementSummaryMarkerPlaceholder(Placeholder, ABC):
     @staticmethod
-    def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable[[], str]) -> None:
+    def resolve_pptx(
+        presentation: Presentation, key: str, value_cb: Callable[[], str]
+    ) -> None:
         for slide in presentation.slides:
             for marker in rendering.pptx.find_text_in_slide(slide, key):
                 value, label = value_cb()
                 rendering.pptx.update_paragraph(marker, key, f"{label}\n\n\n\n")
                 # noinspection PyProtectedMember
-                marker._parent._parent.left += int(value * _MANAGEMENT_SUMMARY_MARKER_RANGE)
+                marker._parent._parent.left += int(
+                    value * _MANAGEMENT_SUMMARY_MARKER_RANGE
+                )
 
 
 class ModernizationVolumeMarkerPlaceholder(_ManagementSummaryMarkerPlaceholder):
@@ -107,7 +123,10 @@ class ModernizationVolumeMarkerPlaceholder(_ManagementSummaryMarkerPlaceholder):
 
     @classmethod
     def value(cls, parameter=None) -> tuple[float, str]:
-        return modernization_data.total_volume / 5000.0, f"{round(modernization_data.total_volume)} PY"
+        return (
+            modernization_data.total_volume / 5000.0,
+            f"{round(modernization_data.total_volume)} PY",
+        )
 
 
 class ModernizationTechnicalDebtMarkerPlaceholder(_ManagementSummaryMarkerPlaceholder):
@@ -116,8 +135,13 @@ class ModernizationTechnicalDebtMarkerPlaceholder(_ManagementSummaryMarkerPlaceh
     @classmethod
     def value(cls, parameter=None) -> tuple[float, str]:
         technical_debt = sum(
-            candidate.estimated_effort_py for candidate in modernization_data.modernization_candidates)
-        return technical_debt / modernization_data.total_volume, f"{round(technical_debt)} PY"
+            candidate.estimated_effort_py
+            for candidate in modernization_data.modernization_candidates
+        )
+        return (
+            technical_debt / modernization_data.total_volume,
+            f"{round(technical_debt)} PY",
+        )
 
 
 class ModernizationSpeedMarkerPlaceholder(_ManagementSummaryMarkerPlaceholder):
@@ -141,5 +165,8 @@ class ModernizationEffortMarkerPlaceholder(_ManagementSummaryMarkerPlaceholder):
 
     @classmethod
     def value(cls, parameter=None) -> tuple[float, str]:
-        effort = sum(candidate.estimated_effort_py for candidate in modernization_data.modernization_candidates)
+        effort = sum(
+            candidate.estimated_effort_py
+            for candidate in modernization_data.modernization_candidates
+        )
         return effort / modernization_data.total_volume, f"{round(effort)} PY"

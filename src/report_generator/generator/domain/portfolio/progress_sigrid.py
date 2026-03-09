@@ -29,7 +29,12 @@ class ProgressStatus(Enum):
 
 class ProgressSigridData:
     def __init__(self):
-        self.capabilities = ["SECURITY", "OPEN_SOURCE_HEALTH", "ARCHITECTURE_QUALITY", "MAINTAINABILITY"]
+        self.capabilities = [
+            "SECURITY",
+            "OPEN_SOURCE_HEALTH",
+            "ARCHITECTURE_QUALITY",
+            "MAINTAINABILITY",
+        ]
 
     @cached_property
     def periods(self):
@@ -42,7 +47,10 @@ class ProgressSigridData:
 
     @cached_property
     def objectives_evaluation_trend(self):
-        return [(period, sigrid_api.get_objectives_evaluation(period)["systems"]) for period in self.periods]
+        return [
+            (period, sigrid_api.get_objectives_evaluation(period)["systems"])
+            for period in self.periods
+        ]
 
     @cached_property
     def objectives_evaluation_status(self):
@@ -51,8 +59,10 @@ class ProgressSigridData:
 
     def get_portfolio_trend_series(self, capability):
         row = [[], [], [], []]
-        for period, evaluation in self.objectives_evaluation_trend:
-            row = np.hstack((row, self.get_portfolio_percentage(evaluation, capability)))
+        for _period, evaluation in self.objectives_evaluation_trend:
+            row = np.hstack(
+                (row, self.get_portfolio_percentage(evaluation, capability))
+            )
         res = row[0] + row[1]
         return [res]
 
@@ -65,7 +75,9 @@ class ProgressSigridData:
 
         row = [[], [], [], []]
         for capability in self.capabilities:
-            row = np.hstack((row, self.get_portfolio_percentage(evaluation, capability)))
+            row = np.hstack(
+                (row, self.get_portfolio_percentage(evaluation, capability))
+            )
         return row
 
     def get_portfolio_percentage(self, evaluations, capability):
@@ -77,25 +89,53 @@ class ProgressSigridData:
         for system in evaluations:
             for objective_evaluation in system["objectives"]:
                 if capability is None or objective_evaluation["feature"] == capability:
-                    if self.determine_system_status(objective_evaluation, ProgressStatus.MET_AT_START) == True:
+                    if (
+                        self.determine_system_status(
+                            objective_evaluation, ProgressStatus.MET_AT_START
+                        )
+                    ):
                         with_status_at_start += 1
-                    if self.determine_system_status(objective_evaluation, ProgressStatus.MET_AT_END) == True:
+                    if (
+                        self.determine_system_status(
+                            objective_evaluation, ProgressStatus.MET_AT_END
+                        )
+                    ):
                         with_status_at_end += 1
-                    if self.determine_system_status(objective_evaluation, ProgressStatus.UNKNOWN) == True:
+                    if (
+                        self.determine_system_status(
+                            objective_evaluation, ProgressStatus.UNKNOWN
+                        )
+                    ):
                         with_status_unknown += 1
                     total += 1
 
-        with_status_at_start = with_status_at_start * 100.0 / (total - with_status_unknown) if (
-                                                                                                       total - with_status_unknown) > 0 else 0
-        with_status_at_end = with_status_at_end * 100.0 / (total - with_status_unknown) if (
-                                                                                                   total - with_status_unknown) > 0 else 0
+        with_status_at_start = (
+            with_status_at_start * 100.0 / (total - with_status_unknown)
+            if (total - with_status_unknown) > 0
+            else 0
+        )
+        with_status_at_end = (
+            with_status_at_end * 100.0 / (total - with_status_unknown)
+            if (total - with_status_unknown) > 0
+            else 0
+        )
 
         if with_status_at_end >= with_status_at_start:
             improved = np.round(with_status_at_end - with_status_at_start, 0)
-            return [[np.round(with_status_at_start, 0)], [improved], [0.0], [100.0 - with_status_at_start - improved]]
+            return [
+                [np.round(with_status_at_start, 0)],
+                [improved],
+                [0.0],
+                [100.0 - with_status_at_start - improved],
+            ]
         else:
             worsened = np.round(with_status_at_start - with_status_at_end, 0)
-            return [[np.round(with_status_at_end, 0)], [0.0], [worsened], [100.0 - with_status_at_end - worsened]]
+            return [
+                [np.round(with_status_at_end, 0)],
+                [0.0],
+                [worsened],
+                [100.0 - with_status_at_end - worsened],
+            ]
 
     @staticmethod
     def determine_system_status(objective_evaluation, status):
@@ -104,11 +144,12 @@ class ProgressSigridData:
         if status == ProgressStatus.MET_AT_END:
             return objective_evaluation["targetMetAtEnd"] == "MET"
         if status == ProgressStatus.UNKNOWN:
-            return (objective_evaluation["targetMetAtEnd"] == "UNKNOWN"
-                    or (objective_evaluation["targetMetAtEnd"] != "MET"
-                        and objective_evaluation["delta"] != "IMPROVING"
-                        and objective_evaluation["delta"] != "DETERIORATING"
-                        and objective_evaluation["delta"] != "SIMILAR"))
+            return objective_evaluation["targetMetAtEnd"] == "UNKNOWN" or (
+                objective_evaluation["targetMetAtEnd"] != "MET"
+                and objective_evaluation["delta"] != "IMPROVING"
+                and objective_evaluation["delta"] != "DETERIORATING"
+                and objective_evaluation["delta"] != "SIMILAR"
+            )
 
 
 progress_sigrid_data = ProgressSigridData()

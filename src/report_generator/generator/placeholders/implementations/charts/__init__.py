@@ -15,10 +15,16 @@
 import inspect
 
 from . import osh_charts, security_findings
-from .security_findings import (MonthData, SecurityDashboardCriticalFindingsChartPlaceholder,
-                                SecurityDashboardCriticalResolutionTimesChartPlaceholder,
-                                SecurityDashboardHighFindingsChartPlaceholder, _add_month_data_row,
-                                _build_chart_data_arrays, _create_security_findings_chart_data, _populate_chart)
+from .security_findings import (
+    MonthData,
+    SecurityDashboardCriticalFindingsChartPlaceholder,
+    SecurityDashboardCriticalResolutionTimesChartPlaceholder,
+    SecurityDashboardHighFindingsChartPlaceholder,
+    _add_month_data_row,
+    _build_chart_data_arrays,
+    _create_security_findings_chart_data,
+    _populate_chart,
+)
 
 _all_implementations = {
     **security_findings.__dict__,
@@ -26,8 +32,11 @@ _all_implementations = {
 }
 
 _placeholders_map = {
-    name: obj for name, obj in _all_implementations.items()
-    if inspect.isclass(obj) and hasattr(obj, '__placeholder__') and not inspect.isabstract(obj)
+    name: obj
+    for name, obj in _all_implementations.items()
+    if inspect.isclass(obj)
+    and hasattr(obj, "__placeholder__")
+    and not inspect.isabstract(obj)
 }
 
 placeholders = set(_placeholders_map.values())

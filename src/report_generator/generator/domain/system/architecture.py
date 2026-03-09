@@ -25,23 +25,26 @@ class ArchitectureData:
 
     @cached_property
     def date(self):
-        return datetime.strptime(self.data["snapshotDate"], '%Y-%m-%d')
+        return datetime.strptime(self.data["snapshotDate"], "%Y-%m-%d")
 
     @cached_property
     def ratings(self):
-        return self.data['ratings']
+        return self.data["ratings"]
 
     @cached_property
     def system_properties(self):
-        return self.ratings['systemProperties']
+        return self.ratings["systemProperties"]
 
     @cached_property
     def subcharacteristics(self):
-        return self.ratings['subcharacteristics']
+        return self.ratings["subcharacteristics"]
 
     def get_score_for_prop_or_subchar(self, metric_or_subchar):
-        return self.system_properties[metric_or_subchar] if metric_or_subchar in self.system_properties else \
-            self.subcharacteristics[metric_or_subchar]
+        return (
+            self.system_properties[metric_or_subchar]
+            if metric_or_subchar in self.system_properties
+            else self.subcharacteristics[metric_or_subchar]
+        )
 
 
 architecture_data = ArchitectureData()

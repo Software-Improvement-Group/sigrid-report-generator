@@ -13,25 +13,28 @@
 #  limitations under the License.
 
 import logging
-from typing import Callable, List, Tuple
+from typing import Callable
 
 from pptx.chart.data import ChartData
 from pptx.presentation import Presentation
 
 from report_generator.generator.domain import osh_data, osh_portfolio_data
 from report_generator.generator.placeholders import rendering
-from report_generator.generator.placeholders.implementations.base import Placeholder, PlaceholderDocType
+from report_generator.generator.placeholders.implementations.base import (
+    Placeholder,
+    PlaceholderDocType,
+)
 
 
-def _format_osh_chart_data(data, categories: List[Tuple[str, str]]) -> ChartData:
+def _format_osh_chart_data(data, categories: list[tuple[str, str]]) -> ChartData:
     """
     Format OSH risk distribution data for a chart.
-    
+
     Args:
         data: Risk distributions data dictionary
         categories: List of (display_name, data_key) tuples for each category
                    e.g., [("Vulnerability risk", "vulnerability"), ("Legal risk", "legal")]
-    
+
     Returns:
         ChartData object ready for chart population
     """
@@ -48,8 +51,14 @@ def _format_osh_chart_data(data, categories: List[Tuple[str, str]]) -> ChartData
 
 def _determine_chart_axis_max(original_data):
     data = original_data.risk_distributions
-    max_bar_length = max(sum(data["vulnerability"][0:4]), sum(data["legal"][0:4]), sum(data["freshness"][0:4]),
-                         sum(data["activity"][0:4]), sum(data["stability"][0:4]), sum(data["management"][0:4]))
+    max_bar_length = max(
+        sum(data["vulnerability"][0:4]),
+        sum(data["legal"][0:4]),
+        sum(data["freshness"][0:4]),
+        sum(data["activity"][0:4]),
+        sum(data["stability"][0:4]),
+        sum(data["management"][0:4]),
+    )
 
     return max_bar_length * 1.1
 
@@ -60,7 +69,9 @@ def _set_chart_data_and_axis(chart, data, axis_max):
     chart.value_axis.maximum_scale = axis_max
 
 
-def _resolve_single_osh_chart(presentation: Presentation, key: str, value_cb, data_source) -> None:
+def _resolve_single_osh_chart(
+    presentation: Presentation, key: str, value_cb, data_source
+) -> None:
     """Resolver for a single OSH chart."""
     charts = rendering.pptx.find_charts(presentation, key)
     logging.debug(f"Finds for {key}: {len(charts)}")
@@ -78,12 +89,13 @@ OTHER_RISKS_CATEGORIES = [
     ("Freshness risk", "freshness"),
     ("Stability risk", "stability"),
     ("Management risk", "management"),
-    ("Activity risk", "activity")
+    ("Activity risk", "activity"),
 ]
 
 
 class OSHVulnLegalGraphPlaceholder(Placeholder):
     """OSH system-level vulnerability and legal risk bar chart."""
+
     key = "OSH_VULN_LEGAL_GRAPH"
     __doc_type__ = PlaceholderDocType.CHART
 
@@ -98,12 +110,15 @@ class OSHVulnLegalGraphPlaceholder(Placeholder):
 
 class OSHOtherRisksGraphPlaceholder(Placeholder):
     """OSH system-level freshness, stability, management, and activity risk bar chart."""
+
     key = "OSH_OTHER_RISKS_GRAPH"
     __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
     def value(cls, parameter=None):
-        return _format_osh_chart_data(osh_data.risk_distributions, OTHER_RISKS_CATEGORIES)
+        return _format_osh_chart_data(
+            osh_data.risk_distributions, OTHER_RISKS_CATEGORIES
+        )
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
@@ -112,12 +127,15 @@ class OSHOtherRisksGraphPlaceholder(Placeholder):
 
 class OSHPortfolioVulnLegalGraphPlaceholder(Placeholder):
     """OSH portfolio-level vulnerability and legal risk bar chart."""
+
     key = "OSH_PORTFOLIO_VULN_LEGAL_GRAPH"
     __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
     def value(cls, parameter=None):
-        return _format_osh_chart_data(osh_portfolio_data.risk_distributions, VULN_LIC_CATEGORIES)
+        return _format_osh_chart_data(
+            osh_portfolio_data.risk_distributions, VULN_LIC_CATEGORIES
+        )
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
@@ -126,12 +144,15 @@ class OSHPortfolioVulnLegalGraphPlaceholder(Placeholder):
 
 class OSHPortfolioOtherRisksGraphPlaceholder(Placeholder):
     """OSH portfolio-level freshness, stability, management, and activity risk bar chart."""
+
     key = "OSH_PORTFOLIO_OTHER_RISKS_GRAPH"
     __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
     def value(cls, parameter=None):
-        return _format_osh_chart_data(osh_portfolio_data.risk_distributions, OTHER_RISKS_CATEGORIES)
+        return _format_osh_chart_data(
+            osh_portfolio_data.risk_distributions, OTHER_RISKS_CATEGORIES
+        )
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:

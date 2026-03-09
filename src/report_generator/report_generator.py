@@ -16,8 +16,12 @@ import logging
 
 from tqdm import tqdm
 
-from report_generator.generator.placeholders import PlaceholderCollection, \
-    placeholders as default_placeholders
+from report_generator.generator.placeholders import (
+    PlaceholderCollection,
+)
+from report_generator.generator.placeholders import (
+    placeholders as default_placeholders,
+)
 from report_generator.generator.report import Report
 
 
@@ -26,11 +30,13 @@ class ReportGenerator:
         self.placeholders: PlaceholderCollection = default_placeholders
         self.report: Report = Report.from_template(template_path)
 
-    def register_additional_placeholders(self, placeholders: PlaceholderCollection) -> None:
+    def register_additional_placeholders(
+        self, placeholders: PlaceholderCollection
+    ) -> None:
         self.placeholders.update(placeholders)
 
     def get_placeholder_progress_bar(self):
-        if logging.getLogger('root').level == logging.DEBUG:
+        if logging.getLogger("root").level == logging.DEBUG:
             return self.placeholders
 
         return tqdm(self.placeholders, desc="Processing", unit=" placeholders")

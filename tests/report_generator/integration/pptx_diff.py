@@ -64,10 +64,18 @@ def compare_shapes_text(slide1, slide2, slide_index):
         if shape1.has_text_frame and shape2.has_text_frame:
             if shape1.text != shape2.text:
                 differ = Differ()
-                diff = list(differ.compare(shape1.text.splitlines(), shape2.text.splitlines()))
-                differences.append(f"Slide {slide_index + 1}, Shape {j + 1}: Text difference:")
+                diff = list(
+                    differ.compare(shape1.text.splitlines(), shape2.text.splitlines())
+                )
+                differences.append(
+                    f"Slide {slide_index + 1}, Shape {j + 1}: Text difference:"
+                )
                 differences.extend(
-                    [f"    {line}" for line in diff if line.startswith('+ ') or line.startswith('- ')]
+                    [
+                        f"    {line}"
+                        for line in diff
+                        if line.startswith("+ ") or line.startswith("- ")
+                    ]
                 )
     return differences
 
@@ -77,7 +85,9 @@ def compare_tables(slide1, slide2, file1, file2, slide_index):
     for j, (shape1, shape2) in enumerate(zip(slide1.shapes, slide2.shapes)):
         if shape1.has_table and shape2.has_table:
             table1, table2 = shape1.table, shape2.table
-            if len(table1.rows) != len(table2.rows) or len(table1.columns) != len(table2.columns):
+            if len(table1.rows) != len(table2.rows) or len(table1.columns) != len(
+                table2.columns
+            ):
                 differences.append(
                     f"Slide {slide_index + 1}, Table {j + 1}: Table size mismatch: "
                     f"{file1} has {len(table1.rows)} rows and {len(table1.columns)} columns, "
@@ -94,12 +104,18 @@ def compare_table_cells(table1, table2, slide_index, table_index):
         for col_idx, (cell1, cell2) in enumerate(zip(row1.cells, row2.cells)):
             if cell1.text != cell2.text:
                 differ = Differ()
-                diff = list(differ.compare(cell1.text.splitlines(), cell2.text.splitlines()))
+                diff = list(
+                    differ.compare(cell1.text.splitlines(), cell2.text.splitlines())
+                )
                 differences.append(
                     f"Slide {slide_index + 1}, Table {table_index + 1}, Cell ({row_idx + 1}, {col_idx + 1}): Text difference:"
                 )
                 differences.extend(
-                    [f"    <{line}>" for line in diff if line.startswith('+ ') or line.startswith('- ')]
+                    [
+                        f"    <{line}>"
+                        for line in diff
+                        if line.startswith("+ ") or line.startswith("- ")
+                    ]
                 )
     return differences
 

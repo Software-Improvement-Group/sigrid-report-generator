@@ -13,9 +13,9 @@
 #  limitations under the License.
 
 from datetime import datetime
+from typing import Union
 
 from dateutil.relativedelta import relativedelta
-from typing_extensions import Union
 
 
 def parse_date(date: Union[str, datetime]) -> datetime:

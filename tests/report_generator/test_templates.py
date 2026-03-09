@@ -22,10 +22,9 @@ from pptx.enum.shapes import MSO_SHAPE_TYPE
 
 
 class TestTemplates:
-
     def test_templates_should_not_use_sigsterren_font(self):
         """
-        Test that no templates use the Sigsterren font at any point. 
+        Test that no templates use the Sigsterren font at any point.
 
         Placeholders should be written in the Calibri font. For stars, the unicode stars (★★★☆☆) should be used with the Calibri font.
         """
@@ -35,9 +34,13 @@ class TestTemplates:
         original_names = {}
 
         for resource in templates_dir.iterdir():
-            if resource.is_file() and resource.name.endswith(('.pptx', '.docx')):
-                if not resource.name.startswith('~$') and not resource.name.startswith('.'):
-                    with tempfile.NamedTemporaryFile(delete=False, suffix=resource.name) as tmp:
+            if resource.is_file() and resource.name.endswith((".pptx", ".docx")):
+                if not resource.name.startswith("~$") and not resource.name.startswith(
+                    "."
+                ):
+                    with tempfile.NamedTemporaryFile(
+                        delete=False, suffix=resource.name
+                    ) as tmp:
                         tmp.write(resource.read_bytes())
                         temp_path = Path(tmp.name)
                         template_files.append(temp_path)
@@ -51,12 +54,12 @@ class TestTemplates:
             for template_file in template_files:
                 original_name = original_names[template_file]
 
-                if template_file.suffix == '.pptx':
+                if template_file.suffix == ".pptx":
                     fonts = self._check_pptx_for_sigsterren_font(template_file)
                     if fonts:
                         fonts_found[original_name] = fonts
 
-                elif template_file.suffix == '.docx':
+                elif template_file.suffix == ".docx":
                     fonts = self._check_docx_for_sigsterren_font(template_file)
                     if fonts:
                         fonts_found[original_name] = fonts
@@ -73,7 +76,7 @@ class TestTemplates:
                 error_msg += f"  {template}:\n"
                 for location in locations:
                     error_msg += f"    - {location}\n"
-            assert False, error_msg
+            raise AssertionError(error_msg)
 
     def _check_pptx_for_sigsterren_font(self, file_path: Path) -> list[str]:
         fonts_found = []
@@ -81,31 +84,41 @@ class TestTemplates:
 
         for slide_idx, slide in enumerate(prs.slides, start=1):
             for shape_idx, shape in enumerate(slide.shapes, start=1):
-                self._check_shape_for_sigsterren(shape, slide_idx, shape_idx, fonts_found)
+                self._check_shape_for_sigsterren(
+                    shape, slide_idx, shape_idx, fonts_found
+                )
 
         for master_idx, slide_master in enumerate(prs.slide_masters, start=1):
             for shape in slide_master.shapes:
                 if hasattr(shape, "text_frame"):
                     for para in shape.text_frame.paragraphs:
                         for run in para.runs:
-                            if run.font.name and self._is_sigsterren_font(run.font.name):
+                            if run.font.name and self._is_sigsterren_font(
+                                run.font.name
+                            ):
                                 fonts_found.append(
                                     f"Slide Master {master_idx}: font '{run.font.name}', text: '{run.text}'"
                                 )
 
-            for layout_idx, slide_layout in enumerate(slide_master.slide_layouts, start=1):
+            for layout_idx, slide_layout in enumerate(
+                slide_master.slide_layouts, start=1
+            ):
                 for shape in slide_layout.shapes:
                     if hasattr(shape, "text_frame"):
                         for para in shape.text_frame.paragraphs:
                             for run in para.runs:
-                                if run.font.name and self._is_sigsterren_font(run.font.name):
+                                if run.font.name and self._is_sigsterren_font(
+                                    run.font.name
+                                ):
                                     fonts_found.append(
                                         f"Slide Master {master_idx}, Layout {layout_idx}: font '{run.font.name}', text: '{run.text}'"
                                     )
 
         return fonts_found
 
-    def _check_shape_for_sigsterren(self, shape, slide_idx: int, shape_idx: int, fonts_found: list[str]) -> None:
+    def _check_shape_for_sigsterren(
+        self, shape, slide_idx: int, shape_idx: int, fonts_found: list[str]
+    ) -> None:
         if hasattr(shape, "text_frame"):
             for para in shape.text_frame.paragraphs:
                 for run in para.runs:
@@ -119,14 +132,18 @@ class TestTemplates:
                 for cell_idx, cell in enumerate(row.cells, start=1):
                     for para in cell.text_frame.paragraphs:
                         for run in para.runs:
-                            if run.font.name and self._is_sigsterren_font(run.font.name):
+                            if run.font.name and self._is_sigsterren_font(
+                                run.font.name
+                            ):
                                 fonts_found.append(
                                     f"Slide {slide_idx}, Table, Row {row_idx}, Cell {cell_idx}: font '{run.font.name}', text: '{run.text}'"
                                 )
 
         if shape.shape_type == MSO_SHAPE_TYPE.GROUP:
             for grouped_shape in shape.shapes:
-                self._check_shape_for_sigsterren(grouped_shape, slide_idx, shape_idx, fonts_found)
+                self._check_shape_for_sigsterren(
+                    grouped_shape, slide_idx, shape_idx, fonts_found
+                )
 
     def _check_docx_for_sigsterren_font(self, file_path: Path) -> list[str]:
         fonts_found = []
@@ -144,13 +161,15 @@ class TestTemplates:
                 for cell_idx, cell in enumerate(row.cells, start=1):
                     for para in cell.paragraphs:
                         for run in para.runs:
-                            if run.font.name and self._is_sigsterren_font(run.font.name):
+                            if run.font.name and self._is_sigsterren_font(
+                                run.font.name
+                            ):
                                 fonts_found.append(
                                     f"Table {table_idx}, Row {row_idx}, Cell {cell_idx}: font '{run.font.name}', text: '{run.text}'"
                                 )
 
         for style in doc.styles:
-            if hasattr(style, 'font') and style.font and style.font.name:
+            if hasattr(style, "font") and style.font and style.font.name:
                 if self._is_sigsterren_font(style.font.name):
                     fonts_found.append(
                         f"Style '{style.name}': font '{style.font.name}'"
@@ -160,4 +179,4 @@ class TestTemplates:
 
     def _is_sigsterren_font(self, font_name: str) -> bool:
         font_name_lower = font_name.lower()
-        return 'sigsterren' in font_name_lower or 'sig sterren' in font_name_lower
+        return "sigsterren" in font_name_lower or "sig sterren" in font_name_lower

@@ -33,8 +33,6 @@ def compose_options(*decorators):
     return composition
 
 
-_generator_arguments_aggregate = [
-    data_model_arguments
-]
+_generator_arguments_aggregate = [data_model_arguments]
 
 generator_arguments = compose_options(*_generator_arguments_aggregate)

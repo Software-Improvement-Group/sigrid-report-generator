@@ -13,7 +13,10 @@
 #  limitations under the License.
 
 from report_generator.generator.domain import architecture_portfolio_data
-from report_generator.generator.placeholders.formatting.formatters import star_rating_round
+from report_generator.generator.placeholders.formatting.formatters import (
+    star_rating_round,
+)
+
 from .base import text_placeholder
 
 
@@ -21,21 +24,21 @@ from .base import text_placeholder
 def portfolio_arch_above_market():
     """Percentage of systems scoring above market average (≥3.5 stars) on architecture quality."""
     distribution = architecture_portfolio_data.get_rating_distribution_percentages
-    return distribution['above_market']
+    return distribution["above_market"]
 
 
 @text_placeholder()
 def portfolio_arch_market_average():
     """Percentage of systems scoring market average (2.5-3.5 stars) on architecture quality."""
     distribution = architecture_portfolio_data.get_rating_distribution_percentages
-    return distribution['market_average']
+    return distribution["market_average"]
 
 
 @text_placeholder()
 def portfolio_arch_below_market():
     """Percentage of systems scoring below market average (<2.5 stars) on architecture quality."""
     distribution = architecture_portfolio_data.get_rating_distribution_percentages
-    return distribution['below_market']
+    return distribution["below_market"]
 
 
 @text_placeholder()

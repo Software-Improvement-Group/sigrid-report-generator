@@ -13,7 +13,6 @@
 #  limitations under the License.
 
 from enum import Enum
-from typing import List
 
 
 class MetricEnum(Enum):
@@ -21,7 +20,7 @@ class MetricEnum(Enum):
         return self.value
 
     @classmethod
-    def values(cls) -> List[str]:
+    def values(cls) -> list[str]:
         return [metric.value for metric in cls]
 
     def to_json_name(self):

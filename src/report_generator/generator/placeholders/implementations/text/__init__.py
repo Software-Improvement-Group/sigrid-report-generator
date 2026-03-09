@@ -14,20 +14,47 @@
 
 import inspect
 
-from . import architecture, architecture_portfolio, maintainability, maintainability_delta_quality, \
-    maintainability_portfolio, metadata, modernization, objectives, osh, osh_portfolio, security, security_portfolio
+from . import (
+    architecture,
+    architecture_portfolio,
+    maintainability,
+    maintainability_delta_quality,
+    maintainability_portfolio,
+    metadata,
+    modernization,
+    objectives,
+    osh,
+    osh_portfolio,
+    security,
+    security_portfolio,
+)
 from .base import parameterized_text_placeholder, text_placeholder
-from .maintainability_portfolio import _format_maintainability_statement, _format_short_maintainability_statement
+from .maintainability_portfolio import (
+    _format_maintainability_statement,
+    _format_short_maintainability_statement,
+)
 
-_modules_to_scan = [architecture, architecture_portfolio, maintainability, maintainability_delta_quality,
-                    maintainability_portfolio, metadata, modernization, objectives, osh, osh_portfolio, security,
-                    security_portfolio]
+_modules_to_scan = [
+    architecture,
+    architecture_portfolio,
+    maintainability,
+    maintainability_delta_quality,
+    maintainability_portfolio,
+    metadata,
+    modernization,
+    objectives,
+    osh,
+    osh_portfolio,
+    security,
+    security_portfolio,
+]
 
 _placeholders_map = {}
 for module in _modules_to_scan:
     module_placeholders = {
-        name: obj for name, obj in inspect.getmembers(module, inspect.isclass)
-        if hasattr(obj, '__placeholder__')
+        name: obj
+        for name, obj in inspect.getmembers(module, inspect.isclass)
+        if hasattr(obj, "__placeholder__")
     }
     _placeholders_map.update(module_placeholders)
 

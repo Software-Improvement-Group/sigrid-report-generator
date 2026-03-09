@@ -42,28 +42,31 @@ class SigridAccessDenied(Exception):
     def __init__(self, url: str, customer: str, system: Optional[str]):
         system_part = f"/{system}" if system else ""
         sigrid_url = f"https://sigrid-says.com/{customer}{system_part}"
-        message = "\n".join([
-            f"Access denied (403) calling Sigrid API: {url}",
-            f"  - Customer used : '{customer}'",
-            f"  - System used   : '{system or '(none)'}'",
-            f"  - Verify the names are correct: {sigrid_url}",
-            "  - Tokens are customer-specific, so ensure your token has access to this customer.",
-        ])
+        message = "\n".join(
+            [
+                f"Access denied (403) calling Sigrid API: {url}",
+                f"  - Customer used : '{customer}'",
+                f"  - System used   : '{system or '(none)'}'",
+                f"  - Verify the names are correct: {sigrid_url}",
+                "  - Tokens are customer-specific, so ensure your token has access to this customer.",
+            ]
+        )
         super().__init__(message)
 
 
 def _test_sigrid_token(token):
     if len(token) < 10 or token[0:2] != "ey":
         raise ValueError(
-            "Invalid Sigrid token. A token is always longer than 10 characters and starts with 'ey'. You can obtain a token from sigrid-says.com. Note that tokens are customer-specific.")
+            "Invalid Sigrid token. A token is always longer than 10 characters and starts with 'ey'. You can obtain a token from sigrid-says.com. Note that tokens are customer-specific."
+        )
 
 
 def set_context(
-        bearer_token: Optional[str] = None,
-        customer: Optional[str] = None,
-        system: Optional[str] = None,
-        period: Optional[tuple[str, str]] = None,
-        base_url: Optional[str] = None
+    bearer_token: Optional[str] = None,
+    customer: Optional[str] = None,
+    system: Optional[str] = None,
+    period: Optional[tuple[str, str]] = None,
+    base_url: Optional[str] = None,
 ) -> None:
     """Set the context values. Only updates provided values. None values will be ignored (use reset_context instead)."""
     global _bearer_token, _customer, _system, _period, _rest_url
@@ -86,17 +89,25 @@ def set_context(
 
 
 def reset_context(
-        reset_bearer_token: Optional[bool] = None,
-        reset_customer: Optional[bool] = None,
-        reset_system: Optional[bool] = None,
-        reset_period: Optional[bool] = None,
-        reset_base_url: Optional[bool] = None
+    reset_bearer_token: Optional[bool] = None,
+    reset_customer: Optional[bool] = None,
+    reset_system: Optional[bool] = None,
+    reset_period: Optional[bool] = None,
+    reset_base_url: Optional[bool] = None,
 ) -> None:
     """Reset context values. If no parameters are provided, resets all values."""
     global _bearer_token, _customer, _system, _period, _rest_url
 
-    reset_all = all(param is None for param in [reset_bearer_token, reset_customer,
-                                                reset_system, reset_period, reset_base_url])
+    reset_all = all(
+        param is None
+        for param in [
+            reset_bearer_token,
+            reset_customer,
+            reset_system,
+            reset_period,
+            reset_base_url,
+        ]
+    )
 
     if reset_all or reset_bearer_token:
         _bearer_token = None
@@ -120,26 +131,28 @@ def _check_context() -> None:
     missing_values = []
 
     if _bearer_token is None:
-        missing_values.append('_bearer_token')
+        missing_values.append("_bearer_token")
     if _customer is None:
-        missing_values.append('_customer')
+        missing_values.append("_customer")
     if _rest_url is None:
-        missing_values.append('_rest_url')
+        missing_values.append("_rest_url")
 
     if missing_values:
-        raise ValueError(f"Context must be set using sigrid_api.set_context() before making API calls. "
-                         f"The following values are not set: {', '.join(missing_values)}")
+        raise ValueError(
+            f"Context must be set using sigrid_api.set_context() before making API calls. "
+            f"The following values are not set: {', '.join(missing_values)}"
+        )
 
 
 @cache
 def _request(url):
     logging.debug(f"Sending request to {url}")
     headers = {
-        "Content-type" : "application/json",
-        "Authorization": f"Bearer {_bearer_token}"
+        "Content-type": "application/json",
+        "Authorization": f"Bearer {_bearer_token}",
     }
     try:
-        response = requests.request('GET', url, headers=headers)
+        response = requests.request("GET", url, headers=headers)
         response.raise_for_status()
         if response.status_code == 204:
             logging.warning(
@@ -151,10 +164,14 @@ def _request(url):
     except requests.HTTPError as e:
         if e.response.status_code == 403:
             raise SigridAccessDenied(url, _customer, _system)
-        logging.error(f"Failed to make request to Sigrid API endpoint {url}. Error: {e}")
+        logging.error(
+            f"Failed to make request to Sigrid API endpoint {url}. Error: {e}"
+        )
         return None
     except requests.RequestException as e:
-        logging.error(f"Failed to make request to Sigrid API endpoint {url}. Error: {e}")
+        logging.error(
+            f"Failed to make request to Sigrid API endpoint {url}. Error: {e}"
+        )
         return None
 
 
@@ -169,9 +186,11 @@ def _sigrid_api_request(with_system=False):
         @wraps(func)
         def wrapper(*args, **kwargs):
             if with_system:
-                system = args[0] if args else kwargs.pop('system', None) or _system
+                system = args[0] if args else kwargs.pop("system", None) or _system
                 if system is None:
-                    raise ValueError("System not provided and global _system is not set.")
+                    raise ValueError(
+                        "System not provided and global _system is not set."
+                    )
                 result = func(system, *args[1:], **kwargs)
             else:
                 result = func(*args, **kwargs)
@@ -252,7 +271,9 @@ def get_portfolio_osh_findings(is_vulnerable=False):
 
 @_sigrid_api_request(with_system=True)
 def get_security_findings(system):
-    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/security-findings/{_customer}/{system}"
+    endpoint = (
+        f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/security-findings/{_customer}/{system}"
+    )
     return _make_request(endpoint)
 
 
@@ -298,7 +319,9 @@ def get_security_ratings(system):
 
 @_sigrid_api_request()
 def get_portfolio_security_ratings():
-    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/model-ratings/{_customer}?feature=SECURITY"
+    endpoint = (
+        f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/model-ratings/{_customer}?feature=SECURITY"
+    )
     return _make_request(endpoint)
 
 
@@ -310,7 +333,9 @@ def get_security_ratings(system):
 
 @_sigrid_api_request(with_system=True)
 def get_architecture_findings(system):
-    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/architecture-quality/{_customer}/{system}"
+    endpoint = (
+        f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/architecture-quality/{_customer}/{system}"
+    )
     return _make_request(endpoint)
 
 
@@ -334,8 +359,9 @@ def get_maintainability_delta_quality(system, delta_type="NEW_AND_CHANGED_CODE")
 
 
 @_sigrid_api_request(with_system=True)
-def get_maintainability_refactoring_candidates(system, system_property: MaintMetric, technology: str = None,
-                                               count: int = None):
+def get_maintainability_refactoring_candidates(
+    system, system_property: MaintMetric, technology: Optional[str] = None, count: Optional[int] = None
+):
     property_name = system_property.to_json_name()
 
     query_params = []

@@ -16,8 +16,14 @@ import logging
 from abc import ABC
 from typing import Union
 
-from report_generator.generator.placeholders.implementations.base import Placeholder, PlaceholderDocType
-from report_generator.generator.placeholders.rendering.pptx import find_tables, update_table
+from report_generator.generator.placeholders.implementations.base import (
+    Placeholder,
+    PlaceholderDocType,
+)
+from report_generator.generator.placeholders.rendering.pptx import (
+    find_tables,
+    update_table,
+)
 
 TableMatrix = list[list[Union[str, int, float]]]
 

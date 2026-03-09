@@ -12,7 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from typing import Callable, Dict, Iterable, Optional, Tuple
+from collections.abc import Iterable
+from typing import Callable, Optional
 
 from report_generator.generator.context import sigrid_api
 
@@ -30,7 +31,7 @@ def get_system_helper(system, data, tag):
 
 def get_system_metadata(portfolio_metadata, system):
     for s in portfolio_metadata:
-        if s['systemName'] == system:
+        if s["systemName"] == system:
             return s
     return None
 
@@ -38,26 +39,26 @@ def get_system_metadata(portfolio_metadata, system):
 def categorize_rating(rating):
     """Categorize a rating into market segments."""
     if rating >= 3.5:
-        return 'above_market'
+        return "above_market"
     elif rating >= 2.5:
-        return 'market_average'
+        return "market_average"
     else:
-        return 'below_market'
+        return "below_market"
 
 
 def _calculate_percentages(counts, total):
     """Calculate percentages from counts."""
     if total == 0:
-        return {'above_market': 0, 'market_average': 0, 'below_market': 0}
+        return {"above_market": 0, "market_average": 0, "below_market": 0}
 
     return {
-        'above_market'  : round(100 * counts['above_market'] / total),
-        'market_average': round(100 * counts['market_average'] / total),
-        'below_market'  : round(100 * counts['below_market'] / total)
+        "above_market": round(100 * counts["above_market"] / total),
+        "market_average": round(100 * counts["market_average"] / total),
+        "below_market": round(100 * counts["below_market"] / total),
     }
 
 
-def is_month_in_period(month: Optional[str], period: Tuple[str, str]) -> bool:
+def is_month_in_period(month: Optional[str], period: tuple[str, str]) -> bool:
     if not month:
         return False
     period_start, period_end = period
@@ -71,18 +72,20 @@ def is_month_in_period(month: Optional[str], period: Tuple[str, str]) -> bool:
 
 def get_volume(system_name: str) -> float:
     portfolio_data = sigrid_api.get_portfolio_maintainability()
-    systems = portfolio_data.get('systems', []) if isinstance(portfolio_data, dict) else []
+    systems = (
+        portfolio_data.get("systems", []) if isinstance(portfolio_data, dict) else []
+    )
     for system in systems:
-        if system.get('system') == system_name:
-            return system.get('volumeInPersonMonths', 0)
+        if system.get("system") == system_name:
+            return system.get("volumeInPersonMonths", 0)
     return 0
 
 
 def get_rating_and_volume_from_system(
-        system: Dict,
-        rating_extractor: Callable[[Dict], Optional[float]],
-        system_name_key: str = 'systemName'
-) -> Tuple[Optional[float], float]:
+    system: dict,
+    rating_extractor: Callable[[dict], Optional[float]],
+    system_name_key: str = "systemName",
+) -> tuple[Optional[float], float]:
     rating = rating_extractor(system)
     system_name = system.get(system_name_key)
 
@@ -94,8 +97,8 @@ def get_rating_and_volume_from_system(
 
 
 def calculate_weighted_average_rating(
-        data_source: Iterable,
-        get_rating_and_volume_func: Callable[[any], Tuple[Optional[float], float]]
+    data_source: Iterable,
+    get_rating_and_volume_func: Callable[[any], tuple[Optional[float], float]],
 ) -> float:
     total_weighted_rating = 0
     total_volume = 0
@@ -115,10 +118,9 @@ def calculate_weighted_average_rating(
 
 
 def get_rating_distribution_percentages(
-        data_source: Iterable,
-        rating_extractor: Callable[[any], Optional[float]]
-) -> Dict[str, int]:
-    counts = {'above_market': 0, 'market_average': 0, 'below_market': 0}
+    data_source: Iterable, rating_extractor: Callable[[any], Optional[float]]
+) -> dict[str, int]:
+    counts = {"above_market": 0, "market_average": 0, "below_market": 0}
     total = 0
 
     for item in data_source:

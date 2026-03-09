@@ -215,20 +215,11 @@ This project uses [Ruff](https://docs.astral.sh/ruff/) for linting and formattin
 
 **Check for violations:**
 ```bash
-ruff check .
-ruff format --check .
+ruff check . # Add --fix for autofix
+ruff format . # Add --check to not autofix
 ```
 
-**Auto-fix:**
-```bash
-ruff check --fix .
-ruff format .
-```
-
-**PyCharm integration:** Settings → Tools → Ruff
-- Enable Ruff: on
-- Run ruff on save: on
-- Run ruff format on save: on
+**PyCharm integration:** Settings → Tools → Ruff. Enable all settings.
 
 ## Contact and support
 

@@ -14,7 +14,13 @@
 
 import inspect
 
-from . import category_chart, color_rating, maintainability_galaxy_chart, moveable_marker, scatter_plot_chart
+from . import (
+    category_chart,
+    color_rating,
+    maintainability_galaxy_chart,
+    moveable_marker,
+    scatter_plot_chart,
+)
 
 _all_implementations = {
     **category_chart.__dict__,
@@ -25,8 +31,11 @@ _all_implementations = {
 }
 
 _placeholders_map = {
-    name: obj for name, obj in _all_implementations.items()
-    if inspect.isclass(obj) and hasattr(obj, '__placeholder__') and not inspect.isabstract(obj)
+    name: obj
+    for name, obj in _all_implementations.items()
+    if inspect.isclass(obj)
+    and hasattr(obj, "__placeholder__")
+    and not inspect.isabstract(obj)
 }
 
 placeholders = set(_placeholders_map.values())

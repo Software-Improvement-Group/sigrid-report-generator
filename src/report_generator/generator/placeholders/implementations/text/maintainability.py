@@ -15,11 +15,15 @@
 from datetime import datetime
 
 from report_generator.generator.domain import maintainability_data, modernization_data
-from report_generator.generator.placeholders.formatting.formatters import calculate_stars, format_diff, \
-    star_rating_round
+from report_generator.generator.placeholders.formatting.formatters import (
+    calculate_stars,
+    format_diff,
+    star_rating_round,
+)
 from report_generator.generator.utils.constants import MaintMetric
-from .base import parameterized_text_placeholder, text_placeholder
+
 from ...formatting import smart_remarks
+from .base import parameterized_text_placeholder, text_placeholder
 
 
 @text_placeholder()
@@ -63,7 +67,9 @@ def maint_stars():
 @text_placeholder()
 def maint_relative():
     """Remark of the system's Maintainability Rating relative to the benchmark."""
-    return smart_remarks.relative_to_market_average(maintainability_data.maintainability_rating)
+    return smart_remarks.relative_to_market_average(
+        maintainability_data.maintainability_rating
+    )
 
 
 @text_placeholder()
@@ -134,7 +140,9 @@ def test_code_ratio():
 def test_code_relative():
     """Remark on the system's test/code ratio relative to the industry."""
     if "testCodeRatio" in maintainability_data.data:
-        return smart_remarks.test_code_relative(maintainability_data.data["testCodeRatio"])
+        return smart_remarks.test_code_relative(
+            maintainability_data.data["testCodeRatio"]
+        )
     return ""
 
 
@@ -142,7 +150,9 @@ def test_code_relative():
 def test_code_summary():
     """Remark on the quality of testing in the system indicated by the total test/code ratio observed."""
     if "testCodeRatio" in maintainability_data.data:
-        return smart_remarks.test_code_summary(maintainability_data.data["testCodeRatio"])
+        return smart_remarks.test_code_summary(
+            maintainability_data.data["testCodeRatio"]
+        )
     return ""
 
 
@@ -167,20 +177,31 @@ def system_loc():
 @text_placeholder()
 def system_loc_format_locale():
     """The volume of the system in lines of code, formatted with thousands separator corresponding with your system locale settings."""
-    return f"{maintainability_data.system_loc:n}" if maintainability_data.system_loc is not None else ""
+    return (
+        f"{maintainability_data.system_loc:n}"
+        if maintainability_data.system_loc is not None
+        else ""
+    )
 
 
 @text_placeholder()
 def system_loc_format_comma():
     """The volume of the system in lines of code, formatted with commas as thousands separator."""
-    return f"{maintainability_data.system_loc:,}" if maintainability_data.system_loc is not None else ""
+    return (
+        f"{maintainability_data.system_loc:,}"
+        if maintainability_data.system_loc is not None
+        else ""
+    )
 
 
 @text_placeholder()
 def system_loc_format_dot():
     """The volume of the system in lines of code, formatted with dots as thousands separator."""
-    return f"{maintainability_data.system_loc:,}".replace(",",
-                                                          ".") if maintainability_data.system_loc is not None else ""
+    return (
+        f"{maintainability_data.system_loc:,}".replace(",", ".")
+        if maintainability_data.system_loc is not None
+        else ""
+    )
 
 
 @text_placeholder()
@@ -192,79 +213,106 @@ def volume_relative():
 @text_placeholder()
 def tech_common_summary():
     """Remark on how common the technologies used in the system are relative to the industry."""
-    return smart_remarks.technology_summary(maintainability_data.tech_target_ratio,
-                                            maintainability_data.tech_phaseout_ratio,
-                                            maintainability_data.tech_phaseout_technologies)
+    return smart_remarks.technology_summary(
+        maintainability_data.tech_target_ratio,
+        maintainability_data.tech_phaseout_ratio,
+        maintainability_data.tech_phaseout_technologies,
+    )
 
 
 @text_placeholder()
 def tech_variance():
     """Remark on how many significant technologies the system contains (threshold: 15% or more)."""
-    return smart_remarks.tech_variance_remark(maintainability_data.sorted_tech,
-                                              maintainability_data.tech_total_volume_pm)
+    return smart_remarks.tech_variance_remark(
+        maintainability_data.sorted_tech, maintainability_data.tech_total_volume_pm
+    )
 
 
 @text_placeholder()
 def tech_summary():
     """Remark on how common the technologies used in the system are relative to the industry."""
-    return smart_remarks.technology_summary(maintainability_data.tech_target_ratio,
-                                            maintainability_data.tech_phaseout_ratio,
-                                            maintainability_data.tech_phaseout_technologies)
+    return smart_remarks.technology_summary(
+        maintainability_data.tech_target_ratio,
+        maintainability_data.tech_phaseout_ratio,
+        maintainability_data.tech_phaseout_technologies,
+    )
 
 
-@parameterized_text_placeholder(custom_key="TECH_{parameter}_NAME", parameters=range(1, 6))
+@parameterized_text_placeholder(
+    custom_key="TECH_{parameter}_NAME", parameters=range(1, 6)
+)
 def tech_name(idx: int):
     """Name of the technology in the system (if present)."""
-    return maintainability_data.sorted_tech_get_key(idx - 1, 'displayName')
+    return maintainability_data.sorted_tech_get_key(idx - 1, "displayName")
 
 
-@parameterized_text_placeholder(custom_key="TECH_{parameter}_PY", parameters=range(1, 6))
+@parameterized_text_placeholder(
+    custom_key="TECH_{parameter}_PY", parameters=range(1, 6)
+)
 def tech_person_years(idx: int):
     """Volume of the technology in the system (if present) in person years. 1 decimal."""
-    volume = maintainability_data.sorted_tech_get_key(idx - 1, 'volumeInPersonMonths', None)
+    volume = maintainability_data.sorted_tech_get_key(
+        idx - 1, "volumeInPersonMonths", None
+    )
     return round(volume / 12, 1) if volume else ""
 
 
-@parameterized_text_placeholder(custom_key="TECH_{parameter}_PM", parameters=range(1, 6))
+@parameterized_text_placeholder(
+    custom_key="TECH_{parameter}_PM", parameters=range(1, 6)
+)
 def tech_person_months(idx: int):
     """Volume of the technology in the system (if present) in person months. 1 decimal."""
-    volume = maintainability_data.sorted_tech_get_key(idx - 1, 'volumeInPersonMonths', None)
+    volume = maintainability_data.sorted_tech_get_key(
+        idx - 1, "volumeInPersonMonths", None
+    )
     return round(volume, 1) if volume else ""
 
 
-@parameterized_text_placeholder(custom_key="TECH_{parameter}_LOC", parameters=range(1, 6))
+@parameterized_text_placeholder(
+    custom_key="TECH_{parameter}_LOC", parameters=range(1, 6)
+)
 def tech_lines_of_code(idx: int):
     """Volume of the technology in the system (if present) in lines of code. 1 decimal."""
-    return maintainability_data.sorted_tech_get_key(idx - 1, 'volumeInLoc')
+    return maintainability_data.sorted_tech_get_key(idx - 1, "volumeInLoc")
 
 
-@parameterized_text_placeholder(custom_key="TECH_{parameter}_MAINT_RATING", parameters=range(1, 6))
+@parameterized_text_placeholder(
+    custom_key="TECH_{parameter}_MAINT_RATING", parameters=range(1, 6)
+)
 def tech_maintainability_rating(idx: int):
     """Maintainability rating of the technology in the system (if present). One decimal."""
-    rating = maintainability_data.sorted_tech_get_key(idx - 1, 'maintainability')
+    rating = maintainability_data.sorted_tech_get_key(idx - 1, "maintainability")
     return round(rating, 1) if rating else ""
 
 
-@parameterized_text_placeholder(custom_key="TECH_{parameter}_TEST_RATIO", parameters=range(1, 6))
+@parameterized_text_placeholder(
+    custom_key="TECH_{parameter}_TEST_RATIO", parameters=range(1, 6)
+)
 def tech_test_ratio(idx: int):
     """Test code ratio of the technology in the system (if present)."""
-    return maintainability_data.sorted_tech_get_key(idx - 1, 'testCodeRatio')
+    return maintainability_data.sorted_tech_get_key(idx - 1, "testCodeRatio")
 
 
-@parameterized_text_placeholder(custom_key="TECH_{parameter}_TECH_RISK", parameters=range(1, 6))
+@parameterized_text_placeholder(
+    custom_key="TECH_{parameter}_TECH_RISK", parameters=range(1, 6)
+)
 def tech_risk(idx: int):
     """Technology risk rating of the technology in the system (if present)."""
-    return maintainability_data.sorted_tech_get_key(idx - 1, 'technologyRisk')
+    return maintainability_data.sorted_tech_get_key(idx - 1, "technologyRisk")
 
 
-@parameterized_text_placeholder(custom_key="MAINT_RATING_{parameter}", parameters=list(MaintMetric))
+@parameterized_text_placeholder(
+    custom_key="MAINT_RATING_{parameter}", parameters=list(MaintMetric)
+)
 def maint_rating_param(metric: MaintMetric):
     """The 0.5-5.5 star rating for this metric."""
     metric_key = metric.to_json_name()
     return star_rating_round(maintainability_data.data[metric_key])
 
 
-@parameterized_text_placeholder(custom_key="MAINT_DIFF_{parameter}", parameters=list(MaintMetric))
+@parameterized_text_placeholder(
+    custom_key="MAINT_DIFF_{parameter}", parameters=list(MaintMetric)
+)
 def maint_rating_diff_param(metric: MaintMetric):
     """The rating difference for the specified metric within the reporting period."""
     old_rating = maintainability_data.start_snapshot[metric.to_json_name()]
@@ -272,7 +320,9 @@ def maint_rating_diff_param(metric: MaintMetric):
     return format_diff(old_rating, new_rating)
 
 
-@parameterized_text_placeholder(custom_key="STARS_{parameter}", parameters=list(MaintMetric))
+@parameterized_text_placeholder(
+    custom_key="STARS_{parameter}", parameters=list(MaintMetric)
+)
 def maint_stars_param(metric: MaintMetric):
     """Stars corresponding to this metric rating."""
     metric_key = metric.to_json_name()
@@ -301,7 +351,9 @@ def renovation_effort_py():
 def technical_debt_percentage():
     """Technical debt as a percentage of total system volume."""
     volume_in_py = modernization_data.single_system_candidate.volume_in_py
-    technical_debt_in_py = modernization_data.single_system_candidate.estimated_effort_py
+    technical_debt_in_py = (
+        modernization_data.single_system_candidate.estimated_effort_py
+    )
     if volume_in_py:
         return f"{(technical_debt_in_py * 100.0 / volume_in_py):.0f}"
     return "0"
@@ -311,7 +363,9 @@ def technical_debt_percentage():
 def renovation_effort_percentage():
     """Renovation effort as a percentage of total system volume."""
     volume_in_py = modernization_data.single_system_candidate.volume_in_py
-    renovation_effort_in_py = modernization_data.single_system_candidate.estimated_effort_py
+    renovation_effort_in_py = (
+        modernization_data.single_system_candidate.estimated_effort_py
+    )
     if volume_in_py:
         return f"{(renovation_effort_in_py * 100.0 / volume_in_py):.0f}"
     return "0"
