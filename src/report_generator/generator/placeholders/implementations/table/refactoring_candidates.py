@@ -207,7 +207,9 @@ class RefactoringCandidatesTableComponentEntanglement(
         rows = [["Description", "Weight"]]
         rows.extend(
             [
-                RefactoringCandidatesTableComponentEntanglement._generate_description(finding),
+                RefactoringCandidatesTableComponentEntanglement._generate_description(
+                    finding
+                ),
                 finding["weight"],
             ]
             for finding in data

@@ -103,7 +103,11 @@ class ModernizationData:
     MIN_DEV_SPEED_IMPROVEMENT = 5.0
     MIN_EFFORT = 0.25
 
-    BUSINESS_CRITICALITY_FACTOR: ClassVar[dict] = {"CRITICAL": 2.0, "HIGH": 1.5, "LOW": 0.0}
+    BUSINESS_CRITICALITY_FACTOR: ClassVar[dict] = {
+        "CRITICAL": 2.0,
+        "HIGH": 1.5,
+        "LOW": 0.0,
+    }
 
     PREDETERMINED_SCENARIOS: ClassVar[dict] = {
         "INITIAL": Scenario.KEEP_AS_IS,
