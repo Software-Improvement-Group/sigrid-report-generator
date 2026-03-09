@@ -18,12 +18,14 @@ from report_generator.generator.context import sigrid_api
 from report_generator.generator.context.portfolio_filters import (
     filter_data_on_portfolio_arguments,
 )
-from report_generator.generator.domain.portfolio.base import AbstractPortfolioModel
 from report_generator.generator.domain.portfolio.shared import utils
+from report_generator.generator.domain.portfolio.shared.rated_mixin import (
+    RatedPortfolioMixin,
+)
 from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
 
-class OSHRatingsPortfolioData(OSHMetricsBase, AbstractPortfolioModel):
+class OSHRatingsPortfolioData(RatedPortfolioMixin, OSHMetricsBase):
     @cached_property
     @filter_data_on_portfolio_arguments(data_tag="systems", system_tag="systemName")
     def raw_data(self):
@@ -297,25 +299,15 @@ class OSHRatingsPortfolioData(OSHMetricsBase, AbstractPortfolioModel):
                     pass
         return None
 
-    @cached_property
-    def get_rating_distribution_percentages(self):
-        """Calculate the percentage of systems above market, at market average, and below market average."""
-        return utils.get_rating_distribution_percentages(
-            self.raw_data.get("systems", []),
-            lambda system: self._extract_osh_rating(system, "system"),
-        )
+    def _rated_systems(self):
+        return self.raw_data.get("systems", [])
+
+    def _extract_rating(self, system):
+        return self._extract_osh_rating(system, "system")
 
     def _get_rating_and_volume(self, system):
-        """Extract rating and volume for a system."""
         return utils.get_rating_and_volume_from_system(
             system, lambda s: self._extract_osh_rating(s, "system"), "systemName"
-        )
-
-    @cached_property
-    def weighted_average_rating(self):
-        """Calculate volume-weighted average OSH rating across all systems."""
-        return utils.calculate_weighted_average_rating(
-            self.raw_data.get("systems", []), self._get_rating_and_volume
         )
 
 

@@ -507,8 +507,8 @@ class SecurityRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlacehol
     def value(cls, parameter, additional_parameter=None):
         def f(t):
             return (
-                security_ratings_portfolio_data.end_snapshot(t)["rating"]
-                if security_ratings_portfolio_data.end_snapshot(t)
+                security_ratings_portfolio_data.get_system(t)["rating"]
+                if security_ratings_portfolio_data.get_system(t)
                 else 0
             )
 
@@ -534,8 +534,8 @@ class ArchitecturePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder
     def value(cls, parameter, additional_parameter=None):
         def f(t):
             return (
-                architecture_portfolio_data.end_snapshot(t)["ratings"]["architecture"]
-                if architecture_portfolio_data.end_snapshot(t)
+                architecture_portfolio_data.get_system(t)["ratings"]["architecture"]
+                if architecture_portfolio_data.get_system(t)
                 else 0
             )
 

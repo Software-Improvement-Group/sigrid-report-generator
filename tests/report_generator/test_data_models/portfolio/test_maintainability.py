@@ -17,22 +17,22 @@ from unittest.mock import patch
 import pytest
 
 from report_generator.generator.context import portfolio_filters
+from report_generator.generator.domain import maintainability_portfolio_data
 
 # noinspection PyProtectedMember
 from report_generator.generator.domain.portfolio.maintainability_delta_quality_portfolio import (
     _AbstractMaintainabilityDeltaQualityPortfolioData,
 )
-
-# noinspection PyProtectedMember
-from report_generator.generator.domain.portfolio.maintainability_portfolio import (
-    MaintainabilityPortfolioData,
+from report_generator.generator.domain.portfolio.maintainability_portfolio.data import (
+    is_system_active,
+    parse_date,
+)
+from report_generator.generator.domain.portfolio.maintainability_portfolio.statistics import (
+    MaintainabilityPortfolioStats,
     _finalize_change_statistics,
     _initialize_statistics,
-    _is_system_active,
-    _parse_date,
     _update_star_statistics,
     _weighted_avg,
-    maintainability_portfolio_data,
 )
 
 
@@ -41,7 +41,7 @@ class TestMaintainabilityStatistics:
 
     def test_statistics_with_changes(self, mocker):
         """Test statistics calculation with systems that have increased, decreased, and stayed stable."""
-        portfolio = MaintainabilityPortfolioData()
+        stats_obj = MaintainabilityPortfolioStats()
 
         mock_system_names = ["system1", "system2", "system3", "system4"]
 
@@ -50,7 +50,7 @@ class TestMaintainabilityStatistics:
 
         # Mock period
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "period",
             new_callable=mocker.PropertyMock,
             return_value=["2024-01-01", "2024-12-31"],
@@ -112,7 +112,7 @@ class TestMaintainabilityStatistics:
             return snapshots[system_name]
 
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "system_names",
             new_callable=mocker.PropertyMock,
             return_value=mock_system_names,
@@ -122,7 +122,7 @@ class TestMaintainabilityStatistics:
             for system_name in mock_system_names
         ]
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "metadata",
             new_callable=mocker.PropertyMock,
             return_value=mock_metadata,
@@ -132,11 +132,17 @@ class TestMaintainabilityStatistics:
             side_effect=mock_get_system_metadata,
         )
         mocker.patch.object(
-            portfolio, "start_snapshot", side_effect=mock_start_snapshot
+            maintainability_portfolio_data,
+            "start_snapshot",
+            side_effect=mock_start_snapshot,
         )
-        mocker.patch.object(portfolio, "end_snapshot", side_effect=mock_end_snapshot)
+        mocker.patch.object(
+            maintainability_portfolio_data,
+            "end_snapshot",
+            side_effect=mock_end_snapshot,
+        )
 
-        stats = portfolio.statistics
+        stats = stats_obj.statistics
 
         # Verify star distribution (all systems are 4 stars at end)
         assert stats["maintainability"]["1-star"] == 0
@@ -175,7 +181,7 @@ class TestMaintainabilityStatistics:
 
     def test_statistics_all_stable(self, mocker):
         """Test statistics when all systems remain stable."""
-        portfolio = MaintainabilityPortfolioData()
+        stats_obj = MaintainabilityPortfolioStats()
 
         mock_system_names = ["system1", "system2"]
 
@@ -204,7 +210,7 @@ class TestMaintainabilityStatistics:
             }
 
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "system_names",
             new_callable=mocker.PropertyMock,
             return_value=mock_system_names,
@@ -214,7 +220,7 @@ class TestMaintainabilityStatistics:
             for system_name in mock_system_names
         ]
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "metadata",
             new_callable=mocker.PropertyMock,
             return_value=mock_metadata,
@@ -224,11 +230,17 @@ class TestMaintainabilityStatistics:
             side_effect=mock_get_system_metadata,
         )
         mocker.patch.object(
-            portfolio, "start_snapshot", side_effect=mock_start_snapshot
+            maintainability_portfolio_data,
+            "start_snapshot",
+            side_effect=mock_start_snapshot,
         )
-        mocker.patch.object(portfolio, "end_snapshot", side_effect=mock_end_snapshot)
+        mocker.patch.object(
+            maintainability_portfolio_data,
+            "end_snapshot",
+            side_effect=mock_end_snapshot,
+        )
 
-        stats = portfolio.statistics
+        stats = stats_obj.statistics
 
         assert stats["maintainability-change"]["systems-increased"] == 0
         assert stats["maintainability-change"]["systems-decreased"] == 0
@@ -239,7 +251,7 @@ class TestMaintainabilityStatistics:
     def test_statistics_excludes_inactive_systems(self, mocker):
         """Test that inactive and development-only systems are excluded from statistics."""
 
-        portfolio = MaintainabilityPortfolioData()
+        stats_obj = MaintainabilityPortfolioStats()
 
         mock_system_names = ["active_system", "inactive_system", "dev_only_system"]
 
@@ -252,7 +264,7 @@ class TestMaintainabilityStatistics:
                 return {"active": True, "isDevelopmentOnly": False}
 
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "period",
             new_callable=mocker.PropertyMock,
             return_value=["2024-01-01", "2024-12-31"],
@@ -273,7 +285,7 @@ class TestMaintainabilityStatistics:
             }
 
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "system_names",
             new_callable=mocker.PropertyMock,
             return_value=mock_system_names,
@@ -283,7 +295,7 @@ class TestMaintainabilityStatistics:
             for system_name in mock_system_names
         ]
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "metadata",
             new_callable=mocker.PropertyMock,
             return_value=mock_metadata,
@@ -293,11 +305,17 @@ class TestMaintainabilityStatistics:
             side_effect=mock_get_system_metadata,
         )
         mocker.patch.object(
-            portfolio, "start_snapshot", side_effect=mock_start_snapshot
+            maintainability_portfolio_data,
+            "start_snapshot",
+            side_effect=mock_start_snapshot,
         )
-        mocker.patch.object(portfolio, "end_snapshot", side_effect=mock_end_snapshot)
+        mocker.patch.object(
+            maintainability_portfolio_data,
+            "end_snapshot",
+            side_effect=mock_end_snapshot,
+        )
 
-        stats = portfolio.statistics
+        stats = stats_obj.statistics
 
         # Only active_system should be counted
         assert stats["maintainability"]["number-of-systems"] == 1
@@ -306,7 +324,7 @@ class TestMaintainabilityStatistics:
     def test_statistics_no_change_when_dates_same(self, mocker):
         """Test that systems with same start and end date count as stable (diff=0)."""
 
-        portfolio = MaintainabilityPortfolioData()
+        stats_obj = MaintainabilityPortfolioStats()
 
         mock_system_names = ["system1"]
 
@@ -335,7 +353,7 @@ class TestMaintainabilityStatistics:
             }
 
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "system_names",
             new_callable=mocker.PropertyMock,
             return_value=mock_system_names,
@@ -345,7 +363,7 @@ class TestMaintainabilityStatistics:
             for system_name in mock_system_names
         ]
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "metadata",
             new_callable=mocker.PropertyMock,
             return_value=mock_metadata,
@@ -355,11 +373,17 @@ class TestMaintainabilityStatistics:
             side_effect=mock_get_system_metadata,
         )
         mocker.patch.object(
-            portfolio, "start_snapshot", side_effect=mock_start_snapshot
+            maintainability_portfolio_data,
+            "start_snapshot",
+            side_effect=mock_start_snapshot,
         )
-        mocker.patch.object(portfolio, "end_snapshot", side_effect=mock_end_snapshot)
+        mocker.patch.object(
+            maintainability_portfolio_data,
+            "end_snapshot",
+            side_effect=mock_end_snapshot,
+        )
 
-        stats = portfolio.statistics
+        stats = stats_obj.statistics
 
         # System should be counted in star statistics, and when dates are same, diff=0 counts as stable
         assert stats["maintainability"]["number-of-systems"] == 1
@@ -370,7 +394,7 @@ class TestMaintainabilityStatistics:
     def test_statistics_volume_change_tracking(self, mocker):
         """Test that volume changes are tracked correctly in statistics."""
 
-        portfolio = MaintainabilityPortfolioData()
+        stats_obj = MaintainabilityPortfolioStats()
 
         mock_system_names = ["system1", "system2", "system3"]
 
@@ -378,7 +402,7 @@ class TestMaintainabilityStatistics:
             return {"active": True, "isDevelopmentOnly": False}
 
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "period",
             new_callable=mocker.PropertyMock,
             return_value=["2024-01-01", "2024-12-31"],
@@ -430,7 +454,7 @@ class TestMaintainabilityStatistics:
             return snapshots[system_name]
 
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "system_names",
             new_callable=mocker.PropertyMock,
             return_value=mock_system_names,
@@ -440,7 +464,7 @@ class TestMaintainabilityStatistics:
             for system_name in mock_system_names
         ]
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "metadata",
             new_callable=mocker.PropertyMock,
             return_value=mock_metadata,
@@ -450,11 +474,17 @@ class TestMaintainabilityStatistics:
             side_effect=mock_get_system_metadata,
         )
         mocker.patch.object(
-            portfolio, "start_snapshot", side_effect=mock_start_snapshot
+            maintainability_portfolio_data,
+            "start_snapshot",
+            side_effect=mock_start_snapshot,
         )
-        mocker.patch.object(portfolio, "end_snapshot", side_effect=mock_end_snapshot)
+        mocker.patch.object(
+            maintainability_portfolio_data,
+            "end_snapshot",
+            side_effect=mock_end_snapshot,
+        )
 
-        stats = portfolio.statistics
+        stats = stats_obj.statistics
 
         # Verify volume totals
         assert stats["volume-change"]["total-start"] == 350
@@ -467,7 +497,7 @@ class TestMaintainabilityStatistics:
     def test_statistics_volume_decrease(self, mocker):
         """Test that volume decreases are tracked correctly."""
 
-        portfolio = MaintainabilityPortfolioData()
+        stats_obj = MaintainabilityPortfolioStats()
 
         mock_system_names = ["system1", "system2"]
 
@@ -475,7 +505,7 @@ class TestMaintainabilityStatistics:
             return {"active": True, "isDevelopmentOnly": False}
 
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "period",
             new_callable=mocker.PropertyMock,
             return_value=["2024-01-01", "2024-12-31"],
@@ -515,7 +545,7 @@ class TestMaintainabilityStatistics:
             return snapshots[system_name]
 
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "system_names",
             new_callable=mocker.PropertyMock,
             return_value=mock_system_names,
@@ -525,7 +555,7 @@ class TestMaintainabilityStatistics:
             for system_name in mock_system_names
         ]
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "metadata",
             new_callable=mocker.PropertyMock,
             return_value=mock_metadata,
@@ -535,11 +565,17 @@ class TestMaintainabilityStatistics:
             side_effect=mock_get_system_metadata,
         )
         mocker.patch.object(
-            portfolio, "start_snapshot", side_effect=mock_start_snapshot
+            maintainability_portfolio_data,
+            "start_snapshot",
+            side_effect=mock_start_snapshot,
         )
-        mocker.patch.object(portfolio, "end_snapshot", side_effect=mock_end_snapshot)
+        mocker.patch.object(
+            maintainability_portfolio_data,
+            "end_snapshot",
+            side_effect=mock_end_snapshot,
+        )
 
-        stats = portfolio.statistics
+        stats = stats_obj.statistics
 
         # Verify volume totals
         assert stats["volume-change"]["total-start"] == 300
@@ -552,7 +588,7 @@ class TestMaintainabilityStatistics:
     def test_statistics_volume_no_change(self, mocker):
         """Test volume tracking when there are no volume changes."""
 
-        portfolio = MaintainabilityPortfolioData()
+        stats_obj = MaintainabilityPortfolioStats()
 
         mock_system_names = ["system1"]
 
@@ -560,7 +596,7 @@ class TestMaintainabilityStatistics:
             return {"active": True, "isDevelopmentOnly": False}
 
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "period",
             new_callable=mocker.PropertyMock,
             return_value=["2024-01-01", "2024-12-31"],
@@ -581,7 +617,7 @@ class TestMaintainabilityStatistics:
             }
 
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "system_names",
             new_callable=mocker.PropertyMock,
             return_value=mock_system_names,
@@ -591,7 +627,7 @@ class TestMaintainabilityStatistics:
             for system_name in mock_system_names
         ]
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "metadata",
             new_callable=mocker.PropertyMock,
             return_value=mock_metadata,
@@ -601,11 +637,17 @@ class TestMaintainabilityStatistics:
             side_effect=mock_get_system_metadata,
         )
         mocker.patch.object(
-            portfolio, "start_snapshot", side_effect=mock_start_snapshot
+            maintainability_portfolio_data,
+            "start_snapshot",
+            side_effect=mock_start_snapshot,
         )
-        mocker.patch.object(portfolio, "end_snapshot", side_effect=mock_end_snapshot)
+        mocker.patch.object(
+            maintainability_portfolio_data,
+            "end_snapshot",
+            side_effect=mock_end_snapshot,
+        )
 
-        stats = portfolio.statistics
+        stats = stats_obj.statistics
 
         # Verify volume totals are equal
         assert stats["volume-change"]["total-start"] == 100
@@ -802,7 +844,7 @@ class TestTestCodeRatioDistribution:
 
     def test_test_code_ratio_distribution_mixed(self, mocker):
         """Test distribution with systems in all three categories."""
-        portfolio = MaintainabilityPortfolioData()
+        stats_obj = MaintainabilityPortfolioStats()
 
         mock_system_names = ["system1", "system2", "system3", "system4", "system5"]
 
@@ -835,7 +877,7 @@ class TestTestCodeRatioDistribution:
             return snapshots[system_name]
 
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "system_names",
             new_callable=mocker.PropertyMock,
             return_value=mock_system_names,
@@ -845,7 +887,7 @@ class TestTestCodeRatioDistribution:
             for system_name in mock_system_names
         ]
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "metadata",
             new_callable=mocker.PropertyMock,
             return_value=mock_metadata,
@@ -854,9 +896,13 @@ class TestTestCodeRatioDistribution:
             "report_generator.generator.domain.portfolio.shared.utils.get_system_metadata",
             side_effect=mock_get_system_metadata,
         )
-        mocker.patch.object(portfolio, "end_snapshot", side_effect=mock_end_snapshot)
+        mocker.patch.object(
+            maintainability_portfolio_data,
+            "end_snapshot",
+            side_effect=mock_end_snapshot,
+        )
 
-        distribution = portfolio.test_code_ratio_distribution_percentages
+        distribution = stats_obj.test_code_ratio_distribution_percentages
 
         # 2 out of 5 = 40% low, 2 out of 5 = 40% medium, 1 out of 5 = 20% high
         assert distribution["low"] == 40
@@ -865,7 +911,7 @@ class TestTestCodeRatioDistribution:
 
     def test_test_code_ratio_distribution_all_low(self, mocker):
         """Test distribution when all systems have low test code ratio."""
-        portfolio = MaintainabilityPortfolioData()
+        stats_obj = MaintainabilityPortfolioStats()
 
         mock_system_names = ["system1", "system2", "system3"]
 
@@ -881,7 +927,7 @@ class TestTestCodeRatioDistribution:
             return snapshots[system_name]
 
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "system_names",
             new_callable=mocker.PropertyMock,
             return_value=mock_system_names,
@@ -891,7 +937,7 @@ class TestTestCodeRatioDistribution:
             for system_name in mock_system_names
         ]
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "metadata",
             new_callable=mocker.PropertyMock,
             return_value=mock_metadata,
@@ -900,9 +946,13 @@ class TestTestCodeRatioDistribution:
             "report_generator.generator.domain.portfolio.shared.utils.get_system_metadata",
             side_effect=mock_get_system_metadata,
         )
-        mocker.patch.object(portfolio, "end_snapshot", side_effect=mock_end_snapshot)
+        mocker.patch.object(
+            maintainability_portfolio_data,
+            "end_snapshot",
+            side_effect=mock_end_snapshot,
+        )
 
-        distribution = portfolio.test_code_ratio_distribution_percentages
+        distribution = stats_obj.test_code_ratio_distribution_percentages
 
         assert distribution["low"] == 100
         assert distribution["medium"] == 0
@@ -910,7 +960,7 @@ class TestTestCodeRatioDistribution:
 
     def test_test_code_ratio_distribution_with_none_values(self, mocker):
         """Test distribution when some systems have None test code ratio."""
-        portfolio = MaintainabilityPortfolioData()
+        stats_obj = MaintainabilityPortfolioStats()
 
         mock_system_names = ["system1", "system2", "system3", "system4"]
 
@@ -930,7 +980,7 @@ class TestTestCodeRatioDistribution:
             return snapshots[system_name]
 
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "system_names",
             new_callable=mocker.PropertyMock,
             return_value=mock_system_names,
@@ -940,7 +990,7 @@ class TestTestCodeRatioDistribution:
             for system_name in mock_system_names
         ]
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "metadata",
             new_callable=mocker.PropertyMock,
             return_value=mock_metadata,
@@ -949,9 +999,13 @@ class TestTestCodeRatioDistribution:
             "report_generator.generator.domain.portfolio.shared.utils.get_system_metadata",
             side_effect=mock_get_system_metadata,
         )
-        mocker.patch.object(portfolio, "end_snapshot", side_effect=mock_end_snapshot)
+        mocker.patch.object(
+            maintainability_portfolio_data,
+            "end_snapshot",
+            side_effect=mock_end_snapshot,
+        )
 
-        distribution = portfolio.test_code_ratio_distribution_percentages
+        distribution = stats_obj.test_code_ratio_distribution_percentages
 
         # Only 2 systems counted: 1 low, 1 high = 50% each
         assert distribution["low"] == 50
@@ -960,7 +1014,7 @@ class TestTestCodeRatioDistribution:
 
     def test_test_code_ratio_distribution_excludes_inactive_systems(self, mocker):
         """Test that inactive and development-only systems are excluded."""
-        portfolio = MaintainabilityPortfolioData()
+        stats_obj = MaintainabilityPortfolioStats()
 
         mock_system_names = ["active_system", "inactive_system", "dev_only_system"]
 
@@ -976,7 +1030,7 @@ class TestTestCodeRatioDistribution:
             return {"maintainability": 3.5, "testCodeRatio": 0.3}  # all low
 
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "system_names",
             new_callable=mocker.PropertyMock,
             return_value=mock_system_names,
@@ -986,7 +1040,7 @@ class TestTestCodeRatioDistribution:
             for system_name in mock_system_names
         ]
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "metadata",
             new_callable=mocker.PropertyMock,
             return_value=mock_metadata,
@@ -995,9 +1049,13 @@ class TestTestCodeRatioDistribution:
             "report_generator.generator.domain.portfolio.shared.utils.get_system_metadata",
             side_effect=mock_get_system_metadata,
         )
-        mocker.patch.object(portfolio, "end_snapshot", side_effect=mock_end_snapshot)
+        mocker.patch.object(
+            maintainability_portfolio_data,
+            "end_snapshot",
+            side_effect=mock_end_snapshot,
+        )
 
-        distribution = portfolio.test_code_ratio_distribution_percentages
+        distribution = stats_obj.test_code_ratio_distribution_percentages
 
         # Only active_system should be counted
         assert distribution["low"] == 100
@@ -1006,16 +1064,16 @@ class TestTestCodeRatioDistribution:
 
     def test_test_code_ratio_distribution_no_systems(self, mocker):
         """Test distribution with no systems."""
-        portfolio = MaintainabilityPortfolioData()
+        stats_obj = MaintainabilityPortfolioStats()
 
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "system_names",
             new_callable=mocker.PropertyMock,
             return_value=[],
         )
 
-        distribution = portfolio.test_code_ratio_distribution_percentages
+        distribution = stats_obj.test_code_ratio_distribution_percentages
 
         assert distribution["low"] == 0
         assert distribution["medium"] == 0
@@ -1023,7 +1081,7 @@ class TestTestCodeRatioDistribution:
 
     def test_test_code_ratio_distribution_boundary_values(self, mocker):
         """Test distribution with values exactly at boundaries."""
-        portfolio = MaintainabilityPortfolioData()
+        stats_obj = MaintainabilityPortfolioStats()
 
         mock_system_names = ["system1", "system2", "system3", "system4"]
 
@@ -1052,7 +1110,7 @@ class TestTestCodeRatioDistribution:
             return snapshots[system_name]
 
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "system_names",
             new_callable=mocker.PropertyMock,
             return_value=mock_system_names,
@@ -1062,7 +1120,7 @@ class TestTestCodeRatioDistribution:
             for system_name in mock_system_names
         ]
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "metadata",
             new_callable=mocker.PropertyMock,
             return_value=mock_metadata,
@@ -1071,9 +1129,13 @@ class TestTestCodeRatioDistribution:
             "report_generator.generator.domain.portfolio.shared.utils.get_system_metadata",
             side_effect=mock_get_system_metadata,
         )
-        mocker.patch.object(portfolio, "end_snapshot", side_effect=mock_end_snapshot)
+        mocker.patch.object(
+            maintainability_portfolio_data,
+            "end_snapshot",
+            side_effect=mock_end_snapshot,
+        )
 
-        distribution = portfolio.test_code_ratio_distribution_percentages
+        distribution = stats_obj.test_code_ratio_distribution_percentages
 
         # 1 low, 2 medium, 1 high
         assert distribution["low"] == 25
@@ -1087,7 +1149,7 @@ class TestTestCodeRatioChange:
     def test_test_code_ratio_change_tracking(self, mocker):
         """Test that test code ratio changes are tracked correctly in statistics."""
 
-        portfolio = MaintainabilityPortfolioData()
+        stats_obj = MaintainabilityPortfolioStats()
 
         mock_system_names = ["system1", "system2", "system3", "system4"]
 
@@ -1095,7 +1157,7 @@ class TestTestCodeRatioChange:
             return {"active": True, "isDevelopmentOnly": False}
 
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "period",
             new_callable=mocker.PropertyMock,
             return_value=["2024-01-01", "2024-12-31"],
@@ -1165,7 +1227,7 @@ class TestTestCodeRatioChange:
             return snapshots[system_name]
 
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "system_names",
             new_callable=mocker.PropertyMock,
             return_value=mock_system_names,
@@ -1175,7 +1237,7 @@ class TestTestCodeRatioChange:
             for system_name in mock_system_names
         ]
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "metadata",
             new_callable=mocker.PropertyMock,
             return_value=mock_metadata,
@@ -1185,11 +1247,17 @@ class TestTestCodeRatioChange:
             side_effect=mock_get_system_metadata,
         )
         mocker.patch.object(
-            portfolio, "start_snapshot", side_effect=mock_start_snapshot
+            maintainability_portfolio_data,
+            "start_snapshot",
+            side_effect=mock_start_snapshot,
         )
-        mocker.patch.object(portfolio, "end_snapshot", side_effect=mock_end_snapshot)
+        mocker.patch.object(
+            maintainability_portfolio_data,
+            "end_snapshot",
+            side_effect=mock_end_snapshot,
+        )
 
-        stats = portfolio.statistics
+        stats = stats_obj.statistics
 
         # Verify totals
         assert stats["test-code-ratio-change"]["total-start"] == pytest.approx(
@@ -1222,7 +1290,7 @@ class TestTestCodeRatioChange:
     def test_test_code_ratio_change_with_none_values(self, mocker):
         """Test that systems with None test code ratios are excluded from change tracking."""
 
-        portfolio = MaintainabilityPortfolioData()
+        stats_obj = MaintainabilityPortfolioStats()
 
         mock_system_names = ["system1", "system2", "system3"]
 
@@ -1230,7 +1298,7 @@ class TestTestCodeRatioChange:
             return {"active": True, "isDevelopmentOnly": False}
 
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "period",
             new_callable=mocker.PropertyMock,
             return_value=["2024-01-01", "2024-12-31"],
@@ -1283,7 +1351,7 @@ class TestTestCodeRatioChange:
             return snapshots[system_name]
 
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "system_names",
             new_callable=mocker.PropertyMock,
             return_value=mock_system_names,
@@ -1293,7 +1361,7 @@ class TestTestCodeRatioChange:
             for system_name in mock_system_names
         ]
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "metadata",
             new_callable=mocker.PropertyMock,
             return_value=mock_metadata,
@@ -1303,11 +1371,17 @@ class TestTestCodeRatioChange:
             side_effect=mock_get_system_metadata,
         )
         mocker.patch.object(
-            portfolio, "start_snapshot", side_effect=mock_start_snapshot
+            maintainability_portfolio_data,
+            "start_snapshot",
+            side_effect=mock_start_snapshot,
         )
-        mocker.patch.object(portfolio, "end_snapshot", side_effect=mock_end_snapshot)
+        mocker.patch.object(
+            maintainability_portfolio_data,
+            "end_snapshot",
+            side_effect=mock_end_snapshot,
+        )
 
-        stats = portfolio.statistics
+        stats = stats_obj.statistics
 
         # Only system1 should be counted (has both start and end ratios)
         assert stats["test-code-ratio-change"]["total-start"] == pytest.approx(0.5)
@@ -1319,7 +1393,7 @@ class TestTestCodeRatioChange:
     def test_test_code_ratio_change_no_changes(self, mocker):
         """Test change tracking when there are no changes."""
 
-        portfolio = MaintainabilityPortfolioData()
+        stats_obj = MaintainabilityPortfolioStats()
 
         mock_system_names = ["system1", "system2"]
 
@@ -1327,7 +1401,7 @@ class TestTestCodeRatioChange:
             return {"active": True, "isDevelopmentOnly": False}
 
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "period",
             new_callable=mocker.PropertyMock,
             return_value=["2024-01-01", "2024-12-31"],
@@ -1350,7 +1424,7 @@ class TestTestCodeRatioChange:
             }
 
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "system_names",
             new_callable=mocker.PropertyMock,
             return_value=mock_system_names,
@@ -1360,7 +1434,7 @@ class TestTestCodeRatioChange:
             for system_name in mock_system_names
         ]
         mocker.patch.object(
-            type(portfolio),
+            type(maintainability_portfolio_data),
             "metadata",
             new_callable=mocker.PropertyMock,
             return_value=mock_metadata,
@@ -1370,11 +1444,17 @@ class TestTestCodeRatioChange:
             side_effect=mock_get_system_metadata,
         )
         mocker.patch.object(
-            portfolio, "start_snapshot", side_effect=mock_start_snapshot
+            maintainability_portfolio_data,
+            "start_snapshot",
+            side_effect=mock_start_snapshot,
         )
-        mocker.patch.object(portfolio, "end_snapshot", side_effect=mock_end_snapshot)
+        mocker.patch.object(
+            maintainability_portfolio_data,
+            "end_snapshot",
+            side_effect=mock_end_snapshot,
+        )
 
-        stats = portfolio.statistics
+        stats = stats_obj.statistics
 
         # Both systems stable
         assert stats["test-code-ratio-change"]["total-start"] == pytest.approx(1.0)
@@ -1409,7 +1489,7 @@ class TestMaintainabilityPortfolioData:
             maintainability_portfolio_data.__dict__.pop(attr, None)
 
     @patch(
-        "report_generator.generator.domain.portfolio.maintainability_portfolio.sigrid_api"
+        "report_generator.generator.domain.portfolio.maintainability_portfolio.data.sigrid_api"
     )
     def test_data_filters_systems_without_maintainability(self, mock_sigrid_api):
         """Test that systems without maintainability data are filtered out."""
@@ -1433,7 +1513,7 @@ class TestMaintainabilityPortfolioData:
         assert data["systems"][1]["system"] == "system3"
 
     @patch(
-        "report_generator.generator.domain.portfolio.maintainability_portfolio.sigrid_api"
+        "report_generator.generator.domain.portfolio.maintainability_portfolio.data.sigrid_api"
     )
     def test_system_names_returns_filtered_system_list(self, mock_sigrid_api):
         """Test that system_names property returns list of system names."""
@@ -1457,7 +1537,7 @@ class TestMaintainabilityPortfolioData:
         assert "system2" in names
 
     @patch(
-        "report_generator.generator.domain.portfolio.maintainability_portfolio.sigrid_api"
+        "report_generator.generator.domain.portfolio.maintainability_portfolio.data.sigrid_api"
     )
     def test_get_system_returns_correct_system_data(self, mock_sigrid_api):
         """Test that get_system returns data for specific system."""
@@ -1480,7 +1560,7 @@ class TestMaintainabilityPortfolioData:
         assert abs(system["maintainability"] - 4.0) < 0.01
 
     @patch(
-        "report_generator.generator.domain.portfolio.maintainability_portfolio.sigrid_api"
+        "report_generator.generator.domain.portfolio.maintainability_portfolio.data.sigrid_api"
     )
     def test_get_system_returns_none_for_unknown_system(self, mock_sigrid_api):
         """Test that get_system returns None for non-existent system."""
@@ -1513,22 +1593,22 @@ class TestMaintainabilityPortfolioHelpers:
         assert stats["maintainability"]["number-of-systems"] == 0
 
     def test_is_system_active_returns_true_for_active(self):
-        """Test that _is_system_active returns True for active non-dev systems."""
+        """Test that is_system_active returns True for active non-dev systems."""
         metadata = {"active": True, "isDevelopmentOnly": False}
 
-        assert _is_system_active(metadata) is True
+        assert is_system_active(metadata) is True
 
     def test_is_system_active_returns_false_for_inactive(self):
-        """Test that _is_system_active returns False for inactive systems."""
+        """Test that is_system_active returns False for inactive systems."""
         metadata = {"active": False, "isDevelopmentOnly": False}
 
-        assert _is_system_active(metadata) is False
+        assert is_system_active(metadata) is False
 
     def test_is_system_active_returns_false_for_dev_only(self):
-        """Test that _is_system_active returns False for dev-only systems."""
+        """Test that is_system_active returns False for dev-only systems."""
         metadata = {"active": True, "isDevelopmentOnly": True}
 
-        assert _is_system_active(metadata) is False
+        assert is_system_active(metadata) is False
 
     def test_weighted_avg_calculates_correctly(self):
         """Test that _weighted_avg calculates weighted average correctly."""
@@ -1551,10 +1631,10 @@ class TestMaintainabilityPortfolioHelpers:
         assert abs(result - 0.000001) < 0.00001
 
     def test_parse_date_converts_string_to_datetime(self):
-        """Test that _parse_date correctly parses date strings."""
+        """Test that parse_date correctly parses date strings."""
         from datetime import datetime
 
-        result = _parse_date("2024-01-15")
+        result = parse_date("2024-01-15")
 
         assert result == datetime(2024, 1, 15)
 

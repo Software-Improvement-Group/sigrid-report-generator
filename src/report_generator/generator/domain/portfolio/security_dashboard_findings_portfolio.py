@@ -18,19 +18,14 @@ from report_generator.generator.context import sigrid_api
 from report_generator.generator.context.portfolio_filters import (
     filter_data_on_portfolio_arguments,
 )
-from report_generator.generator.domain.portfolio.base import AbstractPortfolioModel
 from report_generator.generator.domain.portfolio.shared import utils
 
 
-class SecurityDashboardFindingsPortfolioData(AbstractPortfolioModel):
+class SecurityDashboardFindingsPortfolioData:
     @cached_property
     @filter_data_on_portfolio_arguments(data_tag="systems", system_tag="system")
     def data(self):
         return sigrid_api.get_portfolio_security_dashboard_findings()
-
-    @cached_property
-    def period(self):
-        return sigrid_api.get_period()
 
     @cached_property
     def system_names(self):
@@ -52,7 +47,9 @@ class SecurityDashboardFindingsPortfolioData(AbstractPortfolioModel):
         """Accumulate resolved and added counts for all severity levels within the period."""
         for system in self.data.get("systems", []):
             for month_data in system.get("findingRatio", []):
-                if utils.is_month_in_period(month_data.get("month"), self.period):
+                if utils.is_month_in_period(
+                    month_data.get("month"), sigrid_api.get_period()
+                ):
                     severities = month_data.get("severities", {})
 
                     for severity_level in ["CRITICAL", "HIGH", "MEDIUM", "LOW"]:
@@ -84,7 +81,7 @@ class SecurityDashboardFindingsPortfolioData(AbstractPortfolioModel):
                 if month and (earliest_month is None or month < earliest_month):
                     earliest_month = month
 
-        return earliest_month if earliest_month else self.period[0]
+        return earliest_month if earliest_month else sigrid_api.get_period()[0]
 
     @cached_property
     def _all_findings_statistics(self):

@@ -1,0 +1,37 @@
+line-length = 88
+target-version = "py39"
+
+[lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes (unused imports, undefined names, …)
+    "I",    # isort (import ordering)
+    "B",    # flake8-bugbear (likely bugs and design issues)
+    "N",    # pep8-naming (class/function/variable naming conventions)
+    "UP",   # pyupgrade (modernise Python syntax for the target version)
+    "PERF", # perflint (performance anti-patterns)
+    "RUF",  # ruff-specific rules
+]
+preview = true
+explicit-preview-rules = true
+extend-select = [
+    "PLC2701",  # import private name (_)
+    "CPY001"  # flake-8 missing copyright notice
+]
+ignore = [
+    "E501",  # line too long — ruff format handles wrapping; remaining long lines (e.g. strings) cannot be auto-wrapped
+    "B008",  # function call in default argument — Click evaluates defaults lazily at parse time
+]
+
+[format]
+# ruff format defaults are fine
+
+[lint.per-file-ignores]
+"__init__.py" = ["F401"] # allow unused imports to specify module interface
+"tests/**" = ["PLC2701"]
+"src/report_generator/generator/placeholders/**" = ["PLC2701"]
+
+[lint.flake8-copyright]
+notice-rgx = "#  Copyright Software Improvement Group"
+min-file-size = 1

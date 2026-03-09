@@ -11,25 +11,8 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+from report_generator.generator.domain.portfolio.maintainability_portfolio.data import (
+    MaintainabilityPortfolioData,
+)
 
-from abc import ABC, abstractmethod
-from functools import cached_property
-
-from report_generator.generator.context import sigrid_api
-
-
-class AbstractPortfolioModel(ABC):
-    @cached_property
-    def metadata(self):
-        return sigrid_api.get_portfolio_metadata()
-
-    @cached_property
-    def period(self):
-        return sigrid_api.get_period()
-
-    @abstractmethod
-    def get_system(self, system):
-        pass
-
-    def end_snapshot(self, system):
-        return self.get_system(system)
+maintainability_portfolio_data = MaintainabilityPortfolioData()

@@ -18,11 +18,10 @@ from report_generator.generator.context import sigrid_api
 from report_generator.generator.context.portfolio_filters import (
     filter_data_on_portfolio_arguments,
 )
-from report_generator.generator.domain.portfolio.base import AbstractPortfolioModel
 from report_generator.generator.domain.portfolio.shared import utils
 
 
-class SecurityDashboardResolutionTimesPortfolioData(AbstractPortfolioModel):
+class SecurityDashboardResolutionTimesPortfolioData:
     @cached_property
     @filter_data_on_portfolio_arguments(data_tag="systems", system_tag="system")
     def data(self):
@@ -34,10 +33,6 @@ class SecurityDashboardResolutionTimesPortfolioData(AbstractPortfolioModel):
 
     def get_system(self, system):
         return utils.get_system_helper(system, self.data["systems"], "system")
-
-    @cached_property
-    def period(self):
-        return sigrid_api.get_period()
 
     def _initialize_resolution_stats(self):
         """Initialize resolution statistics structure for all severity levels."""
@@ -52,7 +47,9 @@ class SecurityDashboardResolutionTimesPortfolioData(AbstractPortfolioModel):
         """Accumulate resolution time counts for all severity levels within the period."""
         for system in self.data.get("systems", []):
             for month_data in system.get("resolutionTimes", []):
-                if utils.is_month_in_period(month_data.get("month"), self.period):
+                if utils.is_month_in_period(
+                    month_data.get("month"), sigrid_api.get_period()
+                ):
                     severities = month_data.get("severities", {})
 
                     for severity_level in ["CRITICAL", "HIGH", "MEDIUM", "LOW"]:

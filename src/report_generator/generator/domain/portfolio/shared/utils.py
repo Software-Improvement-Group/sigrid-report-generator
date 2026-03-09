@@ -78,7 +78,9 @@ def get_volume(system_name: str) -> float:
     for system in systems:
         if system.get("system") == system_name:
             return system.get("volumeInPersonMonths", 0)
-    return 0
+    raise ValueError(
+        f"System '{system_name}' not found in portfolio maintainability data"
+    )
 
 
 def get_rating_and_volume_from_system(

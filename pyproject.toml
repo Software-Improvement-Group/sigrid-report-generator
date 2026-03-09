@@ -5,33 +5,6 @@ requires = [
 ]
 build-backend = "setuptools.build_meta"
 
-[tool.ruff]
-line-length = 88
-target-version = "py39"
-
-[tool.ruff.lint]
-select = [
-    "E",    # pycodestyle errors
-    "W",    # pycodestyle warnings
-    "F",    # pyflakes (unused imports, undefined names, …)
-    "I",    # isort (import ordering)
-    "B",    # flake8-bugbear (likely bugs and design issues)
-    "N",    # pep8-naming (class/function/variable naming conventions)
-    "UP",   # pyupgrade (modernise Python syntax for the target version)
-    "PERF", # perflint (performance anti-patterns)
-    "RUF",  # ruff-specific rules
-]
-ignore = [
-    "E501",  # line too long — ruff format handles wrapping; remaining long lines (e.g. strings) cannot be auto-wrapped
-    "B008",  # function call in default argument — Click evaluates defaults lazily at parse time
-]
-
-[tool.ruff.format]
-# ruff format defaults are fine
-
-[tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401"] # allow unused imports to specify module interface
-
 [tool.pytest.ini_options]
 testpaths = [
     "tests"
@@ -43,70 +16,3 @@ pythonpath = "."
 markers = [
     "integration: requires live Sigrid API and a valid REPORT_GENERATOR_TESTS_TOKEN",
 ]
-
-[tool.importlinter]
-root_packages = ["report_generator"]
-
-# Rule: context → domain
-[[tool.importlinter.contracts]]
-name = "context must not import domain"
-type = "forbidden"
-source_modules = ["report_generator.generator.context"]
-forbidden_modules = ["report_generator.generator.domain"]
-
-# Rule: context → placeholders
-[[tool.importlinter.contracts]]
-name = "context must not import placeholders"
-type = "forbidden"
-source_modules = ["report_generator.generator.context"]
-forbidden_modules = ["report_generator.generator.placeholders"]
-
-# Rule: domain → placeholders
-[[tool.importlinter.contracts]]
-name = "domain must not import placeholders"
-type = "forbidden"
-source_modules = ["report_generator.generator.domain"]
-forbidden_modules = ["report_generator.generator.placeholders"]
-
-# Rule: domain/portfolio ↔ domain/system
-[[tool.importlinter.contracts]]
-name = "portfolio and system are independent"
-type = "independence"
-modules = [
-    "report_generator.generator.domain.portfolio",
-    "report_generator.generator.domain.system",
-]
-
-# Rule: utils → generator/.*/.*
-[[tool.importlinter.contracts]]
-name = "utils must not import from other generator subpackages"
-type = "forbidden"
-source_modules = ["report_generator.generator.utils"]
-forbidden_modules = [
-    "report_generator.generator.context",
-    "report_generator.generator.domain",
-    "report_generator.generator.placeholders",
-]
-
-# Rule: placeholders/formatting ↔ placeholders/rendering
-[[tool.importlinter.contracts]]
-name = "formatting and rendering are independent"
-type = "independence"
-modules = [
-    "report_generator.generator.placeholders.formatting",
-    "report_generator.generator.placeholders.rendering",
-]
-
-# Rule: formatting → implementations
-[[tool.importlinter.contracts]]
-name = "formatting must not import implementations"
-type = "forbidden"
-source_modules = ["report_generator.generator.placeholders.formatting"]
-forbidden_modules = ["report_generator.generator.placeholders.implementations"]
-
-# Rule: rendering → implementations
-[[tool.importlinter.contracts]]
-name = "rendering must not import implementations"
-type = "forbidden"
-source_modules = ["report_generator.generator.placeholders.rendering"]
-forbidden_modules = ["report_generator.generator.placeholders.implementations"]

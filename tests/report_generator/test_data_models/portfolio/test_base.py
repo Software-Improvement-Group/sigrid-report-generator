@@ -13,8 +13,8 @@
 #  limitations under the License.
 
 
-class TestAbstractPortfolioModel:
-    """Test cases for AbstractPortfolioModel base class."""
+class TestPortfolioModelMixin:
+    """Test cases for PortfolioModelMixin base class."""
 
     def test_system_names_helper_extracts_names(self):
         """Test _system_names_helper extracts system names from data."""
