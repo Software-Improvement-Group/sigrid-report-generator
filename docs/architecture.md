@@ -26,16 +26,19 @@ Each layer depends only on the layers to its left.
 
 ```mermaid
 flowchart LR
-    utils["utils/\n─────────────\nconstants · enums\nmath helpers"]
+    utils["utils/\nconstants · enums\nmath helpers"]
 
     subgraph generator["generator internals"]
         direction LR
-        context["context/\n─────────────\nHTTP calls\nURL construction\ncaching"]
+        context["context/\nHTTP calls\nURL construction\ncaching"]
 
         subgraph domain["domain/"]
             direction TB
-            shared["shared/"] --> system["system/"]
-            shared --> portfolio["portfolio/"]
+            shared["shared/"]
+            system["system/"]
+            portfolio["portfolio/"]
+            shared --> system
+            shared --> portfolio
         end
 
         subgraph ph["placeholders/"]
@@ -51,10 +54,10 @@ flowchart LR
         domain --> impl
     end
 
-    presets["presets/\n─────────────\nReportGenerator\nwrappers"]
+    presets["presets/\nReportGenerator\nwrappers"]
 
     presets -->|public API only| generator
-    utils -. no upstream deps .-> generator
+    utils -.->|no upstream deps| generator
 ```
 
 ---
