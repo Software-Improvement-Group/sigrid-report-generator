@@ -209,26 +209,9 @@ generator.generate("out.pptx")
 If you use the `report_generator` Python API directly (custom placeholders, programmatic `ReportGenerator` usage),
 see [docs/upgrade-v1.md](docs/upgrade-v1.md) for the migration guide. CLI-only users are unaffected.
 
-## Linting
+## Contributing
 
-This project uses [Ruff](https://docs.astral.sh/ruff/) for linting and formatting. Install it via `pip install -e ".[test]"`.
-
-**Check for violations:**
-```bash
-ruff check . # Add --fix for autofix
-ruff format . # Add --check to not autofix
-```
-
-**PyCharm integration:** Settings → Tools → Ruff. Enable all settings.
-
-### Architecture linting
-
-This project uses [import-linter](https://import-linter.readthedocs.io/) to enforce the architecture rules defined in `sigrid.yaml`. Install it via `pip install -e ".[test]"`.
-
-**Check for violations:**
-```bash
-lint-imports
-```
+For developer instructions (linting, testing, architecture overview), see [docs/developers.md](docs/developers.md).
 
 ## Contact and support
 
