@@ -49,7 +49,7 @@ class TestRatingDistributionPercentages:
             return_value=mock_data,
         )
 
-        distribution = portfolio.get_rating_distribution_percentages
+        distribution = portfolio.rating_distribution_percentages
         assert distribution["above_market"] == pytest.approx(50.0)
         assert distribution["market_average"] == pytest.approx(25.0)
         assert distribution["below_market"] == pytest.approx(25.0)
@@ -64,7 +64,7 @@ class TestRatingDistributionPercentages:
             return_value={"systems": []},
         )
 
-        distribution = portfolio.get_rating_distribution_percentages
+        distribution = portfolio.rating_distribution_percentages
         assert distribution["above_market"] == pytest.approx(0.0)
         assert distribution["market_average"] == pytest.approx(0.0)
         assert distribution["below_market"] == pytest.approx(0.0)
@@ -87,7 +87,7 @@ class TestRatingDistributionPercentages:
             return_value=mock_data,
         )
 
-        distribution = portfolio.get_rating_distribution_percentages
+        distribution = portfolio.rating_distribution_percentages
         assert distribution["above_market"] == pytest.approx(100.0)
         assert distribution["market_average"] == pytest.approx(0.0)
         assert distribution["below_market"] == pytest.approx(0.0)
@@ -110,7 +110,7 @@ class TestRatingDistributionPercentages:
             return_value=mock_data,
         )
 
-        distribution = portfolio.get_rating_distribution_percentages
+        distribution = portfolio.rating_distribution_percentages
         assert distribution["above_market"] == pytest.approx(50.0)
         assert distribution["market_average"] == pytest.approx(25.0)
         assert distribution["below_market"] == pytest.approx(25.0)
@@ -136,7 +136,7 @@ class TestRatingDistributionPercentages:
             return_value=mock_data,
         )
 
-        distribution = portfolio.get_rating_distribution_percentages
+        distribution = portfolio.rating_distribution_percentages
         assert distribution["above_market"] == pytest.approx(50.0)
         assert distribution["market_average"] == pytest.approx(50.0)
         assert distribution["below_market"] == pytest.approx(0.0)

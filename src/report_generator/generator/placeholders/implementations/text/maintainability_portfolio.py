@@ -143,7 +143,7 @@ def portfolio_period_maint_change_short_summary():
 @text_placeholder()
 def portfolio_maint_above_market():
     """Percentage of systems scoring above market average (≥3.5 stars)."""
-    distribution = maintainability_portfolio_data.get_rating_distribution_percentages
+    distribution = maintainability_portfolio_data.rating_distribution_percentages
     return distribution["above_market"]
 
 
@@ -156,14 +156,14 @@ def portfolio_maint_avg_rating():
 @text_placeholder()
 def portfolio_maint_market_average():
     """Percentage of systems scoring market average (2.5-3.5 stars)."""
-    distribution = maintainability_portfolio_data.get_rating_distribution_percentages
+    distribution = maintainability_portfolio_data.rating_distribution_percentages
     return distribution["market_average"]
 
 
 @text_placeholder()
 def portfolio_maint_below_market():
     """Percentage of systems scoring below market average (<2.5 stars)."""
-    distribution = maintainability_portfolio_data.get_rating_distribution_percentages
+    distribution = maintainability_portfolio_data.rating_distribution_percentages
     return distribution["below_market"]
 
 

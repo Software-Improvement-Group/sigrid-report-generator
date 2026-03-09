@@ -27,21 +27,21 @@ from .base import text_placeholder
 @text_placeholder()
 def portfolio_sec_above_market():
     """Percentage of systems scoring above market average (≥3.5 stars) on security."""
-    distribution = security_ratings_portfolio_data.get_rating_distribution_percentages
+    distribution = security_ratings_portfolio_data.rating_distribution_percentages
     return distribution["above_market"]
 
 
 @text_placeholder()
 def portfolio_sec_market_average():
     """Percentage of systems scoring market average (2.5-3.5 stars) on security."""
-    distribution = security_ratings_portfolio_data.get_rating_distribution_percentages
+    distribution = security_ratings_portfolio_data.rating_distribution_percentages
     return distribution["market_average"]
 
 
 @text_placeholder()
 def portfolio_sec_below_market():
     """Percentage of systems scoring below market average (<2.5 stars) on security."""
-    distribution = security_ratings_portfolio_data.get_rating_distribution_percentages
+    distribution = security_ratings_portfolio_data.rating_distribution_percentages
     return distribution["below_market"]
 
 

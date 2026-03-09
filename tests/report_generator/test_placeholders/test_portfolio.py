@@ -33,19 +33,19 @@ class TestPortfolioPlaceholders:
         # Mock at the data model instance level
         mocker.patch.object(
             type(osh_portfolio_data),
-            "get_rating_distribution_percentages",
+            "rating_distribution_percentages",
             new_callable=mocker.PropertyMock,
             return_value=mock_distribution,
         )
 
         # The placeholders are classes with a `replace` method, but we can test the underlying functions
-        assert osh_portfolio_data.get_rating_distribution_percentages[
+        assert osh_portfolio_data.rating_distribution_percentages[
             "above_market"
         ] == pytest.approx(45.5)
-        assert osh_portfolio_data.get_rating_distribution_percentages[
+        assert osh_portfolio_data.rating_distribution_percentages[
             "market_average"
         ] == pytest.approx(30.0)
-        assert osh_portfolio_data.get_rating_distribution_percentages[
+        assert osh_portfolio_data.rating_distribution_percentages[
             "below_market"
         ] == pytest.approx(24.5)
 
@@ -60,19 +60,19 @@ class TestPortfolioPlaceholders:
         # Mock at the data model instance level
         mocker.patch.object(
             type(security_ratings_portfolio_data),
-            "get_rating_distribution_percentages",
+            "rating_distribution_percentages",
             new_callable=mocker.PropertyMock,
             return_value=mock_distribution,
         )
 
         # Test that we can access the distribution values
-        assert security_ratings_portfolio_data.get_rating_distribution_percentages[
+        assert security_ratings_portfolio_data.rating_distribution_percentages[
             "above_market"
         ] == pytest.approx(60.0)
-        assert security_ratings_portfolio_data.get_rating_distribution_percentages[
+        assert security_ratings_portfolio_data.rating_distribution_percentages[
             "market_average"
         ] == pytest.approx(25.0)
-        assert security_ratings_portfolio_data.get_rating_distribution_percentages[
+        assert security_ratings_portfolio_data.rating_distribution_percentages[
             "below_market"
         ] == pytest.approx(15.0)
 
