@@ -25,11 +25,10 @@ context → domain → placeholders → rendering
 Each layer depends only on the layers to its left.
 
 ```mermaid
-flowchart TD
+flowchart TB
     utils["utils/<br/>constants · enums<br/>math helpers"]
 
     subgraph generator["generator internals"]
-        direction TD
         context["context/<br/>HTTP calls<br/>URL construction<br/>caching"]
 
         subgraph domain["domain/"]
