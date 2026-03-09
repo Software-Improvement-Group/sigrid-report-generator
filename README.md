@@ -209,6 +209,27 @@ generator.generate("out.pptx")
 If you use the `report_generator` Python API directly (custom placeholders, programmatic `ReportGenerator` usage),
 see [docs/upgrade-v1.md](docs/upgrade-v1.md) for the migration guide. CLI-only users are unaffected.
 
+## Linting
+
+This project uses [Ruff](https://docs.astral.sh/ruff/) for linting and formatting. Install it via `pip install -e ".[test]"`.
+
+**Check for violations:**
+```bash
+ruff check .
+ruff format --check .
+```
+
+**Auto-fix:**
+```bash
+ruff check --fix .
+ruff format .
+```
+
+**PyCharm integration:** Settings → Tools → Ruff
+- Enable Ruff: on
+- Run ruff on save: on
+- Run ruff format on save: on
+
 ## Contact and support
 
 Feel free to contact SIG’s [support department](mailto:support@softwareimprovementgroup.com) for any questions or
