@@ -51,7 +51,7 @@ flowchart TB
     utils["utils/<br/>constants · enums<br/>math helpers"]
     presets["presets/<br/>ReportGenerator<br/>wrappers"]
 
-    presets -->|public API only| impl
+    presets -->|public API only| generator
     domain -.->|pure helpers| utils
     ph -.->|pure helpers| utils
 ```
