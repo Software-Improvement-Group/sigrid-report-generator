@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from report_generator.generator.domain import *
+from report_generator.generator.domain import objectives_data
 
 from .base import text_placeholder
 

@@ -15,16 +15,6 @@
 import inspect
 
 from . import osh_charts, security_findings
-from .security_findings import (
-    MonthData,
-    SecurityDashboardCriticalFindingsChartPlaceholder,
-    SecurityDashboardCriticalResolutionTimesChartPlaceholder,
-    SecurityDashboardHighFindingsChartPlaceholder,
-    _add_month_data_row,
-    _build_chart_data_arrays,
-    _create_security_findings_chart_data,
-    _populate_chart,
-)
 
 _all_implementations = {
     **security_findings.__dict__,

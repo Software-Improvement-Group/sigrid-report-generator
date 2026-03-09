@@ -360,7 +360,7 @@ def filter_data_on_portfolio_arguments(data_tag=None, system_tag=None):
         @wraps(func)
         def wrapper(*args, **kwargs):
             if data_tag is None and system_tag is None:
-                raise PlaceholderArgumentException(func.__name__)
+                raise PlaceholderArgumentError(func.__name__)
 
             data = func(*args, **kwargs)
 
@@ -480,7 +480,7 @@ def _find_system_metadata(system_name, portfolio_metadata):
     return None
 
 
-class PlaceholderArgumentException(Exception):
+class PlaceholderArgumentError(Exception):
     def __init__(self, function_name, message="Placeholder argument exception"):
         self.function_name = function_name
         self.message = f"{message} in function '{function_name}'"

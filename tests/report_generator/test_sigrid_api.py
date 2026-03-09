@@ -130,7 +130,7 @@ class TestSigridAPI:
         sigrid_api.reset_context()
 
     def test_sigrid_access_denied_message_contains_customer_and_url(self):
-        exc = sigrid_api.SigridAccessDenied(
+        exc = sigrid_api.SigridAccessDeniedError(
             "https://sigrid-says.com/rest/...", "my-customer", "my-system"
         )
         msg = str(exc)
@@ -138,7 +138,7 @@ class TestSigridAPI:
         assert "https://sigrid-says.com/my-customer/my-system" in msg
 
     def test_sigrid_access_denied_message_with_no_system(self):
-        exc = sigrid_api.SigridAccessDenied(
+        exc = sigrid_api.SigridAccessDeniedError(
             "https://sigrid-says.com/rest/...", "my-customer", None
         )
         msg = str(exc)
@@ -159,7 +159,7 @@ class TestSigridAPI:
 
         with patch("requests.request", return_value=mock_response):
             sigrid_api._request.cache_clear()
-            with pytest.raises(sigrid_api.SigridAccessDenied) as excinfo:
+            with pytest.raises(sigrid_api.SigridAccessDeniedError) as excinfo:
                 sigrid_api._request("https://sigrid-says.com/rest/some-endpoint")
             assert "my-customer" in str(excinfo.value)
 

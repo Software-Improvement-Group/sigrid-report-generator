@@ -18,20 +18,21 @@ from typing import Union
 
 
 def find_text_in_document(document, search_text):
-    paragraphs = []
-    for paragraph in document.paragraphs:
-        for run in paragraph.runs:
-            if re.match(rf".*\b{search_text}\b.*", run.text):
-                paragraphs.append(paragraph)
-
-    for table in document.tables:
-        for row in table.rows:
-            for cell in row.cells:
-                for paragraph in cell.paragraphs:
-                    for run in paragraph.runs:
-                        if re.match(rf".*\b{search_text}\b.*", run.text):
-                            paragraphs.append(paragraph)
-
+    paragraphs = [
+        paragraph
+        for paragraph in document.paragraphs
+        for run in paragraph.runs
+        if re.match(rf".*\b{search_text}\b.*", run.text)
+    ]
+    paragraphs.extend(
+        paragraph
+        for table in document.tables
+        for row in table.rows
+        for cell in row.cells
+        for paragraph in cell.paragraphs
+        for run in paragraph.runs
+        if re.match(rf".*\b{search_text}\b.*", run.text)
+    )
     return paragraphs
 
 

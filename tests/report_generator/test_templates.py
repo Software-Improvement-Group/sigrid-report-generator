@@ -65,10 +65,7 @@ class TestTemplates:
                         fonts_found[original_name] = fonts
         finally:
             for template_file in template_files:
-                try:
-                    template_file.unlink()
-                except Exception:
-                    pass
+                template_file.unlink(missing_ok=True)
 
         if fonts_found:
             error_msg = "The following templates use the Sigsterren font:\n\n"
@@ -89,30 +86,26 @@ class TestTemplates:
                 )
 
         for master_idx, slide_master in enumerate(prs.slide_masters, start=1):
-            for shape in slide_master.shapes:
-                if hasattr(shape, "text_frame"):
-                    for para in shape.text_frame.paragraphs:
-                        for run in para.runs:
-                            if run.font.name and self._is_sigsterren_font(
-                                run.font.name
-                            ):
-                                fonts_found.append(
-                                    f"Slide Master {master_idx}: font '{run.font.name}', text: '{run.text}'"
-                                )
+            fonts_found.extend(
+                f"Slide Master {master_idx}: font '{run.font.name}', text: '{run.text}'"
+                for shape in slide_master.shapes
+                if hasattr(shape, "text_frame")
+                for para in shape.text_frame.paragraphs
+                for run in para.runs
+                if run.font.name and self._is_sigsterren_font(run.font.name)
+            )
 
             for layout_idx, slide_layout in enumerate(
                 slide_master.slide_layouts, start=1
             ):
-                for shape in slide_layout.shapes:
-                    if hasattr(shape, "text_frame"):
-                        for para in shape.text_frame.paragraphs:
-                            for run in para.runs:
-                                if run.font.name and self._is_sigsterren_font(
-                                    run.font.name
-                                ):
-                                    fonts_found.append(
-                                        f"Slide Master {master_idx}, Layout {layout_idx}: font '{run.font.name}', text: '{run.text}'"
-                                    )
+                fonts_found.extend(
+                    f"Slide Master {master_idx}, Layout {layout_idx}: font '{run.font.name}', text: '{run.text}'"
+                    for shape in slide_layout.shapes
+                    if hasattr(shape, "text_frame")
+                    for para in shape.text_frame.paragraphs
+                    for run in para.runs
+                    if run.font.name and self._is_sigsterren_font(run.font.name)
+                )
 
         return fonts_found
 
@@ -120,24 +113,22 @@ class TestTemplates:
         self, shape, slide_idx: int, shape_idx: int, fonts_found: list[str]
     ) -> None:
         if hasattr(shape, "text_frame"):
-            for para in shape.text_frame.paragraphs:
-                for run in para.runs:
-                    if run.font.name and self._is_sigsterren_font(run.font.name):
-                        fonts_found.append(
-                            f"Slide {slide_idx}, Shape {shape_idx}: font '{run.font.name}', text: '{run.text}'"
-                        )
+            fonts_found.extend(
+                f"Slide {slide_idx}, Shape {shape_idx}: font '{run.font.name}', text: '{run.text}'"
+                for para in shape.text_frame.paragraphs
+                for run in para.runs
+                if run.font.name and self._is_sigsterren_font(run.font.name)
+            )
 
         if hasattr(shape, "has_table") and shape.has_table:
-            for row_idx, row in enumerate(shape.table.rows, start=1):
-                for cell_idx, cell in enumerate(row.cells, start=1):
-                    for para in cell.text_frame.paragraphs:
-                        for run in para.runs:
-                            if run.font.name and self._is_sigsterren_font(
-                                run.font.name
-                            ):
-                                fonts_found.append(
-                                    f"Slide {slide_idx}, Table, Row {row_idx}, Cell {cell_idx}: font '{run.font.name}', text: '{run.text}'"
-                                )
+            fonts_found.extend(
+                f"Slide {slide_idx}, Table, Row {row_idx}, Cell {cell_idx}: font '{run.font.name}', text: '{run.text}'"
+                for row_idx, row in enumerate(shape.table.rows, start=1)
+                for cell_idx, cell in enumerate(row.cells, start=1)
+                for para in cell.text_frame.paragraphs
+                for run in para.runs
+                if run.font.name and self._is_sigsterren_font(run.font.name)
+            )
 
         if shape.shape_type == MSO_SHAPE_TYPE.GROUP:
             for grouped_shape in shape.shapes:
@@ -149,24 +140,21 @@ class TestTemplates:
         fonts_found = []
         doc = Document(str(file_path))
 
-        for para_idx, para in enumerate(doc.paragraphs, start=1):
-            for run in para.runs:
-                if run.font.name and self._is_sigsterren_font(run.font.name):
-                    fonts_found.append(
-                        f"Paragraph {para_idx}: font '{run.font.name}', text: '{run.text}'"
-                    )
-
-        for table_idx, table in enumerate(doc.tables, start=1):
-            for row_idx, row in enumerate(table.rows, start=1):
-                for cell_idx, cell in enumerate(row.cells, start=1):
-                    for para in cell.paragraphs:
-                        for run in para.runs:
-                            if run.font.name and self._is_sigsterren_font(
-                                run.font.name
-                            ):
-                                fonts_found.append(
-                                    f"Table {table_idx}, Row {row_idx}, Cell {cell_idx}: font '{run.font.name}', text: '{run.text}'"
-                                )
+        fonts_found.extend(
+            f"Paragraph {para_idx}: font '{run.font.name}', text: '{run.text}'"
+            for para_idx, para in enumerate(doc.paragraphs, start=1)
+            for run in para.runs
+            if run.font.name and self._is_sigsterren_font(run.font.name)
+        )
+        fonts_found.extend(
+            f"Table {table_idx}, Row {row_idx}, Cell {cell_idx}: font '{run.font.name}', text: '{run.text}'"
+            for table_idx, table in enumerate(doc.tables, start=1)
+            for row_idx, row in enumerate(table.rows, start=1)
+            for cell_idx, cell in enumerate(row.cells, start=1)
+            for para in cell.paragraphs
+            for run in para.runs
+            if run.font.name and self._is_sigsterren_font(run.font.name)
+        )
 
         for style in doc.styles:
             if hasattr(style, "font") and style.font and style.font.name:

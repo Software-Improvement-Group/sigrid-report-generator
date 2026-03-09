@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from typing import ClassVar
 from unittest.mock import patch
 
 import pytest
@@ -163,7 +164,7 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            vulnerability_risk_distribution = [
+            vulnerability_risk_distribution: ClassVar[list] = [
                 5,
                 10,
                 8,
@@ -180,7 +181,7 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            vulnerability_risk_distribution = [5, 10, 8, 3, 20]
+            vulnerability_risk_distribution: ClassVar[list] = [5, 10, 8, 3, 20]
             dependencies_count = 46
 
         metrics = TestMetrics()
@@ -191,7 +192,7 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            vulnerability_risk_distribution = [0, 0, 0, 0, 46]
+            vulnerability_risk_distribution: ClassVar[list] = [0, 0, 0, 0, 46]
             dependencies_count = 46
 
         metrics = TestMetrics()
@@ -202,7 +203,7 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            vulnerability_risk_distribution = [0, 0, 0, 1, 999]
+            vulnerability_risk_distribution: ClassVar[list] = [0, 0, 0, 1, 999]
             dependencies_count = 1000
 
         metrics = TestMetrics()
@@ -213,7 +214,7 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            freshness_risk_distribution = [
+            freshness_risk_distribution: ClassVar[list] = [
                 3,
                 7,
                 12,
@@ -230,7 +231,7 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            freshness_risk_distribution = [3, 7, 12, 5, 20]
+            freshness_risk_distribution: ClassVar[list] = [3, 7, 12, 5, 20]
             dependencies_count = 47
 
         metrics = TestMetrics()
@@ -241,7 +242,7 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            legal_risk_distribution = [
+            legal_risk_distribution: ClassVar[list] = [
                 2,
                 5,
                 8,
@@ -258,7 +259,7 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            legal_risk_distribution = [2, 5, 8, 10, 25]
+            legal_risk_distribution: ClassVar[list] = [2, 5, 8, 10, 25]
             dependencies_count = 50
 
         metrics = TestMetrics()
@@ -269,7 +270,7 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            management_risk_distribution = [
+            management_risk_distribution: ClassVar[list] = [
                 1,
                 3,
                 5,
@@ -286,7 +287,7 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            management_risk_distribution = [1, 3, 5, 7, 30]
+            management_risk_distribution: ClassVar[list] = [1, 3, 5, 7, 30]
             dependencies_count = 46
 
         metrics = TestMetrics()
@@ -297,7 +298,7 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            activity_risk_distribution = [
+            activity_risk_distribution: ClassVar[list] = [
                 2,
                 4,
                 6,
@@ -314,7 +315,7 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            activity_risk_distribution = [2, 4, 6, 8, 35]
+            activity_risk_distribution: ClassVar[list] = [2, 4, 6, 8, 35]
             dependencies_count = 55
 
         metrics = TestMetrics()
@@ -325,11 +326,11 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            vulnerability_risk_distribution = [0, 0, 0, 1, 9999]
-            freshness_risk_distribution = [1, 0, 0, 0, 9999]
-            legal_risk_distribution = [0, 1, 0, 0, 9999]
-            management_risk_distribution = [0, 0, 0, 1, 9999]
-            activity_risk_distribution = [0, 0, 1, 0, 9999]
+            vulnerability_risk_distribution: ClassVar[list] = [0, 0, 0, 1, 9999]
+            freshness_risk_distribution: ClassVar[list] = [1, 0, 0, 0, 9999]
+            legal_risk_distribution: ClassVar[list] = [0, 1, 0, 0, 9999]
+            management_risk_distribution: ClassVar[list] = [0, 0, 0, 1, 9999]
+            activity_risk_distribution: ClassVar[list] = [0, 0, 1, 0, 9999]
             dependencies_count = 10000
 
         metrics = TestMetrics()
@@ -344,11 +345,11 @@ class TestOSHMetricsBase:
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
 
         class TestMetrics(OSHMetricsBase):
-            vulnerability_risk_distribution = [0, 0, 0, 0, 100]
-            freshness_risk_distribution = [0, 0, 0, 50, 50]
-            legal_risk_distribution = [0, 0, 0, 50, 50]
-            management_risk_distribution = [0, 0, 0, 0, 100]
-            activity_risk_distribution = [0, 0, 0, 0, 100]
+            vulnerability_risk_distribution: ClassVar[list] = [0, 0, 0, 0, 100]
+            freshness_risk_distribution: ClassVar[list] = [0, 0, 0, 50, 50]
+            legal_risk_distribution: ClassVar[list] = [0, 0, 0, 50, 50]
+            management_risk_distribution: ClassVar[list] = [0, 0, 0, 0, 100]
+            activity_risk_distribution: ClassVar[list] = [0, 0, 0, 0, 100]
             dependencies_count = 100
 
         metrics = TestMetrics()

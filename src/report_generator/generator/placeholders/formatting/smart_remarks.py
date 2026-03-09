@@ -221,10 +221,11 @@ def arch_worst_metric_observation(metric):
 def tech_variance_remark(sorted_tech_data, total_volume_pm):
     if (sorted_tech_data[0]["volumeInPersonMonths"]) > total_volume_pm * 0.75:
         return f"The system is mainly built using {sorted_tech_data[0]['displayName']}."
-    main_technologies = []
-    for data in sorted_tech_data:
-        if (data["volumeInPersonMonths"]) > total_volume_pm * 0.15:
-            main_technologies.append(data["displayName"])
+    main_technologies = [
+        data["displayName"]
+        for data in sorted_tech_data
+        if (data["volumeInPersonMonths"]) > total_volume_pm * 0.15
+    ]
     return f"The system is mainly built using {len(main_technologies)} different technologies: {', '.join(main_technologies)}"
 
 

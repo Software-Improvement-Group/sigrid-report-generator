@@ -24,7 +24,7 @@ class RefactoringCandidatesData:
             system_property=metric, count=20
         )
 
-    @lru_cache
+    @lru_cache  # noqa: B019
     def get_candidates(self, metric: MaintMetric):
         return self._get_api_data(metric).get("refactoringCandidates", [])
 

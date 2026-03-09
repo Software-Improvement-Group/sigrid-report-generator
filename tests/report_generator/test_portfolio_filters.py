@@ -22,7 +22,7 @@ from report_generator.generator.context import portfolio_filters
 from report_generator.generator.context.portfolio_filters import (
     FILTER_CONFIGURATION,
     METADATA_FILTER_CHECKS,
-    PlaceholderArgumentException,
+    PlaceholderArgumentError,
     _are_filters_set,
     _find_system_metadata,
     _include,
@@ -262,7 +262,7 @@ class TestPortfolioArguments:
         def mock_function():
             return {}
 
-        with pytest.raises(PlaceholderArgumentException):
+        with pytest.raises(PlaceholderArgumentError):
             mock_function()
 
     # Edge Cases

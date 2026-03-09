@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from abc import ABC
+from abc import ABC, abstractmethod
 from functools import cached_property
 
 from report_generator.generator.context import sigrid_api
@@ -26,6 +26,10 @@ class AbstractPortfolioModel(ABC):
     @cached_property
     def period(self):
         return sigrid_api.get_period()
+
+    @abstractmethod
+    def get_system(self, system):
+        pass
 
     def end_snapshot(self, system):
         return self.get_system(system)

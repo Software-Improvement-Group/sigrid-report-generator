@@ -12,14 +12,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 from functools import cached_property
-from typing import Callable
+from typing import Callable, ClassVar
 
 from report_generator.generator.context import sigrid_api
 from report_generator.generator.domain import maintainability_data
 
 
 class SystemMetadata:
-    _attributes: dict[str, str] = {
+    _attributes: ClassVar[dict[str, str]] = {
         "display_name": "displayName",
         "external_display_name": "externalDisplayName",
         "division_name": "divisionName",
@@ -37,7 +37,7 @@ class SystemMetadata:
         "external_id": "externalID",
     }
 
-    _fallbacks: dict[str, Callable[[], str]] = {
+    _fallbacks: ClassVar[dict[str, Callable[[], str]]] = {
         "display_name": lambda: maintainability_data.system_name
     }
 

@@ -71,17 +71,12 @@ def print_slide_ids(slide):
     # Print slide IDs and names for debugging purposes
     logging.debug("Placeholders:")
     for shape in slide.placeholders:
-        logging.debug("%d %s" % (shape.placeholder_format.idx, shape.name))
+        logging.debug(f"{shape.placeholder_format.idx} {shape.name}")
     logging.debug("----\n")
     logging.debug("Shapes:")
     for shape in slide.shapes:
         logging.debug(
-            "%d [%s] %s"
-            % (
-                shape.shape_id,
-                shape.name,
-                "(This is a chart)" if shape.has_chart else "",
-            )
+            f"{shape.shape_id} [{shape.name}] {'(This is a chart)' if shape.has_chart else ''}"
         )
 
 
@@ -227,11 +222,7 @@ def set_shape_color(shape, rgb_color):
 
 
 def identify_specific_slide(presentation, marker):
-    specific_slides = []
-    for slide in presentation.slides:
-        if find_text_in_slide(slide, marker):
-            specific_slides.append(slide)
-    return specific_slides
+    return [slide for slide in presentation.slides if find_text_in_slide(slide, marker)]
 
 
 def determine_rating_color(rating):
@@ -264,12 +255,12 @@ def test_code_ratio_color(ratio):
 
 def gather_charts(presentation: Presentation, key: str):
     """Deprecated but kept for backward compatibility, use find_charts instead so it's not linked to a text box in the slide."""
-    charts = []
-    for slide in identify_specific_slide(presentation, key):
-        for shape in slide.shapes:
-            if shape.has_chart:
-                charts.append(shape.chart)
-    return charts
+    return [
+        shape.chart
+        for slide in identify_specific_slide(presentation, key)
+        for shape in slide.shapes
+        if shape.has_chart
+    ]
 
 
 def find_charts(presentation: Presentation, key: str):

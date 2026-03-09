@@ -13,7 +13,7 @@
 #  limitations under the License.
 
 from abc import ABC
-from typing import Callable
+from typing import Callable, ClassVar
 
 from pptx.presentation import Presentation
 
@@ -55,7 +55,7 @@ class _AbstractColorRatingPlaceholder(ParameterizedPlaceholder, ABC):
 
 class ArchColorRatingPlaceholder(_AbstractColorRatingPlaceholder):
     key = "COLOR_ARCH_RATING_{parameter}"
-    allowed_parameters = list(ArchMetric) + list(ArchSubcharacteristic)
+    allowed_parameters: ClassVar[list] = list(ArchMetric) + list(ArchSubcharacteristic)
 
     @classmethod
     def value(cls, metric: MetricEnum = None, additional_parameter=None):
@@ -65,7 +65,7 @@ class ArchColorRatingPlaceholder(_AbstractColorRatingPlaceholder):
 
 class MaintColorRatingPlaceholder(_AbstractColorRatingPlaceholder):
     key = "COLOR_MAINT_RATING_{parameter}"
-    allowed_parameters = list(MaintMetric)
+    allowed_parameters: ClassVar[list] = list(MaintMetric)
 
     @classmethod
     def value(cls, metric: MetricEnum = None, additional_parameter=None):

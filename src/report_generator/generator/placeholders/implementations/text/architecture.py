@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from report_generator.generator.domain import *
+from report_generator.generator.domain import architecture_data
 from report_generator.generator.placeholders.formatting.formatters import (
     calculate_stars,
     star_rating_round,

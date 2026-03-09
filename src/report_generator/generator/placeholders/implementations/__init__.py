@@ -12,8 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from typing import Set, Type
-
 from report_generator.generator.placeholders.implementations.base import Placeholder
 from report_generator.generator.placeholders.implementations.charts import (
     placeholders as chart_placeholders,
@@ -28,6 +26,10 @@ from report_generator.generator.placeholders.implementations.table import (
     placeholders as table_placeholders,
 )
 from report_generator.generator.placeholders.implementations.text import (
+    parameterized_text_placeholder,
+    text_placeholder,
+)
+from report_generator.generator.placeholders.implementations.text import (
     placeholders as text_placeholders,
 )
 
@@ -39,11 +41,6 @@ placeholders: PlaceholderCollection = (
     | table_placeholders
     | image_placeholders
     | chart_placeholders
-)
-
-from report_generator.generator.placeholders.implementations.text import (
-    parameterized_text_placeholder,
-    text_placeholder,
 )
 
 __all__ = [

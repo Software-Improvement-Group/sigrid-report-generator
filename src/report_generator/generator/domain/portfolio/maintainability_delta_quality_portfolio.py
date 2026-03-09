@@ -43,7 +43,7 @@ class _AbstractMaintainabilityDeltaQualityPortfolioData(AbstractPortfolioModel, 
         for system in maintainability_portfolio_data.system_names:
             try:
                 temp = sigrid_api.get_maintainability_delta_quality(system, t)
-            except sigrid_api.SigridAPIRequestFailed:
+            except sigrid_api.SigridAPIRequestFailedError:
                 temp = None
             except Exception as e:
                 logging.error("Unexpected error in get_maintainability_delta_quality.")

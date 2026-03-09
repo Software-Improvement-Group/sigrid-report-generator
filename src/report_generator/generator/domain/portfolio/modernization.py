@@ -16,7 +16,7 @@ import logging
 from dataclasses import dataclass
 from enum import Enum
 from functools import cached_property
-from typing import Optional
+from typing import ClassVar, Optional
 
 from report_generator.generator.context import sigrid_api
 from report_generator.generator.context.portfolio_filters import (
@@ -103,9 +103,9 @@ class ModernizationData:
     MIN_DEV_SPEED_IMPROVEMENT = 5.0
     MIN_EFFORT = 0.25
 
-    BUSINESS_CRITICALITY_FACTOR = {"CRITICAL": 2.0, "HIGH": 1.5, "LOW": 0.0}
+    BUSINESS_CRITICALITY_FACTOR: ClassVar[dict] = {"CRITICAL": 2.0, "HIGH": 1.5, "LOW": 0.0}
 
-    PREDETERMINED_SCENARIOS = {
+    PREDETERMINED_SCENARIOS: ClassVar[dict] = {
         "INITIAL": Scenario.KEEP_AS_IS,
         "EOL": Scenario.REBUILD,
         "EVOLUTION": Scenario.RENOVATE,
@@ -141,7 +141,7 @@ class ModernizationData:
 
         try:
             architecture_graph = sigrid_api.get_architecture_graph(system["system"])
-        except sigrid_api.SigridAPIRequestFailed as e:
+        except sigrid_api.SigridAPIRequestFailedError as e:
             logging.warning(
                 "Skipping system %s due to Sigrid API request failure: %s",
                 metadata["systemName"],

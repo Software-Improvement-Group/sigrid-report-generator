@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Union
 
-from report_generator.generator.context.sigrid_api import SigridAPIRequestFailed
+from report_generator.generator.context.sigrid_api import SigridAPIRequestFailedError
 from report_generator.generator.report import Report, ReportType
 
 Parameter = Union[str, int, Enum]
@@ -80,7 +80,7 @@ class Placeholder(ABC):
 
         try:
             getattr(cls, resolve_method_name)(report, cls.key, cls.value)
-        except SigridAPIRequestFailed as e:
+        except SigridAPIRequestFailedError as e:
             logging.info(f"Failed to resolve {cls.key}: {e}")
         except (KeyError, AttributeError, ValueError) as e:
             logging.warning(
@@ -153,5 +153,5 @@ class ParameterizedPlaceholder(Placeholder, ABC):
                     return cls.value(p, optional_parameter)
 
                 getattr(cls, resolve_method_name)(report, key_p, value_p)
-            except SigridAPIRequestFailed as e:
+            except SigridAPIRequestFailedError as e:
                 logging.info(f"Failed to resolve {key_p}: {e}")

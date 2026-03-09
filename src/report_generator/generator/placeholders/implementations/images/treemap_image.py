@@ -113,14 +113,14 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
             ]
         return "Unset"
 
-    grouping_processors = {
+    grouping_processors: ClassVar[dict] = {
         "team": _process_team_grouping.__func__,
         "lifecycle": _process_lifecycle_grouping.__func__,
         "business_criticality": _process_business_criticality_grouping.__func__,
         "deployment": _process_deployment_grouping.__func__,
     }
 
-    allowed_parameters = [x.upper() for x in grouping_processors.keys()]
+    allowed_parameters: ClassVar[list] = [x.upper() for x in grouping_processors.keys()]
 
     @classmethod
     def _create_blank_portfolio_and_treemap(cls, grouping) -> tuple[dict, dict]:

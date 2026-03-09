@@ -29,10 +29,6 @@ from . import (
     security_portfolio,
 )
 from .base import parameterized_text_placeholder, text_placeholder
-from .maintainability_portfolio import (
-    _format_maintainability_statement,
-    _format_short_maintainability_statement,
-)
 
 _modules_to_scan = [
     architecture,

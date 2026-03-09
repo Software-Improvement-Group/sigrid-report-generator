@@ -64,11 +64,12 @@ class _AbstractCategoryChartPlaceholder(Placeholder, ABC):
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable):
-        charts = []
-        for slide in rendering.pptx.identify_specific_slide(presentation, key):
-            for shape in slide.shapes:
-                if shape.has_chart:
-                    charts.append(shape.chart)
+        charts = [
+            shape.chart
+            for slide in rendering.pptx.identify_specific_slide(presentation, key)
+            for shape in slide.shapes
+            if shape.has_chart
+        ]
 
         if len(charts) == 0:
             return

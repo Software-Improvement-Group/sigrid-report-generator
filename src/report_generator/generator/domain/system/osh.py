@@ -51,7 +51,7 @@ class OSHData(OSHMetricsBase):
     def system_rating(self) -> float:
         return self.get_rating_for_metric(_SystemMetric.SYSTEM)
 
-    @lru_cache
+    @lru_cache  # noqa: B019
     def get_rating_for_metric(self, metric: OSHMetricOrSystem) -> float:
         for prop in self.raw_data["metadata"]["properties"]:
             if prop["name"] == f"sigrid:ratings:{metric.to_json_name()}":
@@ -60,7 +60,7 @@ class OSHData(OSHMetricsBase):
         logging.warning(f"OSH rating not found for property {metric.to_json_name()}")
         return 0.0
 
-    @lru_cache
+    @lru_cache  # noqa: B019
     def _get_risk_distribution_for_metric(self, metric: OSHMetric) -> list[int]:
         """Returns risk distribution as [critical, high, medium, low, no_risk] counts."""
         metric_key = metric.to_json_name()

@@ -84,19 +84,17 @@ class RefactoringCandidatesTableUnitSize(
     @classmethod
     def _to_table_matrix(cls, data) -> TableMatrix:
         rows = [["Unit name", "LOC", "McCabe", "Parameters", "Component", "Technology"]]
-
-        for finding in data:
-            rows.append(
-                [
-                    finding["name"],
-                    finding["loc"],
-                    finding.get("mcCabe", "-"),
-                    finding.get("parameters", "-"),
-                    finding["component"],
-                    get_technology_name(finding["technology"]),
-                ]
-            )
-
+        rows.extend(
+            [
+                finding["name"],
+                finding["loc"],
+                finding.get("mcCabe", "-"),
+                finding.get("parameters", "-"),
+                finding["component"],
+                get_technology_name(finding["technology"]),
+            ]
+            for finding in data
+        )
         return rows
 
 
@@ -111,19 +109,17 @@ class RefactoringCandidatesTableUnitComplexity(
     @classmethod
     def _to_table_matrix(cls, data) -> TableMatrix:
         rows = [["Unit name", "LOC", "McCabe", "Parameters", "Component", "Technology"]]
-
-        for finding in data:
-            rows.append(
-                [
-                    finding["name"],
-                    finding.get("loc", "-"),
-                    finding["mcCabe"],
-                    finding.get("parameters", "-"),
-                    finding["component"],
-                    get_technology_name(finding["technology"]),
-                ]
-            )
-
+        rows.extend(
+            [
+                finding["name"],
+                finding.get("loc", "-"),
+                finding["mcCabe"],
+                finding.get("parameters", "-"),
+                finding["component"],
+                get_technology_name(finding["technology"]),
+            ]
+            for finding in data
+        )
         return rows
 
 
@@ -138,19 +134,17 @@ class RefactoringCandidatesTableUnitInterfacing(
     @classmethod
     def _to_table_matrix(cls, data) -> TableMatrix:
         rows = [["Unit name", "LOC", "McCabe", "Parameters", "Component", "Technology"]]
-
-        for finding in data:
-            rows.append(
-                [
-                    finding["name"],
-                    finding.get("loc", "-"),
-                    finding.get("mcCabe", "-"),
-                    finding["parameters"],
-                    finding["component"],
-                    get_technology_name(finding["technology"]),
-                ]
-            )
-
+        rows.extend(
+            [
+                finding["name"],
+                finding.get("loc", "-"),
+                finding.get("mcCabe", "-"),
+                finding["parameters"],
+                finding["component"],
+                get_technology_name(finding["technology"]),
+            ]
+            for finding in data
+        )
         return rows
 
 
@@ -165,18 +159,16 @@ class RefactoringCandidatesTableModuleCoupling(
     @classmethod
     def _to_table_matrix(cls, data) -> TableMatrix:
         rows = [["File name", "LOC", "Fan-in", "Component", "Technology"]]
-
-        for finding in data:
-            rows.append(
-                [
-                    finding["file"].split("/")[-1],
-                    finding.get("loc", "-"),
-                    finding["fanIn"],
-                    finding["component"],
-                    get_technology_name(finding["technology"]),
-                ]
-            )
-
+        rows.extend(
+            [
+                finding["file"].split("/")[-1],
+                finding.get("loc", "-"),
+                finding["fanIn"],
+                finding["component"],
+                get_technology_name(finding["technology"]),
+            ]
+            for finding in data
+        )
         return rows
 
 
@@ -213,17 +205,13 @@ class RefactoringCandidatesTableComponentEntanglement(
     @classmethod
     def _to_table_matrix(cls, data) -> TableMatrix:
         rows = [["Description", "Weight"]]
-
-        for finding in data:
-            rows.append(
-                [
-                    RefactoringCandidatesTableComponentEntanglement._generate_description(
-                        finding
-                    ),
-                    finding["weight"],
-                ]
-            )
-
+        rows.extend(
+            [
+                RefactoringCandidatesTableComponentEntanglement._generate_description(finding),
+                finding["weight"],
+            ]
+            for finding in data
+        )
         return rows
 
 
@@ -238,15 +226,13 @@ class RefactoringCandidatesTableComponentIndependence(
     @classmethod
     def _to_table_matrix(cls, data) -> TableMatrix:
         rows = [["File name", "LOC", "Component", "Technology"]]
-
-        for finding in data:
-            rows.append(
-                [
-                    finding["file"].split("/")[-1],
-                    finding.get("loc", "-"),
-                    finding["component"],
-                    get_technology_name(finding["technology"]),
-                ]
-            )
-
+        rows.extend(
+            [
+                finding["file"].split("/")[-1],
+                finding.get("loc", "-"),
+                finding["component"],
+                get_technology_name(finding["technology"]),
+            ]
+            for finding in data
+        )
         return rows

@@ -31,14 +31,14 @@ _period: Optional[tuple[str, str]] = None
 _rest_url: str = f"{DEFAULT_BASE_URL}/rest"
 
 
-class SigridAPIRequestFailed(Exception):
+class SigridAPIRequestFailedError(Exception):
     def __init__(self, function_name, message="API request failed"):
         self.function_name = function_name
         self.message = f"{message} in function '{function_name}'"
         super().__init__(self.message)
 
 
-class SigridAccessDenied(Exception):
+class SigridAccessDeniedError(Exception):
     def __init__(self, url: str, customer: str, system: Optional[str]):
         system_part = f"/{system}" if system else ""
         sigrid_url = f"https://sigrid-says.com/{customer}{system_part}"
@@ -163,7 +163,7 @@ def _request(url):
         return response.json()
     except requests.HTTPError as e:
         if e.response.status_code == 403:
-            raise SigridAccessDenied(url, _customer, _system)
+            raise SigridAccessDeniedError(url, _customer, _system) from None
         logging.error(
             f"Failed to make request to Sigrid API endpoint {url}. Error: {e}"
         )
@@ -196,7 +196,7 @@ def _sigrid_api_request(with_system=False):
                 result = func(*args, **kwargs)
 
             if result is None:
-                raise SigridAPIRequestFailed(func.__name__)
+                raise SigridAPIRequestFailedError(func.__name__)
 
             return result
 
@@ -322,12 +322,6 @@ def get_portfolio_security_ratings():
     endpoint = (
         f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/model-ratings/{_customer}?feature=SECURITY"
     )
-    return _make_request(endpoint)
-
-
-@_sigrid_api_request(with_system=True)
-def get_security_ratings(system):
-    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/model-ratings/{_customer}/{system}?feature=SECURITY"
     return _make_request(endpoint)
 
 

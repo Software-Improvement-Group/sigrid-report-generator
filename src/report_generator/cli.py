@@ -139,8 +139,8 @@ def run(
             ReportGenerator(template.name).generate(out_file)
         else:
             presets.run(layout, out_file)
-    except sigrid_api.SigridAccessDenied as e:
-        raise click.ClickException(str(e))
+    except sigrid_api.SigridAccessDeniedError as e:
+        raise click.ClickException(str(e)) from e
 
 
 def _configure_api(
