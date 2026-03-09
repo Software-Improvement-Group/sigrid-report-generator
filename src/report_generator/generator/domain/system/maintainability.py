@@ -57,7 +57,10 @@ def _sort_and_aggregate_technology_data(tech_data):
             "testCodeRatio": test_code_aggregate,
             "technologyRisk": tech_risk_aggregate,
         }
-        sorted_and_filtered_tech_data = [*sorted_and_filtered_tech_data[0:4], small_technologies_aggregate]
+        sorted_and_filtered_tech_data = [
+            *sorted_and_filtered_tech_data[0:4],
+            small_technologies_aggregate,
+        ]
     return sorted_and_filtered_tech_data
 
 

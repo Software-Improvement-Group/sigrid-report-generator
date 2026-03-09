@@ -89,22 +89,16 @@ class ProgressSigridData:
         for system in evaluations:
             for objective_evaluation in system["objectives"]:
                 if capability is None or objective_evaluation["feature"] == capability:
-                    if (
-                        self.determine_system_status(
-                            objective_evaluation, ProgressStatus.MET_AT_START
-                        )
+                    if self.determine_system_status(
+                        objective_evaluation, ProgressStatus.MET_AT_START
                     ):
                         with_status_at_start += 1
-                    if (
-                        self.determine_system_status(
-                            objective_evaluation, ProgressStatus.MET_AT_END
-                        )
+                    if self.determine_system_status(
+                        objective_evaluation, ProgressStatus.MET_AT_END
                     ):
                         with_status_at_end += 1
-                    if (
-                        self.determine_system_status(
-                            objective_evaluation, ProgressStatus.UNKNOWN
-                        )
+                    if self.determine_system_status(
+                        objective_evaluation, ProgressStatus.UNKNOWN
                     ):
                         with_status_unknown += 1
                     total += 1

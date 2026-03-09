@@ -120,10 +120,9 @@ class ObjectivesData:
 
     def get_capability_status_series(self):
         evaluation = self.objectives_evaluation_status
+
         def mapper(capability, current_status):
-            return self.get_portfolio_percentage(
-                    evaluation, capability, current_status
-                )
+            return self.get_portfolio_percentage(evaluation, capability, current_status)
 
         series = []
         for status in ObjectiveStatus:

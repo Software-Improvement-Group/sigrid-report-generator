@@ -389,10 +389,14 @@ class MaintainabilityPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlacehol
     @classmethod
     def value(cls, parameter, additional_parameter=None):
         portfolio = cls.create_portfolio()
+
         def f(t):
             return (
-                    portfolio.get(t, {}).get("end_date_data", {}).get("maintainability", None)
-                )
+                portfolio.get(t, {})
+                .get("end_date_data", {})
+                .get("maintainability", None)
+            )
+
         fig_data = cls.create_end_date_portfolio_treemap(
             grouping=parameter.lower(),
             rating_func=f,
@@ -456,8 +460,10 @@ class TestCodePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
     @classmethod
     def value(cls, parameter, additional_parameter=None):
         portfolio = cls.create_portfolio()
+
         def f(t):
             return portfolio[t]["end_date_data"]["testCodeRatio"]
+
         fig_data = cls.create_end_date_portfolio_treemap(
             grouping=parameter.lower(),
             rating_func=f,
@@ -501,10 +507,11 @@ class SecurityRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlacehol
     def value(cls, parameter, additional_parameter=None):
         def f(t):
             return (
-                    security_ratings_portfolio_data.end_snapshot(t)["rating"]
-                    if security_ratings_portfolio_data.end_snapshot(t)
-                    else 0
-                )
+                security_ratings_portfolio_data.end_snapshot(t)["rating"]
+                if security_ratings_portfolio_data.end_snapshot(t)
+                else 0
+            )
+
         fig_data = cls.create_end_date_portfolio_treemap(
             grouping=parameter.lower(),
             rating_func=f,
@@ -527,10 +534,11 @@ class ArchitecturePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder
     def value(cls, parameter, additional_parameter=None):
         def f(t):
             return (
-                    architecture_portfolio_data.end_snapshot(t)["ratings"]["architecture"]
-                    if architecture_portfolio_data.end_snapshot(t)
-                    else 0
-                )
+                architecture_portfolio_data.end_snapshot(t)["ratings"]["architecture"]
+                if architecture_portfolio_data.end_snapshot(t)
+                else 0
+            )
+
         fig_data = cls.create_end_date_portfolio_treemap(
             grouping=parameter.lower(),
             rating_func=f,
@@ -557,11 +565,12 @@ class MaintainabilityDeltaQualityNewCodePortfolioTreemapPlaceholder(
     def value(cls, parameter, additional_parameter=None):
         def f(t):
             return (
-                    maintainability_delta_quality_new_code.data[t]["filesRatingAtEnd"]
-                    if maintainability_delta_quality_new_code.data[t]
-                    and maintainability_delta_quality_new_code.data[t]["filesRatingAtEnd"]
-                    else 0
-                )
+                maintainability_delta_quality_new_code.data[t]["filesRatingAtEnd"]
+                if maintainability_delta_quality_new_code.data[t]
+                and maintainability_delta_quality_new_code.data[t]["filesRatingAtEnd"]
+                else 0
+            )
+
         fig_data = cls.create_end_date_portfolio_treemap(
             grouping=parameter.lower(),
             rating_func=f,
@@ -586,11 +595,14 @@ class MaintainabilityDeltaQualityChangedCodePortfolioTreemapPlaceholder(
     def value(cls, parameter, additional_parameter=None):
         def f(t):
             return (
-                    maintainability_delta_quality_changed_code.data[t]["filesRatingAtEnd"]
-                    if maintainability_delta_quality_changed_code.data[t]
-                    and maintainability_delta_quality_changed_code.data[t]["filesRatingAtEnd"]
-                    else 0
-                )
+                maintainability_delta_quality_changed_code.data[t]["filesRatingAtEnd"]
+                if maintainability_delta_quality_changed_code.data[t]
+                and maintainability_delta_quality_changed_code.data[t][
+                    "filesRatingAtEnd"
+                ]
+                else 0
+            )
+
         fig_data = cls.create_end_date_portfolio_treemap(
             grouping=parameter.lower(),
             rating_func=f,
@@ -615,15 +627,16 @@ class MaintainabilityDeltaQualityNewAndChangedCodePortfolioTreemapPlaceholder(
     def value(cls, parameter, additional_parameter=None):
         def f(t):
             return (
-                    maintainability_delta_quality_new_and_changed_code.data[t][
-                        "filesRatingAtEnd"
-                    ]
-                    if maintainability_delta_quality_new_and_changed_code.data[t]
-                    and maintainability_delta_quality_new_and_changed_code.data[t][
-                        "filesRatingAtEnd"
-                    ]
-                    else 0
-                )
+                maintainability_delta_quality_new_and_changed_code.data[t][
+                    "filesRatingAtEnd"
+                ]
+                if maintainability_delta_quality_new_and_changed_code.data[t]
+                and maintainability_delta_quality_new_and_changed_code.data[t][
+                    "filesRatingAtEnd"
+                ]
+                else 0
+            )
+
         fig_data = cls.create_end_date_portfolio_treemap(
             grouping=parameter.lower(),
             rating_func=f,

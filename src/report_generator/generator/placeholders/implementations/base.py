@@ -148,10 +148,10 @@ class ParameterizedPlaceholder(Placeholder, ABC):
             key_p = cls.key.replace("{parameter}", str(parameter))
 
             try:
+
                 def value_p(optional_parameter=None, p=parameter):
-                    return cls.value(
-                                    p, optional_parameter
-                                )
+                    return cls.value(p, optional_parameter)
+
                 getattr(cls, resolve_method_name)(report, key_p, value_p)
             except SigridAPIRequestFailed as e:
                 logging.info(f"Failed to resolve {key_p}: {e}")

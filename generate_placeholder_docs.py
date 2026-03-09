@@ -84,7 +84,9 @@ class Document:
         return "".join(str(element) for element in self.elements)
 
 
-def placeholders_to_table(placeholders, skip_columns: Optional[set[str]] = None) -> pd.DataFrame:
+def placeholders_to_table(
+    placeholders, skip_columns: Optional[set[str]] = None
+) -> pd.DataFrame:
     data = [
         get_placeholder_row_data(placeholder, skip_columns)
         for placeholder in placeholders

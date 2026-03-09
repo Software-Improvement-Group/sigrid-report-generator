@@ -360,7 +360,10 @@ def get_maintainability_delta_quality(system, delta_type="NEW_AND_CHANGED_CODE")
 
 @_sigrid_api_request(with_system=True)
 def get_maintainability_refactoring_candidates(
-    system, system_property: MaintMetric, technology: Optional[str] = None, count: Optional[int] = None
+    system,
+    system_property: MaintMetric,
+    technology: Optional[str] = None,
+    count: Optional[int] = None,
 ):
     property_name = system_property.to_json_name()
 
