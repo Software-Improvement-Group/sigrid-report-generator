@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import functools
 import logging
 import re
 from abc import ABC, abstractmethod
@@ -143,9 +144,8 @@ class ParameterizedPlaceholder(Placeholder, ABC):
         for parameter in cls.allowed_parameters:
             key_with_param = cls.key.replace("{parameter}", str(parameter))
 
-            def value_cb_with_param(optional_parameter=None, p=parameter):
-                return cls.value(p, optional_parameter)
+            value_cb = functools.partial(cls.value, parameter)
 
             cls._call_resolve_method(
-                resolve_method_name, report, key_with_param, value_cb_with_param
+                resolve_method_name, report, key_with_param, value_cb
             )

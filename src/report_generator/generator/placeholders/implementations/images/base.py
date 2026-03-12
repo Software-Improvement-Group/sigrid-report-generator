@@ -15,16 +15,13 @@
 import io
 import logging
 from abc import ABC
-from typing import Callable
 
 import matplotlib.pyplot as plt
-from pptx.presentation import Presentation
 from pptx.util import Inches
 
 from report_generator.generator.placeholders import rendering
 from report_generator.generator.placeholders.implementations.base import (
     ParameterizedPlaceholder,
-    Placeholder,
     PlaceholderDocType,
 )
 
@@ -63,33 +60,7 @@ class _AbstractImage:
         plt.close("all")
 
 
-class _AbstractImagePlaceholder(Placeholder, _AbstractImage, ABC):
-    __doc_type__ = PlaceholderDocType.IMAGE
-
-    @classmethod
-    def resolve_pptx(cls, presentation: Presentation, key: str, value_cb: Callable):
-        shapes = rendering.pptx.find_shapes(presentation, key)
-        if len(shapes) == 0:
-            return
-
-        for shape in shapes:
-            fig = value_cb(
-                parameter={"height": shape.height.inches, "width": shape.width.inches}
-            )
-            cls.create_and_add_image_to_slide(shape, fig)
-
-
 class _AbstractParameterizedImagePlaceholder(
     ParameterizedPlaceholder, _AbstractImage, ABC
 ):
     __doc_type__ = PlaceholderDocType.IMAGE
-
-    @classmethod
-    def resolve_pptx(cls, presentation: Presentation, key: str, value_cb: Callable):
-        shapes = rendering.pptx.find_shapes(presentation, key)
-        if len(shapes) == 0:
-            return
-
-        for shape in shapes:
-            fig = value_cb({"height": shape.height.inches, "width": shape.width.inches})
-            cls.create_and_add_image_to_slide(shape, fig)
