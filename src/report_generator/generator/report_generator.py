@@ -13,9 +13,6 @@
 #  limitations under the License.
 
 import logging
-import time
-import os
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from tqdm import tqdm
 
@@ -38,47 +35,15 @@ class ReportGenerator:
         return tqdm(self.placeholders, desc="Processing", unit=" placeholders")
 
     def generate(self, output_path: str) -> None:
-        num_workers = max(2, min(os.cpu_count() or 4, 8))
-        is_debug = logging.getLogger('root').level == logging.DEBUG
-        
-        logging.debug(f"Processing {len(self.placeholders)} placeholders in parallel ({num_workers} workers, CPU count: {os.cpu_count()})...")
-        
-        if is_debug:
-            timings = self._execute_placeholders(num_workers, self._resolve_placeholder_with_timing)
-            slowest = sorted(timings, key=lambda x: x[1], reverse=True)[:10]
-            logging.debug("Top 10 slowest placeholders:")
-            for key, elapsed in slowest:
-                logging.debug(f"  {key}: {elapsed:.2f}s")
-        else:
-            self._execute_placeholders(num_workers, self._resolve_placeholder)
+        pbar = self.get_placeholder_progress_bar()
+        pbar_enabled = isinstance(pbar, tqdm)
+        for placeholder in pbar:
+            if pbar_enabled:
+                pbar.set_postfix_str(f"Current: {placeholder.key}")
+
+            placeholder.resolve(self.report)
+
+        if pbar_enabled:
+            pbar.close()
 
         self.report.save(output_path)
-    
-    def _execute_placeholders(self, num_workers: int, resolve_func):
-        timings = []
-        
-        with ThreadPoolExecutor(max_workers=num_workers) as executor:
-            with tqdm(total=len(self.placeholders), desc="Processing", unit=" placeholders") as pbar:
-                futures = {executor.submit(resolve_func, p): p for p in self.placeholders}
-                for future in as_completed(futures):
-                    placeholder = futures[future]
-                    try:
-                        result = future.result()
-                        if result is not None:
-                            timings.append((placeholder.key, result[1]))
-                        pbar.set_postfix_str(f"Current: {placeholder.key}")
-                        pbar.update(1)
-                    except Exception as e:
-                        logging.error(f"Error processing placeholder {placeholder.key}: {e}")
-                        pbar.update(1)
-        
-        return timings
-    
-    def _resolve_placeholder(self, placeholder):
-        placeholder.resolve(self.report)
-    
-    def _resolve_placeholder_with_timing(self, placeholder):
-        start = time.time()
-        placeholder.resolve(self.report)
-        elapsed = time.time() - start
-        return start, elapsed
