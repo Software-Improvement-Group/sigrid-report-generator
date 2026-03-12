@@ -156,4 +156,6 @@ class ParameterizedPlaceholder(Placeholder, ABC):
             except SigridAPIRequestFailedError as e:
                 logging.info(f"Failed to resolve {key_p}: {e}")
             except (KeyError, AttributeError, ValueError) as e:
-                logging.warning(f'Failed to resolve {key_p}: Value not found ({type(e).__name__}: {e})')
+                logging.warning(
+                    f"Failed to resolve {key_p}: Value not found ({type(e).__name__}: {e})"
+                )
