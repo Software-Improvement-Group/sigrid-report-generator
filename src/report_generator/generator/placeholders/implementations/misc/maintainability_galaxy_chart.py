@@ -35,12 +35,7 @@ class MaintainabilityGalaxyChartPlaceholder(Placeholder):
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, _) -> None:
-        charts = []
-
-        for slide in rendering.pptx.identify_specific_slide(presentation, key):
-            shapes_by_name = dict((s.name, s) for s in slide.shapes)
-            # Todo autodetect galaxy chart index. (Or just assume it's the first and only chart on this slide, see tkovac generator implementation)
-            charts.append(shapes_by_name["CHART_1"].chart)
+        charts = rendering.pptx.find_charts(presentation, key)
 
         if len(charts) == 0:
             return

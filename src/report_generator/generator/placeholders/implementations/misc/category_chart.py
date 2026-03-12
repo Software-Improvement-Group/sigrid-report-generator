@@ -64,12 +64,7 @@ class _AbstractCategoryChartPlaceholder(Placeholder, ABC):
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable):
-        charts = [
-            shape.chart
-            for slide in rendering.pptx.identify_specific_slide(presentation, key)
-            for shape in slide.shapes
-            if shape.has_chart
-        ]
+        charts = rendering.pptx.find_charts(presentation, key)
 
         if len(charts) == 0:
             return
