@@ -29,7 +29,7 @@ class OSHMetricsBase:
 
     @cached_property
     def vulnerabilities_fraction(self) -> float:
-        if not self.vulnerabilities_count:
+        if not self.vulnerabilities_count or not self.dependencies_count:
             return 0.0
         return max(self.vulnerabilities_count / self.dependencies_count, 0.01)
 
@@ -40,7 +40,7 @@ class OSHMetricsBase:
 
     @cached_property
     def outdated_fraction(self) -> float:
-        if not self.outdated_count:
+        if not self.outdated_count or not self.dependencies_count:
             return 0.0
         return max(self.outdated_count / self.dependencies_count, 0.01)
 
@@ -51,7 +51,7 @@ class OSHMetricsBase:
 
     @cached_property
     def legal_risk_fraction(self) -> float:
-        if not self.legal_risk_count:
+        if not self.legal_risk_count or not self.dependencies_count:
             return 0.0
         return max(self.legal_risk_count / self.dependencies_count, 0.01)
 
@@ -62,7 +62,7 @@ class OSHMetricsBase:
 
     @cached_property
     def unmanaged_fraction(self) -> float:
-        if not self.unmanaged_count:
+        if not self.unmanaged_count or not self.dependencies_count:
             return 0.0
         return max(self.unmanaged_count / self.dependencies_count, 0.01)
 
@@ -73,7 +73,7 @@ class OSHMetricsBase:
 
     @cached_property
     def activity_risk_fraction(self) -> float:
-        if not self.activity_risk_count:
+        if not self.activity_risk_count or not self.dependencies_count:
             return 0.0
         return max(self.activity_risk_count / self.dependencies_count, 0.01)
 
