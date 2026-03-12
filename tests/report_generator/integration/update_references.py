@@ -24,22 +24,15 @@ Only update one preset at a time — review the diff carefully before committing
 import argparse
 import os
 import sys
-from datetime import date
 from pathlib import Path
-
-from dateutil.relativedelta import relativedelta
 
 from report_generator import presets
 from report_generator.generator.context import sigrid_api
 
+PERIOD = ("2026-02-12", "2026-03-12")
+
 INTEGRATION_DIR = Path(__file__).parent
 VALID_PRESET_IDS = sorted(p for p in presets.ids if p != "debug")
-
-
-def _period():
-    start = (date.today() + relativedelta(months=-1)).strftime("%Y-%m-%d")
-    end = date.today().strftime("%Y-%m-%d")
-    return start, end
 
 
 def main():
@@ -72,7 +65,7 @@ def main():
         bearer_token=args.token,
         customer="opendemo",
         system=system,
-        period=_period(),
+        period=PERIOD,
     )
 
     reference_path = str(INTEGRATION_DIR / f"reference_{args.preset_id}.pptx")

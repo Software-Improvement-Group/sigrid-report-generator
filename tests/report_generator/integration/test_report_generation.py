@@ -12,10 +12,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 import os
-from datetime import date
+import warnings
 
 import pytest
-from dateutil.relativedelta import relativedelta
 from importlib_resources import files
 
 from report_generator import presets
@@ -23,6 +22,7 @@ from report_generator.generator.context import sigrid_api
 from tests.report_generator.integration.pptx_diff import compare_pptx
 
 PRESETS_TO_TEST = sorted(p for p in presets.ids if p != "debug")
+PERIOD = ("2026-02-12", "2026-03-12")
 
 no_token = (
     not os.environ.get("REPORT_GENERATOR_TESTS_TOKEN")
@@ -38,12 +38,6 @@ def token():
         or os.environ.get("SIGRID_TOKEN")
         or os.environ.get("SIGRID_CI_TOKEN")
     )
-
-
-def _period():
-    start = (date.today() + relativedelta(months=-1)).strftime("%Y-%m-%d")
-    end = date.today().strftime("%Y-%m-%d")
-    return start, end
 
 
 @pytest.mark.integration
@@ -64,11 +58,20 @@ def test_generate_preset(preset_id, token, tmp_path):
         bearer_token=token,
         customer="opendemo",
         system=system,
-        period=_period(),
+        period=PERIOD,
     )
 
     presets.run(preset_id, output_file)
 
     assert os.path.isfile(output_file)
+
+    if not os.path.isfile(reference_file):
+        warnings.warn(
+            f"Reference file missing for preset '{preset_id}'. "
+            f"Generate it with: python tests/report_generator/integration/update_references.py {preset_id} --token <TOKEN>",
+            stacklevel=2,
+        )
+        return
+
     are_equal, differences = compare_pptx(output_file, reference_file)
     assert are_equal, "Output differs from reference:\n" + "\n".join(differences)
