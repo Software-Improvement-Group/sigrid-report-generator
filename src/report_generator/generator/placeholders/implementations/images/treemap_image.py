@@ -64,8 +64,8 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
         shapes = rendering.pptx.find_shapes(presentation, key)
         if len(shapes) == 0:
             return
+        fig_data = value_cb()
         for shape in shapes:
-            fig_data = value_cb()
             fig = cls.draw_image(
                 width=shape.width.inches,
                 height=shape.height.inches,
