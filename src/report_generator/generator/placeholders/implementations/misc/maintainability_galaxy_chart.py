@@ -27,7 +27,10 @@ def _build_chart_data() -> XyChartData:
     chart_data = XyChartData()
     series = chart_data.add_series("Series 1")
     # Correct volume to be at least 0.1, anything lower will not be displayed on the chart
-    series.add_data_point(max(maintainability_data.system_py, 0.1), maintainability_data.maintainability_rating)
+    series.add_data_point(
+        max(maintainability_data.system_py, 0.1),
+        maintainability_data.maintainability_rating,
+    )
     return chart_data
 
 
