@@ -52,6 +52,14 @@ def test_generate_preset(preset_id, token, tmp_path):
         )
     )
 
+    if not os.path.isfile(reference_file):
+        warnings.warn(
+            f"Reference file missing for preset '{preset_id}'. "
+            f"Generate it with: python tests/report_generator/integration/update_references.py {preset_id} --token <TOKEN>",
+            stacklevel=2,
+        )
+        return
+
     system = "twitter-algorithm" if preset_id in presets.SYSTEM_LEVEL_PRESETS else None
     sigrid_api.reset_context()
     sigrid_api.set_context(
@@ -64,14 +72,6 @@ def test_generate_preset(preset_id, token, tmp_path):
     presets.run(preset_id, output_file)
 
     assert os.path.isfile(output_file)
-
-    if not os.path.isfile(reference_file):
-        warnings.warn(
-            f"Reference file missing for preset '{preset_id}'. "
-            f"Generate it with: python tests/report_generator/integration/update_references.py {preset_id} --token <TOKEN>",
-            stacklevel=2,
-        )
-        return
 
     are_equal, differences = compare_pptx(output_file, reference_file)
     assert are_equal, "Output differs from reference:\n" + "\n".join(differences)
