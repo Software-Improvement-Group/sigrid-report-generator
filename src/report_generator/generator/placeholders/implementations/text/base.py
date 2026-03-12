@@ -14,7 +14,7 @@
 
 import logging
 from abc import ABC
-from typing import Any, Callable, Optional
+from typing import Callable, Optional
 
 from docx.document import Document
 from pptx.presentation import Presentation
@@ -116,9 +116,7 @@ def parameterized_text_placeholder(
             allowed_parameters = parameters
 
             @classmethod
-            def value(
-                cls, parameter: Parameter = None, optional_parameter: Any = None
-            ) -> str:
+            def value(cls, parameter: Parameter = None) -> str:
                 return value_func(parameter)
 
         return ParameterizedTextPlaceholder

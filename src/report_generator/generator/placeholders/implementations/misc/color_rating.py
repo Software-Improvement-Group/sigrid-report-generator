@@ -58,7 +58,7 @@ class ArchColorRatingPlaceholder(_AbstractColorRatingPlaceholder):
     allowed_parameters: ClassVar[list] = list(ArchMetric) + list(ArchSubcharacteristic)
 
     @classmethod
-    def value(cls, metric: MetricEnum = None, additional_parameter=None):
+    def value(cls, metric: MetricEnum = None):
         metric_key = metric.to_json_name()
         return architecture_data.get_score_for_prop_or_subchar(metric_key)
 
@@ -68,6 +68,6 @@ class MaintColorRatingPlaceholder(_AbstractColorRatingPlaceholder):
     allowed_parameters: ClassVar[list] = list(MaintMetric)
 
     @classmethod
-    def value(cls, metric: MetricEnum = None, additional_parameter=None):
+    def value(cls, metric: MetricEnum = None):
         metric_key = metric.to_json_name()
         return maintainability_data.data[metric_key]

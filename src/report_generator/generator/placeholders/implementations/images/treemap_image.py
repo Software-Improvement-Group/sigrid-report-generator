@@ -59,6 +59,20 @@ class _AbstractTreemapPlaceholder(_AbstractParameterizedImagePlaceholder, ABC):
 class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
     grouping_processors: ClassVar[dict[str, Callable]] = {}
 
+    @classmethod
+    def resolve_pptx(cls, presentation, key, value_cb):
+        shapes = rendering.pptx.find_shapes(presentation, key)
+        if len(shapes) == 0:
+            return
+        fig_data = value_cb()
+        for shape in shapes:
+            fig = cls.draw_image(
+                width=shape.width.inches,
+                height=shape.height.inches,
+                fig_data=fig_data,
+            )
+            cls.create_and_add_image_to_slide(shape, fig)
+
     @staticmethod
     def create_portfolio():
         res = {}
@@ -387,7 +401,7 @@ class MaintainabilityPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlacehol
     key = "PORTFOLIO_PERIOD_MAINTAINABILITY_GROUPED_BY_{parameter}"
 
     @classmethod
-    def value(cls, parameter, additional_parameter=None):
+    def value(cls, parameter=None):
         portfolio = cls.create_portfolio()
 
         def f(t):
@@ -397,16 +411,11 @@ class MaintainabilityPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlacehol
                 .get("maintainability", None)
             )
 
-        fig_data = cls.create_end_date_portfolio_treemap(
+        return cls.create_end_date_portfolio_treemap(
             grouping=parameter.lower(),
             rating_func=f,
             rating_rounding_func=formatters.star_rating_round,
             determine_color_function=cls.determine_rating_color,
-        )
-        return cls.draw_image(
-            width=additional_parameter["width"],
-            height=additional_parameter["height"],
-            fig_data=fig_data,
         )
 
 
@@ -418,17 +427,12 @@ class MaintainabilityChangePortfolioTreemapPlaceholder(
     key = "PORTFOLIO_PERIOD_MAINTAINABILITY_CHANGE_GROUPED_BY_{parameter}"
 
     @classmethod
-    def value(cls, parameter, additional_parameter=None):
-        fig_data = cls.create_period_portfolio_treemap(
+    def value(cls, parameter=None):
+        return cls.create_period_portfolio_treemap(
             grouping=parameter.lower(),
             metric="maintainability",
             positive_color_range=rendering.pptx.MAINTAINABILITY_POS_CHANGE_RANGE_COLORS,
             negative_color_range=rendering.pptx.MAINTAINABILITY_NEG_CHANGE_RANGE_COLORS,
-        )
-        return cls.draw_image(
-            width=additional_parameter["width"],
-            height=additional_parameter["height"],
-            fig_data=fig_data,
         )
 
 
@@ -438,17 +442,12 @@ class VolumeChangePortfolioTreemapPlaceholder(PeriodPortfolioTreemapPlaceholder)
     key = "PORTFOLIO_PERIOD_VOLUME_CHANGE_GROUPED_BY_{parameter}"
 
     @classmethod
-    def value(cls, parameter, additional_parameter=None):
-        fig_data = cls.create_period_portfolio_treemap(
+    def value(cls, parameter=None):
+        return cls.create_period_portfolio_treemap(
             grouping=parameter.lower(),
             metric="volumeInPersonMonths",
             positive_color_range=rendering.pptx.VOLUME_POS_CHANGE_RANGE_COLORS,
             negative_color_range=rendering.pptx.VOLUME_NEG_CHANGE_RANGE_COLORS,
-        )
-        return cls.draw_image(
-            width=additional_parameter["width"],
-            height=additional_parameter["height"],
-            fig_data=fig_data,
         )
 
 
@@ -458,22 +457,17 @@ class TestCodePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
     key = "PORTFOLIO_PERIOD_TEST_CODE_GROUPED_BY_{parameter}"
 
     @classmethod
-    def value(cls, parameter, additional_parameter=None):
+    def value(cls, parameter=None):
         portfolio = cls.create_portfolio()
 
         def f(t):
             return portfolio[t]["end_date_data"]["testCodeRatio"]
 
-        fig_data = cls.create_end_date_portfolio_treemap(
+        return cls.create_end_date_portfolio_treemap(
             grouping=parameter.lower(),
             rating_func=f,
             rating_rounding_func=formatters.ratio_to_percentage,
             determine_color_function=cls.test_code_ratio_color,
-        )
-        return cls.draw_image(
-            width=additional_parameter["width"],
-            height=additional_parameter["height"],
-            fig_data=fig_data,
         )
 
 
@@ -483,18 +477,13 @@ class TestCodeChangePortfolioTreemapPlaceholder(PeriodPortfolioTreemapPlaceholde
     key = "PORTFOLIO_PERIOD_TEST_CODE_CHANGE_GROUPED_BY_{parameter}"
 
     @classmethod
-    def value(cls, parameter, additional_parameter=None):
-        fig_data = cls.create_period_portfolio_treemap(
+    def value(cls, parameter=None):
+        return cls.create_period_portfolio_treemap(
             grouping=parameter.lower(),
             metric="testCodeRatio",
             positive_color_range=rendering.pptx.MAINTAINABILITY_POS_CHANGE_RANGE_COLORS,
             negative_color_range=rendering.pptx.MAINTAINABILITY_NEG_CHANGE_RANGE_COLORS,
             is_percentage=True,
-        )
-        return cls.draw_image(
-            width=additional_parameter["width"],
-            height=additional_parameter["height"],
-            fig_data=fig_data,
         )
 
 
@@ -504,7 +493,7 @@ class SecurityRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlacehol
     key = "PORTFOLIO_PERIOD_SECURITY_RATINGS_GROUPED_BY_{parameter}"
 
     @classmethod
-    def value(cls, parameter, additional_parameter=None):
+    def value(cls, parameter=None):
         def f(t):
             return (
                 security_ratings_portfolio_data.get_system(t)["rating"]
@@ -512,16 +501,11 @@ class SecurityRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlacehol
                 else 0
             )
 
-        fig_data = cls.create_end_date_portfolio_treemap(
+        return cls.create_end_date_portfolio_treemap(
             grouping=parameter.lower(),
             rating_func=f,
             rating_rounding_func=formatters.star_rating_round,
             determine_color_function=cls.determine_rating_color,
-        )
-        return cls.draw_image(
-            width=additional_parameter["width"],
-            height=additional_parameter["height"],
-            fig_data=fig_data,
         )
 
 
@@ -531,7 +515,7 @@ class ArchitecturePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder
     key = "PORTFOLIO_PERIOD_ARCHITECTURE_GROUPED_BY_{parameter}"
 
     @classmethod
-    def value(cls, parameter, additional_parameter=None):
+    def value(cls, parameter=None):
         def f(t):
             return (
                 architecture_portfolio_data.get_system(t)["ratings"]["architecture"]
@@ -539,16 +523,11 @@ class ArchitecturePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder
                 else 0
             )
 
-        fig_data = cls.create_end_date_portfolio_treemap(
+        return cls.create_end_date_portfolio_treemap(
             grouping=parameter.lower(),
             rating_func=f,
             rating_rounding_func=formatters.star_rating_round,
             determine_color_function=cls.determine_rating_color,
-        )
-        return cls.draw_image(
-            width=additional_parameter["width"],
-            height=additional_parameter["height"],
-            fig_data=fig_data,
         )
 
 
@@ -562,7 +541,7 @@ class MaintainabilityDeltaQualityNewCodePortfolioTreemapPlaceholder(
     )
 
     @classmethod
-    def value(cls, parameter, additional_parameter=None):
+    def value(cls, parameter=None):
         def f(t):
             return (
                 maintainability_delta_quality_new_code.data[t]["filesRatingAtEnd"]
@@ -571,16 +550,11 @@ class MaintainabilityDeltaQualityNewCodePortfolioTreemapPlaceholder(
                 else 0
             )
 
-        fig_data = cls.create_end_date_portfolio_treemap(
+        return cls.create_end_date_portfolio_treemap(
             grouping=parameter.lower(),
             rating_func=f,
             rating_rounding_func=formatters.star_rating_round,
             determine_color_function=cls.determine_rating_color,
-        )
-        return cls.draw_image(
-            width=additional_parameter["width"],
-            height=additional_parameter["height"],
-            fig_data=fig_data,
         )
 
 
@@ -592,7 +566,7 @@ class MaintainabilityDeltaQualityChangedCodePortfolioTreemapPlaceholder(
     key = "PORTFOLIO_PERIOD_MAINTAINABILITY_DELTA_QUALITY_CHANGED_CODE_GROUPED_BY_{parameter}"
 
     @classmethod
-    def value(cls, parameter, additional_parameter=None):
+    def value(cls, parameter=None):
         def f(t):
             return (
                 maintainability_delta_quality_changed_code.data[t]["filesRatingAtEnd"]
@@ -603,16 +577,11 @@ class MaintainabilityDeltaQualityChangedCodePortfolioTreemapPlaceholder(
                 else 0
             )
 
-        fig_data = cls.create_end_date_portfolio_treemap(
+        return cls.create_end_date_portfolio_treemap(
             grouping=parameter.lower(),
             rating_func=f,
             rating_rounding_func=formatters.star_rating_round,
             determine_color_function=cls.determine_rating_color,
-        )
-        return cls.draw_image(
-            width=additional_parameter["width"],
-            height=additional_parameter["height"],
-            fig_data=fig_data,
         )
 
 
@@ -624,7 +593,7 @@ class MaintainabilityDeltaQualityNewAndChangedCodePortfolioTreemapPlaceholder(
     key = "PORTFOLIO_PERIOD_MAINTAINABILITY_DELTA_QUALITY_NEW_AND_CHANGED_CODE_GROUPED_BY_{parameter}"
 
     @classmethod
-    def value(cls, parameter, additional_parameter=None):
+    def value(cls, parameter=None):
         def f(t):
             return (
                 maintainability_delta_quality_new_and_changed_code.data[t][
@@ -637,16 +606,11 @@ class MaintainabilityDeltaQualityNewAndChangedCodePortfolioTreemapPlaceholder(
                 else 0
             )
 
-        fig_data = cls.create_end_date_portfolio_treemap(
+        return cls.create_end_date_portfolio_treemap(
             grouping=parameter.lower(),
             rating_func=f,
             rating_rounding_func=formatters.star_rating_round,
             determine_color_function=cls.determine_rating_color,
-        )
-        return cls.draw_image(
-            width=additional_parameter["width"],
-            height=additional_parameter["height"],
-            fig_data=fig_data,
         )
 
 
@@ -656,7 +620,7 @@ class OSHRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
     key = "PORTFOLIO_PERIOD_OSH_RATINGS_GROUPED_BY_{parameter}"
 
     @classmethod
-    def value(cls, parameter, additional_parameter=None):
+    def value(cls, parameter=None):
         def rating_function(system_name):
             system = osh_portfolio_data.find_system(system_name)
             props = system.get("sbom", {}).get("metadata", {}).get("properties", [])
@@ -669,14 +633,9 @@ class OSHRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
                 0.0,
             )
 
-        fig_data = cls.create_end_date_portfolio_treemap(
+        return cls.create_end_date_portfolio_treemap(
             grouping=parameter.lower(),
             rating_func=rating_function,
             rating_rounding_func=formatters.star_rating_round,
             determine_color_function=cls.determine_rating_color,
-        )
-        return cls.draw_image(
-            width=additional_parameter["width"],
-            height=additional_parameter["height"],
-            fig_data=fig_data,
         )

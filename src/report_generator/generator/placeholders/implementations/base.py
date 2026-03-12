@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import functools
 import logging
 import re
 from abc import ABC, abstractmethod
@@ -74,17 +75,19 @@ class Placeholder(ABC):
     @classmethod
     def resolve(cls, report: Report) -> None:
         resolve_method_name = cls._determine_resolve_method(report.type)
-
         if not resolve_method_name:
             return
+        cls._call_resolve_method(resolve_method_name, report, cls.key, cls.value)
 
+    @classmethod
+    def _call_resolve_method(cls, resolve_method_name, report, key, value_fn):
         try:
-            getattr(cls, resolve_method_name)(report, cls.key, cls.value)
+            getattr(cls, resolve_method_name)(report, key, value_fn)
         except SigridAPIRequestFailedError as e:
-            logging.info(f"Failed to resolve {cls.key}: {e}")
+            logging.info(f"Failed to resolve {key}: {e}")
         except (KeyError, AttributeError, ValueError) as e:
             logging.warning(
-                f"Failed to resolve {cls.key}: Value not found ({type(e).__name__}: {e})"
+                f"Failed to resolve {key}: Value not found ({type(e).__name__}: {e})"
             )
 
     @classmethod
@@ -131,31 +134,18 @@ class ParameterizedPlaceholder(Placeholder, ABC):
         2. Creates a lambda function to pass the specific parameter to `cls.value`.
         3. Calls the report-specific resolution method (e.g., `resolve_pptx`).
 
-        The constructed `value_p` callable accepts an `optional_parameter`. This allows the
-        underlying report generator (e.g., the PowerPoint resolver) to pass additional
-        context or configuration—such as chart filters or formatting options—back into
-        `cls.value` during execution.
-
         Args:
             report (Report): The report instance where the placeholders should be resolved.
         """
         resolve_method_name = cls._determine_resolve_method(report.type)
-
         if not resolve_method_name:
             return
 
         for parameter in cls.allowed_parameters:
-            key_p = cls.key.replace("{parameter}", str(parameter))
+            key_with_param = cls.key.replace("{parameter}", str(parameter))
 
-            try:
+            value_cb = functools.partial(cls.value, parameter)
 
-                def value_p(optional_parameter=None, p=parameter):
-                    return cls.value(p, optional_parameter)
-
-                getattr(cls, resolve_method_name)(report, key_p, value_p)
-            except SigridAPIRequestFailedError as e:
-                logging.info(f"Failed to resolve {key_p}: {e}")
-            except (KeyError, AttributeError, ValueError) as e:
-                logging.warning(
-                    f"Failed to resolve {key_p}: Value not found ({type(e).__name__}: {e})"
-                )
+            cls._call_resolve_method(
+                resolve_method_name, report, key_with_param, value_cb
+            )
