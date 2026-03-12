@@ -46,14 +46,20 @@ def main():
     )
     parser.add_argument(
         "--token",
-        default=os.environ.get("SIGRID_TOKEN") or os.environ.get("SIGRID_CI_TOKEN"),
-        help="Sigrid bearer token (defaults to $SIGRID_TOKEN / $SIGRID_CI_TOKEN)",
+        default=os.environ.get("SIGRID_TOKEN")
+        or os.environ.get("SIGRID_CI_TOKEN")
+        or os.environ.get("REPORT_GENERATOR_TESTS_TOKEN"),
+        help=(
+            "Sigrid bearer token (defaults to $SIGRID_TOKEN / $SIGRID_CI_TOKEN / "
+            "$REPORT_GENERATOR_TESTS_TOKEN)"
+        ),
     )
     args = parser.parse_args()
 
     if not args.token:
         print(
-            "Error: no token provided. Pass --token or set $SIGRID_TOKEN.",
+            "Error: no token provided. Pass --token or set $SIGRID_TOKEN, "
+            "$SIGRID_CI_TOKEN, or $REPORT_GENERATOR_TESTS_TOKEN.",
             file=sys.stderr,
         )
         sys.exit(1)
