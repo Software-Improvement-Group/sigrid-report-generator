@@ -60,7 +60,9 @@ def main():
 
     os.environ["SIGRID_REPORT_GENERATOR_RECORD_USAGE"] = "0"
 
-    system = "twitter-algorithm" if args.preset_id in presets.SYSTEM_LEVEL_PRESETS else None
+    system = (
+        "twitter-algorithm" if args.preset_id in presets.SYSTEM_LEVEL_PRESETS else None
+    )
     sigrid_api.set_context(
         bearer_token=args.token,
         customer="opendemo",
