@@ -31,19 +31,15 @@ no_token = (
 )
 
 
-@pytest.fixture
-def token():
-    return (
+@pytest.mark.integration
+@pytest.mark.skipif(no_token, reason="Token not set in environment")
+@pytest.mark.parametrize("preset_id", PRESETS_TO_TEST)
+def test_generate_preset(preset_id, tmp_path):
+    token = (
         os.environ.get("REPORT_GENERATOR_TESTS_TOKEN")
         or os.environ.get("SIGRID_TOKEN")
         or os.environ.get("SIGRID_CI_TOKEN")
     )
-
-
-@pytest.mark.integration
-@pytest.mark.skipif(no_token, reason="Token not set in environment")
-@pytest.mark.parametrize("preset_id", PRESETS_TO_TEST)
-def test_generate_preset(preset_id, token, tmp_path):
     os.environ["SIGRID_REPORT_GENERATOR_RECORD_USAGE"] = "0"
     output_file = str(tmp_path / f"output_{preset_id}.pptx")
     reference_file = str(
