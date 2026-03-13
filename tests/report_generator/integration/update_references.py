@@ -26,6 +26,8 @@ import os
 import sys
 from pathlib import Path
 
+from freezegun import freeze_time
+
 from report_generator import presets
 from report_generator.generator.context import sigrid_api
 
@@ -78,7 +80,8 @@ def main():
 
     reference_path = str(INTEGRATION_DIR / f"reference_{args.preset_id}.pptx")
     print(f"Generating {reference_path} ...")
-    presets.run(args.preset_id, reference_path)
+    with freeze_time(PERIOD[1]):
+        presets.run(args.preset_id, reference_path)
 
     print(
         f"\n"

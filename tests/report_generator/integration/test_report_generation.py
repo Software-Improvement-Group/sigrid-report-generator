@@ -15,6 +15,7 @@ import os
 import warnings
 
 import pytest
+from freezegun import freeze_time
 from importlib_resources import files
 
 from report_generator import presets
@@ -34,6 +35,7 @@ no_token = (
 @pytest.mark.integration
 @pytest.mark.skipif(no_token, reason="Token not set in environment")
 @pytest.mark.parametrize("preset_id", PRESETS_TO_TEST)
+@freeze_time(PERIOD[1])
 def test_generate_preset(preset_id, tmp_path):
     token = (
         os.environ.get("REPORT_GENERATOR_TESTS_TOKEN")
