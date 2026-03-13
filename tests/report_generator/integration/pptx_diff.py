@@ -45,6 +45,7 @@ def compare_slides(prs1, prs2, file1, file2):
         differences += compare_shape_count(slide1, slide2, file1, file2, i)
         differences += compare_shapes_text(slide1, slide2, i)
         differences += compare_tables(slide1, slide2, file1, file2, i)
+        differences += compare_charts(slide1, slide2, i)
     return differences
 
 
@@ -118,6 +119,61 @@ def compare_table_cells(table1, table2, slide_index, table_index):
                     ]
                 )
     return differences
+
+
+def compare_charts(slide1, slide2, slide_index):
+    differences = []
+    for j, (shape1, shape2) in enumerate(zip(slide1.shapes, slide2.shapes)):
+        if shape1.has_chart and shape2.has_chart:
+            differences += compare_chart(shape1.chart, shape2.chart, slide_index, j)
+    return differences
+
+
+def compare_chart(chart1, chart2, slide_index, shape_index):
+    return compare_chart_series(
+        chart1, chart2, slide_index, shape_index
+    ) + compare_chart_categories(chart1, chart2, slide_index, shape_index)
+
+
+def compare_chart_series(chart1, chart2, slide_index, shape_index):
+    differences = []
+    series1, series2 = list(chart1.series), list(chart2.series)
+    if len(series1) != len(series2):
+        differences.append(
+            f"Slide {slide_index + 1}, Chart {shape_index + 1}: "
+            f"Series count mismatch: {len(series1)} vs {len(series2)}"
+        )
+        return differences
+    for k, (s1, s2) in enumerate(zip(series1, series2)):
+        differences += compare_series(s1, s2, slide_index, shape_index, k)
+    return differences
+
+
+def compare_series(s1, s2, slide_index, shape_index, series_index):
+    prefix = (
+        f"Slide {slide_index + 1}, Chart {shape_index + 1}, Series {series_index + 1}"
+    )
+    differences = []
+    if s1.name != s2.name:
+        differences.append(f"{prefix}: Name mismatch: {s1.name!r} vs {s2.name!r}")
+    vals1, vals2 = list(s1.values), list(s2.values)
+    if vals1 != vals2:
+        differences.append(f"{prefix}: Values mismatch: {vals1} vs {vals2}")
+    return differences
+
+
+def compare_chart_categories(chart1, chart2, slide_index, shape_index):
+    try:
+        cats1 = [c.label for c in chart1.plots[0].categories]
+        cats2 = [c.label for c in chart2.plots[0].categories]
+    except (AttributeError, IndexError, TypeError):
+        return []  # chart type does not expose categories
+    if cats1 == cats2:
+        return []
+    return [
+        f"Slide {slide_index + 1}, Chart {shape_index + 1}: "
+        f"Category labels mismatch: {cats1} vs {cats2}"
+    ]
 
 
 def main():
