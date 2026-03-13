@@ -82,3 +82,43 @@ from report_generator.generator.placeholders.implementations.base import Placeho
 |--------|-------|
 | `report_generator.generator.formatters.formatters` (`calculate_star_rating_integer`, etc.) | `report_generator.generator.utils.star_rating` |
 | Other formatters | `report_generator.generator.placeholders.formatting.*` |
+
+---
+
+## Template migration
+
+### Chart placeholders: text-box marker replaced by shape name
+
+In v0, chart placeholders identified their target slide by searching for a text box containing the
+placeholder key (using `identify_specific_slide`). In v1, the chart shape itself must be named with
+the placeholder key in the Selection Pane.
+
+**Migration steps:**
+1. Open your PowerPoint template.
+2. For each chart placeholder, delete the off-screen text box that contained the placeholder key.
+3. Select the chart shape and rename it in the Selection Pane to the placeholder key.
+
+**Affected placeholder keys:**
+- `TECHNOLOGY_CHART`
+- `TEST_CODE_RATIO_CHART`
+- `TECHNICAL_DEBT_SYSTEMS_CHART`
+- `OBJECTIVES_OVERALL_CHART`
+- `OBJECTIVES_MAINTAINABILITY_CHART`
+- `OBJECTIVES_ARCHITECTURE_CHART`
+- `OBJECTIVES_SECURITY_CHART`
+- `OBJECTIVES_OSH_CHART`
+- `OBJECTIVES_STATUS_CHART`
+- `OBJECTIVES_TEAM_CHART`
+- `OBJECTIVES_CAPABILITY_CHART`
+- `PROGRESS_TIME_CHART`
+- `PROGRESS_MAINTAINABILITY_TIME_CHART`
+- `PROGRESS_ARCHITECTURE_TIME_CHART`
+- `PROGRESS_SECURITY_TIME_CHART`
+- `PROGRESS_OSH_TIME_CHART`
+- `PROGRESS_CAPABILITY_CHART`
+- `PROGRESS_STATUS_CHART`
+
+**Special case — `GALAXY_SLIDE`:**
+
+In v0, the code found the slide via the `GALAXY_SLIDE` text marker, then looked for a chart named
+`CHART_1` on that slide. In v1, the chart shape itself must be named `GALAXY_SLIDE`.

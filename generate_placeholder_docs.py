@@ -172,7 +172,7 @@ def add_chart_placeholders_section(doc: Document):
     doc.add(Header("Chart Placeholders"))
     doc.add(
         Paragraph(
-            "These placeholders, generally placed off-screen, only serve to identify a slide on which a specific chart is placed. If you want to use this chart, be sure to copy both the chart and the placeholder from a standard template and then modify its layout BUT NOT its structure or chart type."
+            "To use these placeholders, rename the chart shape in the Selection Pane to match the placeholder key exactly (see instructions below). `report-generator` identifies charts by their shape name, not by a separate marker. If you want to use this chart, be sure to copy it from a standard template and modify its layout BUT NOT its structure or chart type."
         )
     )
     chart_placeholders = [
