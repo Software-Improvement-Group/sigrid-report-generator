@@ -92,7 +92,7 @@ def text_placeholder(
             )
 
             @classmethod
-            def value(cls, parameter=None) -> str:
+            def value(cls) -> str:
                 return value_func()
 
         return TextPlaceholder

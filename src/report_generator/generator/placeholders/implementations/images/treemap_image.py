@@ -401,7 +401,7 @@ class MaintainabilityPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlacehol
     key = "PORTFOLIO_PERIOD_MAINTAINABILITY_GROUPED_BY_{parameter}"
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls, parameter):
         portfolio = cls.create_portfolio()
 
         def f(t):
@@ -427,7 +427,7 @@ class MaintainabilityChangePortfolioTreemapPlaceholder(
     key = "PORTFOLIO_PERIOD_MAINTAINABILITY_CHANGE_GROUPED_BY_{parameter}"
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls, parameter):
         return cls.create_period_portfolio_treemap(
             grouping=parameter.lower(),
             metric="maintainability",
@@ -442,7 +442,7 @@ class VolumeChangePortfolioTreemapPlaceholder(PeriodPortfolioTreemapPlaceholder)
     key = "PORTFOLIO_PERIOD_VOLUME_CHANGE_GROUPED_BY_{parameter}"
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls, parameter):
         return cls.create_period_portfolio_treemap(
             grouping=parameter.lower(),
             metric="volumeInPersonMonths",
@@ -457,7 +457,7 @@ class TestCodePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
     key = "PORTFOLIO_PERIOD_TEST_CODE_GROUPED_BY_{parameter}"
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls, parameter):
         portfolio = cls.create_portfolio()
 
         def f(t):
@@ -477,7 +477,7 @@ class TestCodeChangePortfolioTreemapPlaceholder(PeriodPortfolioTreemapPlaceholde
     key = "PORTFOLIO_PERIOD_TEST_CODE_CHANGE_GROUPED_BY_{parameter}"
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls, parameter):
         return cls.create_period_portfolio_treemap(
             grouping=parameter.lower(),
             metric="testCodeRatio",
@@ -493,7 +493,7 @@ class SecurityRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlacehol
     key = "PORTFOLIO_PERIOD_SECURITY_RATINGS_GROUPED_BY_{parameter}"
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls, parameter):
         def f(t):
             return (
                 security_ratings_portfolio_data.get_system(t)["rating"]
@@ -515,7 +515,7 @@ class ArchitecturePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder
     key = "PORTFOLIO_PERIOD_ARCHITECTURE_GROUPED_BY_{parameter}"
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls, parameter):
         def f(t):
             return (
                 architecture_portfolio_data.get_system(t)["ratings"]["architecture"]
@@ -541,7 +541,7 @@ class MaintainabilityDeltaQualityNewCodePortfolioTreemapPlaceholder(
     )
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls, parameter):
         def f(t):
             return (
                 maintainability_delta_quality_new_code.data[t]["filesRatingAtEnd"]
@@ -566,7 +566,7 @@ class MaintainabilityDeltaQualityChangedCodePortfolioTreemapPlaceholder(
     key = "PORTFOLIO_PERIOD_MAINTAINABILITY_DELTA_QUALITY_CHANGED_CODE_GROUPED_BY_{parameter}"
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls, parameter):
         def f(t):
             return (
                 maintainability_delta_quality_changed_code.data[t]["filesRatingAtEnd"]
@@ -593,7 +593,7 @@ class MaintainabilityDeltaQualityNewAndChangedCodePortfolioTreemapPlaceholder(
     key = "PORTFOLIO_PERIOD_MAINTAINABILITY_DELTA_QUALITY_NEW_AND_CHANGED_CODE_GROUPED_BY_{parameter}"
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls, parameter):
         def f(t):
             return (
                 maintainability_delta_quality_new_and_changed_code.data[t][
@@ -620,7 +620,7 @@ class OSHRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
     key = "PORTFOLIO_PERIOD_OSH_RATINGS_GROUPED_BY_{parameter}"
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls, parameter):
         def rating_function(system_name):
             system = osh_portfolio_data.find_system(system_name)
             props = system.get("sbom", {}).get("metadata", {}).get("properties", [])

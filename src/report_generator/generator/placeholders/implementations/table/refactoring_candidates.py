@@ -34,7 +34,7 @@ class _AbstractRefactoringCandidatesTablePlaceholder(TablePlaceholder):
         pass
 
     @classmethod
-    def value(cls, parameter=None) -> TableMatrix:
+    def value(cls) -> TableMatrix:
         return cls._to_table_matrix(
             refactoring_candidates_data.get_candidates(cls.metric)
         )

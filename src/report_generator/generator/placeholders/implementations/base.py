@@ -88,7 +88,7 @@ class Placeholder(ABC):
 
     @classmethod
     @abstractmethod
-    def value(cls, parameter: Parameter = None):
+    def value(cls):
         pass
 
     @classmethod

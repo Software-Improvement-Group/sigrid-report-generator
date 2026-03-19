@@ -90,7 +90,7 @@ class ComplexChartPlaceholder(Placeholder):
     key = "COMPLEX_CHART"
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls):
         return {"labels": ["A", "B", "C"], "axisLabel": "X", "series": [1, 2, 3]}
 
     @staticmethod
