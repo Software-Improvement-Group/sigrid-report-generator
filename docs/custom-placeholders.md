@@ -108,7 +108,8 @@ class ComplexChartPlaceholder(Placeholder):
         values = value_cb()
         chart_data = CategoryChartData()
         chart_data.categories = values["labels"]
-        [chart_data.add_series(values["axisLabel"], y) for y in values["series"]]
+        for y in values["series"]:
+            chart_data.add_series(values["axisLabel"], y)
 ```
 
 ## Registering custom placeholders and generating the report
