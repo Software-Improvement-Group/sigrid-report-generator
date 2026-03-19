@@ -46,6 +46,7 @@ class MultiParameterList:
 CAMEL_TO_SNAKE_PATTERN = re.compile(
     r"(?<!^)(?=[A-Z][a-z])|(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])"
 )
+PARAMETER_TOKEN_PATTERN = re.compile(r"\{[^}]+\}")
 
 
 def class_name_to_placeholder_key(class_name: str):
@@ -153,7 +154,7 @@ class ParameterizedPlaceholder(Placeholder, ABC):
     @classmethod
     def _resolve_single(cls, resolve_method_name: str, report: Report) -> None:
         for parameter in cls.allowed_parameters:
-            key_with_param = cls.key.replace("{parameter}", str(parameter))
+            key_with_param = PARAMETER_TOKEN_PATTERN.sub(str(parameter), cls.key, count=1)
             value_cb = functools.partial(cls.value, parameter)
             cls._call_resolve_method(resolve_method_name, report, key_with_param, value_cb)
 
@@ -161,7 +162,7 @@ class ParameterizedPlaceholder(Placeholder, ABC):
     def _resolve_multi(cls, resolve_method_name: str, report: Report) -> None:
         for param_tuple in cls.allowed_parameters.product():
             key_with_params = cls.key
-            for i, param in enumerate(param_tuple, start=1):
-                key_with_params = key_with_params.replace(f"{{parameter{i}}}", str(param))
+            for param in param_tuple:
+                key_with_params = PARAMETER_TOKEN_PATTERN.sub(str(param), key_with_params, count=1)
             value_cb = functools.partial(cls.value, *param_tuple)
             cls._call_resolve_method(resolve_method_name, report, key_with_params, value_cb)

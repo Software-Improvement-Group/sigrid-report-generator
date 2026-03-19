@@ -21,6 +21,7 @@ from pptx.presentation import Presentation
 
 from report_generator.generator.placeholders import rendering
 from report_generator.generator.placeholders.implementations.base import (
+    PARAMETER_TOKEN_PATTERN,
     MultiParameterList,
     Parameter,
     ParameterizedPlaceholder,
@@ -104,14 +105,18 @@ def parameterized_text_placeholder(
     custom_key: str, parameters: Union[ParameterList, MultiParameterList]
 ) -> Callable:
     def decorator(value_func) -> type[ParameterizedPlaceholder]:
+        token_count = len(PARAMETER_TOKEN_PATTERN.findall(custom_key))
         if isinstance(parameters, MultiParameterList):
-            for i in range(1, parameters.arity + 1):
-                if f"{{parameter{i}}}" not in custom_key:
-                    raise ValueError(
-                        f"Parameterized text placeholder must have '{{parameter{i}}}' in key: {custom_key}"
-                    )
-        elif "{parameter}" not in custom_key:
-            raise ValueError("Parameterized text placeholder must have '{parameter}'")
+            if token_count != parameters.arity:
+                raise ValueError(
+                    f"Parameterized text placeholder key must have {parameters.arity} "
+                    f"{{...}} tokens, found {token_count}: {custom_key}"
+                )
+        elif token_count != 1:
+            raise ValueError(
+                f"Parameterized text placeholder key must have exactly 1 "
+                f"{{...}} token, found {token_count}: {custom_key}"
+            )
 
         class ParameterizedTextPlaceholder(
             ParameterizedPlaceholder, _AbstractTextPlaceholder
