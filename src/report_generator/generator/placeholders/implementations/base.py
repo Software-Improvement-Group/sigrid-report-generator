@@ -13,6 +13,7 @@
 #  limitations under the License.
 
 import functools
+import itertools
 import logging
 import re
 from abc import ABC, abstractmethod
@@ -26,6 +27,21 @@ from report_generator.generator.report import Report, ReportType
 
 Parameter = Union[str, int, Enum]
 ParameterList = Iterable[Parameter]
+
+
+class MultiParameterList:
+    """Multiple parameter lists for cartesian product iteration."""
+
+    def __init__(self, *param_lists: ParameterList):
+        self.param_lists: tuple[list[Parameter], ...] = tuple(list(pl) for pl in param_lists)
+
+    @property
+    def arity(self) -> int:
+        return len(self.param_lists)
+
+    def product(self) -> Iterable[tuple[Parameter, ...]]:
+        return itertools.product(*self.param_lists)
+
 
 CAMEL_TO_SNAKE_PATTERN = re.compile(
     r"(?<!^)(?=[A-Z][a-z])|(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])"
@@ -126,26 +142,26 @@ class ParameterizedPlaceholder(Placeholder, ABC):
 
     @classmethod
     def resolve(cls, report: Report) -> None:
-        """
-        Iterates through allowed parameters to resolve multiple instances of this placeholder.
-
-        For every parameter in `allowed_parameters`, this method:
-        1. Generates a specific key by replacing '{parameter}' in `cls.key`.
-        2. Creates a lambda function to pass the specific parameter to `cls.value`.
-        3. Calls the report-specific resolution method (e.g., `resolve_pptx`).
-
-        Args:
-            report (Report): The report instance where the placeholders should be resolved.
-        """
         resolve_method_name = cls._determine_resolve_method(report.type)
         if not resolve_method_name:
             return
+        if isinstance(cls.allowed_parameters, MultiParameterList):
+            cls._resolve_multi(resolve_method_name, report)
+        else:
+            cls._resolve_single(resolve_method_name, report)
 
+    @classmethod
+    def _resolve_single(cls, resolve_method_name: str, report: Report) -> None:
         for parameter in cls.allowed_parameters:
             key_with_param = cls.key.replace("{parameter}", str(parameter))
-
             value_cb = functools.partial(cls.value, parameter)
+            cls._call_resolve_method(resolve_method_name, report, key_with_param, value_cb)
 
-            cls._call_resolve_method(
-                resolve_method_name, report, key_with_param, value_cb
-            )
+    @classmethod
+    def _resolve_multi(cls, resolve_method_name: str, report: Report) -> None:
+        for param_tuple in cls.allowed_parameters.product():
+            key_with_params = cls.key
+            for i, param in enumerate(param_tuple, start=1):
+                key_with_params = key_with_params.replace(f"{{parameter{i}}}", str(param))
+            value_cb = functools.partial(cls.value, *param_tuple)
+            cls._call_resolve_method(resolve_method_name, report, key_with_params, value_cb)
