@@ -143,6 +143,27 @@ class ParameterizedPlaceholder(Placeholder, ABC):
     __parameterized_placeholder__ = True
     allowed_parameters: ParameterList
 
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if "key" in cls.__dict__ and "allowed_parameters" in cls.__dict__:
+            cls._validate_key_token_count()
+
+    @classmethod
+    def _expected_arity(cls) -> int:
+        if isinstance(cls.allowed_parameters, MultiParameterList):
+            return cls.allowed_parameters.arity
+        return 1
+
+    @classmethod
+    def _validate_key_token_count(cls):
+        actual = len(PARAMETER_TOKEN_PATTERN.findall(cls.key))
+        expected = cls._expected_arity()
+        if actual != expected:
+            raise ValueError(
+                f"Parameterized placeholder key must have {expected} "
+                f"{{...}} token(s), found {actual}: {cls.key}"
+            )
+
     @classmethod
     def resolve(cls, report: Report) -> None:
         resolve_method_name = cls._determine_resolve_method(report.type)
