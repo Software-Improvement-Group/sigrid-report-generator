@@ -33,7 +33,9 @@ class MultiParameterList:
     """Multiple parameter lists for cartesian product iteration."""
 
     def __init__(self, *param_lists: ParameterList):
-        self.param_lists: tuple[list[Parameter], ...] = tuple(list(pl) for pl in param_lists)
+        self.param_lists: tuple[list[Parameter], ...] = tuple(
+            list(pl) for pl in param_lists
+        )
 
     @property
     def arity(self) -> int:
@@ -154,15 +156,23 @@ class ParameterizedPlaceholder(Placeholder, ABC):
     @classmethod
     def _resolve_single(cls, resolve_method_name: str, report: Report) -> None:
         for parameter in cls.allowed_parameters:
-            key_with_param = PARAMETER_TOKEN_PATTERN.sub(str(parameter), cls.key, count=1)
+            key_with_param = PARAMETER_TOKEN_PATTERN.sub(
+                str(parameter), cls.key, count=1
+            )
             value_cb = functools.partial(cls.value, parameter)
-            cls._call_resolve_method(resolve_method_name, report, key_with_param, value_cb)
+            cls._call_resolve_method(
+                resolve_method_name, report, key_with_param, value_cb
+            )
 
     @classmethod
     def _resolve_multi(cls, resolve_method_name: str, report: Report) -> None:
         for param_tuple in cls.allowed_parameters.product():
             key_with_params = cls.key
             for param in param_tuple:
-                key_with_params = PARAMETER_TOKEN_PATTERN.sub(str(param), key_with_params, count=1)
+                key_with_params = PARAMETER_TOKEN_PATTERN.sub(
+                    str(param), key_with_params, count=1
+                )
             value_cb = functools.partial(cls.value, *param_tuple)
-            cls._call_resolve_method(resolve_method_name, report, key_with_params, value_cb)
+            cls._call_resolve_method(
+                resolve_method_name, report, key_with_params, value_cb
+            )

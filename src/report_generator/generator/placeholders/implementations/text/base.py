@@ -23,7 +23,6 @@ from report_generator.generator.placeholders import rendering
 from report_generator.generator.placeholders.implementations.base import (
     PARAMETER_TOKEN_PATTERN,
     MultiParameterList,
-    Parameter,
     ParameterizedPlaceholder,
     ParameterList,
     Placeholder,

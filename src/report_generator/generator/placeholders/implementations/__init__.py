@@ -12,7 +12,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from report_generator.generator.placeholders.implementations.base import MultiParameterList, Placeholder
+from report_generator.generator.placeholders.implementations.base import (
+    MultiParameterList,
+    Placeholder,
+)
 from report_generator.generator.placeholders.implementations.charts import (
     placeholders as chart_placeholders,
 )
