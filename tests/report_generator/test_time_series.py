@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from report_generator.generator.report_utils.time_series import Period
+from report_generator.generator.utils.time_series import Period
 
 
 class TestTimeSeries:
@@ -23,9 +23,9 @@ class TestTimeSeries:
         assert period.contains("2025-05-15")
         assert period.contains("2025-05-30")
 
-        assert period.contains("2025-04-30") == False
-        assert period.contains("2025-06-01") == False
-        assert period.contains("2025-06-02") == False
+        assert not period.contains("2025-04-30")
+        assert not period.contains("2025-06-01")
+        assert not period.contains("2025-06-02")
 
     def test_for_months(self):
         periods = Period.for_months("2025-01-15", "2025-04-15")
