@@ -12,18 +12,21 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import logging
 from datetime import datetime
 
 from report_generator.generator.domain import maintainability_data, modernization_data
+from report_generator.generator.placeholders.formatting import smart_remarks
 from report_generator.generator.placeholders.formatting.formatters import (
     calculate_stars,
     format_diff,
     star_rating_round,
 )
+from report_generator.generator.placeholders.implementations.text.base import (
+    parameterized_text_placeholder,
+    text_placeholder,
+)
 from report_generator.generator.utils.constants import MaintMetric
-
-from ...formatting import smart_remarks
-from .base import parameterized_text_placeholder, text_placeholder
 
 
 @text_placeholder()
@@ -76,7 +79,16 @@ def maint_relative():
 
 @text_placeholder()
 def maint_indication():
-    """Indicates whether the maintainability rating is above, below or at market average."""
+    """Indication of whether the system's Maintainability Rating is above, below or at market average."""
+    logging.warning(
+        "maint_indication is deprecated and will be removed, use maint_relative_cost instead"
+    )
+    return maint_relative_cost()
+
+
+@text_placeholder()
+def maint_relative_cost():
+    """Indicates whether the cost to maintain the system is above, below or at market average."""
     return smart_remarks.relative_cost(maintainability_data.maintainability_rating)
 
 
