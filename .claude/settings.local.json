@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ruff format:*)",
+      "Bash(ruff check:*)",
+      "WebFetch(domain:docs.sigrid-says.com)"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  "mcpServers": {
+    "SigridCode": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://sigrid-says.com/mcp",
+        "--header",
+        "Authorization: Bearer ${SIGRID_TOKEN}",
+        "--allow-http"
+      ]
+    }
+  }
+}
