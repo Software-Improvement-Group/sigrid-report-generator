@@ -127,82 +127,8 @@ If you introduce new placeholders, you will need to regenerate the documentation
 [install the Report Generator](#install-using-pip). After that, run `./generate_placeholder_docs.py`, then commit
 the results.
 
-### Examples
-
-#### Simple text placeholder of current week number
-
-```python
-from datetime import datetime
-
-import report_generator
-
-# Custom template
-generator = report_generator.ReportGenerator(template_path="location_of_template.pptx")
-
-
-# Custom placeholder
-@report_generator.placeholders.text_placeholder()
-def week_number():
-    return datetime.now().isocalendar()[1]
-```
-
-#### Parameterized text placeholder
-
-```python
-from report_generator.generator.placeholders import parameterized_text_placeholder
-
-
-# Custom parameterized placeholder (e.g. LIST_VALUE_1, LIST_VALUE_2, ..., LIST_VALUE_5)
-@parameterized_text_placeholder(custom_key="LIST_VALUE_{parameter}",
-                                parameters=range(1, 6))
-def list_value_for_idx(idx: int):
-    return some_value(idx)
-```
-
-#### Completely custom placeholder
-
-```python
-from pptx.chart.data import CategoryChartData
-
-from report_generator.generator.placeholders import Placeholder, rendering
-
-
-class ComplexChartPlaceholder(Placeholder):
-    key = "COMPLEX_CHART"
-
-    @classmethod
-    def value(cls, parameter=None):
-        return {"labels": ["A", "B", "C"], "axisLabel": "X", "series": [1, 2, 3]}
-
-    @staticmethod
-    def resolve_pptx(presentation, key: str, value_cb) -> None:
-        charts = [
-            shape.chart
-            for slide in rendering.pptx.identify_specific_slide(presentation, key)
-            for shape in slide.shapes
-            if shape.has_chart
-        ]
-
-        if len(charts) == 0:
-            return
-
-        values = value_cb()
-        chart_data = CategoryChartData()
-        chart_data.categories = values["labels"]
-        [chart_data.add_series(values["axisLabel"], y) for y in values["series"]]
-```
-
-#### Registering custom placeholders and generating the report
-
-```python
-generator.register_additional_placeholders({
-    week_number,
-    list_value_for_idx,
-    ComplexChartPlaceholder
-})
-
-generator.generate("out.pptx")
-```
+For examples of custom placeholders (simple text, parameterized, multi-parameter, class-based, and fully custom),
+see [docs/custom-placeholders.md](docs/custom-placeholders.md).
 
 ## Upgrading
 

@@ -100,7 +100,7 @@ class OSHVulnLegalGraphPlaceholder(Placeholder):
     __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls):
         return _format_osh_chart_data(osh_data.risk_distributions, VULN_LIC_CATEGORIES)
 
     @staticmethod
@@ -115,7 +115,7 @@ class OSHOtherRisksGraphPlaceholder(Placeholder):
     __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls):
         return _format_osh_chart_data(
             osh_data.risk_distributions, OTHER_RISKS_CATEGORIES
         )
@@ -132,7 +132,7 @@ class OSHPortfolioVulnLegalGraphPlaceholder(Placeholder):
     __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls):
         return _format_osh_chart_data(
             osh_portfolio_data.risk_distributions, VULN_LIC_CATEGORIES
         )
@@ -149,7 +149,7 @@ class OSHPortfolioOtherRisksGraphPlaceholder(Placeholder):
     __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls):
         return _format_osh_chart_data(
             osh_portfolio_data.risk_distributions, OTHER_RISKS_CATEGORIES
         )
