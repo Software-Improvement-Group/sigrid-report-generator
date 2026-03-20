@@ -23,7 +23,7 @@ from report_generator.generator.context import sigrid_api
 from tests.report_generator.integration.pptx_diff import compare_pptx
 
 PRESETS_TO_TEST = sorted(p for p in presets.ids if p != "debug")
-PERIOD = ("2026-02-12", "2026-03-12")
+PERIOD = ("2026-01-11", "2026-03-8")
 
 no_token = (
     not os.environ.get("REPORT_GENERATOR_TESTS_TOKEN")
@@ -58,11 +58,11 @@ def test_generate_preset(preset_id, tmp_path):
         )
         return
 
-    system = "twitter-algorithm" if preset_id in presets.SYSTEM_LEVEL_PRESETS else None
+    system = "integrationtest-kafka" if preset_id in presets.SYSTEM_LEVEL_PRESETS else None
     sigrid_api.reset_context()
     sigrid_api.set_context(
         bearer_token=token,
-        customer="opendemo",
+        customer="reportgeneratordemo",
         system=system,
         period=PERIOD,
     )
