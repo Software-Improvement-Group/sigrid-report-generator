@@ -126,7 +126,7 @@ class SecurityDashboardCriticalFindingsChartPlaceholder(Placeholder):
     __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls):
         return _create_security_findings_chart_data("CRITICAL")
 
     @staticmethod
@@ -141,7 +141,7 @@ class SecurityDashboardHighFindingsChartPlaceholder(Placeholder):
     __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls):
         return _create_security_findings_chart_data("HIGH")
 
     @staticmethod
@@ -156,7 +156,7 @@ class SecurityDashboardMediumFindingsChartPlaceholder(Placeholder):
     __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls):
         return _create_security_findings_chart_data("MEDIUM")
 
     @staticmethod
@@ -222,7 +222,7 @@ class SecurityDashboardCriticalResolutionTimesChartPlaceholder(Placeholder):
     __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls):
         return _create_resolution_times_chart_data("CRITICAL")
 
     @staticmethod
@@ -237,7 +237,7 @@ class SecurityDashboardHighResolutionTimesChartPlaceholder(Placeholder):
     __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls):
         return _create_resolution_times_chart_data("HIGH")
 
     @staticmethod
@@ -252,7 +252,7 @@ class SecurityDashboardMediumResolutionTimesChartPlaceholder(Placeholder):
     __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls):
         return _create_resolution_times_chart_data("MEDIUM")
 
     @staticmethod

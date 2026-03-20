@@ -82,7 +82,7 @@ class _AbstractCategoryChartPlaceholder(Placeholder, ABC):
         pass
 
     @classmethod
-    def value(cls, placeholder=None):
+    def value(cls):
         return {
             "labels": cls.labels(),
             "series": cls.series(),

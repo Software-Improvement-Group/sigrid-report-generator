@@ -52,7 +52,7 @@ class MaintainabilityGalaxyChartPlaceholder(Placeholder):
     __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls):
         return _build_chart_data()
 
     @staticmethod
