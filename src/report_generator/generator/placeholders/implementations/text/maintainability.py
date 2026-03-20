@@ -28,14 +28,16 @@ from .base import parameterized_text_placeholder, text_placeholder
 
 @text_placeholder()
 def period_start_date():
-    """The reporting period's start date in yyyy-mm-dd format."""
-    return maintainability_data.period[0]
+    """The reporting period's start date (e.g. 1 January 2025)"""
+    d = datetime.strptime(maintainability_data.period[0], "%Y-%m-%d")
+    return f"{d.day} {d.strftime('%B %Y')}"
 
 
 @text_placeholder()
 def period_end_date():
-    """The reporting period's end date in yyyy-mm-dd format."""
-    return maintainability_data.period[1]
+    """The reporting period's end date (e.g. 31 December 2025)"""
+    d = datetime.strptime(maintainability_data.period[1], "%Y-%m-%d")
+    return f"{d.day} {d.strftime('%B %Y')}"
 
 
 @text_placeholder()
