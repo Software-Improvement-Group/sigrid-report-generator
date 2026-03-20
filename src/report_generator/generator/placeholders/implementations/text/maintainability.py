@@ -22,9 +22,8 @@ from report_generator.generator.placeholders.formatting.formatters import (
     star_rating_round,
 )
 from report_generator.generator.utils.constants import MaintMetric
-
-from ...formatting import smart_remarks
-from .base import parameterized_text_placeholder, text_placeholder
+from report_generator.generator.placeholders.formatting import smart_remarks
+from report_generator.generator.placeholders.implementations.base import parameterized_text_placeholder, text_placeholder
 
 
 @text_placeholder()
