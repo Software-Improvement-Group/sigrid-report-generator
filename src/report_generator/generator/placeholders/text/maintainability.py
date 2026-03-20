@@ -65,6 +65,7 @@ def maint_relative():
     """Remark of the system's Maintainability Rating relative to the benchmark."""
     return smart_remarks.relative_to_market_average(maintainability_data.maintainability_rating)
 
+@text_placeholder()
 def maint_indication():
     """Indication of whether the system's Maintainability Rating is above, below or at market average."""
     logging.warning("maint_indication is deprecated and will be removed, use maint_relative_cost instead")
