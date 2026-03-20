@@ -25,12 +25,12 @@ import argparse
 import os
 import sys
 
+import _shared
 from freezegun import freeze_time
 
 from report_generator import presets
 from report_generator.generator.context import sigrid_api
 from report_generator.report_generator import ReportGenerator
-from tests.report_generator.integration import _shared
 
 VALID_PRESET_IDS = sorted(p for p in presets.ids if p != "debug")
 
