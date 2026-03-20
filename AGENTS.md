@@ -1,6 +1,20 @@
-# CLAUDE.md
+# AGENTS.md
 
 This file provides guidance to AI agents when working with code in this repository.
+
+## Code Principles
+
+Write maintainable code: single responsibility, small focused functions, clear naming, avoid duplication, simple control flow.
+
+## MANDATORY: Quality Gate
+
+Before reporting ANY task as complete:
+
+1. Run the Sigrid Code Quality Guardrails tool on all changed production code
+2. Maintainability findings: accept if principles were followed, otherwise refactor
+3. Security findings: fix if straightforward, otherwise flag to user
+
+Only skip this step if you are not able to access Sigrid Code Quality Guardrails. Indicate this in your response.
 
 ## Commands
 
@@ -67,7 +81,3 @@ Use `@parameterized_text_placeholder(custom_key="KEY_{parameter}", parameters=[.
 ### Domain singletons
 
 Domain modules expose module-level singleton objects (e.g. `maintainability_data`, `osh_portfolio_data`). These are lazily loaded and cached via `functools.cached_property` or `@cache` on the underlying API calls. Tests that exercise domain logic must patch `sigrid_api` functions or call `sigrid_api.set_context()` / `sigrid_api.reset_context()` to avoid polluting state across tests.
-
-## Code Principles
-
-Write maintainable code: single responsibility, small focused functions, clear naming, avoid duplication, simple control flow.

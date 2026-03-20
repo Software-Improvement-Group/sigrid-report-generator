@@ -30,6 +30,17 @@ forbidden_modules =
     report_generator.generator.domain.system
     report_generator.generator.domain.portfolio
 
+# Rule: placeholder implementation subdirectories must not import each other
+[importlinter:contract:implementation-subdirs]
+name = placeholder implementation subdirectories are independent
+type = independence
+modules =
+    report_generator.generator.placeholders.implementations.text
+    report_generator.generator.placeholders.implementations.charts
+    report_generator.generator.placeholders.implementations.table
+    report_generator.generator.placeholders.implementations.images
+    report_generator.generator.placeholders.implementations.misc
+
 # Rule: placeholders/formatting ↔ placeholders/rendering
 [importlinter:contract:formatting-rendering]
 name = formatting and rendering are independent

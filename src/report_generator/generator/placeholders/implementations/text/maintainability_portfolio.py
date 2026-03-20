@@ -12,6 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from datetime import datetime
+
 from report_generator.generator.domain import maintainability_portfolio_data
 from report_generator.generator.domain.portfolio.maintainability_portfolio.statistics import (
     maintainability_portfolio_stats,
@@ -41,14 +43,16 @@ def _format_short_maintainability_statement(amount, number_of_systems, postfix):
 
 @text_placeholder()
 def portfolio_period_start_date():
-    """The portfolio reporting period's start date in yyyy-mm-dd format."""
-    return maintainability_portfolio_data.period[0]
+    """The portfolio reporting period's start date (e.g. 1 January 2025)."""
+    d = datetime.strptime(maintainability_portfolio_data.period[0], "%Y-%m-%d")
+    return f"{d.day} {d.strftime('%B %Y')}"
 
 
 @text_placeholder()
 def portfolio_period_end_date():
-    """The portfolio reporting period's end date in yyyy-mm-dd format."""
-    return maintainability_portfolio_data.period[1]
+    """The portfolio reporting period's end date (e.g. 31 December 2025)."""
+    d = datetime.strptime(maintainability_portfolio_data.period[1], "%Y-%m-%d")
+    return f"{d.day} {d.strftime('%B %Y')}"
 
 
 @text_placeholder()

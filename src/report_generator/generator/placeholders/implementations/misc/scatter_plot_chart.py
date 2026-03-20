@@ -75,7 +75,7 @@ class ModernizationScatterPlotChartPlaceholder(Placeholder):
     __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
-    def value(cls, parameter=None):
+    def value(cls):
         return _build_chart_data(_group_candidates())
 
     @staticmethod
