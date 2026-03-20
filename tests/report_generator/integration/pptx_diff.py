@@ -22,7 +22,9 @@ def _changed_lines(text_current: str, text_reference: str) -> list[str]:
     label_map = {"- ": "reference: ", "+ ": "current:   "}
     return [
         label_map[line[:2]] + line[2:]
-        for line in Differ().compare(text_reference.splitlines(), text_current.splitlines())
+        for line in Differ().compare(
+            text_reference.splitlines(), text_current.splitlines()
+        )
         if line.startswith("+ ") or line.startswith("- ")
     ]
 
@@ -50,7 +52,9 @@ def compare_slide_count(current_prs, reference_prs):
 
 def compare_slides(current_prs, reference_prs):
     differences = []
-    for i, (current_slide, reference_slide) in enumerate(zip(current_prs.slides, reference_prs.slides)):
+    for i, (current_slide, reference_slide) in enumerate(
+        zip(current_prs.slides, reference_prs.slides)
+    ):
         differences += compare_shape_count(current_slide, reference_slide, i)
         differences += compare_shapes_text(current_slide, reference_slide, i)
         differences += compare_tables(current_slide, reference_slide, i)
@@ -70,78 +74,105 @@ def compare_shape_count(current_slide, reference_slide, slide_index):
 
 def compare_shapes_text(current_slide, reference_slide, slide_index):
     differences = []
-    for j, (current_shape, reference_shape) in enumerate(zip(current_slide.shapes, reference_slide.shapes)):
+    for j, (current_shape, reference_shape) in enumerate(
+        zip(current_slide.shapes, reference_slide.shapes)
+    ):
         if current_shape.has_text_frame and reference_shape.has_text_frame:
             if current_shape.text != reference_shape.text:
                 differences.append(
                     f"Slide {slide_index + 1}, Shape {j + 1}: Text difference:"
                 )
                 differences.extend(
-                    f"    {line}" for line in _changed_lines(current_shape.text, reference_shape.text)
+                    f"    {line}"
+                    for line in _changed_lines(current_shape.text, reference_shape.text)
                 )
     return differences
 
 
 def compare_tables(current_slide, reference_slide, slide_index):
     differences = []
-    for j, (current_shape, reference_shape) in enumerate(zip(current_slide.shapes, reference_slide.shapes)):
+    for j, (current_shape, reference_shape) in enumerate(
+        zip(current_slide.shapes, reference_slide.shapes)
+    ):
         if current_shape.has_table and reference_shape.has_table:
             current_table, reference_table = current_shape.table, reference_shape.table
-            if len(current_table.rows) != len(reference_table.rows) or len(current_table.columns) != len(
-                reference_table.columns
-            ):
+            if len(current_table.rows) != len(reference_table.rows) or len(
+                current_table.columns
+            ) != len(reference_table.columns):
                 differences.append(
                     f"Slide {slide_index + 1}, Table {j + 1}: Table size mismatch: "
                     f"current has {len(current_table.rows)} rows and {len(current_table.columns)} columns, "
                     f"reference has {len(reference_table.rows)} rows and {len(reference_table.columns)} columns"
                 )
             else:
-                differences += compare_table_cells(current_table, reference_table, slide_index, j)
+                differences += compare_table_cells(
+                    current_table, reference_table, slide_index, j
+                )
     return differences
 
 
 def compare_table_cells(current_table, reference_table, slide_index, table_index):
     differences = []
-    for row_idx, (current_row, reference_row) in enumerate(zip(current_table.rows, reference_table.rows)):
-        for col_idx, (current_cell, reference_cell) in enumerate(zip(current_row.cells, reference_row.cells)):
+    for row_idx, (current_row, reference_row) in enumerate(
+        zip(current_table.rows, reference_table.rows)
+    ):
+        for col_idx, (current_cell, reference_cell) in enumerate(
+            zip(current_row.cells, reference_row.cells)
+        ):
             if current_cell.text != reference_cell.text:
                 differences.append(
                     f"Slide {slide_index + 1}, Table {table_index + 1}, Cell ({row_idx + 1}, {col_idx + 1}): Text difference:"
                 )
                 differences.extend(
-                    f"    <{line}>" for line in _changed_lines(current_cell.text, reference_cell.text)
+                    f"    <{line}>"
+                    for line in _changed_lines(current_cell.text, reference_cell.text)
                 )
     return differences
 
 
 def compare_charts(current_slide, reference_slide, slide_index):
     differences = []
-    for j, (current_shape, reference_shape) in enumerate(zip(current_slide.shapes, reference_slide.shapes)):
+    for j, (current_shape, reference_shape) in enumerate(
+        zip(current_slide.shapes, reference_slide.shapes)
+    ):
         if current_shape.has_chart and reference_shape.has_chart:
-            differences += compare_chart(current_shape.chart, reference_shape.chart, slide_index, j)
+            differences += compare_chart(
+                current_shape.chart, reference_shape.chart, slide_index, j
+            )
     return differences
 
 
 def compare_chart(current_chart, reference_chart, slide_index, shape_index):
     return compare_chart_series(
         current_chart, reference_chart, slide_index, shape_index
-    ) + compare_chart_categories(current_chart, reference_chart, slide_index, shape_index)
+    ) + compare_chart_categories(
+        current_chart, reference_chart, slide_index, shape_index
+    )
 
 
 def compare_chart_series(current_chart, reference_chart, slide_index, shape_index):
     differences = []
-    current_series, reference_series = list(current_chart.series), list(reference_chart.series)
+    current_series, reference_series = (
+        list(current_chart.series),
+        list(reference_chart.series),
+    )
     if len(current_series) != len(reference_series):
-        differences.append(f"Slide {slide_index + 1}, Chart {shape_index + 1}: Series count mismatch:")
+        differences.append(
+            f"Slide {slide_index + 1}, Chart {shape_index + 1}: Series count mismatch:"
+        )
         differences.append(f"    reference: {len(reference_series)}")
         differences.append(f"    current:   {len(current_series)}")
         return differences
     for k, (current_s, reference_s) in enumerate(zip(current_series, reference_series)):
-        differences += compare_series(current_s, reference_s, slide_index, shape_index, k)
+        differences += compare_series(
+            current_s, reference_s, slide_index, shape_index, k
+        )
     return differences
 
 
-def compare_series(current_series, reference_series, slide_index, shape_index, series_index):
+def compare_series(
+    current_series, reference_series, slide_index, shape_index, series_index
+):
     prefix = (
         f"Slide {slide_index + 1}, Chart {shape_index + 1}, Series {series_index + 1}"
     )
@@ -150,7 +181,10 @@ def compare_series(current_series, reference_series, slide_index, shape_index, s
         differences.append(f"{prefix}: Name mismatch:")
         differences.append(f"    reference: {reference_series.name!r}")
         differences.append(f"    current:   {current_series.name!r}")
-    current_vals, reference_vals = list(current_series.values), list(reference_series.values)
+    current_vals, reference_vals = (
+        list(current_series.values),
+        list(reference_series.values),
+    )
     if current_vals != reference_vals:
         differences.append(f"{prefix}: Values mismatch:")
         differences.append(f"    reference: {reference_vals}")
