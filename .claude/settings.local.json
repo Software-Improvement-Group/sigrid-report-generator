@@ -3,7 +3,8 @@
     "allow": [
       "Bash(ruff format:*)",
       "Bash(ruff check:*)",
-      "WebFetch(domain:docs.sigrid-says.com)"
+      "WebFetch(domain:docs.sigrid-says.com)",
+      "mcp__SigridCode__code_quality_guardrails"
     ],
     "deny": [],
     "ask": []
@@ -32,18 +33,5 @@
         "--allow-http"
       ]
     }
-  },
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "ruff check --fix . && ruff format . && lint-imports"
-          }
-        ]
-      }
-    ]
   }
 }
