@@ -8,6 +8,19 @@
     "deny": [],
     "ask": []
   },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ruff check --fix . && ruff format . && lint-imports"
+          }
+        ]
+      }
+    ]
+  },
   "mcpServers": {
     "SigridCode": {
       "command": "npx",
