@@ -104,7 +104,7 @@ def maint_observation(maintainability_data):
     worst_metric = sorted_metric_data[0]
     if worst_metric[1] < 2.5:
         return worst_metric_observation(worst_metric)
-    return None
+    return ""
 
 
 def maint_observations(maintainability_data):
