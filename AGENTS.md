@@ -6,6 +6,16 @@ This file provides guidance to AI agents when working with code in this reposito
 
 Write maintainable code: single responsibility, small focused functions, clear naming, avoid duplication, simple control flow.
 
+## MANDATORY: Quality Gate
+
+Before reporting ANY task as complete:
+
+1. Run the Sigrid Code Quality Guardrails tool on all changed production code
+2. Maintainability findings: accept if principles were followed, otherwise refactor
+3. Security findings: fix if straightforward, otherwise flag to user
+
+Only skip this step if you are not able to access Sigrid Code Quality Guardrails. Indicate this in your response.
+
 ## Commands
 
 ```bash
