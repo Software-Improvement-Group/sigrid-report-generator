@@ -24,19 +24,14 @@ Only update one preset at a time — review the diff carefully before committing
 import argparse
 import os
 import sys
-from pathlib import Path
 
 from freezegun import freeze_time
 
 from report_generator import presets
 from report_generator.generator.context import sigrid_api
 from report_generator.report_generator import ReportGenerator
+from tests.report_generator.integration import _shared
 
-PERIOD = ("2026-01-11", "2026-03-8")
-
-INTEGRATION_DIR = Path(__file__).parent
-TEMPLATES_DIR = INTEGRATION_DIR / "templates"
-REFERENCES_DIR = INTEGRATION_DIR / "references"
 VALID_PRESET_IDS = sorted(p for p in presets.ids if p != "debug")
 
 
@@ -51,9 +46,7 @@ def main():
     )
     parser.add_argument(
         "--token",
-        default=os.environ.get("SIGRID_TOKEN")
-        or os.environ.get("SIGRID_CI_TOKEN")
-        or os.environ.get("REPORT_GENERATOR_TESTS_TOKEN"),
+        default=_shared.resolve_token(),
         help=(
             "Sigrid bearer token (defaults to $SIGRID_TOKEN / $SIGRID_CI_TOKEN / "
             "$REPORT_GENERATOR_TESTS_TOKEN)"
@@ -71,30 +64,25 @@ def main():
 
     os.environ["SIGRID_REPORT_GENERATOR_RECORD_USAGE"] = "0"
 
-    system = (
-        "integrationtest-kafka"
-        if args.preset_id in presets.SYSTEM_LEVEL_PRESETS
-        else None
-    )
     sigrid_api.set_context(
         bearer_token=args.token,
         customer="reportgeneratordemo",
-        system=system,
-        period=PERIOD,
+        system=_shared.system_for_preset(args.preset_id),
+        period=_shared.PERIOD,
     )
 
-    template_path = TEMPLATES_DIR / f"{args.preset_id}.pptx"
+    template_path = _shared.TEMPLATES_DIR / f"{args.preset_id}.pptx"
     if not template_path.is_file():
         print(
             f"Error: template not found: {template_path}\n"
-            f"Copy the template for preset '{args.preset_id}' into {TEMPLATES_DIR}/",
+            f"Copy the template for preset '{args.preset_id}' into {_shared.TEMPLATES_DIR}/",
             file=sys.stderr,
         )
         sys.exit(1)
 
-    reference_path = REFERENCES_DIR / f"reference_{args.preset_id}.pptx"
+    reference_path = _shared.REFERENCES_DIR / f"reference_{args.preset_id}.pptx"
     print(f"Generating {reference_path} ...")
-    with freeze_time(PERIOD[1]):
+    with freeze_time(_shared.PERIOD[1]):
         report_generator = ReportGenerator(str(template_path))
         report_generator.generate(str(reference_path))
 

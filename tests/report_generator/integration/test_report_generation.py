@@ -12,7 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 import os
-from pathlib import Path
 
 import pytest
 from freezegun import freeze_time
@@ -20,46 +19,34 @@ from freezegun import freeze_time
 from report_generator import presets
 from report_generator.generator.context import sigrid_api
 from report_generator.report_generator import ReportGenerator
+from tests.report_generator.integration import _shared
 from tests.report_generator.integration.pptx_diff import compare_pptx
 
 PRESETS_TO_TEST = sorted(p for p in presets.ids if p != "debug")
-PERIOD = ("2026-01-11", "2026-03-8")
 
-INTEGRATION_DIR = Path(__file__).parent
-TEMPLATES_DIR = INTEGRATION_DIR / "templates"
-REFERENCES_DIR = INTEGRATION_DIR / "references"
-
-no_token = (
-    not os.environ.get("REPORT_GENERATOR_TESTS_TOKEN")
-    and not os.environ.get("SIGRID_TOKEN")
-    and not os.environ.get("SIGRID_CI_TOKEN")
-)
+no_token = not _shared.resolve_token()
 
 
 @pytest.mark.parametrize("preset_id", PRESETS_TO_TEST)
 def test_template_exists_for_each_preset(preset_id):
-    template_path = TEMPLATES_DIR / f"{preset_id}.pptx"
+    template_path = _shared.TEMPLATES_DIR / f"{preset_id}.pptx"
     assert template_path.is_file(), (
         f"Template missing: {template_path}\n"
-        f"Copy the template for preset '{preset_id}' into {TEMPLATES_DIR}/"
+        f"Copy the template for preset '{preset_id}' into {_shared.TEMPLATES_DIR}/"
     )
 
 
 @pytest.mark.integration
 @pytest.mark.skipif(no_token, reason="Token not set in environment")
 @pytest.mark.parametrize("preset_id", PRESETS_TO_TEST)
-@freeze_time(PERIOD[1])
+@freeze_time(_shared.PERIOD[1])
 def test_generate_preset(preset_id, tmp_path):
-    token = (
-        os.environ.get("REPORT_GENERATOR_TESTS_TOKEN")
-        or os.environ.get("SIGRID_TOKEN")
-        or os.environ.get("SIGRID_CI_TOKEN")
-    )
+    token = _shared.resolve_token()
     os.environ["SIGRID_REPORT_GENERATOR_RECORD_USAGE"] = "0"
 
-    template_file = TEMPLATES_DIR / f"{preset_id}.pptx"
+    template_file = _shared.TEMPLATES_DIR / f"{preset_id}.pptx"
     output_file = tmp_path / f"output_{preset_id}.pptx"
-    reference_file = REFERENCES_DIR / f"reference_{preset_id}.pptx"
+    reference_file = _shared.REFERENCES_DIR / f"reference_{preset_id}.pptx"
 
     assert template_file.is_file(), f"Template missing: {template_file}"
     assert reference_file.is_file(), (
@@ -67,15 +54,12 @@ def test_generate_preset(preset_id, tmp_path):
         f"Generate it with: python tests/report_generator/integration/update_references.py {preset_id} --token <TOKEN>"
     )
 
-    system = (
-        "integrationtest-kafka" if preset_id in presets.SYSTEM_LEVEL_PRESETS else None
-    )
     sigrid_api.reset_context()
     sigrid_api.set_context(
         bearer_token=token,
         customer="reportgeneratordemo",
-        system=system,
-        period=PERIOD,
+        system=_shared.system_for_preset(preset_id),
+        period=_shared.PERIOD,
     )
 
     report_generator = ReportGenerator(str(template_file))

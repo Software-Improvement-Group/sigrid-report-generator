@@ -12,10 +12,18 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import os
+import sys
 from difflib import Differ
 
 from pptx import Presentation
+
+
+def _changed_lines(text1: str, text2: str) -> list[str]:
+    return [
+        line
+        for line in Differ().compare(text1.splitlines(), text2.splitlines())
+        if line.startswith("+ ") or line.startswith("- ")
+    ]
 
 
 def compare_pptx(file1, file2):
@@ -64,19 +72,11 @@ def compare_shapes_text(slide1, slide2, slide_index):
     for j, (shape1, shape2) in enumerate(zip(slide1.shapes, slide2.shapes)):
         if shape1.has_text_frame and shape2.has_text_frame:
             if shape1.text != shape2.text:
-                differ = Differ()
-                diff = list(
-                    differ.compare(shape1.text.splitlines(), shape2.text.splitlines())
-                )
                 differences.append(
                     f"Slide {slide_index + 1}, Shape {j + 1}: Text difference:"
                 )
                 differences.extend(
-                    [
-                        f"    {line}"
-                        for line in diff
-                        if line.startswith("+ ") or line.startswith("- ")
-                    ]
+                    f"    {line}" for line in _changed_lines(shape1.text, shape2.text)
                 )
     return differences
 
@@ -104,19 +104,11 @@ def compare_table_cells(table1, table2, slide_index, table_index):
     for row_idx, (row1, row2) in enumerate(zip(table1.rows, table2.rows)):
         for col_idx, (cell1, cell2) in enumerate(zip(row1.cells, row2.cells)):
             if cell1.text != cell2.text:
-                differ = Differ()
-                diff = list(
-                    differ.compare(cell1.text.splitlines(), cell2.text.splitlines())
-                )
                 differences.append(
                     f"Slide {slide_index + 1}, Table {table_index + 1}, Cell ({row_idx + 1}, {col_idx + 1}): Text difference:"
                 )
                 differences.extend(
-                    [
-                        f"    <{line}>"
-                        for line in diff
-                        if line.startswith("+ ") or line.startswith("- ")
-                    ]
+                    f"    <{line}>" for line in _changed_lines(cell1.text, cell2.text)
                 )
     return differences
 
@@ -177,12 +169,10 @@ def compare_chart_categories(chart1, chart2, slide_index, shape_index):
 
 
 def main():
-    file1 = "reference_output.pptx"
-    file2 = "test_output.pptx"
-
-    if not os.path.exists(file1) or not os.path.exists(file2):
-        print("One or both files do not exist.")
-        return
+    if len(sys.argv) != 3:
+        print(f"Usage: {sys.argv[0]} <file1.pptx> <file2.pptx>", file=sys.stderr)
+        sys.exit(1)
+    file1, file2 = sys.argv[1], sys.argv[2]
 
     are_equal, differences = compare_pptx(file1, file2)
 
