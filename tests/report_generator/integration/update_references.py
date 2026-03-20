@@ -31,7 +31,7 @@ from freezegun import freeze_time
 from report_generator import presets
 from report_generator.generator.context import sigrid_api
 
-PERIOD = ("2026-02-12", "2026-03-12")
+PERIOD = ("2026-01-11", "2026-03-8")
 
 INTEGRATION_DIR = Path(__file__).parent
 VALID_PRESET_IDS = sorted(p for p in presets.ids if p != "debug")
@@ -69,11 +69,11 @@ def main():
     os.environ["SIGRID_REPORT_GENERATOR_RECORD_USAGE"] = "0"
 
     system = (
-        "twitter-algorithm" if args.preset_id in presets.SYSTEM_LEVEL_PRESETS else None
+        "integrationtest-kafka" if args.preset_id in presets.SYSTEM_LEVEL_PRESETS else None
     )
     sigrid_api.set_context(
         bearer_token=args.token,
-        customer="opendemo",
+        customer="reportgeneratordemo",
         system=system,
         period=PERIOD,
     )
