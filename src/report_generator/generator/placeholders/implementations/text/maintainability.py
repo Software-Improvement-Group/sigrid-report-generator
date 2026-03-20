@@ -22,7 +22,7 @@ from report_generator.generator.placeholders.formatting.formatters import (
     format_diff,
     star_rating_round,
 )
-from report_generator.generator.placeholders.implementations.base import (
+from report_generator.generator.placeholders.implementations.text.base import (
     parameterized_text_placeholder,
     text_placeholder,
 )
