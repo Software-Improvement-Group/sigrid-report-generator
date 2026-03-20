@@ -26,7 +26,7 @@ REFERENCES_DIR = INTEGRATION_DIR / "references"
 
 def resolve_token() -> str | None:
     return (
-        os.environ.get("REPORT_GENERATOR_TESTS_TOKEN")
+        os.environ.get("SIGRID_REPORTGENERATORDEMO_TOKEN")
         or os.environ.get("SIGRID_TOKEN")
         or os.environ.get("SIGRID_CI_TOKEN")
     )
