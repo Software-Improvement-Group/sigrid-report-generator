@@ -14,82 +14,58 @@
 import os
 
 import pytest
-from click.testing import CliRunner
-from importlib_resources import files
+from freezegun import freeze_time
 
-from report_generator.cli import run as run_cli
+from report_generator import presets
+from report_generator.generator.context import sigrid_api
+from report_generator.report_generator import ReportGenerator
+from tests.report_generator.integration import _shared
 from tests.report_generator.integration.pptx_diff import compare_pptx
 
+PRESETS_TO_TEST = sorted(p for p in presets.ids if p != "debug")
 
-@pytest.fixture
-def output_file():
-    return str(files("tests.report_generator.integration").joinpath("test_output.pptx"))
-
-
-@pytest.fixture
-def template():
-    return files("tests.report_generator.integration").joinpath("test-template.pptx")
+no_token = not _shared.resolve_token()
 
 
-@pytest.fixture
-def reference_file():
-    return files("tests.report_generator.integration").joinpath("reference_output.pptx")
-
-
-@pytest.fixture
-def customer_name():
-    return "opendemo"
-
-
-@pytest.fixture
-def system_name():
-    return "twitter-algorithm"
-
-
-@pytest.fixture
-def token():
-    return (
-        os.environ.get("REPORT_GENERATOR_TESTS_TOKEN")
-        or os.environ.get("SIGRID_TOKEN")
-        or os.environ.get("SIGRID_CI_TOKEN")
+@pytest.mark.parametrize("preset_id", PRESETS_TO_TEST)
+def test_template_exists_for_each_preset(preset_id):
+    template_path = _shared.TEMPLATES_DIR / f"{preset_id}.pptx"
+    assert template_path.is_file(), (
+        f"Template missing: {template_path}\n"
+        f"Copy the template for preset '{preset_id}' into {_shared.TEMPLATES_DIR}/"
     )
 
 
 @pytest.mark.integration
-@pytest.mark.skipif(
-    not os.environ.get("REPORT_GENERATOR_TESTS_TOKEN")
-    and not os.environ.get("SIGRID_TOKEN")
-    and not os.environ.get("SIGRID_CI_TOKEN"),
-    reason="Token not set in environment",
-)
-def test_generate_report(
-    output_file, template, customer_name, system_name, token, reference_file
-):
+@pytest.mark.skipif(no_token, reason="Token not set in environment")
+@pytest.mark.parametrize("preset_id", PRESETS_TO_TEST)
+@freeze_time(_shared.PERIOD[1])
+def test_generate_preset(preset_id, tmp_path):
+    token = _shared.resolve_token()
     os.environ["SIGRID_REPORT_GENERATOR_RECORD_USAGE"] = "0"
-    runner = CliRunner()
-    result = runner.invoke(
-        run_cli,
-        [
-            "--customer",
-            customer_name,
-            "--system",
-            system_name,
-            "--token",
-            token,
-            "--template",
-            template,
-            "--out-file",
-            output_file,
-            "--debug",
-        ],
+
+    template_file = _shared.TEMPLATES_DIR / f"{preset_id}.pptx"
+    output_file = tmp_path / f"output_{preset_id}.pptx"
+    reference_file = _shared.REFERENCES_DIR / f"reference_{preset_id}.pptx"
+
+    assert template_file.is_file(), f"Template missing: {template_file}"
+    assert reference_file.is_file(), (
+        f"Reference missing: {reference_file}\n"
+        f"Generate it with: python tests/report_generator/integration/update_references.py {preset_id} --token <TOKEN>"
     )
 
-    assert result.exit_code == 0, (
-        f"CLI command did not run successfully: {result.output}"
+    sigrid_api.reset_context()
+    sigrid_api.set_context(
+        bearer_token=token,
+        customer="reportgeneratordemo",
+        system=_shared.system_for_preset(preset_id),
+        period=_shared.PERIOD,
     )
-    assert os.path.isfile(output_file), f"Output file {output_file} does not exist"
 
-    are_equal, differences = compare_pptx(output_file, reference_file)
-    assert are_equal, (
-        "Output file content is incorrect:" + "\n" + "\n".join(differences)
-    )
+    report_generator = ReportGenerator(str(template_file))
+    report_generator.generate(str(output_file))
+
+    assert output_file.is_file()
+
+    are_equal, differences = compare_pptx(str(output_file), str(reference_file))
+    assert are_equal, "Output differs from reference:\n" + "\n".join(differences)

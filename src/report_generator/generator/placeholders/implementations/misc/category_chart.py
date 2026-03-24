@@ -31,6 +31,34 @@ from report_generator.generator.placeholders.implementations.base import (
 )
 
 
+def _build_chart_data(values: dict) -> CategoryChartData:
+    chart_data = CategoryChartData()
+    chart_data.categories = values["labels"]
+    for y in values["series"]:
+        chart_data.add_series(values["axisLabel"], y)
+    return chart_data
+
+
+def _apply_colors(chart, colors: list) -> None:
+    for serie in chart.series:
+        for idx, point in enumerate(serie.points):
+            point.format.fill.solid()
+            point.format.fill.fore_color.rgb = colors[idx]
+
+
+def _populate_chart(presentation: Presentation, key: str, value_cb: Callable) -> None:
+    charts = rendering.pptx.find_charts(presentation, key)
+    if not charts:
+        return
+    values = value_cb()
+    chart_data = _build_chart_data(values)
+    colors = values["colors"]
+    for chart in charts:
+        chart.replace_data(chart_data)
+        if colors:
+            _apply_colors(chart, colors)
+
+
 class _AbstractCategoryChartPlaceholder(Placeholder, ABC):
     __doc_type__ = PlaceholderDocType.CHART
 
@@ -54,7 +82,7 @@ class _AbstractCategoryChartPlaceholder(Placeholder, ABC):
         pass
 
     @classmethod
-    def value(cls, placeholder=None):
+    def value(cls):
         return {
             "labels": cls.labels(),
             "series": cls.series(),
@@ -64,33 +92,7 @@ class _AbstractCategoryChartPlaceholder(Placeholder, ABC):
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable):
-        charts = [
-            shape.chart
-            for slide in rendering.pptx.identify_specific_slide(presentation, key)
-            for shape in slide.shapes
-            if shape.has_chart
-        ]
-
-        if len(charts) == 0:
-            return
-
-        values = value_cb()
-        chart_data = CategoryChartData()
-        chart_data.categories = values["labels"]
-        for y in values["series"]:
-            chart_data.add_series(values["axisLabel"], y)
-
-        colors = values["colors"]
-        for chart in charts:
-            chart.replace_data(chart_data)
-
-            if not colors:
-                continue
-
-            for serie in chart.series:
-                for idx, point in enumerate(serie.points):
-                    point.format.fill.solid()
-                    point.format.fill.fore_color.rgb = colors[idx]
+        _populate_chart(presentation, key, value_cb)
 
 
 class TechnologyCategoryChartPlaceholder(_AbstractCategoryChartPlaceholder):

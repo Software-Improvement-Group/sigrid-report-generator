@@ -46,7 +46,7 @@ class MaintainabilityPortfolioData(RatedPortfolioMixin):
     @filter_data_on_portfolio_arguments(data_tag="systems", system_tag="system")
     def data(self):
         data = sigrid_api.get_portfolio_maintainability()
-        filtered_data = data
+        filtered_data = dict(data)
         filtered_data["systems"] = [
             system for system in data["systems"] if "maintainability" in system
         ]

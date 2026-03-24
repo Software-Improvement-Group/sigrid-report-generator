@@ -26,6 +26,8 @@ from report_generator.generator.placeholders.implementations import (
     placeholders as all_placeholders,
 )
 from report_generator.generator.placeholders.implementations.base import (
+    PARAMETER_TOKEN_PATTERN,
+    MultiParameterList,
     ParameterList,
     PlaceholderDocType,
 )
@@ -122,7 +124,9 @@ def get_placeholder_row_data(
         "Key": "`" + placeholder.key + "`",
         "Supports": supports_to_representation(placeholder),
         "Description": get_placeholder_doc(placeholder),
-        "Parameters": parameterlist_to_representation(placeholder.allowed_parameters)
+        "Parameters": parameterlist_to_representation(
+            placeholder.allowed_parameters, placeholder.key
+        )
         if placeholder.is_parameterized()
         else "",
     }
@@ -130,12 +134,32 @@ def get_placeholder_row_data(
     return {key: value for key, value in all_data.items() if key not in skip_columns}
 
 
-def parameterlist_to_representation(parameter_list: ParameterList) -> str:
-    as_string = ", ".join(str(param) for param in parameter_list)
+def extract_token_names(key: str) -> list[str]:
+    """Extract the names between {} in a placeholder key, e.g. '{metric}' -> 'metric'."""
+    return [token.strip("{}") for token in PARAMETER_TOKEN_PATTERN.findall(key)]
+
+
+def flat_parameterlist_to_representation(params: ParameterList) -> str:
+    as_string = ", ".join(str(param) for param in params)
     if as_string in PARAM_RANGE_REPRESENTATIONS:
         return PARAM_RANGE_REPRESENTATIONS[as_string]
-
     return f"<details><summary>Show parameters</summary><p>{as_string}</p></details>"
+
+
+def multi_parameterlist_to_representation(params: MultiParameterList, key: str) -> str:
+    token_names = extract_token_names(key)
+    parts = []
+    for i, param_list in enumerate(params.param_lists):
+        label = token_names[i] if i < len(token_names) else f"parameter{i + 1}"
+        values = ", ".join(str(p) for p in param_list)
+        parts.append(f"<details><summary>{label}</summary><p>{values}</p></details>")
+    return "".join(parts)
+
+
+def parameterlist_to_representation(parameter_list, key: str = "") -> str:
+    if isinstance(parameter_list, MultiParameterList):
+        return multi_parameterlist_to_representation(parameter_list, key)
+    return flat_parameterlist_to_representation(parameter_list)
 
 
 def supports_to_representation(placeholder: Placeholder) -> str:
@@ -172,7 +196,7 @@ def add_chart_placeholders_section(doc: Document):
     doc.add(Header("Chart Placeholders"))
     doc.add(
         Paragraph(
-            "These placeholders, generally placed off-screen, only serve to identify a slide on which a specific chart is placed. If you want to use this chart, be sure to copy both the chart and the placeholder from a standard template and then modify its layout BUT NOT its structure or chart type."
+            "To use these placeholders, rename the chart shape in the Selection Pane to match the placeholder key exactly (see instructions below). `report-generator` identifies charts by their shape name, not by a separate marker. If you want to use this chart, be sure to copy it from a standard template and modify its layout BUT NOT its structure or chart type."
         )
     )
     chart_placeholders = [

@@ -1,0 +1,8 @@
+/.venv/
+__pycache__
+*.egg-info/
+
+# To protect against people accidentally running in this directory
+out.pptx
+out.docx
+~$*.*

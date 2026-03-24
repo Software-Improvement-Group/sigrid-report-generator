@@ -12,6 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import functools
+import itertools
 import logging
 import re
 from abc import ABC, abstractmethod
@@ -26,9 +28,27 @@ from report_generator.generator.report import Report, ReportType
 Parameter = Union[str, int, Enum]
 ParameterList = Iterable[Parameter]
 
+
+class MultiParameterList:
+    """Multiple parameter lists for cartesian product iteration."""
+
+    def __init__(self, *param_lists: ParameterList):
+        self.param_lists: tuple[list[Parameter], ...] = tuple(
+            list(pl) for pl in param_lists
+        )
+
+    @property
+    def arity(self) -> int:
+        return len(self.param_lists)
+
+    def product(self) -> Iterable[tuple[Parameter, ...]]:
+        return itertools.product(*self.param_lists)
+
+
 CAMEL_TO_SNAKE_PATTERN = re.compile(
     r"(?<!^)(?=[A-Z][a-z])|(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])"
 )
+PARAMETER_TOKEN_PATTERN = re.compile(r"\{[^}]+\}")
 
 
 def class_name_to_placeholder_key(class_name: str):
@@ -68,23 +88,25 @@ class Placeholder(ABC):
 
     @classmethod
     @abstractmethod
-    def value(cls, parameter: Parameter = None):
+    def value(cls):
         pass
 
     @classmethod
     def resolve(cls, report: Report) -> None:
         resolve_method_name = cls._determine_resolve_method(report.type)
-
         if not resolve_method_name:
             return
+        cls._call_resolve_method(resolve_method_name, report, cls.key, cls.value)
 
+    @classmethod
+    def _call_resolve_method(cls, resolve_method_name, report, key, value_fn):
         try:
-            getattr(cls, resolve_method_name)(report, cls.key, cls.value)
+            getattr(cls, resolve_method_name)(report, key, value_fn)
         except SigridAPIRequestFailedError as e:
-            logging.info(f"Failed to resolve {cls.key}: {e}")
+            logging.info(f"Failed to resolve {key}: {e}")
         except (KeyError, AttributeError, ValueError) as e:
             logging.warning(
-                f"Failed to resolve {cls.key}: Value not found ({type(e).__name__}: {e})"
+                f"Failed to resolve {key}: Value not found ({type(e).__name__}: {e})"
             )
 
     @classmethod
@@ -121,37 +143,57 @@ class ParameterizedPlaceholder(Placeholder, ABC):
     __parameterized_placeholder__ = True
     allowed_parameters: ParameterList
 
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if "key" in cls.__dict__ and "allowed_parameters" in cls.__dict__:
+            cls._validate_key_token_count()
+
+    @classmethod
+    def _expected_arity(cls) -> int:
+        if isinstance(cls.allowed_parameters, MultiParameterList):
+            return cls.allowed_parameters.arity
+        return 1
+
+    @classmethod
+    def _validate_key_token_count(cls):
+        actual = len(PARAMETER_TOKEN_PATTERN.findall(cls.key))
+        expected = cls._expected_arity()
+        if actual != expected:
+            raise ValueError(
+                f"Parameterized placeholder key must have {expected} "
+                f"{{...}} token(s), found {actual}: {cls.key}"
+            )
+
     @classmethod
     def resolve(cls, report: Report) -> None:
-        """
-        Iterates through allowed parameters to resolve multiple instances of this placeholder.
-
-        For every parameter in `allowed_parameters`, this method:
-        1. Generates a specific key by replacing '{parameter}' in `cls.key`.
-        2. Creates a lambda function to pass the specific parameter to `cls.value`.
-        3. Calls the report-specific resolution method (e.g., `resolve_pptx`).
-
-        The constructed `value_p` callable accepts an `optional_parameter`. This allows the
-        underlying report generator (e.g., the PowerPoint resolver) to pass additional
-        context or configuration—such as chart filters or formatting options—back into
-        `cls.value` during execution.
-
-        Args:
-            report (Report): The report instance where the placeholders should be resolved.
-        """
         resolve_method_name = cls._determine_resolve_method(report.type)
-
         if not resolve_method_name:
             return
+        if isinstance(cls.allowed_parameters, MultiParameterList):
+            cls._resolve_multi(resolve_method_name, report)
+        else:
+            cls._resolve_single(resolve_method_name, report)
 
+    @classmethod
+    def _resolve_single(cls, resolve_method_name: str, report: Report) -> None:
         for parameter in cls.allowed_parameters:
-            key_p = cls.key.replace("{parameter}", str(parameter))
+            key_with_param = PARAMETER_TOKEN_PATTERN.sub(
+                str(parameter), cls.key, count=1
+            )
+            value_cb = functools.partial(cls.value, parameter)
+            cls._call_resolve_method(
+                resolve_method_name, report, key_with_param, value_cb
+            )
 
-            try:
-
-                def value_p(optional_parameter=None, p=parameter):
-                    return cls.value(p, optional_parameter)
-
-                getattr(cls, resolve_method_name)(report, key_p, value_p)
-            except SigridAPIRequestFailedError as e:
-                logging.info(f"Failed to resolve {key_p}: {e}")
+    @classmethod
+    def _resolve_multi(cls, resolve_method_name: str, report: Report) -> None:
+        for param_tuple in cls.allowed_parameters.product():
+            key_with_params = cls.key
+            for param in param_tuple:
+                key_with_params = PARAMETER_TOKEN_PATTERN.sub(
+                    str(param), key_with_params, count=1
+                )
+            value_cb = functools.partial(cls.value, *param_tuple)
+            cls._call_resolve_method(
+                resolve_method_name, report, key_with_params, value_cb
+            )

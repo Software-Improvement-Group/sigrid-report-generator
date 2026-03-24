@@ -94,7 +94,9 @@ def update_paragraph(
 
     try:
         run_with_placeholder = next(
-            run for run in (paragraph.runs or []) if placeholder_id in run.text
+            run
+            for run in (paragraph.runs or [])
+            if re.search(rf"\b{re.escape(placeholder_id)}\b", run.text)
         )
     except StopIteration:
         logging.warning(
@@ -105,8 +107,10 @@ def update_paragraph(
     logging.debug(
         f'Replacing: {placeholder_id} with "{replacement_text}". New text: {run_with_placeholder.text}'
     )
-    run_with_placeholder.text = run_with_placeholder.text.replace(
-        placeholder_id, str(replacement_text)
+    run_with_placeholder.text = re.sub(
+        rf"\b{re.escape(placeholder_id)}\b",
+        str(replacement_text),
+        run_with_placeholder.text,
     )
 
     if font:
@@ -221,10 +225,6 @@ def set_shape_color(shape, rgb_color):
     shape.fill.fore_color.rgb = rgb_color
 
 
-def identify_specific_slide(presentation, marker):
-    return [slide for slide in presentation.slides if find_text_in_slide(slide, marker)]
-
-
 def determine_rating_color(rating):
     if rating < 0.1:
         return NA_STAR_COLOR
@@ -251,16 +251,6 @@ def test_code_ratio_color(ratio):
         return FOUR_STAR_COLOR
     else:
         return FIVE_STAR_COLOR
-
-
-def gather_charts(presentation: Presentation, key: str):
-    """Deprecated but kept for backward compatibility, use find_charts instead so it's not linked to a text box in the slide."""
-    return [
-        shape.chart
-        for slide in identify_specific_slide(presentation, key)
-        for shape in slide.shapes
-        if shape.has_chart
-    ]
 
 
 def find_charts(presentation: Presentation, key: str):

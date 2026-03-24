@@ -23,6 +23,28 @@ from report_generator.generator.placeholders.implementations.base import (
 )
 
 
+def _build_chart_data() -> XyChartData:
+    chart_data = XyChartData()
+    series = chart_data.add_series("Series 1")
+    # Correct volume to be at least 0.1, anything lower will not be displayed on the chart
+    series.add_data_point(
+        max(maintainability_data.system_py, 0.1),
+        maintainability_data.maintainability_rating,
+    )
+    return chart_data
+
+
+def _populate_chart(presentation: Presentation, key: str) -> None:
+    charts = rendering.pptx.find_charts(presentation, key)
+    if not charts:
+        return
+    chart_data = _build_chart_data()
+    system_name = system_metadata.display_name
+    for chart in charts:
+        chart.replace_data(chart_data)
+        chart.series[0].points[0].data_label.text_frame.text = system_name
+
+
 class MaintainabilityGalaxyChartPlaceholder(Placeholder):
     """Traditional SIG benchmark galaxy chart."""
 
@@ -30,32 +52,9 @@ class MaintainabilityGalaxyChartPlaceholder(Placeholder):
     __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
-    def value(cls, parameter=None):
-        pass
+    def value(cls):
+        return _build_chart_data()
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, _) -> None:
-        charts = []
-
-        for slide in rendering.pptx.identify_specific_slide(presentation, key):
-            shapes_by_name = dict((s.name, s) for s in slide.shapes)
-            # Todo autodetect galaxy chart index. (Or just assume it's the first and only chart on this slide, see tkovac generator implementation)
-            charts.append(shapes_by_name["CHART_1"].chart)
-
-        if len(charts) == 0:
-            return
-
-        volume = maintainability_data.system_py
-        maint_rating = maintainability_data.maintainability_rating
-        system_name = system_metadata.display_name
-
-        chart_data = XyChartData()
-        series = chart_data.add_series("Series 1")
-
-        # Correct volume to be at least 0.1, anything lower will not be displayed on the chart
-        corrected_volume = max(volume, 0.1)
-        series.add_data_point(corrected_volume, maint_rating)
-
-        for chart in charts:
-            chart.replace_data(chart_data)
-            chart.series[0].points[0].data_label.text_frame.text = system_name
+        _populate_chart(presentation, key)

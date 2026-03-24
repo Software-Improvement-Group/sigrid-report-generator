@@ -1,3 +1,5 @@
+> **Upgrading from a previous version?** CLI users can just reinstall. If you use custom templates or the Python API directly, see the [upgrade guide](docs/upgrade-v1.md).
+
 # Sigrid Report Generator
 
 The Sigrid Report Generator is a tool/framework designed to generate any kind of report that is based on data
@@ -15,16 +17,20 @@ provided by Sigrid. The Report Generator can be used for two "flavors" of report
 - You need to be able to install and use Python packages
 - You need a [Sigrid API token](https://docs.sigrid-says.com/organization-integration/authentication-tokens.html)
 
-## Install using pip
+## One-step installation
+
+```
+pip3 install git+https://github.com/Software-Improvement-Group/sigrid-report-generator.git
+```
+
+## Alternative: clone the repo and install
 
 1. Clone this repository and `cd` into it.
-2. Install the tool itself: `pip3 install -e ./report-generator"`.
+2. Install the tool itself: `pip3 install -e .`.
     - If this fails with an error message that says something like "error: can't create or remove files in install
       directory", try adding `--user` to the above command.
     - If this fails with an error message saying something like "error: externally-managed-environment", try installing
       in a `venv` (Virtual environment). If you don't know how that works, ask for help.
-
-Alternatively, you can use the docker image: `softwareimprovementgroup/sigrid-integrations`
 
 ## Usage
 
@@ -40,7 +46,7 @@ wherever you specify with the `-o` option.
 
 **ITDD report:** Lightweight report that provides general information on a system, suitable for an ITDD setting.
 
-- Example: `report-generator -c <your-customer> -s <your-system> --layout default`
+- Example: `report-generator -c <your-customer> -s <your-system> --layout itdd-technical-debt`
 
 <img src="docs/img/sample-mgmt-summary.png" width="300" />
 
@@ -93,8 +99,9 @@ Use `report-generator --help` for an overview of configuration options.
 
 Report generator is flexible. It allows you to input your own `.pptx` or `.docx` template, and it will populate it with
 data from Sigrid. You can define your template from scratch, or modify an existing template. You can find the built-in
-templates in the `src/report_generator/templates` folder of the report-generator repository. Once you have created your
-template, you can insert it into the reourt generator by using the `-p`/`--template` command line argument.
+templates in the `src/report_generator/presets/templates` folder of the report-generator repository. Once you have
+created your
+template, you can insert it into the report generator by using the `-p`/`--template` command line argument.
 
 There are roughly two types of items in a template that report-generator deals with:
 
@@ -127,87 +134,8 @@ If you introduce new placeholders, you will need to regenerate the documentation
 [install the Report Generator](#install-using-pip). After that, run `./generate_placeholder_docs.py`, then commit
 the results.
 
-### Examples
-
-#### Simple text placeholder of current week number
-
-```python
-from datetime import datetime
-
-import report_generator
-
-# Custom template
-generator = report_generator.ReportGenerator(template_path="location_of_template.pptx")
-
-
-# Custom placeholder
-@report_generator.placeholders.text_placeholder()
-def week_number():
-    return datetime.now().isocalendar()[1]
-```
-
-#### Parameterized text placeholder
-
-```python
-from report_generator.generator.placeholders import parameterized_text_placeholder
-
-
-# Custom parameterized placeholder (e.g. LIST_VALUE_1, LIST_VALUE_2, ..., LIST_VALUE_5)
-@parameterized_text_placeholder(custom_key="LIST_VALUE_{parameter}",
-                                parameters=range(1, 6))
-def list_value_for_idx(idx: int):
-    return some_value(idx)
-```
-
-#### Completely custom placeholder
-
-```python
-from pptx.chart.data import CategoryChartData
-
-from report_generator.generator.placeholders import Placeholder, rendering
-
-
-class ComplexChartPlaceholder(Placeholder):
-    key = "COMPLEX_CHART"
-
-    @classmethod
-    def value(cls, parameter=None):
-        return {"labels": ["A", "B", "C"], "axisLabel": "X", "series": [1, 2, 3]}
-
-    @staticmethod
-    def resolve_pptx(presentation, key: str, value_cb) -> None:
-        charts = [
-            shape.chart
-            for slide in rendering.pptx.identify_specific_slide(presentation, key)
-            for shape in slide.shapes
-            if shape.has_chart
-        ]
-
-        if len(charts) == 0:
-            return
-
-        values = value_cb()
-        chart_data = CategoryChartData()
-        chart_data.categories = values["labels"]
-        [chart_data.add_series(values["axisLabel"], y) for y in values["series"]]
-```
-
-#### Registering custom placeholders and generating the report
-
-```python
-generator.register_additional_placeholders({
-    week_number,
-    list_value_for_idx,
-    ComplexChartPlaceholder
-})
-
-generator.generate("out.pptx")
-```
-
-## Upgrading
-
-If you use the `report_generator` Python API directly (custom placeholders, programmatic `ReportGenerator` usage),
-see [docs/upgrade-v1.md](docs/upgrade-v1.md) for the migration guide. CLI-only users are unaffected.
+For examples of custom placeholders (simple text, parameterized, multi-parameter, class-based, and fully custom),
+see [docs/custom-placeholders.md](docs/custom-placeholders.md).
 
 ## Contributing
 

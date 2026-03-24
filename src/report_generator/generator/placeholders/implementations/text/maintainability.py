@@ -12,30 +12,35 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import logging
 from datetime import datetime
 
 from report_generator.generator.domain import maintainability_data, modernization_data
+from report_generator.generator.placeholders.formatting import smart_remarks
 from report_generator.generator.placeholders.formatting.formatters import (
     calculate_stars,
     format_diff,
     star_rating_round,
 )
+from report_generator.generator.placeholders.implementations.text.base import (
+    parameterized_text_placeholder,
+    text_placeholder,
+)
 from report_generator.generator.utils.constants import MaintMetric
-
-from ...formatting import smart_remarks
-from .base import parameterized_text_placeholder, text_placeholder
 
 
 @text_placeholder()
 def period_start_date():
-    """The reporting period's start date in yyyy-mm-dd format."""
-    return maintainability_data.period[0]
+    """The reporting period's start date (e.g. 1 January 2025)"""
+    d = datetime.strptime(maintainability_data.period[0], "%Y-%m-%d")
+    return f"{d.day} {d.strftime('%B %Y')}"
 
 
 @text_placeholder()
 def period_end_date():
-    """The reporting period's end date in yyyy-mm-dd format."""
-    return maintainability_data.period[1]
+    """The reporting period's end date (e.g. 31 December 2025)"""
+    d = datetime.strptime(maintainability_data.period[1], "%Y-%m-%d")
+    return f"{d.day} {d.strftime('%B %Y')}"
 
 
 @text_placeholder()
@@ -74,7 +79,16 @@ def maint_relative():
 
 @text_placeholder()
 def maint_indication():
-    """Indicates whether the maintainability rating is above, below or at market average."""
+    """Indication of whether the system's Maintainability Rating is above, below or at market average."""
+    logging.warning(
+        "maint_indication is deprecated and will be removed, use maint_relative_cost instead"
+    )
+    return maint_relative_cost.value()
+
+
+@text_placeholder()
+def maint_relative_cost():
+    """Indicates whether the cost to maintain the system is above, below or at market average."""
     return smart_remarks.relative_cost(maintainability_data.maintainability_rating)
 
 

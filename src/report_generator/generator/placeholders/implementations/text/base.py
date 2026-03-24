@@ -14,14 +14,14 @@
 
 import logging
 from abc import ABC
-from typing import Any, Callable, Optional
+from typing import Callable, Optional, Union
 
 from docx.document import Document
 from pptx.presentation import Presentation
 
 from report_generator.generator.placeholders import rendering
 from report_generator.generator.placeholders.implementations.base import (
-    Parameter,
+    MultiParameterList,
     ParameterizedPlaceholder,
     ParameterList,
     Placeholder,
@@ -91,7 +91,7 @@ def text_placeholder(
             )
 
             @classmethod
-            def value(cls, parameter=None) -> str:
+            def value(cls) -> str:
                 return value_func()
 
         return TextPlaceholder
@@ -100,14 +100,9 @@ def text_placeholder(
 
 
 def parameterized_text_placeholder(
-    custom_key: str, parameters: ParameterList
-) -> Callable[[Callable[[Parameter], str]], type[ParameterizedPlaceholder]]:
-    def decorator(
-        value_func: Callable[[Parameter], str],
-    ) -> type[ParameterizedPlaceholder]:
-        if "{parameter}" not in custom_key:
-            raise ValueError("Parameterized text placeholder must have '{parameter}'")
-
+    custom_key: str, parameters: Union[ParameterList, MultiParameterList]
+) -> Callable:
+    def decorator(value_func) -> type[ParameterizedPlaceholder]:
         class ParameterizedTextPlaceholder(
             ParameterizedPlaceholder, _AbstractTextPlaceholder
         ):
@@ -116,10 +111,8 @@ def parameterized_text_placeholder(
             allowed_parameters = parameters
 
             @classmethod
-            def value(
-                cls, parameter: Parameter = None, optional_parameter: Any = None
-            ) -> str:
-                return value_func(parameter)
+            def value(cls, *args) -> str:
+                return value_func(*args)
 
         return ParameterizedTextPlaceholder
 

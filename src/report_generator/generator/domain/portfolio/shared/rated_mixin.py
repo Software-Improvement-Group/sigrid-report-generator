@@ -35,7 +35,7 @@ class RatedPortfolioMixin:
         )
 
     @cached_property
-    def get_rating_distribution_percentages(self) -> dict:
+    def rating_distribution_percentages(self) -> dict:
         return utils.get_rating_distribution_percentages(
             self._rated_systems(), self._extract_rating
         )

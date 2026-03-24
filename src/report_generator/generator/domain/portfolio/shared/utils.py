@@ -94,7 +94,11 @@ def get_rating_and_volume_from_system(
     if rating is None or system_name is None:
         return None, 0
 
-    volume = get_volume(system_name)
+    try:
+        volume = get_volume(system_name)
+    except ValueError:
+        return None, 0
+
     return rating, volume
 
 

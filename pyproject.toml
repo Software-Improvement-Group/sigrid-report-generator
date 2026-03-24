@@ -11,6 +11,7 @@ testpaths = [
 ]
 addopts = [
     "--import-mode=importlib",
+    "-m", "not integration",
 ]
 pythonpath = "."
 markers = [
