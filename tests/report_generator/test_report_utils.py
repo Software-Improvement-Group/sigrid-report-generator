@@ -18,7 +18,16 @@ from pptx.oxml.text import CT_TextParagraph
 # noinspection PyProtectedMember
 from pptx.text.text import _Paragraph
 
-import report_generator.generator.placeholders.rendering.pptx
+from report_generator.generator.placeholders.rendering.docx import (
+    update_paragraph as update_docx_paragraph,
+)
+from report_generator.generator.placeholders.rendering.pptx import (
+    merge_runs_with_same_formatting,
+)
+from report_generator.generator.placeholders.rendering.pptx import (
+    update_paragraph as update_pptx_paragraph,
+)
+
 
 class TestReportUtils:
     def test_merge_similar_runs(self):
@@ -33,9 +42,7 @@ class TestReportUtils:
         f2 = r2.font
         f2.bold = True
 
-        report_generator.generator.placeholders.rendering.pptx.merge_runs_with_same_formatting(
-            p
-        )
+        merge_runs_with_same_formatting(p)
 
         assert len(p.runs) == 1
         assert p.text == "aapnoot"
@@ -51,14 +58,11 @@ class TestReportUtils:
         f2 = r2.font
         f2.bold = False
 
-        report_generator.generator.placeholders.rendering.pptx.merge_runs_with_same_formatting(
-            p
-        )
+        merge_runs_with_same_formatting(p)
 
         assert len(p.runs) == 2
         assert p.runs[0].text == "aap"
         assert p.runs[1].text == "noot"
-
 
 
 class TestPptxUpdateParagraphWordBoundaries:
@@ -70,7 +74,7 @@ class TestPptxUpdateParagraphWordBoundaries:
         r = p.add_run()
         r.text = "The value is PLACEHOLDER_FULL"
 
-        report_utils.pptx.update_paragraph(p, "PLACEHOLDER", "REPLACED")
+        update_pptx_paragraph(p, "PLACEHOLDER", "REPLACED")
 
         assert p.text == "The value is PLACEHOLDER_FULL"
 
@@ -80,7 +84,7 @@ class TestPptxUpdateParagraphWordBoundaries:
         r = p.add_run()
         r.text = "The value is PLACEHOLDER"
 
-        report_utils.pptx.update_paragraph(p, "PLACEHOLDER", "REPLACED")
+        update_pptx_paragraph(p, "PLACEHOLDER", "REPLACED")
 
         assert p.text == "The value is REPLACED"
 
@@ -90,27 +94,27 @@ class TestPptxUpdateParagraphWordBoundaries:
         r = p.add_run()
         r.text = "Values: PLACEHOLDER, PLACEHOLDER. PLACEHOLDER!"
 
-        report_utils.pptx.update_paragraph(p, "PLACEHOLDER", "REPLACED")
+        update_pptx_paragraph(p, "PLACEHOLDER", "REPLACED")
 
         assert p.text == "Values: REPLACED, REPLACED. REPLACED!"
 
     def test_multiple_runs_selects_correct_run_with_word_boundary(self):
         """Verify correct run is selected when multiple runs contain similar placeholders.
-        
+
         Note: pptx merges runs with same formatting first, so both placeholders end up in one run.
         The word boundary regex ensures only the exact match is replaced.
         """
         p = _Paragraph(CT_TextParagraph(), None)
-        
+
         # First run has longer placeholder
         r1 = p.add_run()
         r1.text = "PLACEHOLDER_FULL "
-        
+
         # Second run has exact match
         r2 = p.add_run()
         r2.text = "PLACEHOLDER"
 
-        report_utils.pptx.update_paragraph(p, "PLACEHOLDER", "REPLACED")
+        update_pptx_paragraph(p, "PLACEHOLDER", "REPLACED")
 
         # After merge and replacement, both are in same run
         assert p.text == "PLACEHOLDER_FULL REPLACED"
@@ -121,7 +125,7 @@ class TestPptxUpdateParagraphWordBoundaries:
         r = p.add_run()
         r.text = '"PLACEHOLDER"'
 
-        report_utils.pptx.update_paragraph(p, "PLACEHOLDER", "REPLACED")
+        update_pptx_paragraph(p, "PLACEHOLDER", "REPLACED")
 
         assert p.text == '"REPLACED"'
 
@@ -131,7 +135,7 @@ class TestPptxUpdateParagraphWordBoundaries:
         r = p.add_run()
         r.text = "(PLACEHOLDER)"
 
-        report_utils.pptx.update_paragraph(p, "PLACEHOLDER", "REPLACED")
+        update_pptx_paragraph(p, "PLACEHOLDER", "REPLACED")
 
         assert p.text == "(REPLACED)"
 
@@ -141,7 +145,7 @@ class TestPptxUpdateParagraphWordBoundaries:
         r = p.add_run()
         r.text = "Short: PLACEHOLDER, Full: PLACEHOLDER_FULL"
 
-        report_utils.pptx.update_paragraph(p, "PLACEHOLDER", "REPLACED")
+        update_pptx_paragraph(p, "PLACEHOLDER", "REPLACED")
 
         assert p.text == "Short: REPLACED, Full: PLACEHOLDER_FULL"
 
@@ -155,7 +159,7 @@ class TestDocxUpdateParagraphWordBoundaries:
         p = doc.add_paragraph()
         p.add_run("The value is PLACEHOLDER_FULL")
 
-        report_utils.docx.update_paragraph(p, "PLACEHOLDER", "REPLACED")
+        update_docx_paragraph(p, "PLACEHOLDER", "REPLACED")
 
         assert p.text == "The value is PLACEHOLDER_FULL"
 
@@ -165,7 +169,7 @@ class TestDocxUpdateParagraphWordBoundaries:
         p = doc.add_paragraph()
         p.add_run("The value is PLACEHOLDER")
 
-        report_utils.docx.update_paragraph(p, "PLACEHOLDER", "REPLACED")
+        update_docx_paragraph(p, "PLACEHOLDER", "REPLACED")
 
         assert p.text == "The value is REPLACED"
 
@@ -175,7 +179,7 @@ class TestDocxUpdateParagraphWordBoundaries:
         p = doc.add_paragraph()
         p.add_run("Values: PLACEHOLDER, PLACEHOLDER. PLACEHOLDER!")
 
-        report_utils.docx.update_paragraph(p, "PLACEHOLDER", "REPLACED")
+        update_docx_paragraph(p, "PLACEHOLDER", "REPLACED")
 
         assert p.text == "Values: REPLACED, REPLACED. REPLACED!"
 
@@ -183,14 +187,14 @@ class TestDocxUpdateParagraphWordBoundaries:
         """Verify correct run is selected when multiple runs contain similar placeholders."""
         doc = Document()
         p = doc.add_paragraph()
-        
+
         # First run has longer placeholder (should not be selected)
         p.add_run("PLACEHOLDER_FULL ")
-        
+
         # Second run has exact match (should be selected)
         p.add_run("PLACEHOLDER")
 
-        report_utils.docx.update_paragraph(p, "PLACEHOLDER", "REPLACED")
+        update_docx_paragraph(p, "PLACEHOLDER", "REPLACED")
 
         assert p.runs[0].text == "PLACEHOLDER_FULL "
         assert p.runs[1].text == "REPLACED"
@@ -201,7 +205,7 @@ class TestDocxUpdateParagraphWordBoundaries:
         p = doc.add_paragraph()
         p.add_run('"PLACEHOLDER"')
 
-        report_utils.docx.update_paragraph(p, "PLACEHOLDER", "REPLACED")
+        update_docx_paragraph(p, "PLACEHOLDER", "REPLACED")
 
         assert p.text == '"REPLACED"'
 
@@ -211,7 +215,7 @@ class TestDocxUpdateParagraphWordBoundaries:
         p = doc.add_paragraph()
         p.add_run("(PLACEHOLDER)")
 
-        report_utils.docx.update_paragraph(p, "PLACEHOLDER", "REPLACED")
+        update_docx_paragraph(p, "PLACEHOLDER", "REPLACED")
 
         assert p.text == "(REPLACED)"
 
@@ -221,6 +225,6 @@ class TestDocxUpdateParagraphWordBoundaries:
         p = doc.add_paragraph()
         p.add_run("Short: PLACEHOLDER, Full: PLACEHOLDER_FULL")
 
-        report_utils.docx.update_paragraph(p, "PLACEHOLDER", "REPLACED")
+        update_docx_paragraph(p, "PLACEHOLDER", "REPLACED")
 
         assert p.text == "Short: REPLACED, Full: PLACEHOLDER_FULL"

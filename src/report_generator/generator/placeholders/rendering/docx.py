@@ -47,12 +47,20 @@ def update_paragraph(
     replacement_text = str(replacement_text)
 
     try:
-        run_with_placeholder = next(run for run in paragraph.runs if re.search(rf'\b{re.escape(placeholder_id)}\b', run.text))
+        run_with_placeholder = next(
+            run
+            for run in paragraph.runs
+            if re.search(rf"\b{re.escape(placeholder_id)}\b", run.text)
+        )
     except StopIteration:
         logging.warning(
             f"Attempt to update placeholder '{placeholder_id}', but not found in paragraph: {paragraph.text}"
         )
         return
 
-    logging.debug(f"Replacing: {placeholder_id} with \"{replacement_text}\". New text: {run_with_placeholder.text}")
-    run_with_placeholder.text = re.sub(rf'\b{re.escape(placeholder_id)}\b', replacement_text, run_with_placeholder.text)
+    logging.debug(
+        f'Replacing: {placeholder_id} with "{replacement_text}". New text: {run_with_placeholder.text}'
+    )
+    run_with_placeholder.text = re.sub(
+        rf"\b{re.escape(placeholder_id)}\b", replacement_text, run_with_placeholder.text
+    )
