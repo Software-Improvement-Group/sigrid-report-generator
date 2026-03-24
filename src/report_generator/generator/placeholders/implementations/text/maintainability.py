@@ -83,7 +83,7 @@ def maint_indication():
     logging.warning(
         "maint_indication is deprecated and will be removed, use maint_relative_cost instead"
     )
-    return maint_relative_cost()
+    return maint_relative_cost.value()
 
 
 @text_placeholder()

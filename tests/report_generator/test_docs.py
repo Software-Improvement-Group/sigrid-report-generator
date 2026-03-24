@@ -22,7 +22,7 @@ from report_generator.generator.placeholders.implementations import (
 
 FILENAME = "docs/placeholder descriptions.md"
 PROJECT_ROOT = next(
-    p for p in Path(__file__).resolve().parents if p.name == "report-generator"
+    p for p in Path(__file__).resolve().parents if p.name == "sigrid-report-generator"
 )
 DOC_PATH = PROJECT_ROOT / FILENAME
 
