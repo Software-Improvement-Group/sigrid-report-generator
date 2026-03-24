@@ -1,0 +1,9 @@
+*.egg-info/
+__pycache__
+
+# To protect against people accidentally running in this directory
+out.pptx
+out.docx
+test_output.pptx
+test_output.docx
+~$*.*
