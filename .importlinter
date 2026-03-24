@@ -1,0 +1,81 @@
+[importlinter]
+root_packages =
+    report_generator
+
+# Rule: data flows one way through the generator layers
+[importlinter:contract:generator-layers]
+name = Generator layers — data flows one way
+type = layers
+layers =
+    report_generator.generator.placeholders
+    report_generator.generator.domain
+    report_generator.generator.context
+    report_generator.generator.utils
+
+# Rule: domain/portfolio ↔ domain/system
+[importlinter:contract:portfolio-system]
+name = portfolio and system are independent
+type = independence
+modules =
+    report_generator.generator.domain.portfolio
+    report_generator.generator.domain.system
+
+# Rule: domain/shared is a base — it cannot depend on system or portfolio
+[importlinter:contract:domain-shared-isolation]
+name = domain shared must not import system or portfolio
+type = forbidden
+source_modules =
+    report_generator.generator.domain.shared
+forbidden_modules =
+    report_generator.generator.domain.system
+    report_generator.generator.domain.portfolio
+
+# Rule: placeholder implementation subdirectories must not import each other
+[importlinter:contract:implementation-subdirs]
+name = placeholder implementation subdirectories are independent
+type = independence
+modules =
+    report_generator.generator.placeholders.implementations.text
+    report_generator.generator.placeholders.implementations.charts
+    report_generator.generator.placeholders.implementations.table
+    report_generator.generator.placeholders.implementations.images
+    report_generator.generator.placeholders.implementations.misc
+
+# Rule: placeholders/formatting ↔ placeholders/rendering
+[importlinter:contract:formatting-rendering]
+name = formatting and rendering are independent
+type = independence
+modules =
+    report_generator.generator.placeholders.formatting
+    report_generator.generator.placeholders.rendering
+
+# Rule: formatting → implementations
+[importlinter:contract:formatting-implementations]
+name = formatting must not import implementations
+type = forbidden
+source_modules =
+    report_generator.generator.placeholders.formatting
+forbidden_modules =
+    report_generator.generator.placeholders.implementations
+
+# Rule: rendering → implementations
+[importlinter:contract:rendering-implementations]
+name = rendering must not import implementations
+type = forbidden
+source_modules =
+    report_generator.generator.placeholders.rendering
+forbidden_modules =
+    report_generator.generator.placeholders.implementations
+
+# Rule: presets must only use the public API
+[importlinter:contract:presets-isolation]
+name = presets must not import generator internals
+type = forbidden
+source_modules =
+    report_generator.presets
+forbidden_modules =
+    report_generator.generator.context
+    report_generator.generator.domain
+    report_generator.generator.placeholders
+    report_generator.generator.utils
+allow_indirect_imports = True
