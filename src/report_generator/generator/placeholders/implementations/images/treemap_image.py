@@ -19,7 +19,6 @@ import matplotlib.pyplot as plt
 import mpl_extra.treemap as tr
 import pandas as pd
 
-from report_generator.generator.context import portfolio_filters
 from report_generator.generator.domain import (
     architecture_portfolio_data,
     maintainability_delta_quality_changed_code,
@@ -28,6 +27,11 @@ from report_generator.generator.domain import (
     maintainability_portfolio_data,
     osh_portfolio_data,
     security_ratings_portfolio_data,
+)
+from report_generator.generator.utils.constants.metadata import (
+    METADATA_BUSINESS_CRITICALITY_MAPPING,
+    METADATA_DEPLOYMENT_MAPPING,
+    METADATA_LIFECYCLE_MAPPING,
 )
 from report_generator.generator.placeholders import rendering
 from report_generator.generator.placeholders.formatting import formatters
@@ -106,15 +110,13 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
     @staticmethod
     def _process_lifecycle_grouping(metadata):
         if metadata["lifecyclePhase"]:
-            return portfolio_filters.METADATA_LIFECYCLE_MAPPING[
-                metadata["lifecyclePhase"]
-            ]
+            return METADATA_LIFECYCLE_MAPPING[metadata["lifecyclePhase"]]
         return "Unset"
 
     @staticmethod
     def _process_business_criticality_grouping(metadata):
         if metadata["businessCriticality"]:
-            return portfolio_filters.METADATA_BUSINESS_CRITICALITY_MAPPING[
+            return METADATA_BUSINESS_CRITICALITY_MAPPING[
                 metadata["businessCriticality"]
             ]
         return "Unset"
@@ -122,9 +124,7 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
     @staticmethod
     def _process_deployment_grouping(metadata):
         if metadata["deploymentType"]:
-            return portfolio_filters.METADATA_DEPLOYMENT_MAPPING[
-                metadata["deploymentType"]
-            ]
+            return METADATA_DEPLOYMENT_MAPPING[metadata["deploymentType"]]
         return "Unset"
 
     grouping_processors: ClassVar[dict] = {
