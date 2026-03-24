@@ -36,6 +36,7 @@ class SystemMetadata:
         "is_development_only": "isDevelopmentOnly",
         "remark": "remark",
         "external_id": "externalID",
+        "active": "active",
     }
 
     _fallbacks: ClassVar[dict[str, Callable[[], str]]] = {
