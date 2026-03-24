@@ -94,7 +94,9 @@ def update_paragraph(
 
     try:
         run_with_placeholder = next(
-            run for run in (paragraph.runs or []) if placeholder_id in run.text
+            run
+            for run in (paragraph.runs or [])
+            if re.search(rf"\b{re.escape(placeholder_id)}\b", run.text)
         )
     except StopIteration:
         logging.warning(
@@ -105,8 +107,10 @@ def update_paragraph(
     logging.debug(
         f'Replacing: {placeholder_id} with "{replacement_text}". New text: {run_with_placeholder.text}'
     )
-    run_with_placeholder.text = run_with_placeholder.text.replace(
-        placeholder_id, str(replacement_text)
+    run_with_placeholder.text = re.sub(
+        rf"\b{re.escape(placeholder_id)}\b",
+        str(replacement_text),
+        run_with_placeholder.text,
     )
 
     if font:
