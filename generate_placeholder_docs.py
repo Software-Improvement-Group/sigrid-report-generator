@@ -15,19 +15,29 @@
 #  limitations under the License.
 
 from pathlib import Path
-from typing import List, Optional, Set
+from typing import Optional
 
 import pandas as pd
 
-from report_generator.generator.placeholders import Placeholder, placeholders as all_placeholders
-from report_generator.generator.placeholders.base import ParameterList, PlaceholderDocType
+from report_generator.generator.placeholders.implementations import (
+    Placeholder,
+)
+from report_generator.generator.placeholders.implementations import (
+    placeholders as all_placeholders,
+)
+from report_generator.generator.placeholders.implementations.base import (
+    PARAMETER_TOKEN_PATTERN,
+    MultiParameterList,
+    ParameterList,
+    PlaceholderDocType,
+)
 from report_generator.generator.report import ReportType
 
 SCRIPT_DIR = Path(__file__).parent
 FILENAME = SCRIPT_DIR / "docs" / "placeholder descriptions.md"
 PARAM_RANGE_REPRESENTATIONS = {
-    '1, 2, 3, 4, 5'                : '1-5',
-    '1, 2, 3, 4, 5, 6, 7, 8, 9, 10': '1-10',
+    "1, 2, 3, 4, 5": "1-5",
+    "1, 2, 3, 4, 5, 6, 7, 8, 9, 10": "1-10",
 }
 
 
@@ -36,12 +46,12 @@ class MarkdownElement:
         self.content = content
 
     def __str__(self):
-        return self.content + '\n\n'
+        return self.content + "\n\n"
 
 
 class Header(MarkdownElement):
     def __init__(self, content: str, level=2):
-        super().__init__('#' * level + ' ' + content)
+        super().__init__("#" * level + " " + content)
 
 
 class Paragraph(MarkdownElement):
@@ -50,8 +60,8 @@ class Paragraph(MarkdownElement):
 
 
 class Steps(MarkdownElement):
-    def __init__(self, steps: List[str]):
-        content = '\n'.join(f"{i + 1}. {step}" for i, step in enumerate(steps))
+    def __init__(self, steps: list[str]):
+        content = "\n".join(f"{i + 1}. {step}" for i, step in enumerate(steps))
         super().__init__(content)
 
 
@@ -59,28 +69,33 @@ class Table(MarkdownElement):
     def __init__(self, data: pd.DataFrame):
         data.fillna("")
 
-        if 'Parameters' in data.columns and data['Parameters'].str.strip().eq('').all():
-            data = data.drop(columns=['Parameters'])
+        if "Parameters" in data.columns and data["Parameters"].str.strip().eq("").all():
+            data = data.drop(columns=["Parameters"])
 
         super().__init__(data.to_markdown(index=False))
 
 
 class Document:
     def __init__(self):
-        self.elements: List[MarkdownElement] = []
+        self.elements: list[MarkdownElement] = []
 
     def add(self, element: MarkdownElement):
         self.elements.append(element)
 
     def __str__(self):
-        return ''.join(str(element) for element in self.elements)
+        return "".join(str(element) for element in self.elements)
 
 
-def placeholders_to_table(placeholders, skip_columns: Set[str] = None) -> pd.DataFrame:
-    data = [get_placeholder_row_data(placeholder, skip_columns) for placeholder in placeholders]
+def placeholders_to_table(
+    placeholders, skip_columns: Optional[set[str]] = None
+) -> pd.DataFrame:
+    data = [
+        get_placeholder_row_data(placeholder, skip_columns)
+        for placeholder in placeholders
+    ]
 
     df = pd.DataFrame(data)
-    df = df.sort_values(by='Key').reset_index(drop=True)
+    df = df.sort_values(by="Key").reset_index(drop=True)
     return df
 
 
@@ -98,101 +113,178 @@ def get_placeholder_doc(placeholder_class: Placeholder) -> Optional[str]:
     return None
 
 
-def get_placeholder_row_data(placeholder: Placeholder, skip_columns: Set[str] = None) -> dict:
+def get_placeholder_row_data(
+    placeholder: Placeholder, skip_columns: Optional[set[str]] = None
+) -> dict:
     if skip_columns is None:
         skip_columns = []
 
     # noinspection PyUnresolvedReferences
     all_data = {
-        'Key'        : '`' + placeholder.key + '`',
-        'Supports'   : supports_to_representation(placeholder),
-        'Description': get_placeholder_doc(placeholder),
-        'Parameters' : parameterlist_to_representation(
-            placeholder.allowed_parameters) if placeholder.is_parameterized() else ''
+        "Key": "`" + placeholder.key + "`",
+        "Supports": supports_to_representation(placeholder),
+        "Description": get_placeholder_doc(placeholder),
+        "Parameters": parameterlist_to_representation(
+            placeholder.allowed_parameters, placeholder.key
+        )
+        if placeholder.is_parameterized()
+        else "",
     }
 
     return {key: value for key, value in all_data.items() if key not in skip_columns}
 
 
-def parameterlist_to_representation(parameter_list: ParameterList) -> str:
-    as_string = ', '.join(str(param) for param in parameter_list)
+def extract_token_names(key: str) -> list[str]:
+    """Extract the names between {} in a placeholder key, e.g. '{metric}' -> 'metric'."""
+    return [token.strip("{}") for token in PARAMETER_TOKEN_PATTERN.findall(key)]
+
+
+def flat_parameterlist_to_representation(params: ParameterList) -> str:
+    as_string = ", ".join(str(param) for param in params)
     if as_string in PARAM_RANGE_REPRESENTATIONS:
         return PARAM_RANGE_REPRESENTATIONS[as_string]
-
     return f"<details><summary>Show parameters</summary><p>{as_string}</p></details>"
+
+
+def multi_parameterlist_to_representation(params: MultiParameterList, key: str) -> str:
+    token_names = extract_token_names(key)
+    parts = []
+    for i, param_list in enumerate(params.param_lists):
+        label = token_names[i] if i < len(token_names) else f"parameter{i + 1}"
+        values = ", ".join(str(p) for p in param_list)
+        parts.append(f"<details><summary>{label}</summary><p>{values}</p></details>")
+    return "".join(parts)
+
+
+def parameterlist_to_representation(parameter_list, key: str = "") -> str:
+    if isinstance(parameter_list, MultiParameterList):
+        return multi_parameterlist_to_representation(parameter_list, key)
+    return flat_parameterlist_to_representation(parameter_list)
 
 
 def supports_to_representation(placeholder: Placeholder) -> str:
     support_mappings = {
         ReportType.PRESENTATION: "PPTX",
-        ReportType.DOCUMENT    : "DOCX",
+        ReportType.DOCUMENT: "DOCX",
     }
 
-    supported_types = [support_mappings[report_type] for report_type in support_mappings if
-                       placeholder.supports(report_type)]
+    supported_types = [
+        support_mappings[report_type]
+        for report_type in support_mappings
+        if placeholder.supports(report_type)
+    ]
 
-    return ', '.join(supported_types)
+    return ", ".join(supported_types)
 
 
 def add_text_placeholders_section(doc: Document):
     doc.add(Header("Text Placeholders"))
-    doc.add(Paragraph(
-        "Use these placeholders anywhere in your PowerPoint/Word template. `report-generator` will replace them with their actual value."))
-    text_placeholders = [placeholder for placeholder in all_placeholders if
-                         placeholder.__doc_type__ == PlaceholderDocType.TEXT]
+    doc.add(
+        Paragraph(
+            "Use these placeholders anywhere in your PowerPoint/Word template. `report-generator` will replace them with their actual value."
+        )
+    )
+    text_placeholders = [
+        placeholder
+        for placeholder in all_placeholders
+        if placeholder.__doc_type__ == PlaceholderDocType.TEXT
+    ]
     doc.add(Table(placeholders_to_table(text_placeholders, skip_columns={"Supports"})))
 
 
 def add_chart_placeholders_section(doc: Document):
     doc.add(Header("Chart Placeholders"))
-    doc.add(Paragraph(
-        "These placeholders, generally placed off-screen, only serve to identify a slide on which a specific chart is placed. If you want to use this chart, be sure to copy both the chart and the placeholder from a standard template and then modify its layout BUT NOT its structure or chart type."))
-    chart_placeholders = [placeholder for placeholder in all_placeholders if
-                          placeholder.__doc_type__ == PlaceholderDocType.CHART]
+    doc.add(
+        Paragraph(
+            "To use these placeholders, rename the chart shape in the Selection Pane to match the placeholder key exactly (see instructions below). `report-generator` identifies charts by their shape name, not by a separate marker. If you want to use this chart, be sure to copy it from a standard template and modify its layout BUT NOT its structure or chart type."
+        )
+    )
+    chart_placeholders = [
+        placeholder
+        for placeholder in all_placeholders
+        if placeholder.__doc_type__ == PlaceholderDocType.CHART
+    ]
     doc.add(Table(placeholders_to_table(chart_placeholders)))
 
 
 def add_table_placeholders_section(doc: Document):
     doc.add(Header("Dynamic Table Placeholders"))
-    doc.add(Paragraph(
-        "These placeholders are used for filling tables with a dynamic number of rows and flexible styles. Currently, they are only supported in PowerPoint templates."))
-    doc.add(Paragraph(
-        "To use these placeholders, create a table in your PowerPoint template and rename it in the selection pane (instructions below) to match the placeholder key. Define text styles in the first row of the table."))
-    doc.add(Paragraph(
-        "The number of rows of the generated table is minimally the number of rows in the data source and maximally the number of rows in the template table."))
-    table_placeholders = [placeholder for placeholder in all_placeholders if
-                          placeholder.__doc_type__ == PlaceholderDocType.TABLE]
+    doc.add(
+        Paragraph(
+            "These placeholders are used for filling tables with a dynamic number of rows and flexible styles. Currently, they are only supported in PowerPoint templates."
+        )
+    )
+    doc.add(
+        Paragraph(
+            "To use these placeholders, create a table in your PowerPoint template and rename it in the selection pane (instructions below) to match the placeholder key. Define text styles in the first row of the table."
+        )
+    )
+    doc.add(
+        Paragraph(
+            "The number of rows of the generated table is minimally the number of rows in the data source and maximally the number of rows in the template table."
+        )
+    )
+    table_placeholders = [
+        placeholder
+        for placeholder in all_placeholders
+        if placeholder.__doc_type__ == PlaceholderDocType.TABLE
+    ]
     doc.add(Table(placeholders_to_table(table_placeholders, skip_columns={"Supports"})))
 
 
 def add_image_placeholders_section(doc: Document):
     doc.add(Header("Image Placeholders"))
-    doc.add(Paragraph("Image placeholders allow automatic image generation within your presentation. These placeholders act as designated areas where images will be inserted once generated."))
-    doc.add(Paragraph("Currently, this feature is only available for PowerPoint templates. Image generation is not yet supported in other document formats."))
-    doc.add(Paragraph("To create an image placeholder, add a shape to the slide in the position and size where you want the image to appear, ie.: the shape defines the dimensions and location of the generated image. Do NOT group the shape with other objects or combine it with text or images. Each placeholder must be an independent shape on the slide to ensure proper image generation."))
-    image_placeholders = [placeholder for placeholder in all_placeholders if
-                          placeholder.__doc_type__ == PlaceholderDocType.IMAGE]
+    doc.add(
+        Paragraph(
+            "Image placeholders allow automatic image generation within your presentation. These placeholders act as designated areas where images will be inserted once generated."
+        )
+    )
+    doc.add(
+        Paragraph(
+            "Currently, this feature is only available for PowerPoint templates. Image generation is not yet supported in other document formats."
+        )
+    )
+    doc.add(
+        Paragraph(
+            "To create an image placeholder, add a shape to the slide in the position and size where you want the image to appear, ie.: the shape defines the dimensions and location of the generated image. Do NOT group the shape with other objects or combine it with text or images. Each placeholder must be an independent shape on the slide to ensure proper image generation."
+        )
+    )
+    image_placeholders = [
+        placeholder
+        for placeholder in all_placeholders
+        if placeholder.__doc_type__ == PlaceholderDocType.IMAGE
+    ]
     doc.add(Table(placeholders_to_table(image_placeholders)))
 
 
 def add_other_placeholders_section(doc: Document):
     doc.add(Header("Other Placeholders"))
-    other_placeholders = [placeholder for placeholder in all_placeholders if
-                          placeholder.__doc_type__ == PlaceholderDocType.OTHER]
+    other_placeholders = [
+        placeholder
+        for placeholder in all_placeholders
+        if placeholder.__doc_type__ == PlaceholderDocType.OTHER
+    ]
     doc.add(Table(placeholders_to_table(other_placeholders)))
 
 
 def add_how_to_section(doc: Document):
     doc.add(Header("How to: Enter Placeholder Key in Selection Pane"))
-    doc.add(Paragraph(
-        "Some placeholders require you to enter their key in the selection pane of PowerPoint. To do this, follow these steps:"))
-    doc.add(Steps([
-        "Open the selection pane in PowerPoint by going to the 'Home' tab, clicking on 'Select', and then choosing 'Selection Pane'.",
-        "In the selection pane, find the object you want to rename (e.g., a chart or table).",
-        "Click on the name of the object to edit it.",
-        "Enter the placeholder key exactly as specified in the documentation (e.g., 'REFACTORING_CANDIDATES_TABLE_DUPLICATION').",
-        "Press Enter to confirm the changes."
-    ]))
+    doc.add(
+        Paragraph(
+            "Some placeholders require you to enter their key in the selection pane of PowerPoint. To do this, follow these steps:"
+        )
+    )
+    doc.add(
+        Steps(
+            [
+                "Open the selection pane in PowerPoint by going to the 'Home' tab, clicking on 'Select', and then choosing 'Selection Pane'.",
+                "In the selection pane, find the object you want to rename (e.g., a chart or table).",
+                "Click on the name of the object to edit it.",
+                "Enter the placeholder key exactly as specified in the documentation (e.g., 'REFACTORING_CANDIDATES_TABLE_DUPLICATION').",
+                "Press Enter to confirm the changes.",
+            ]
+        )
+    )
 
 
 def generate_documentation():

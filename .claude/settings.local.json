@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ruff format:*)",
+      "Bash(ruff check:*)",
+      "WebFetch(domain:docs.sigrid-says.com)",
+      "mcp__SigridCode__code_quality_guardrails"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ruff check --fix . && ruff format . && lint-imports"
+          }
+        ]
+      }
+    ]
+  },
+  "mcpServers": {
+    "SigridCode": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://sigrid-says.com/mcp",
+        "--header",
+        "Authorization: Bearer ${SIGRID_TOKEN}",
+        "--allow-http"
+      ]
+    }
+  }
+}

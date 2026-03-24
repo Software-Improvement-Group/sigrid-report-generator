@@ -1,0 +1,31 @@
+name: Compatibility Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  compatibility-check:
+    name: "Python compatibility check"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ '3.9', '3.14' ]
+    steps:
+      - name: "Check out repository"
+        uses: actions/checkout@v4
+
+      - name: "Set up Python ${{ matrix.python-version }}"
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: "Install dependencies"
+        run: |
+          pip3 install -e ".[test]"
+
+      - name: "Check syntax and imports"
+        run: |
+          python -m compileall -f .
+          python -c "import report_generator; print('Import successful for Python ${{ matrix.python-version }}')"

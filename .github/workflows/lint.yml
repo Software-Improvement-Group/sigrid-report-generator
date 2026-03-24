@@ -1,0 +1,44 @@
+name: Lint
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  lint:
+    name: "Ruff lint and format"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Check out repository"
+        uses: actions/checkout@v4
+
+      - name: "Ruff check"
+        uses: astral-sh/ruff-action@4919ec5cf1f49eff0871dbcea0da843445b837e6 # v3
+        with:
+          args: "check --output-format=github"
+          src: "."
+
+      - name: "Ruff format check"
+        uses: astral-sh/ruff-action@4919ec5cf1f49eff0871dbcea0da843445b837e6 # v3
+        with:
+          args: "format --check --diff"
+          src: "."
+
+  architecture-lint:
+    name: "Architecture lint"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Check out repository"
+        uses: actions/checkout@v4
+
+      - name: "Set up Python"
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: "Install dependencies"
+        run: pip install -e ".[test]"
+
+      - name: "Check architecture contracts"
+        run: lint-imports

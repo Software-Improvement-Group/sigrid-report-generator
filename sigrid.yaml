@@ -1,0 +1,37 @@
+component_base_dirs:
+  - "src/report_generator/generator"
+  - "src/report_generator"
+  - "tests/report_generator"
+
+languages:
+  - name: "Python"
+
+dependencychecker:
+  blocklist: [ ]
+
+thirdpartyfindings:
+  enabled: true
+
+architecture:
+  undesirable_dependencies:
+    - source: "generator"
+      target: "presets"
+      bidirectional: true
+    - source: "generator/context"
+      target: "generator/domain"
+    - source: "generator/context"
+      target: "generator/placeholders"
+    - source: "generator/domain"
+      target: "generator/placeholders"
+    - source: "generator/domain/portfolio"
+      target: "generator/domain/system"
+      bidirectional: true
+    - source: "generator/utils"
+      target: "generator/.*/.*"
+    - source: "generator/placeholders/formatting"
+      target: "generator/placeholders/rendering"
+      bidirectional: true
+    - source: "generator/placeholders/formatting"
+      target: "generator/placeholders/implementations"
+    - source: "generator/placeholders/rendering"
+      target: "generator/placeholders/implementations"
