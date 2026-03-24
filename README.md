@@ -1,3 +1,6 @@
+> **Upgrading from v0 in sigrid-integrations?** CLI users can just reinstall. If you use custom templates or the Python
+> API directly, see the [upgrade guide](docs/upgrade-v1.md).
+
 # Sigrid Report Generator
 
 The Sigrid Report Generator is a tool/framework designed to generate any kind of report that is based on data
@@ -97,7 +100,8 @@ Use `report-generator --help` for an overview of configuration options.
 
 Report generator is flexible. It allows you to input your own `.pptx` or `.docx` template, and it will populate it with
 data from Sigrid. You can define your template from scratch, or modify an existing template. You can find the built-in
-templates in the `src/report_generator/presets/templates` folder of the report-generator repository. Once you have created your
+templates in the `src/report_generator/presets/templates` folder of the report-generator repository. Once you have
+created your
 template, you can insert it into the report generator by using the `-p`/`--template` command line argument.
 
 There are roughly two types of items in a template that report-generator deals with:
@@ -133,11 +137,6 @@ the results.
 
 For examples of custom placeholders (simple text, parameterized, multi-parameter, class-based, and fully custom),
 see [docs/custom-placeholders.md](docs/custom-placeholders.md).
-
-## Upgrading
-
-If you use the `report_generator` Python API directly (custom placeholders, programmatic `ReportGenerator` usage),
-see [docs/upgrade-v1.md](docs/upgrade-v1.md) for the migration guide. CLI-only users are unaffected.
 
 ## Contributing
 
