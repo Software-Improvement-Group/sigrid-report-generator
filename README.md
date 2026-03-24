@@ -1,4 +1,5 @@
-> **Upgrading from a previous version?** CLI users can just reinstall. If you use custom templates or the Python API directly, see the [upgrade guide](docs/upgrade-v1.md).
+> **Upgrading from a previous version?** CLI users can just reinstall. If you use custom templates or the Python API
+> directly, see the [upgrade guide](docs/upgrade-v1.md).
 
 # Sigrid Report Generator
 
