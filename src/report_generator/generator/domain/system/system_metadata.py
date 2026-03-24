@@ -59,33 +59,3 @@ class SystemMetadata:
 
 
 system_metadata = SystemMetadata()
-
-"""
-Example API response:
-{
-    "divisionName": "Backend",
-    "displayName": "Hadoop",
-    "supplierNames": [
-        "Open Source Community",
-        "Apache"
-    ],
-    "teamNames": [
-        "architecture"
-    ],
-    "lifecyclePhase": "EVOLUTION",
-    "inProductionSince": 2006,
-    "businessCriticality": "CRITICAL",
-    "targetIndustry": "ICD9530",
-    "deploymentType": "INTERNAL",
-    "applicationType": "RESOURCE_MANAGEMENT",
-    "softwareDistributionStrategy": "NETWORK_SERVICE",
-    "remark": null,
-    "externalID": null,
-    "externalDisplayName": null,
-    "scopeFileInRepository": true,
-    "mainTechnology": "java",
-    "technologyCategory": "MODERN_GENERAL_PURPOSE",
-    "active": true,
-    "isDevelopmentOnly": false
-}
-"""
