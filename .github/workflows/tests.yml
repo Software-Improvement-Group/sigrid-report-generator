@@ -1,0 +1,62 @@
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  unit-tests:
+    name: "Unit tests"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: "Install native dependencies"
+        run: sudo apt update && sudo apt install -y ldap-utils slapd enchant-2 libldap2-dev libsasl2-dev apparmor-utils
+      - name: "Install Python dependencies"
+        run: |
+          pip install -e ".[test]"
+          pip install -r ldap-group-sync/requirements.txt
+      - name: "Report Generator unit tests"
+        run: pytest --ignore=ldap-group-sync/ --junitxml=unit-results.xml
+      - name: "LDAP Group Sync tests"
+        run: cd ldap-group-sync && python -m pytest
+      - uses: actions/upload-artifact@v4
+        if: (!cancelled())
+        with:
+          name: unit-test-results
+          path: unit-results.xml
+      - uses: EnricoMi/publish-unit-test-result-action@c950f6fb443cb5af20a377fd0dfaa78838901040 # v2
+        if: (!cancelled())
+        with:
+          files: unit-results.xml
+
+  integration-tests:
+    name: "Integration tests"
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    env:
+      REPORT_GENERATOR_TESTS_TOKEN: ${{ secrets.SIGRID_REPORTGENERATORDEMO_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: "Install native dependencies"
+        run: sudo apt update && sudo apt install -y ldap-utils slapd enchant-2 libldap2-dev libsasl2-dev apparmor-utils
+      - name: "Install Python dependencies"
+        run: pip install -e ".[test]"
+      - name: "Report Generator integration tests"
+        run: pytest -m integration --ignore=ldap-group-sync/ --junitxml=integration-results.xml
+      - uses: actions/upload-artifact@v4
+        if: (!cancelled())
+        with:
+          name: integration-test-results
+          path: integration-results.xml
+      - uses: EnricoMi/publish-unit-test-result-action@c950f6fb443cb5af20a377fd0dfaa78838901040 # v2
+        if: (!cancelled())
+        with:
+          files: integration-results.xml
