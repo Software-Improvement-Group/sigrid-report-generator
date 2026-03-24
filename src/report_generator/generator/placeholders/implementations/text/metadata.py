@@ -13,82 +13,16 @@
 #  limitations under the License.
 
 from report_generator.generator.domain import maintainability_data, system_metadata
+from report_generator.generator.utils.constants.metadata import (
+    METADATA_APPLICATION_TYPE_MAPPING,
+    METADATA_BUSINESS_CRITICALITY_MAPPING,
+    METADATA_DEPLOYMENT_MAPPING,
+    METADATA_DISTRIBUTION_MAPPING,
+    METADATA_LIFECYCLE_MAPPING,
+    METADATA_TARGET_INDUSTRY_MAPPING,
+)
 
 from .base import text_placeholder
-
-LIFECYCLE_PHASE_LABELS = {
-    "INITIAL": "Initial development",
-    "EVOLUTION": "Evolution",
-    "MAINTENANCE": "Maintenance",
-    "EOL": "End-of-life",
-    "DECOMMISSIONED": "Decommissioned",
-}
-
-BUSINESS_CRITICALITY_LABELS = {
-    "CRITICAL": "Critical",
-    "HIGH": "High",
-    "MEDIUM": "Medium",
-    "LOW": "Low",
-}
-
-DEPLOYMENT_TYPE_LABELS = {
-    "PUBLIC_FACING": "Public-facing",
-    "CONNECTED": "Connected",
-    "INTERNAL": "Internal",
-    "PHYSICAL": "Physical",
-}
-
-APPLICATION_TYPE_LABELS = {
-    "PROCESS_CONTROLLER": "Process controller",
-    "TRANSACTION_PROCESSING": "Transaction processing",
-    "RESOURCE_MANAGEMENT": "Resource management",
-    "CASE_MANAGEMENT": "Case management",
-    "DESIGN_ENGINEERING_DEVELOPMENT": "Design engineering development",
-    "ANALYTICAL": "Analytical",
-    "AUTHENTICATION_AND_PORTALS": "Authentication and portals",
-    "COMMUNICATION": "Communication",
-    "FUNCTIONAL_APPLICATIONS": "Functional applications",
-    "KNOWLEDGE_AND_DOCUMENT_MANAGEMENT": "Knowledge and document management",
-    "PERSONAL_PRODUCTIVITY_APPLICATIONS": "Personal productivity applications",
-}
-
-DISTRIBUTION_STRATEGY_LABELS = {
-    "NOT_DISTRIBUTED": "Not distributed",
-    "NETWORK_SERVICE": "Network service",
-    "DISTRIBUTED": "Distributed",
-}
-
-TARGET_INDUSTRY_LABELS = {
-    "ICD0500": "Oil & Gas",
-    "ICD1750": "Industrial Metals & Mining",
-    "ICD2350": "Construction & Materials",
-    "ICD2710": "Aerospace & Defense",
-    "ICD2730": "Electronic & Electrical Equipment",
-    "ICD2750": "Industrial Engineering",
-    "ICD2770": "Industrial Transportation",
-    "ICD2790": "Support Services",
-    "ICD2797": "Industrial Suppliers",
-    "ICD3350": "Automobiles & Part",
-    "ICD3500": "Food & Beverage",
-    "ICD3700": "Personal & Household Goods",
-    "ICD4500": "Health Care",
-    "ICD5300": "Retail",
-    "ICD5500": "Media",
-    "ICD5700": "Travel & Leisure",
-    "ICD6500": "Telecommunications",
-    "ICD7500": "Energy",
-    "ICD7577": "Water",
-    "ICD8300": "Banking",
-    "ICD8500": "Insurance",
-    "ICD8630": "Real Estate Investment & Services",
-    "ICD8700": "Financial Services",
-    "ICD9530": "Software & Computer Services",
-    "ICD9570": "Technology hardware & equipment",
-    "SIG2200": "Legal Services",
-    "SIG1200": "Research",
-    "SIG1000": "Government",
-    "SIG1100": "Education",
-}
 
 
 @text_placeholder()
@@ -104,9 +38,9 @@ def customer_name():
 
 
 @text_placeholder()
-def metadata_display_name():
-    """The display name of the system."""
-    return system_metadata.display_name or ""
+def system_full_name():
+    """The full name of the system as defined in Sigrid."""
+    return maintainability_data.system_name
 
 
 @text_placeholder()
@@ -164,7 +98,7 @@ def metadata_business_criticality():
     criticality = system_metadata.business_criticality
     if not criticality:
         return ""
-    return BUSINESS_CRITICALITY_LABELS.get(criticality, criticality)
+    return METADATA_BUSINESS_CRITICALITY_MAPPING.get(criticality, criticality)
 
 
 @text_placeholder()
@@ -173,7 +107,7 @@ def metadata_lifecycle_phase():
     phase = system_metadata.lifecycle_phase
     if not phase:
         return ""
-    return LIFECYCLE_PHASE_LABELS.get(phase, phase)
+    return METADATA_LIFECYCLE_MAPPING.get(phase, phase)
 
 
 @text_placeholder()
@@ -182,7 +116,7 @@ def metadata_target_industry():
     industry = system_metadata.target_industry
     if not industry:
         return ""
-    return TARGET_INDUSTRY_LABELS.get(industry, industry)
+    return METADATA_TARGET_INDUSTRY_MAPPING.get(industry, industry)
 
 
 @text_placeholder()
@@ -191,7 +125,7 @@ def metadata_deployment_type():
     deployment = system_metadata.deployment_type
     if not deployment:
         return ""
-    return DEPLOYMENT_TYPE_LABELS.get(deployment, deployment)
+    return METADATA_DEPLOYMENT_MAPPING.get(deployment, deployment)
 
 
 @text_placeholder()
@@ -200,7 +134,7 @@ def metadata_application_type():
     app_type = system_metadata.application_type
     if not app_type:
         return ""
-    return APPLICATION_TYPE_LABELS.get(app_type, app_type)
+    return METADATA_APPLICATION_TYPE_MAPPING.get(app_type, app_type)
 
 
 @text_placeholder()
@@ -209,7 +143,7 @@ def metadata_distribution_strategy():
     strategy = system_metadata.software_distribution_strategy
     if not strategy:
         return ""
-    return DISTRIBUTION_STRATEGY_LABELS.get(strategy, strategy)
+    return METADATA_DISTRIBUTION_MAPPING.get(strategy, strategy)
 
 
 @text_placeholder()
