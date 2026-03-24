@@ -15,16 +15,20 @@ provided by Sigrid. The Report Generator can be used for two "flavors" of report
 - You need to be able to install and use Python packages
 - You need a [Sigrid API token](https://docs.sigrid-says.com/organization-integration/authentication-tokens.html)
 
-## Install using pip
+## One-step installation
+
+```
+pip3 install git+https://github.com/Software-Improvement-Group/sigrid-report-generator.git
+```
+
+## Alternative: clone the repo and install
 
 1. Clone this repository and `cd` into it.
-2. Install the tool itself: `pip3 install -e ./report-generator"`.
+2. Install the tool itself: `pip3 install -e .`.
     - If this fails with an error message that says something like "error: can't create or remove files in install
       directory", try adding `--user` to the above command.
     - If this fails with an error message saying something like "error: externally-managed-environment", try installing
       in a `venv` (Virtual environment). If you don't know how that works, ask for help.
-
-Alternatively, you can use the docker image: `softwareimprovementgroup/sigrid-integrations`
 
 ## Usage
 
@@ -40,7 +44,7 @@ wherever you specify with the `-o` option.
 
 **ITDD report:** Lightweight report that provides general information on a system, suitable for an ITDD setting.
 
-- Example: `report-generator -c <your-customer> -s <your-system> --layout default`
+- Example: `report-generator -c <your-customer> -s <your-system> --layout itdd-technical-debt`
 
 <img src="docs/img/sample-mgmt-summary.png" width="300" />
 
@@ -93,8 +97,8 @@ Use `report-generator --help` for an overview of configuration options.
 
 Report generator is flexible. It allows you to input your own `.pptx` or `.docx` template, and it will populate it with
 data from Sigrid. You can define your template from scratch, or modify an existing template. You can find the built-in
-templates in the `src/report_generator/templates` folder of the report-generator repository. Once you have created your
-template, you can insert it into the reourt generator by using the `-p`/`--template` command line argument.
+templates in the `src/report_generator/presets/templates` folder of the report-generator repository. Once you have created your
+template, you can insert it into the report generator by using the `-p`/`--template` command line argument.
 
 There are roughly two types of items in a template that report-generator deals with:
 
