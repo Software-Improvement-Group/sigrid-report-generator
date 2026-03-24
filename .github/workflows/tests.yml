@@ -14,16 +14,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.14"
-      - name: "Install native dependencies"
-        run: sudo apt update && sudo apt install -y ldap-utils slapd enchant-2 libldap2-dev libsasl2-dev apparmor-utils
       - name: "Install Python dependencies"
-        run: |
-          pip install -e ".[test]"
-          pip install -r ldap-group-sync/requirements.txt
-      - name: "Report Generator unit tests"
-        run: pytest --ignore=ldap-group-sync/ --junitxml=unit-results.xml
-      - name: "LDAP Group Sync tests"
-        run: cd ldap-group-sync && python -m pytest
+        run: pip install -e ".[test]"
+      - name: "Unit tests"
+        run: pytest --junitxml=unit-results.xml
       - uses: actions/upload-artifact@v4
         if: (!cancelled())
         with:
@@ -45,12 +39,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.14"
-      - name: "Install native dependencies"
-        run: sudo apt update && sudo apt install -y ldap-utils slapd enchant-2 libldap2-dev libsasl2-dev apparmor-utils
       - name: "Install Python dependencies"
         run: pip install -e ".[test]"
-      - name: "Report Generator integration tests"
-        run: pytest -m integration --ignore=ldap-group-sync/ --junitxml=integration-results.xml
+      - name: "Integration tests"
+        run: pytest -m integration --junitxml=integration-results.xml
       - uses: actions/upload-artifact@v4
         if: (!cancelled())
         with:
