@@ -31,6 +31,12 @@ def security_cvss_critical():
 def security_cvss_high():
     return f"{security_data.count_findings('HIGH')} High severity findings"
 
+@text_placeholder()
+def security_acute_findings():
+    """The number of open acute security findings, (Critical and High severity findings)."""
+    acute_findings_count = security_data.count_findings('CRITICAL') + security_data.count_findings('HIGH')
+    return f"{acute_findings_count} Acute severity findings"
+
 
 @text_placeholder()
 def security_cvss_medium():
