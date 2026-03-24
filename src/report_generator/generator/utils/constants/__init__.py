@@ -30,9 +30,6 @@ from .metrics import (
 )
 
 __all__ = [
-    "ArchMetric",
-    "ArchSubcharacteristic",
-    "MaintMetric",
     "METADATA_APPLICATION_TYPE_MAPPING",
     "METADATA_BUSINESS_CRITICALITY_MAPPING",
     "METADATA_DEPLOYMENT_MAPPING",
@@ -40,6 +37,9 @@ __all__ = [
     "METADATA_LIFECYCLE_MAPPING",
     "METADATA_TARGET_INDUSTRY_MAPPING",
     "METADATA_TECHNOLOGY_CATEGORY_MAPPING",
+    "ArchMetric",
+    "ArchSubcharacteristic",
+    "MaintMetric",
     "MetricEnum",
     "OSHMetric",
 ]

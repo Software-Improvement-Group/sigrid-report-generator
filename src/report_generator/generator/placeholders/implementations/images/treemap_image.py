@@ -28,15 +28,15 @@ from report_generator.generator.domain import (
     osh_portfolio_data,
     security_ratings_portfolio_data,
 )
-from report_generator.generator.utils.constants.metadata import (
-    METADATA_BUSINESS_CRITICALITY_MAPPING,
-    METADATA_DEPLOYMENT_MAPPING,
-    METADATA_LIFECYCLE_MAPPING,
-)
 from report_generator.generator.placeholders import rendering
 from report_generator.generator.placeholders.formatting import formatters
 from report_generator.generator.placeholders.implementations.images.base import (
     _AbstractParameterizedImagePlaceholder,
+)
+from report_generator.generator.utils.constants.metadata import (
+    METADATA_BUSINESS_CRITICALITY_MAPPING,
+    METADATA_DEPLOYMENT_MAPPING,
+    METADATA_LIFECYCLE_MAPPING,
 )
 
 
