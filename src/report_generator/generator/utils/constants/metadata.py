@@ -61,7 +61,7 @@ METADATA_TARGET_INDUSTRY_MAPPING = {
     "ICD2770": "Industrial Transportation",
     "ICD2790": "Support Services",
     "ICD2797": "Industrial Suppliers",
-    "ICD3350": "Automobiles & Part",
+    "ICD3350": "Automobiles & Parts",
     "ICD3500": "Food & Beverage",
     "ICD3700": "Personal & Household Goods",
     "ICD4500": "Health Care",
