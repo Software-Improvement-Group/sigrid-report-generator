@@ -10,15 +10,15 @@ jobs:
     name: "Unit tests"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.14"
       - name: "Install Python dependencies"
         run: pip install -e ".[test]"
       - name: "Unit tests"
         run: pytest --junitxml=unit-results.xml
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: (!cancelled())
         with:
           name: unit-test-results
@@ -31,15 +31,15 @@ jobs:
     env:
       SIGRID_REPORTGENERATORDEMO_TOKEN: ${{ secrets.SIGRID_REPORTGENERATORDEMO_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.14"
       - name: "Install Python dependencies"
         run: pip install -e ".[test]"
       - name: "Integration tests"
         run: pytest -m integration --junitxml=integration-results.xml
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: (!cancelled())
         with:
           name: integration-test-results
