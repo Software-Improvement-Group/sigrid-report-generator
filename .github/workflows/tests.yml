@@ -23,10 +23,6 @@ jobs:
         with:
           name: unit-test-results
           path: unit-results.xml
-      - uses: EnricoMi/publish-unit-test-result-action@c950f6fb443cb5af20a377fd0dfaa78838901040 # v2
-        if: (!cancelled())
-        with:
-          files: unit-results.xml
 
   integration-tests:
     name: "Integration tests"
@@ -48,7 +44,3 @@ jobs:
         with:
           name: integration-test-results
           path: integration-results.xml
-      - uses: EnricoMi/publish-unit-test-result-action@c950f6fb443cb5af20a377fd0dfaa78838901040 # v2
-        if: (!cancelled())
-        with:
-          files: integration-results.xml
