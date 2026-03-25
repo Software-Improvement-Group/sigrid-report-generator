@@ -1,7 +1,11 @@
 component_base_dirs:
   - "src/report_generator/generator"
   - "src/report_generator"
+  - "src"
   - "tests/report_generator"
+
+exclude:
+  - ".*/generate_placeholder_docs.py"
 
 languages:
   - name: "Python"
@@ -17,21 +21,21 @@ architecture:
     - source: "generator"
       target: "presets"
       bidirectional: true
-    - source: "generator/context"
-      target: "generator/domain"
-    - source: "generator/context"
-      target: "generator/placeholders"
-    - source: "generator/domain"
-      target: "generator/placeholders"
-    - source: "generator/domain/portfolio"
-      target: "generator/domain/system"
+    - source: "context"
+      target: "domain"
+    - source: "context"
+      target: "placeholders"
+    - source: "domain"
+      target: "placeholders"
+    - source: "domain/portfolio"
+      target: "domain/system"
       bidirectional: true
-    - source: "generator/utils"
-      target: "generator/.*/.*"
-    - source: "generator/placeholders/formatting"
-      target: "generator/placeholders/rendering"
+    - source: "utils"
+      target: ".*"
+    - source: "placeholders/formatting"
+      target: "placeholders/rendering"
       bidirectional: true
-    - source: "generator/placeholders/formatting"
-      target: "generator/placeholders/implementations"
-    - source: "generator/placeholders/rendering"
-      target: "generator/placeholders/implementations"
+    - source: "placeholders/formatting"
+      target: "placeholders/implementations"
+    - source: "placeholders/rendering"
+      target: "placeholders/implementations"
