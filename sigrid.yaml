@@ -31,7 +31,7 @@ architecture:
       target: "domain/system"
       bidirectional: true
     - source: "utils"
-      target: ".*/.*"
+      target: ".*"
     - source: "placeholders/formatting"
       target: "placeholders/rendering"
       bidirectional: true
