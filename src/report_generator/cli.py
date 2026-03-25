@@ -15,7 +15,6 @@
 import logging
 import os
 from datetime import date
-from importlib.metadata import version
 from typing import Optional
 
 import click
@@ -71,7 +70,7 @@ def _validate_layout_or_template(ctx, param, value):
 
 
 @click.command()
-@click.version_option(version=version("report-generator"), prog_name="report-generator")
+@click.version_option(package_name="report-generator", prog_name="report-generator")
 @click.option(
     "-d", "--debug", is_flag=True, default=False, help="Enable debug messages"
 )
