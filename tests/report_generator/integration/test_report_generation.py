@@ -24,8 +24,6 @@ from tests.report_generator.integration.pptx_diff import compare_pptx
 
 PRESETS_TO_TEST = sorted(p for p in presets.ids if p != "debug")
 
-no_token = not _shared.resolve_token()
-
 
 @pytest.mark.parametrize("preset_id", PRESETS_TO_TEST)
 def test_template_exists_for_each_preset(preset_id):
@@ -37,11 +35,13 @@ def test_template_exists_for_each_preset(preset_id):
 
 
 @pytest.mark.integration
-@pytest.mark.skipif(no_token, reason="Token not set in environment")
 @pytest.mark.parametrize("preset_id", PRESETS_TO_TEST)
 @freeze_time(_shared.PERIOD[1])
 def test_generate_preset(preset_id, tmp_path):
     token = _shared.resolve_token()
+    assert token, (
+        "Sigrid API token not set in environment. Set SIGRID_REPORTGENERATORDEMO_TOKEN, SIGRID_TOKEN, or SIGRID_CI_TOKEN"
+    )
     os.environ["SIGRID_REPORT_GENERATOR_RECORD_USAGE"] = "0"
 
     template_file = _shared.TEMPLATES_DIR / f"{preset_id}.pptx"
