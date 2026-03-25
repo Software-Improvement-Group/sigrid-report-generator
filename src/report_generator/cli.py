@@ -70,6 +70,7 @@ def _validate_layout_or_template(ctx, param, value):
 
 
 @click.command()
+@click.version_option(package_name="report-generator", prog_name="report-generator")
 @click.option(
     "-d", "--debug", is_flag=True, default=False, help="Enable debug messages"
 )
