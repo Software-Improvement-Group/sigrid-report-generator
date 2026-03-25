@@ -34,6 +34,9 @@ from report_generator.generator.domain.portfolio.osh_portfolio import osh_portfo
 from report_generator.generator.domain.portfolio.progress_sigrid import (
     progress_sigrid_data,
 )
+from report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio import (
+    sigrid_hygiene_portfolio_data,
+)
 from report_generator.generator.domain.portfolio.security_dashboard_findings_portfolio import (
     security_dashboard_findings_portfolio_data,
 )
