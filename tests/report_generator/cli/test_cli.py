@@ -19,6 +19,19 @@ from click.testing import CliRunner
 from report_generator.cli import run as run_cli
 
 
+class TestCLIVersion:
+    """Test cases for CLI version output."""
+
+    def test_version_flag_displays_version(self):
+        """Test that --version displays the program name and version."""
+        runner = CliRunner()
+        result = runner.invoke(run_cli, ["--version"])
+
+        assert result.exit_code == 0
+        assert "report-generator" in result.output.lower()
+        assert "version" in result.output.lower()
+
+
 class TestCLIParameters:
     """Test cases for CLI parameter validation."""
 
