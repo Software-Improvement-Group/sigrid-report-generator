@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 import os
+from importlib.metadata import version
 from unittest.mock import MagicMock, patch
 
 from click.testing import CliRunner
@@ -23,13 +24,18 @@ class TestCLIVersion:
     """Test cases for CLI version output."""
 
     def test_version_flag_displays_version(self):
-        """Test that --version displays the program name and version."""
+        """Test that --version displays the program name and actual version number."""
         runner = CliRunner()
         result = runner.invoke(run_cli, ["--version"])
 
         assert result.exit_code == 0
         assert "report-generator" in result.output.lower()
-        assert "version" in result.output.lower()
+
+        # Verify the actual installed package version is present in the output
+        expected_version = version("report-generator")
+        assert expected_version in result.output, (
+            f"Expected version '{expected_version}' not found in output: {result.output}"
+        )
 
 
 class TestCLIParameters:
