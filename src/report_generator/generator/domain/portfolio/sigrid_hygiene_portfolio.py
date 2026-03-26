@@ -12,12 +12,13 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from functools import cached_property
-from report_generator.generator.context import sigrid_api
 from datetime import datetime
+from functools import cached_property
 
-import pandas as pd
 import numpy as np
+import pandas as pd
+
+from report_generator.generator.context import sigrid_api
 
 
 class SigridHygienePortfolioData:
@@ -86,11 +87,16 @@ class SigridHygienePortfolioData:
             snapshot_date = sigrid_api.get_architecture_findings(system)["snapshotDate"]
             freshness = (time_now - datetime.fromisoformat(snapshot_date)).days
 
-            if freshness < 7: days_7 += 1
-            elif freshness < 30: days_30 += 1
-            elif freshness < 90: days_90 += 1
-            elif freshness < 180: days_180 += 1
-            else: days_more += 1
+            if freshness < 7:
+                days_7 += 1
+            elif freshness < 30:
+                days_30 += 1
+            elif freshness < 90:
+                days_90 += 1
+            elif freshness < 180:
+                days_180 += 1
+            else:
+                days_more += 1
 
         return [[len(active_systems), days_7, days_30, days_90, days_180, days_more]]
 
@@ -109,7 +115,7 @@ class SigridHygienePortfolioData:
         roles = ["ADMIN", "MAINTAINER", "USER"]
         time_now = datetime.now()
 
-        # 5 time buckets (7, 30, 90, 365, >365 days) × 3 roles
+        # 5 time buckets (7, 30, 90, 365, >365 days) x 3 roles
         buckets = np.zeros((5, 3), dtype=int)
 
         for i, role in enumerate(roles):
@@ -118,11 +124,16 @@ class SigridHygienePortfolioData:
                               if user["lastLoginAt"] is not None and user["role"] == role]
 
             for days in freshness_list:
-                if days < 7: buckets[0, i] += 1
-                elif days < 30: buckets[1, i] += 1
-                elif days < 90: buckets[2, i] += 1
-                elif days < 365: buckets[3, i] += 1
-                else: buckets[4, i] += 1
+                if days < 7:
+                    buckets[0, i] += 1
+                elif days < 30:
+                    buckets[1, i] += 1
+                elif days < 90:
+                    buckets[2, i] += 1
+                elif days < 365:
+                    buckets[3, i] += 1
+                else:
+                    buckets[4, i] += 1
 
         totals = buckets.sum(axis=0)
         # result: 3 rows (roles) × 6 columns (total + 5 time buckets)

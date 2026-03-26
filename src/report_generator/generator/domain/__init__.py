@@ -34,9 +34,6 @@ from report_generator.generator.domain.portfolio.osh_portfolio import osh_portfo
 from report_generator.generator.domain.portfolio.progress_sigrid import (
     progress_sigrid_data,
 )
-from report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio import (
-    sigrid_hygiene_portfolio_data,
-)
 from report_generator.generator.domain.portfolio.security_dashboard_findings_portfolio import (
     security_dashboard_findings_portfolio_data,
 )
@@ -45,6 +42,9 @@ from report_generator.generator.domain.portfolio.security_dashboard_resolution_t
 )
 from report_generator.generator.domain.portfolio.security_portfolio import (
     security_ratings_portfolio_data,
+)
+from report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio import (
+    sigrid_hygiene_portfolio_data,
 )
 from report_generator.generator.domain.system.architecture import architecture_data
 from report_generator.generator.domain.system.maintainability import (
