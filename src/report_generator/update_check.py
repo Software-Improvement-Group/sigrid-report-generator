@@ -18,6 +18,7 @@ import json
 import os
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Optional
 
 import platformdirs
 import requests
@@ -32,7 +33,7 @@ _CHECK_INTERVAL_DAYS = 7
 _REQUEST_TIMEOUT_SECONDS = 3
 
 
-def check_for_update() -> str | None:
+def check_for_update() -> Optional[str]:
     if os.environ.get("SIGRID_REPORT_GENERATOR_NO_UPDATE_CHECK") == "1":
         return None
 
@@ -52,7 +53,7 @@ def check_for_update() -> str | None:
     return None
 
 
-def _should_check() -> tuple[bool, str | None]:
+def _should_check() -> tuple[bool, Optional[str]]:
     cache = _read_cache()
     if cache is None:
         return True, None
@@ -64,7 +65,7 @@ def _should_check() -> tuple[bool, str | None]:
     return True, None
 
 
-def _read_cache() -> dict | None:
+def _read_cache() -> Optional[dict]:
     if not _CACHE_FILE.exists():
         return None
     try:
