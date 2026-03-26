@@ -319,6 +319,7 @@ class TestFilterConsistency:
                 "_target_industry",
                 "_technology_category",
                 "_main_technology",
+                "_supplier",
             ]
         }
 
@@ -399,6 +400,7 @@ class TestFilterConsistency:
                     "_target_industry",
                     "_technology_category",
                     "_main_technology",
+                    "_supplier",
                 ]:
                     error_filters.add(node.id[1:])  # Remove leading underscore
 
