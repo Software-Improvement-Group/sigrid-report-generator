@@ -24,6 +24,7 @@ from dateutil.relativedelta import relativedelta
 from report_generator import ReportGenerator, presets
 from report_generator.generator import generator_arguments
 from report_generator.generator.context import sigrid_api
+from report_generator.update_check import check_for_update
 
 DEFAULT_START_DATE = (date.today() + relativedelta(months=-1)).strftime("%Y-%m-%d")
 DEFAULT_END_DATE = date.today().strftime("%Y-%m-%d")
@@ -143,6 +144,8 @@ def run(
     except sigrid_api.SigridAccessDeniedError as e:
         raise click.ClickException(str(e)) from e
 
+    _notify_if_update_available()
+
 
 def _configure_api(
     customer: str,
@@ -174,6 +177,16 @@ def _record_usage_statistics(layout, customer):
         logging.warning(
             f"Failed to connect to {MATOMO_URL} for registering usage statistics (not harmful)."
         )
+
+
+def _notify_if_update_available():
+    try:
+        message = check_for_update()
+        if message:
+            click.echo(f"\n{message}")
+    except Exception:
+        logging.warning("Update check failed")
+        pass
 
 
 def _configure_logging(debug):
