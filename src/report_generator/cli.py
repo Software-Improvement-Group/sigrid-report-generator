@@ -186,7 +186,6 @@ def _notify_if_update_available():
             click.echo(f"\n{message}")
     except Exception:
         logging.warning("Update check failed")
-        pass
 
 
 def _configure_logging(debug):
