@@ -136,7 +136,7 @@ class SigridHygienePortfolioData:
                     buckets[4, i] += 1
 
         totals = buckets.sum(axis=0)
-        # result: 3 rows (roles) × 6 columns (total + 5 time buckets)
+        # result: 3 rows (roles) x 6 columns (total + 5 time buckets)
         result = np.column_stack((totals, buckets.T))
 
         return result.tolist()
