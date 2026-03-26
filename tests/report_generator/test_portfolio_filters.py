@@ -39,11 +39,32 @@ def mock_portfolio_metadata():
             "systemName": "system1",
             "teamNames": ["TeamA", "TeamB"],
             "divisionName": "DivisionX",
+            "supplierNames": ["Acme Corp", "TechVendor"],
         },
-        {"systemName": "system2", "teamNames": ["TeamC"], "divisionName": "DivisionY"},
-        {"systemName": "system3", "teamNames": ["TeamA"], "divisionName": "DivisionX"},
-        {"systemName": "system4", "teamNames": ["TeamA"], "divisionName": "DivisionY"},
-        {"systemName": "system5", "teamNames": ["TeamB"], "divisionName": "DivisionX"},
+        {
+            "systemName": "system2",
+            "teamNames": ["TeamC"],
+            "divisionName": "DivisionY",
+            "supplierNames": ["GlobalSoft"],
+        },
+        {
+            "systemName": "system3",
+            "teamNames": ["TeamA"],
+            "divisionName": "DivisionX",
+            "supplierNames": ["Acme Corp"],
+        },
+        {
+            "systemName": "system4",
+            "teamNames": ["TeamA"],
+            "divisionName": "DivisionY",
+            "supplierNames": ["InternalTeam"],
+        },
+        {
+            "systemName": "system5",
+            "teamNames": ["TeamB"],
+            "divisionName": "DivisionX",
+            "supplierNames": [],
+        },
     ]
 
 
@@ -85,6 +106,7 @@ class TestPortfolioArguments:
         portfolio_filters._target_industry = None
         portfolio_filters._technology_category = None
         portfolio_filters._main_technology = None
+        portfolio_filters._supplier = None
 
     # Context Management Tests
 
@@ -182,6 +204,60 @@ class TestPortfolioArguments:
         assert result3 is True
         assert result4 is False
         assert result5 is False
+
+    def test_include_matches_supplier(self, mock_portfolio_metadata):
+        """Test that _include returns True when system matches supplier filter."""
+        set_context(supplier=["Acme Corp"])
+
+        result1 = _include("system1", mock_portfolio_metadata)  # Has Acme Corp
+        result2 = _include("system2", mock_portfolio_metadata)  # Has GlobalSoft
+        result3 = _include("system3", mock_portfolio_metadata)  # Has Acme Corp
+
+        assert result1 is True
+        assert result2 is False
+        assert result3 is True
+
+    def test_include_matches_multiple_suppliers(self, mock_portfolio_metadata):
+        """Test that _include returns True when system matches one of multiple supplier filters."""
+        set_context(supplier=["Acme Corp", "GlobalSoft"])
+
+        result1 = _include("system1", mock_portfolio_metadata)  # Has Acme Corp
+        result2 = _include("system2", mock_portfolio_metadata)  # Has GlobalSoft
+        result3 = _include("system4", mock_portfolio_metadata)  # Has InternalTeam
+
+        assert result1 is True
+        assert result2 is True
+        assert result3 is False
+
+    def test_include_supplier_with_empty_list(self, mock_portfolio_metadata):
+        """Test that _include returns False when system has no suppliers but filter is set."""
+        set_context(supplier=["Acme Corp"])
+
+        result = _include("system5", mock_portfolio_metadata)  # Has empty supplierNames
+
+        assert result is False
+
+    def test_include_matches_supplier_and_team(self, mock_portfolio_metadata):
+        """Test that _include uses AND logic between supplier and team filters."""
+        set_context(supplier=["Acme Corp"], team=["TeamA"])
+
+        result1 = _include(
+            "system1", mock_portfolio_metadata
+        )  # Matches both supplier and team
+        result2 = _include(
+            "system2", mock_portfolio_metadata
+        )  # Matches neither supplier nor team
+        result3 = _include(
+            "system3", mock_portfolio_metadata
+        )  # Matches both supplier and team
+        result4 = _include(
+            "system4", mock_portfolio_metadata
+        )  # Matches team only (has InternalTeam supplier)
+
+        assert result1 is True
+        assert result2 is False
+        assert result3 is True
+        assert result4 is False
 
     def test_find_system_metadata_returns_none_for_unknown_system(
         self, mock_portfolio_metadata

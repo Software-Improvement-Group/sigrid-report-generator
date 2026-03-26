@@ -246,7 +246,7 @@ def portfolio_arguments_command():
 
 
 def _raise_no_systems_found_error():
-    """Raise an error when no systems match the specified team/division filters."""
+    """Raise an error when no systems match the specified filters."""
     active_filters = [
         (_team, "--team"),
         (_division, "--division"),
@@ -269,8 +269,8 @@ def _raise_no_systems_found_error():
         f"No systems match the specified filters.\n"
         f"Filters applied:\n{chr(10).join(filter_desc)}\n\n"
         f"Please verify:\n"
-        f"  1. The team/division names match exactly as shown in Sigrid (case-sensitive)\n"
-        f"  2. At least one active system exists with these team/division assignments\n"
+        f"  1. The filter values match exactly as shown in Sigrid (case-sensitive for some fields)\n"
+        f"  2. At least one active system exists with these filter criteria\n"
         f"  3. The systems are not marked as development-only"
     )
     raise click.ClickException(error_msg)
