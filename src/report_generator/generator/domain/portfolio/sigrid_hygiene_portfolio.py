@@ -25,16 +25,27 @@ class SigridHygienePortfolioData:
     def __init__(self):
         self.metadata_fields = ["softwareDistributionStrategy", "applicationType", "deploymentType", "targetIndustry",
                                 "lifecyclePhase", "businessCriticality", "inProductionSince", "supplierNames", "teamNames", "divisionName"]
-        #self.metadata = sigrid_api.get_portfolio_metadata()
 
     @cached_property
     def get_metadata(self):
         return sigrid_api.get_portfolio_metadata()
 
     @cached_property
-    def get_metadata_fields(self):
+    def get_metadata_fields_labels(self):
         return ["Distribution strategy", "Application type", "Deployment type", "Target industry", "Lifecycle phase",
                 "Business criticality", "In production since", "Supplier", "Team", "Division"]
+
+    @cached_property
+    def get_snapshot_freshness_labels(self):
+        return ["Total", "1 week", "1 month", "3 months", "6 months", ">6 months"]
+
+    @cached_property
+    def get_eol_deactivated_systems_labels(self):
+        return ["Total", "Deactivated", "EOL", "EOL & Deactivated"]
+
+    @cached_property
+    def get_last_access_time_labels(self):
+        return ["Total", "1 week", "1 month", "3 months", "1 year", ">1 year"]
 
 
     def _compute_metadata_dataframe(self):
@@ -65,12 +76,6 @@ class SigridHygienePortfolioData:
             row = np.hstack((row, [[complete], [100-complete]]))
 
         return row
-
-
-    def get_number_systems_complete_metadata(self):
-        metadata_df = self._compute_metadata_dataframe()
-        fully_complete_count = (metadata_df.sum(axis=1) == len(self.metadata_fields)).sum()
-        return fully_complete_count
 
 
     def get_snapshot_freshness(self):
@@ -143,4 +148,3 @@ class SigridHygienePortfolioData:
 
 
 sigrid_hygiene_portfolio_data = SigridHygienePortfolioData()
-

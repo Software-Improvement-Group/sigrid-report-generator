@@ -448,7 +448,7 @@ class MetadataCompletenessChartPlaceholder(_AbstractCategoryChartPlaceholder):
 
     @classmethod
     def labels(cls):
-        return sigrid_hygiene_portfolio_data.get_metadata_fields
+        return sigrid_hygiene_portfolio_data.get_metadata_fields_labels
 
     @classmethod
     def series(cls):
@@ -464,7 +464,7 @@ class SnapshotFreshnessChartPlaceholder(_AbstractCategoryChartPlaceholder):
 
     @classmethod
     def labels(cls):
-        return ["Total", "1 week", "1 month", "3 months", "6 months", ">6 months"]
+        return sigrid_hygiene_portfolio_data.get_snapshot_freshness_labels
 
     @classmethod
     def series(cls):
@@ -480,7 +480,7 @@ class EolDeactivatedSystemsChartPlaceholder(_AbstractCategoryChartPlaceholder):
 
     @classmethod
     def labels(cls):
-        return ["Total", "Deactivated", "EOL", "EOL & Deactivated"]
+        return sigrid_hygiene_portfolio_data.get_eol_deactivated_systems_labels
 
     @classmethod
     def series(cls):
@@ -496,7 +496,7 @@ class UsersLastLoginChartPlaceholder(_AbstractCategoryChartPlaceholder):
 
     @classmethod
     def labels(cls):
-        return ["Total", "1 week", "1 month", "3 months", "1 year", ">1 year"]
+        return sigrid_hygiene_portfolio_data.get_last_access_time_labels
 
     @classmethod
     def series(cls):
