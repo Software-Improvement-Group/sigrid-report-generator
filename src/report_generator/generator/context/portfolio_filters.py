@@ -38,6 +38,7 @@ _application_type: Optional[list[str]] = None
 _target_industry: Optional[list[str]] = None
 _technology_category: Optional[list[str]] = None
 _main_technology: Optional[list[str]] = None
+_supplier: Optional[list[str]] = None
 
 FILTER_CONFIGURATION = {
     "team": ("_team", None, None),
@@ -66,6 +67,7 @@ FILTER_CONFIGURATION = {
         "Technology category",
     ),
     "main_technology": ("_main_technology", None, None),
+    "supplier": ("_supplier", None, None),
 }
 
 METADATA_FILTER_CHECKS = [
@@ -87,6 +89,7 @@ METADATA_FILTER_CHECKS = [
         lambda x: x.upper().replace("-", "_"),
     ),
     ("_main_technology", "mainTechnology", str.lower),
+    ("_supplier", "supplierNames", None),
 ]
 
 
@@ -129,6 +132,7 @@ def set_context(
     target_industry: Optional[list[str]] = None,
     technology_category: Optional[list[str]] = None,
     main_technology: Optional[list[str]] = None,
+    supplier: Optional[list[str]] = None,
 ) -> None:
     filters = {
         "team": team,
@@ -141,6 +145,7 @@ def set_context(
         "target_industry": target_industry,
         "technology_category": technology_category,
         "main_technology": main_technology,
+        "supplier": supplier,
     }
 
     for filter_name, value in filters.items():
@@ -199,6 +204,11 @@ def portfolio_arguments_command():
             multiple=True,
             help="[filter] Main technology filter, as displayed in Sigrid (multiple values need separate --main-technology flags, ie.: --main-technology java --main-technology python)",
         )
+        @click.option(
+            "--supplier",
+            multiple=True,
+            help="[filter] Supplier name filter, as displayed in Sigrid (multiple values need separate --supplier flags, ie.: --supplier acme --supplier techcorp)",
+        )
         @wraps(func)
         def wrapper(
             team,
@@ -211,6 +221,7 @@ def portfolio_arguments_command():
             target_industry,
             technology_category,
             main_technology,
+            supplier,
             *args,
             **kwargs,
         ):
@@ -225,6 +236,7 @@ def portfolio_arguments_command():
                 target_industry=target_industry,
                 technology_category=technology_category,
                 main_technology=main_technology,
+                supplier=supplier,
             )
             return func(*args, **kwargs)
 
@@ -234,7 +246,7 @@ def portfolio_arguments_command():
 
 
 def _raise_no_systems_found_error():
-    """Raise an error when no systems match the specified team/division filters."""
+    """Raise an error when no systems match the specified filters."""
     active_filters = [
         (_team, "--team"),
         (_division, "--division"),
@@ -246,6 +258,7 @@ def _raise_no_systems_found_error():
         (_target_industry, "--target-industry"),
         (_technology_category, "--technology-category"),
         (_main_technology, "--main-technology"),
+        (_supplier, "--supplier"),
     ]
 
     filter_desc = [
@@ -256,8 +269,8 @@ def _raise_no_systems_found_error():
         f"No systems match the specified filters.\n"
         f"Filters applied:\n{chr(10).join(filter_desc)}\n\n"
         f"Please verify:\n"
-        f"  1. The team/division names match exactly as shown in Sigrid (case-sensitive)\n"
-        f"  2. At least one active system exists with these team/division assignments\n"
+        f"  1. The filter values match exactly as shown in Sigrid (case-sensitive for some fields)\n"
+        f"  2. At least one active system exists with these filter criteria\n"
         f"  3. The systems are not marked as development-only"
     )
     raise click.ClickException(error_msg)
@@ -362,7 +375,8 @@ def _include(system_name, portfolio_metadata):
         _application_type, \
         _target_industry, \
         _technology_category, \
-        _main_technology
+        _main_technology, \
+        _supplier
     md = _find_system_metadata(
         system_name=system_name, portfolio_metadata=portfolio_metadata
     )
@@ -391,6 +405,7 @@ def _are_filters_set():
             _target_industry is not None,
             _technology_category is not None,
             _main_technology is not None,
+            _supplier is not None,
         ]
     )
 
