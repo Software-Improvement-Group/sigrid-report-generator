@@ -57,7 +57,19 @@ def _should_check() -> tuple[bool, str | None]:
     if cache is None:
         return True, None
 
-    last_checked = datetime.fromisoformat(cache["last_checked"])
+    last_checked_raw = cache.get("last_checked")
+    if not isinstance(last_checked_raw, str):
+        return True, None
+
+    try:
+        last_checked = datetime.fromisoformat(last_checked_raw)
+    except (TypeError, ValueError):
+        # Malformed timestamp in cache; treat as cache miss.
+        return True, None
+
+    if last_checked.tzinfo is None:
+        # Naive datetime cannot be safely compared to aware UTC now; treat as cache miss.
+        return True, None
     age_days = (datetime.now(timezone.utc) - last_checked).days
     if age_days < _CHECK_INTERVAL_DAYS:
         return False, cache.get("latest_version")
