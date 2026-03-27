@@ -62,6 +62,7 @@ class TestPlaceholders:
 
         mock_docx = MagicMock(spec=Document)
         mock_docx.paragraphs = []
+        mock_docx.tables = []
         report_docx = Report(mock_docx, ReportType.DOCUMENT)
 
         expected_log_entries = set()
@@ -85,22 +86,24 @@ class TestPlaceholders:
                 with patch.object(placeholder_cls, "value", return_value=dummy_value):
                     # Handle parameterized placeholders
                     if placeholder_cls.is_parameterized():
+                        # Collect expected keys for all parameters
                         for param in placeholder_cls.allowed_parameters:
                             key = placeholder_cls.key.format(parameter=param)
                             expected_log_entries.add(key)
 
-                            # Resolve for supported report types
-                            if supports_pptx:
-                                try:
-                                    placeholder_cls.resolve(report_pptx)
-                                except Exception:
-                                    pass  # Some placeholders may fail with mocked data
+                        # Resolve once per report type; ParameterizedPlaceholder.resolve
+                        # is responsible for iterating over allowed parameters internally.
+                        if supports_pptx:
+                            try:
+                                placeholder_cls.resolve(report_pptx)
+                            except Exception:
+                                pass  # Some placeholders may fail with mocked data
 
-                            if supports_docx:
-                                try:
-                                    placeholder_cls.resolve(report_docx)
-                                except Exception:
-                                    pass
+                        if supports_docx:
+                            try:
+                                placeholder_cls.resolve(report_docx)
+                            except Exception:
+                                pass
                     else:
                         # Regular placeholder
                         key = placeholder_cls.key
