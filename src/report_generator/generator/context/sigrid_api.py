@@ -370,3 +370,9 @@ def get_maintainability_refactoring_candidates(
 
     endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/refactoring-candidates/{_customer}/{system}/{property_name}{query_string}"
     return _make_request(endpoint)
+
+
+@_sigrid_api_request()
+def get_users():
+    endpoint = f"auth/api/user-management/{_customer}/users"
+    return _make_request(endpoint)

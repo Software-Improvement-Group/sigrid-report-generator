@@ -23,6 +23,7 @@ from report_generator.generator.domain import (
     modernization_data,
     objectives_data,
     progress_sigrid_data,
+    sigrid_hygiene_portfolio_data,
 )
 from report_generator.generator.placeholders import rendering
 from report_generator.generator.placeholders.implementations.base import (
@@ -34,8 +35,10 @@ from report_generator.generator.placeholders.implementations.base import (
 def _build_chart_data(values: dict) -> CategoryChartData:
     chart_data = CategoryChartData()
     chart_data.categories = values["labels"]
-    for y in values["series"]:
-        chart_data.add_series(values["axisLabel"], y)
+    series_names = values.get("seriesNames", [])
+    for idx, y in enumerate(values["series"]):
+        name = series_names[idx] if idx < len(series_names) else values["axisLabel"]
+        chart_data.add_series(name, y)
     return chart_data
 
 
@@ -73,6 +76,10 @@ class _AbstractCategoryChartPlaceholder(Placeholder, ABC):
         pass
 
     @classmethod
+    def series_names(cls):
+        return []
+
+    @classmethod
     def colors(cls):
         return []
 
@@ -86,6 +93,7 @@ class _AbstractCategoryChartPlaceholder(Placeholder, ABC):
         return {
             "labels": cls.labels(),
             "series": cls.series(),
+            "seriesNames": cls.series_names(),
             "colors": cls.colors(),
             "axisLabel": cls.axis_label(),
         }
@@ -433,3 +441,71 @@ class ObjectivesStatusChartSigridPlaceholder(_AbstractCategoryChartPlaceholder):
     @classmethod
     def axis_label(cls):
         return "Percentage of portfolio"
+
+
+class MetadataCompletenessChartPlaceholder(_AbstractCategoryChartPlaceholder):
+    key = "METADATA_COMPLETENESS_CHART"
+
+    @classmethod
+    def labels(cls):
+        return sigrid_hygiene_portfolio_data.get_metadata_fields_labels
+
+    @classmethod
+    def series(cls):
+        return sigrid_hygiene_portfolio_data.get_portfolio_metadata_completeness()
+
+    @classmethod
+    def axis_label(cls):
+        return "Percentage of portfolio"
+
+
+class SnapshotFreshnessChartPlaceholder(_AbstractCategoryChartPlaceholder):
+    key = "SNAPSHOT_FRESHNESS_CHART"
+
+    @classmethod
+    def labels(cls):
+        return sigrid_hygiene_portfolio_data.get_snapshot_freshness_labels
+
+    @classmethod
+    def series(cls):
+        return sigrid_hygiene_portfolio_data.get_snapshot_freshness()
+
+    @classmethod
+    def axis_label(cls):
+        return "Systems"
+
+
+class EolDeactivatedSystemsChartPlaceholder(_AbstractCategoryChartPlaceholder):
+    key = "EOL_DEACTIVATED_CHART"
+
+    @classmethod
+    def labels(cls):
+        return sigrid_hygiene_portfolio_data.get_eol_deactivated_systems_labels
+
+    @classmethod
+    def series(cls):
+        return sigrid_hygiene_portfolio_data.get_eol_deactivated_systems()
+
+    @classmethod
+    def axis_label(cls):
+        return "Systems"
+
+
+class UsersLastLoginChartPlaceholder(_AbstractCategoryChartPlaceholder):
+    key = "USERS_LAST_LOGIN_CHART"
+
+    @classmethod
+    def labels(cls):
+        return sigrid_hygiene_portfolio_data.get_last_access_time_labels
+
+    @classmethod
+    def series(cls):
+        return sigrid_hygiene_portfolio_data.get_last_access_time_users()
+
+    @classmethod
+    def series_names(cls):
+        return ["Admin", "Maintainer", "User"]
+
+    @classmethod
+    def axis_label(cls):
+        return "Users"
