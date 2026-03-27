@@ -124,6 +124,7 @@ def find_shapes_with_text(presentation, search_text):
         # A paragraph is typically in a TextGroup which is in a Shape, so we call getparent() twice
         # noinspection PyProtectedMember
         shapes += [paragraph._parent._parent for paragraph in paragraphs]
+    logging.debug(f"Finds for {search_text}: {len(shapes)} shapes")
     return shapes
 
 
@@ -139,6 +140,7 @@ def find_text_in_presentation(presentation, search_text):
     paragraphs = []
     for slide in presentation.slides:
         paragraphs.extend(find_text_in_slide(slide, search_text))
+    logging.debug(f"Finds for {search_text}: {len(paragraphs)} paragraphs")
     return paragraphs
 
 

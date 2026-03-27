@@ -53,7 +53,6 @@ class _AbstractTextPlaceholder(Placeholder, ABC):
     ) -> None:
         paragraphs = adapter.find_text(document, key)
 
-        logging.debug(f"Finds for {key}: {len(paragraphs)}")
         if len(paragraphs) == 0:
             return
 
