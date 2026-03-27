@@ -23,8 +23,18 @@ from report_generator.generator.context import sigrid_api
 
 class SigridHygienePortfolioData:
     def __init__(self):
-        self.metadata_fields = ["softwareDistributionStrategy", "applicationType", "deploymentType", "targetIndustry",
-                                "lifecyclePhase", "businessCriticality", "inProductionSince", "supplierNames", "teamNames", "divisionName"]
+        self.metadata_fields = [
+            "softwareDistributionStrategy",
+            "applicationType",
+            "deploymentType",
+            "targetIndustry",
+            "lifecyclePhase",
+            "businessCriticality",
+            "inProductionSince",
+            "supplierNames",
+            "teamNames",
+            "divisionName",
+        ]
 
     @cached_property
     def get_metadata(self):
@@ -32,8 +42,18 @@ class SigridHygienePortfolioData:
 
     @cached_property
     def get_metadata_fields_labels(self):
-        return ["Distribution strategy", "Application type", "Deployment type", "Target industry", "Lifecycle phase",
-                "Business criticality", "In production since", "Supplier", "Team", "Division"]
+        return [
+            "Distribution strategy",
+            "Application type",
+            "Deployment type",
+            "Target industry",
+            "Lifecycle phase",
+            "Business criticality",
+            "In production since",
+            "Supplier",
+            "Team",
+            "Division",
+        ]
 
     @cached_property
     def get_snapshot_freshness_labels(self):
@@ -47,11 +67,14 @@ class SigridHygienePortfolioData:
     def get_last_access_time_labels(self):
         return ["Total", "1 week", "1 month", "3 months", "1 year", ">1 year"]
 
-
     def _compute_metadata_dataframe(self):
         df = pd.DataFrame(columns=self.metadata_fields)
         metadata = {system["systemName"]: system for system in self.get_metadata()}
-        active_systems = [name for name, meta in metadata.items() if meta["active"] and not meta["isDevelopmentOnly"]]
+        active_systems = [
+            name
+            for name, meta in metadata.items()
+            if meta["active"] and not meta["isDevelopmentOnly"]
+        ]
 
         for system in active_systems:
             row = {}
@@ -64,7 +87,6 @@ class SigridHygienePortfolioData:
 
         return df
 
-
     def get_portfolio_metadata_completeness(self):
         metadata_df = self._compute_metadata_dataframe()
         column_completeness = metadata_df.sum().to_dict()
@@ -72,15 +94,20 @@ class SigridHygienePortfolioData:
         row = [[], []]
 
         for field in self.metadata_fields:
-            complete = np.round(column_completeness[field] / total_systems * 100, 0).astype(int)
+            complete = np.round(
+                column_completeness[field] / total_systems * 100, 0
+            ).astype(int)
             row = np.hstack((row, [[complete], [100-complete]]))
 
         return row
 
-
     def get_snapshot_freshness(self):
         metadata = {system["systemName"]: system for system in self.get_metadata()}
-        active_systems = [name for name, meta in metadata.items() if meta["active"] and not meta["isDevelopmentOnly"]]
+        active_systems = [
+            name
+            for name, meta in metadata.items()
+            if meta["active"] and not meta["isDevelopmentOnly"]
+        ]
         time_now = datetime.now()
         days_7 = 0
         days_30 = 0
@@ -105,14 +132,26 @@ class SigridHygienePortfolioData:
 
         return [[len(active_systems), days_7, days_30, days_90, days_180, days_more]]
 
-
     def get_eol_deactivated_systems(self):
         metadata = {system["systemName"]: system for system in self.get_metadata()}
-        deactivated_systems = [name for name, meta in metadata.items() if not meta["active"] or meta["isDevelopmentOnly"]]
-        eol_systems = [name for name, meta in metadata.items() if meta["lifecyclePhase"] == "EOL"]
+        deactivated_systems = [
+            name
+            for name, meta in metadata.items()
+            if not meta["active"] or meta["isDevelopmentOnly"]
+        ]
+        eol_systems = [
+            name for name, meta in metadata.items() if meta["lifecyclePhase"] == "EOL"
+        ]
         deactivated_eol = set(deactivated_systems) & set(eol_systems)
 
-        return [[len(metadata), len(deactivated_systems), len(eol_systems), len(deactivated_eol)]]
+        return [
+            [
+                len(metadata),
+                len(deactivated_systems),
+                len(eol_systems),
+                len(deactivated_eol)
+            ]
+        ]
 
 
     def get_last_access_time_users(self):
@@ -124,9 +163,11 @@ class SigridHygienePortfolioData:
         buckets = np.zeros((5, 3), dtype=int)
 
         for i, role in enumerate(roles):
-            freshness_list = [(time_now - datetime.fromisoformat(user["lastLoginAt"])).days
-                              for user in users
-                              if user["lastLoginAt"] is not None and user["role"] == role]
+            freshness_list = [
+                (time_now - datetime.fromisoformat(user["lastLoginAt"])).days
+                for user in users
+                if user["lastLoginAt"] is not None and user["role"] == role
+            ]
 
             for days in freshness_list:
                 if days < 7:
