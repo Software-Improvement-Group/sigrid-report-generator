@@ -97,7 +97,7 @@ class SigridHygienePortfolioData:
             complete = np.round(
                 column_completeness[field] / total_systems * 100, 0
             ).astype(int)
-            row = np.hstack((row, [[complete], [100-complete]]))
+            row = np.hstack((row, [[complete], [100 - complete]]))
 
         return row
 
@@ -149,7 +149,7 @@ class SigridHygienePortfolioData:
                 len(metadata),
                 len(deactivated_systems),
                 len(eol_systems),
-                len(deactivated_eol)
+                len(deactivated_eol),
             ]
         ]
 
