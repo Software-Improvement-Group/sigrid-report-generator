@@ -74,7 +74,6 @@ def _resolve_single_osh_chart(
 ) -> None:
     """Resolver for a single OSH chart."""
     charts = rendering.pptx.find_charts(presentation, key)
-    logging.debug(f"Finds for {key}: {len(charts)}")
     if not charts:
         return
 

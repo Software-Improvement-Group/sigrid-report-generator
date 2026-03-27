@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import logging
 from abc import ABC
 from typing import Callable, ClassVar
 
@@ -38,6 +39,7 @@ class _AbstractColorRatingPlaceholder(ParameterizedPlaceholder, ABC):
     def resolve_pptx(cls, presentation: Presentation, key: str, value_cb: Callable):
         shapes = rendering.pptx.find_shapes_with_text(presentation, key)
         paragraphs = rendering.pptx.find_text_in_presentation(presentation, key)
+        logging.debug(f"Finds for {key}: {len(shapes)} shapes, {len(paragraphs)} paragraphs")
 
         if len(shapes) == 0 and len(paragraphs) == 0:
             return

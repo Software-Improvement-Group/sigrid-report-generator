@@ -35,7 +35,6 @@ class TablePlaceholder(Placeholder, ABC):
     def resolve_pptx(cls, presentation, key: str, value_cb):
         tables = find_tables(presentation, key)
 
-        logging.debug(f"Finds for {key}: {len(tables)}")
         if len(tables) == 0:
             return
 
