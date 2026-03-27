@@ -153,7 +153,6 @@ class SigridHygienePortfolioData:
             ]
         ]
 
-
     def get_last_access_time_users(self):
         users = sigrid_api.get_users()["users"]
         roles = ["ADMIN", "MAINTAINER", "USER"]
