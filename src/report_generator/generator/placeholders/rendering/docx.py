@@ -33,6 +33,7 @@ def find_text_in_document(document, search_text):
         for run in paragraph.runs
         if re.match(rf".*\b{search_text}\b.*", run.text)
     )
+    logging.debug(f"Finds for {search_text}: {len(paragraphs)}")
     return paragraphs
 
 

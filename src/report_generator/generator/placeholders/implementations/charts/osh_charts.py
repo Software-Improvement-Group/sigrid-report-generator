@@ -12,7 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import logging
 from typing import Callable
 
 from pptx.chart.data import ChartData
@@ -74,7 +73,6 @@ def _resolve_single_osh_chart(
 ) -> None:
     """Resolver for a single OSH chart."""
     charts = rendering.pptx.find_charts(presentation, key)
-    logging.debug(f"Finds for {key}: {len(charts)}")
     if not charts:
         return
 
