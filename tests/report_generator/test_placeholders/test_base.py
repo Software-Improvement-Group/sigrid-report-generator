@@ -12,7 +12,17 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import logging
+from unittest.mock import MagicMock, patch
 
+from docx import Document
+from pptx import Presentation
+
+from report_generator.generator.placeholders.implementations import placeholders
+from report_generator.generator.placeholders.implementations.base import (
+    PlaceholderDocType,
+)
+from report_generator.generator.report import Report, ReportType
 from report_generator.generator.utils.constants import MetricEnum
 
 
@@ -28,3 +38,93 @@ class TestPlaceholders:
         assert TestMetricEnum.DUPLICATION.to_json_name() == "duplication"
         assert TestMetricEnum.duplication.to_json_name() == "duplication"
         assert TestMetricEnum.UnIt_sIze.to_json_name() == "unitSize"
+
+    def test_all_placeholders_produce_finds_logs(self, caplog):
+        """Verify all placeholders produce 'Finds for' debug logs when resolved."""
+
+        def _get_dummy_value(doc_type):
+            """Return appropriate dummy value based on PlaceholderDocType."""
+            if doc_type == PlaceholderDocType.TEXT:
+                return "Dummy Text"
+            elif doc_type == PlaceholderDocType.CHART:
+                return {"categories": ["A", "B"], "values": [1, 2]}
+            elif doc_type == PlaceholderDocType.TABLE:
+                return [["Header"], ["Row1"]]
+            elif doc_type == PlaceholderDocType.IMAGE:
+                return b"dummy_image_data"
+            else:
+                return "Dummy Value"
+
+        # Create mock reports for both types
+        mock_pptx = MagicMock(spec=Presentation)
+        mock_pptx.slides = []
+        report_pptx = Report(mock_pptx, ReportType.PRESENTATION)
+
+        mock_docx = MagicMock(spec=Document)
+        mock_docx.paragraphs = []
+        report_docx = Report(mock_docx, ReportType.DOCUMENT)
+
+        expected_log_entries = set()
+
+        with caplog.at_level(logging.DEBUG):
+            for placeholder_cls in placeholders:
+                # Determine which report types this placeholder supports
+                supports_pptx = placeholder_cls.supports(ReportType.PRESENTATION)
+                supports_docx = placeholder_cls.supports(ReportType.DOCUMENT)
+
+                if not supports_pptx and not supports_docx:
+                    continue
+
+                # Get dummy value based on doc type
+                doc_type = getattr(
+                    placeholder_cls, "__doc_type__", PlaceholderDocType.OTHER
+                )
+                dummy_value = _get_dummy_value(doc_type)
+
+                # Mock the value method
+                with patch.object(placeholder_cls, "value", return_value=dummy_value):
+                    # Handle parameterized placeholders
+                    if placeholder_cls.is_parameterized():
+                        for param in placeholder_cls.allowed_parameters:
+                            key = placeholder_cls.key.format(parameter=param)
+                            expected_log_entries.add(key)
+
+                            # Resolve for supported report types
+                            if supports_pptx:
+                                try:
+                                    placeholder_cls.resolve(report_pptx)
+                                except Exception:
+                                    pass  # Some placeholders may fail with mocked data
+
+                            if supports_docx:
+                                try:
+                                    placeholder_cls.resolve(report_docx)
+                                except Exception:
+                                    pass
+                    else:
+                        # Regular placeholder
+                        key = placeholder_cls.key
+                        expected_log_entries.add(key)
+
+                        # Resolve for supported report types
+                        if supports_pptx:
+                            try:
+                                placeholder_cls.resolve(report_pptx)
+                            except Exception:
+                                pass
+
+                        if supports_docx:
+                            try:
+                                placeholder_cls.resolve(report_docx)
+                            except Exception:
+                                pass
+
+        # Verify all expected keys appear in debug logs
+        log_text = caplog.text
+        missing_logs = [
+            key for key in expected_log_entries if f"Finds for {key}:" not in log_text
+        ]
+
+        assert not missing_logs, (
+            f"Missing 'Finds for' logs for {len(missing_logs)} placeholders: {missing_logs[:10]}"
+        )
