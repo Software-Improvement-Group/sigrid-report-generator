@@ -108,8 +108,12 @@ class _ManagementSummaryMarkerPlaceholder(Placeholder, ABC):
     ) -> None:
         markers = rendering.pptx.find_text_in_presentation(presentation, key)
 
+        if not markers:
+            return
+
+        value, label = value_cb()
+
         for marker in markers:
-            value, label = value_cb()
             rendering.pptx.update_paragraph(marker, key, f"{label}\n\n\n\n")
             # noinspection PyProtectedMember
             marker._parent._parent.left += int(value * _MANAGEMENT_SUMMARY_MARKER_RANGE)
