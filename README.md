@@ -14,7 +14,7 @@ provided by Sigrid. The Report Generator can be used for two "flavors" of report
 
 ## Prerequisites
 
-- Python 3.9+
+- Python 3.10+
 - You need to be able to install and use Python packages
 - You need a [Sigrid API token](https://docs.sigrid-says.com/organization-integration/authentication-tokens.html)
 
