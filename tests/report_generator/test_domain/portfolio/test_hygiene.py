@@ -120,9 +120,18 @@ class TestSigridHygienePortfolioData:
         """Test that user access times are classified correctly in the time buckets."""
         mock_api.get_users.return_value = {
             "users": [
-                {"role": "ADMIN", "lastLoginAt": "2026-03-29T00:00:00.000000"},  # <7 days
-                {"role": "MAINTAINER", "lastLoginAt": "2026-02-15T00:00:00.000000"},  # ~40 days
-                {"role": "USER", "lastLoginAt": "2025-01-01T00:00:00.000000"},  # >365 days
+                {
+                    "role": "ADMIN",
+                    "lastLoginAt": "2026-03-29T00:00:00.000000",
+                },  # <7 days
+                {
+                    "role": "MAINTAINER",
+                    "lastLoginAt": "2026-02-15T00:00:00.000000",
+                },  # ~40 days
+                {
+                    "role": "USER",
+                    "lastLoginAt": "2025-01-01T00:00:00.000000",
+                },  # >365 days
             ]
         }
 
