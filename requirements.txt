@@ -1,7 +1,11 @@
+# Production dependencies for sigrid-report-generator
+# These are mirrored from setup.cfg [options] install_requires section
+# When updating dependencies, keep both files in sync
+
 mistune==3.2.0
 pyyaml==6.0.1
 click==8.1.8
-pillow>=12.1.1,<13.0
+pillow>=11.3.0,<13.0
 lxml==6.0.2
 python-pptx>=1.0.2,<1.1
 python-docx>=1.2.0,<1.3

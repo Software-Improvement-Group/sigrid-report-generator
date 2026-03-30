@@ -1,3 +1,7 @@
+# Development dependencies for sigrid-report-generator
+# Includes production dependencies plus testing/linting tools
+# Mirrors setup.cfg [options.extras_require] test section
+
 -r requirements.txt
 
 pytest
