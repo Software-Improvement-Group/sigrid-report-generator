@@ -15,9 +15,9 @@
 from datetime import datetime
 from functools import cached_property
 
-from dateutil import parser
 import numpy as np
 import pandas as pd
+from dateutil import parser
 
 from report_generator.generator.context import sigrid_api
 
