@@ -71,7 +71,7 @@ class TestSigridHygienePortfolioData:
         ]
 
         mock_api.get_architecture_findings.return_value = {
-            "snapshotDate": "2026-03-25T00:00:00Z"  # 5 days old
+            "snapshotDate": "2026-03-25T00:00:00.000000"  # 5 days old
         }
 
         result = sigrid_hygiene_portfolio_data.get_snapshot_freshness()
@@ -84,9 +84,24 @@ class TestSigridHygienePortfolioData:
     def test_eol_deactivated_systems(self, mock_api):
         """Test that EOL and deactivated systems are correctly counted."""
         mock_api.get_portfolio_metadata.return_value = [
-            {"systemName": "A", "active": False, "isDevelopmentOnly": False, "lifecyclePhase": "EOL"},
-            {"systemName": "B", "active": True, "isDevelopmentOnly": False, "lifecyclePhase": "LIVE"},
-            {"systemName": "C", "active": False, "isDevelopmentOnly": True, "lifecyclePhase": "LIVE"},
+            {
+                "systemName": "A",
+                "active": False,
+                "isDevelopmentOnly": False,
+                "lifecyclePhase": "EOL"
+            },
+            {
+                "systemName": "B",
+                "active": True,
+                "isDevelopmentOnly": False,
+                "lifecyclePhase": "LIVE"
+            },
+            {
+                "systemName": "C",
+                "active": False,
+                "isDevelopmentOnly": True,
+                "lifecyclePhase": "LIVE"
+            },
         ]
 
         result = sigrid_hygiene_portfolio_data.get_eol_deactivated_systems()
@@ -105,9 +120,9 @@ class TestSigridHygienePortfolioData:
         """Test that user access times are classified correctly in the time buckets."""
         mock_api.get_users.return_value = {
             "users": [
-                {"role": "ADMIN", "lastLoginAt": "2026-03-29T00:00:00Z"},  # <7 days
-                {"role": "MAINTAINER", "lastLoginAt": "2026-02-15T00:00:00Z"},  # ~40 days
-                {"role": "USER", "lastLoginAt": "2025-01-01T00:00:00Z"},  # >365 days
+                {"role": "ADMIN", "lastLoginAt": "2026-03-29T00:00:00.000000"},  # <7 days
+                {"role": "MAINTAINER", "lastLoginAt": "2026-02-15T00:00:00.000000"},  # ~40 days
+                {"role": "USER", "lastLoginAt": "2025-01-01T00:00:00.000000"},  # >365 days
             ]
         }
 
