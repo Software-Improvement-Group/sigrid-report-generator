@@ -15,6 +15,7 @@
 from datetime import datetime
 from functools import cached_property
 
+from dateutil import parser
 import numpy as np
 import pandas as pd
 
@@ -69,7 +70,7 @@ class SigridHygienePortfolioData:
 
     def _compute_metadata_dataframe(self):
         df = pd.DataFrame(columns=self.metadata_fields)
-        metadata = {system["systemName"]: system for system in self.get_metadata()}
+        metadata = {system["systemName"]: system for system in self.get_metadata}
         active_systems = [
             name
             for name, meta in metadata.items()
@@ -94,7 +95,7 @@ class SigridHygienePortfolioData:
         row = [[], []]
 
         for field in self.metadata_fields:
-            complete = np.round(
+            complete = 0 if total_systems == 0 else np.round(
                 column_completeness[field] / total_systems * 100, 0
             ).astype(int)
             row = np.hstack((row, [[complete], [100 - complete]]))
@@ -102,7 +103,7 @@ class SigridHygienePortfolioData:
         return row
 
     def get_snapshot_freshness(self):
-        metadata = {system["systemName"]: system for system in self.get_metadata()}
+        metadata = {system["systemName"]: system for system in self.get_metadata}
         active_systems = [
             name
             for name, meta in metadata.items()
@@ -117,7 +118,7 @@ class SigridHygienePortfolioData:
 
         for system in active_systems:
             snapshot_date = sigrid_api.get_architecture_findings(system)["snapshotDate"]
-            freshness = (time_now - datetime.fromisoformat(snapshot_date)).days
+            freshness = (time_now - parser.isoparse(snapshot_date)).days
 
             if freshness < 7:
                 days_7 += 1
@@ -133,7 +134,7 @@ class SigridHygienePortfolioData:
         return [[len(active_systems), days_7, days_30, days_90, days_180, days_more]]
 
     def get_eol_deactivated_systems(self):
-        metadata = {system["systemName"]: system for system in self.get_metadata()}
+        metadata = {system["systemName"]: system for system in self.get_metadata}
         deactivated_systems = [
             name
             for name, meta in metadata.items()
@@ -163,7 +164,7 @@ class SigridHygienePortfolioData:
 
         for i, role in enumerate(roles):
             freshness_list = [
-                (time_now - datetime.fromisoformat(user["lastLoginAt"])).days
+                (time_now - parser.isoparse(user["lastLoginAt"])).days
                 for user in users
                 if user["lastLoginAt"] is not None and user["role"] == role
             ]
