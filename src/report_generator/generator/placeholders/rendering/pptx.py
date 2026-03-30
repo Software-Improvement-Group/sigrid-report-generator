@@ -124,6 +124,7 @@ def find_shapes_with_text(presentation, search_text):
         # A paragraph is typically in a TextGroup which is in a Shape, so we call getparent() twice
         # noinspection PyProtectedMember
         shapes += [paragraph._parent._parent for paragraph in paragraphs]
+    logging.debug(f"Finds for {search_text}: {len(shapes)} shapes")
     return shapes
 
 
@@ -139,7 +140,7 @@ def find_text_in_presentation(presentation, search_text):
     paragraphs = []
     for slide in presentation.slides:
         paragraphs.extend(find_text_in_slide(slide, search_text))
-
+    logging.debug(f"Finds for {search_text}: {len(paragraphs)} paragraphs")
     return paragraphs
 
 
@@ -255,30 +256,36 @@ def test_code_ratio_color(ratio):
 
 def find_charts(presentation: Presentation, key: str):
     """Find charts by shape name. This is the recommended way to locate charts in a presentation."""
-    return [
+    charts = [
         shape.chart
         for slide in presentation.slides
         for shape in slide.shapes
         if shape.has_chart and shape.name == key
     ]
+    logging.debug(f"Finds for {key}: {len(charts)}")
+    return charts
 
 
 def find_tables(presentation: Presentation, key: str):
-    return [
+    tables = [
         shape.table
         for slide in presentation.slides
         for shape in slide.shapes
         if shape.has_table and shape.name == key
     ]
+    logging.debug(f"Finds for {key}: {len(tables)}")
+    return tables
 
 
 def find_shapes(presentation: Presentation, key: str):
-    return [
+    shapes = [
         shape
         for slide in presentation.slides
         for shape in slide.shapes
         if find_text_in_shape(shape, key)
     ]
+    logging.debug(f"Finds for {key}: {len(shapes)}")
+    return shapes
 
 
 def remove_row_from_table(table: Table, row: _Row):

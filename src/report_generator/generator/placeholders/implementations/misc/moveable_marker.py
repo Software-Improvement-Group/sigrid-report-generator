@@ -50,9 +50,7 @@ class _AbstractMoveableMarkerPlaceholder(Placeholder, ABC):
     def resolve_pptx(
         presentation: Presentation, key: str, value_cb: Callable[[], str]
     ) -> None:
-        paragraphs = []
-        for slide in presentation.slides:
-            paragraphs.extend(rendering.pptx.find_text_in_slide(slide, key))
+        paragraphs = rendering.pptx.find_text_in_presentation(presentation, key)
 
         if len(paragraphs) == 0:
             return
@@ -108,14 +106,17 @@ class _ManagementSummaryMarkerPlaceholder(Placeholder, ABC):
     def resolve_pptx(
         presentation: Presentation, key: str, value_cb: Callable[[], str]
     ) -> None:
-        for slide in presentation.slides:
-            for marker in rendering.pptx.find_text_in_slide(slide, key):
-                value, label = value_cb()
-                rendering.pptx.update_paragraph(marker, key, f"{label}\n\n\n\n")
-                # noinspection PyProtectedMember
-                marker._parent._parent.left += int(
-                    value * _MANAGEMENT_SUMMARY_MARKER_RANGE
-                )
+        markers = rendering.pptx.find_text_in_presentation(presentation, key)
+
+        if not markers:
+            return
+
+        value, label = value_cb()
+
+        for marker in markers:
+            rendering.pptx.update_paragraph(marker, key, f"{label}\n\n\n\n")
+            # noinspection PyProtectedMember
+            marker._parent._parent.left += int(value * _MANAGEMENT_SUMMARY_MARKER_RANGE)
 
 
 class ModernizationVolumeMarkerPlaceholder(_ManagementSummaryMarkerPlaceholder):

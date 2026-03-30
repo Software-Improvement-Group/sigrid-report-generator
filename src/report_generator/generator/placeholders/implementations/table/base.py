@@ -12,7 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import logging
 from abc import ABC
 from typing import Union
 
@@ -35,7 +34,6 @@ class TablePlaceholder(Placeholder, ABC):
     def resolve_pptx(cls, presentation, key: str, value_cb):
         tables = find_tables(presentation, key)
 
-        logging.debug(f"Finds for {key}: {len(tables)}")
         if len(tables) == 0:
             return
 
