@@ -88,19 +88,19 @@ class TestSigridHygienePortfolioData:
                 "systemName": "A",
                 "active": False,
                 "isDevelopmentOnly": False,
-                "lifecyclePhase": "EOL"
+                "lifecyclePhase": "EOL",
             },
             {
                 "systemName": "B",
                 "active": True,
                 "isDevelopmentOnly": False,
-                "lifecyclePhase": "LIVE"
+                "lifecyclePhase": "LIVE",
             },
             {
                 "systemName": "C",
                 "active": False,
                 "isDevelopmentOnly": True,
-                "lifecyclePhase": "LIVE"
+                "lifecyclePhase": "LIVE",
             },
         ]
 
