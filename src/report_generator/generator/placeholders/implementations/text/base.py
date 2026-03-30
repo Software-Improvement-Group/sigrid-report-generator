@@ -12,7 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import logging
 from abc import ABC
 from typing import Callable, Optional, Union
 
@@ -53,7 +52,6 @@ class _AbstractTextPlaceholder(Placeholder, ABC):
     ) -> None:
         paragraphs = adapter.find_text(document, key)
 
-        logging.debug(f"Finds for {key}: {len(paragraphs)}")
         if len(paragraphs) == 0:
             return
 
