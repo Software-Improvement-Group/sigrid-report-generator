@@ -95,9 +95,13 @@ class SigridHygienePortfolioData:
         row = [[], []]
 
         for field in self.metadata_fields:
-            complete = 0 if total_systems == 0 else np.round(
-                column_completeness[field] / total_systems * 100, 0
-            ).astype(int)
+            complete = (
+                0
+                if total_systems == 0
+                else np.round(
+                    column_completeness[field] / total_systems * 100, 0
+                ).astype(int)
+            )
             row = np.hstack((row, [[complete], [100 - complete]]))
 
         return row
