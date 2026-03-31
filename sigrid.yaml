@@ -11,7 +11,8 @@ languages:
   - name: "Python"
 
 dependencychecker:
-  blocklist: [ ]
+  exclude:
+    - license: "matplotlib"
 
 thirdpartyfindings:
   enabled: true
