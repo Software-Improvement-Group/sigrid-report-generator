@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from unittest.mock import patch
 
 from freezegun import freeze_time
@@ -80,7 +80,7 @@ class TestSigridHygienePortfolioData:
 
         mock_api.get_architecture_findings.return_value = {
             "snapshotDate": (
-                datetime.now(timezone.utc) - timedelta(days=5)
+                datetime.now() - timedelta(days=5)
             ).isoformat(),  # 5 days old
         }
 
@@ -138,19 +138,19 @@ class TestSigridHygienePortfolioData:
                 {
                     "role": "ADMIN",
                     "lastLoginAt": (
-                        datetime.now(timezone.utc) - timedelta(days=5)
+                        datetime.now() - timedelta(days=5)
                     ).isoformat(),
                 },  # <7 days
                 {
                     "role": "MAINTAINER",
                     "lastLoginAt": (
-                        datetime.now(timezone.utc) - timedelta(days=40)
+                        datetime.now() - timedelta(days=40)
                     ).isoformat(),
                 },  # ~40 days
                 {
                     "role": "USER",
                     "lastLoginAt": (
-                        datetime.now(timezone.utc) - timedelta(days=420)
+                        datetime.now() - timedelta(days=420)
                     ).isoformat(),
                 },  # >365 days
             ]
