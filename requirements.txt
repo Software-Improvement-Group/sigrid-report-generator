@@ -17,7 +17,7 @@ python-dateutil==2.9.0
 numpy==2.2.0
 tqdm==4.67.1
 pandas==2.2.3
-matplotlib==3.9.0
+matplotlib==3.10.0
 matplotlib-extra @ git+https://github.com/chenyulue/matplotlib-extra.git@d93f7459fa92d321742945412d3229dd00253e2c
 squarify==0.4.3
 platformdirs==4.0.0
