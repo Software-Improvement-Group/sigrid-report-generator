@@ -12,7 +12,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
+
+from freezegun import freeze_time
 
 from report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio import (
     sigrid_hygiene_portfolio_data,
@@ -35,7 +38,9 @@ class TestSigridHygienePortfolioData:
         for attr in cache_attrs:
             sigrid_hygiene_portfolio_data.__dict__.pop(attr, None)
 
-    @patch("report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio.sigrid_api"
+    )
     def test_portfolio_metadata_completeness(self, mock_api):
         """Test that the metadata completeness percentages are computed correctly."""
         mock_api.get_portfolio_metadata.return_value = [
@@ -63,7 +68,10 @@ class TestSigridHygienePortfolioData:
         assert len(row[0]) == len(sigrid_hygiene_portfolio_data.metadata_fields)
         assert all(v in (0, 100) for v in row[0])
 
-    @patch("report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio.sigrid_api")
+    @freeze_time("2026-03-15 00:00:00")
+    @patch(
+        "report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio.sigrid_api"
+    )
     def test_snapshot_freshness(self, mock_api):
         """Test that snapshot freshness dates are classified correctly in the time buckets."""
         mock_api.get_portfolio_metadata.return_value = [
@@ -71,7 +79,9 @@ class TestSigridHygienePortfolioData:
         ]
 
         mock_api.get_architecture_findings.return_value = {
-            "snapshotDate": "2026-03-25T00:00:00.000000"  # 5 days old
+            "snapshotDate": (
+                datetime.now(timezone.utc) - timedelta(days=5)
+            ).isoformat(),  # 5 days old
         }
 
         result = sigrid_hygiene_portfolio_data.get_snapshot_freshness()
@@ -80,7 +90,9 @@ class TestSigridHygienePortfolioData:
         assert result[0][0] == 1  # total systems
         assert result[0][1] == 1  # in "< 7 days" bucket
 
-    @patch("report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio.sigrid_api"
+    )
     def test_eol_deactivated_systems(self, mock_api):
         """Test that EOL and deactivated systems are correctly counted."""
         mock_api.get_portfolio_metadata.return_value = [
@@ -115,22 +127,31 @@ class TestSigridHygienePortfolioData:
         # EOL & deactivated = A
         assert result[0][3] == 1
 
-    @patch("report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio.sigrid_api")
+    @freeze_time("2026-03-15 00:00:00")
+    @patch(
+        "report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio.sigrid_api"
+    )
     def test_last_access_time_users(self, mock_api):
         """Test that user access times are classified correctly in the time buckets."""
         mock_api.get_users.return_value = {
             "users": [
                 {
                     "role": "ADMIN",
-                    "lastLoginAt": "2026-03-29T00:00:00.000000",
+                    "lastLoginAt": (
+                        datetime.now(timezone.utc) - timedelta(days=5)
+                    ).isoformat(),
                 },  # <7 days
                 {
                     "role": "MAINTAINER",
-                    "lastLoginAt": "2026-02-15T00:00:00.000000",
+                    "lastLoginAt": (
+                        datetime.now(timezone.utc) - timedelta(days=40)
+                    ).isoformat(),
                 },  # ~40 days
                 {
                     "role": "USER",
-                    "lastLoginAt": "2025-01-01T00:00:00.000000",
+                    "lastLoginAt": (
+                        datetime.now(timezone.utc) - timedelta(days=420)
+                    ).isoformat(),
                 },  # >365 days
             ]
         }
