@@ -16,7 +16,7 @@ jobs:
         with:
           customer: sig
           system: report-generator
-          capability: maintainability,osh
+          capability: maintainability,osh,security
         env:
           SIGRID_CI_TOKEN: "${{ secrets.SIGRID_CI_TOKEN }}"
       - name: "Sigrid pull request feedback"
