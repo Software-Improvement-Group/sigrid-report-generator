@@ -40,6 +40,7 @@ from report_generator.generator.utils.constants.metadata import (
     METADATA_LIFECYCLE_MAPPING,
 )
 
+
 class _AbstractTreemapPlaceholder(_AbstractParameterizedImagePlaceholder, ABC):
     @staticmethod
     def determine_rating_color(rating):
@@ -248,7 +249,9 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
         # pandas Copy-on-Write FutureWarning. This is a known upstream issue.
         # TODO: fix this by finding an alternative to mpl_extra or contributing a fix upstream.
         with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", category=FutureWarning, message=".*ChainedAssignmentError.*")
+            warnings.filterwarnings(
+                "ignore", category=FutureWarning, message=".*ChainedAssignmentError.*"
+            )
             tr.treemap(
                 axes=ax,
                 data=df,
