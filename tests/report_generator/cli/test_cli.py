@@ -33,9 +33,9 @@ class TestCLIVersion:
 
         # Verify the actual installed package version is present in the output
         expected_version = version("report-generator")
-        assert (
-            expected_version in result.output
-        ), f"Expected version '{expected_version}' not found in output: {result.output}"
+        assert expected_version in result.output, (
+            f"Expected version '{expected_version}' not found in output: {result.output}"
+        )
 
 
 class TestCLIParameters:

@@ -47,9 +47,9 @@ class TestSigridAPI:
 
         sigrid_api.set_context(customer="test-customer")
         assert sigrid_api._customer == "test-customer"
-        assert (
-            custom_base_url in sigrid_api._rest_url
-        ), "existing context (base_url) should be preserved"
+        assert custom_base_url in sigrid_api._rest_url, (
+            "existing context (base_url) should be preserved"
+        )
 
         sigrid_api.reset_context()
 
