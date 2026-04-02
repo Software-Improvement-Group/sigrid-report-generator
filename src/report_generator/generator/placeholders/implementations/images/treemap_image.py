@@ -18,15 +18,6 @@ from typing import Callable, ClassVar
 
 import matplotlib.pyplot as plt
 import mpl_extra.treemap as tr
-
-# mpl_extra uses chained DataFrame assignment which triggers pandas Copy-on-Write warnings;
-# this is a known upstream issue in the third-party library.
-warnings.filterwarnings(
-    "ignore",
-    category=FutureWarning,
-    module="mpl_extra",
-    message=".*ChainedAssignmentError.*",
-)
 import pandas as pd
 
 from report_generator.generator.domain import (
@@ -49,6 +40,14 @@ from report_generator.generator.utils.constants.metadata import (
     METADATA_LIFECYCLE_MAPPING,
 )
 
+# mpl_extra uses chained DataFrame assignment which triggers pandas Copy-on-Write warnings;
+# this is a known upstream issue in the third-party library.
+warnings.filterwarnings(
+    "ignore",
+    category=FutureWarning,
+    module="mpl_extra",
+    message=".*ChainedAssignmentError.*",
+)
 
 class _AbstractTreemapPlaceholder(_AbstractParameterizedImagePlaceholder, ABC):
     @staticmethod
