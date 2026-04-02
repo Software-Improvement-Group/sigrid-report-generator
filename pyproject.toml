@@ -14,9 +14,6 @@ addopts = [
     "-m", "not integration",
 ]
 pythonpath = "."
-filterwarnings = [
-    "ignore:ChainedAssignmentError:FutureWarning:mpl_extra",
-]
 markers = [
     "integration: requires live Sigrid API and a valid REPORT_GENERATOR_TESTS_TOKEN",
 ]
