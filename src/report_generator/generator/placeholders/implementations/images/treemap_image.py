@@ -247,7 +247,6 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
 
         # mpl_extra uses chained DataFrame assignment internally, which triggers a
         # pandas Copy-on-Write FutureWarning. This is a known upstream issue.
-        # TODO: fix this by finding an alternative to mpl_extra or contributing a fix upstream.
         with warnings.catch_warnings():
             warnings.filterwarnings(
                 "ignore", category=FutureWarning, message=".*ChainedAssignmentError.*"
