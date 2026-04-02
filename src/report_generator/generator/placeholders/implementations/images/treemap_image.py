@@ -49,6 +49,7 @@ warnings.filterwarnings(
     message=".*ChainedAssignmentError.*",
 )
 
+
 class _AbstractTreemapPlaceholder(_AbstractParameterizedImagePlaceholder, ABC):
     @staticmethod
     def determine_rating_color(rating):
