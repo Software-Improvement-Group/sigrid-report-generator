@@ -128,6 +128,4 @@ class TestPlaceholders:
             key for key in expected_log_entries if f"Finds for {key}:" not in log_text
         ]
 
-        assert not missing_logs, (
-            f"Missing 'Finds for' logs for {len(missing_logs)} placeholders: {missing_logs[:10]}"
-        )
+        assert not missing_logs, f"Missing 'Finds for' logs for {len(missing_logs)} placeholders: {missing_logs[:10]}"

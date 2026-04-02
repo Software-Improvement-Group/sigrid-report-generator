@@ -39,9 +39,7 @@ def test_template_exists_for_each_preset(preset_id):
 @freeze_time(_shared.PERIOD[1])
 def test_generate_preset(preset_id, tmp_path):
     token = _shared.resolve_token()
-    assert token, (
-        "Sigrid API token not set in environment. Set SIGRID_REPORTGENERATORDEMO_TOKEN, SIGRID_TOKEN, or SIGRID_CI_TOKEN"
-    )
+    assert token, "Sigrid API token not set in environment. Set SIGRID_REPORTGENERATORDEMO_TOKEN, SIGRID_TOKEN, or SIGRID_CI_TOKEN"
     os.environ["SIGRID_REPORT_GENERATOR_RECORD_USAGE"] = "0"
 
     template_file = _shared.TEMPLATES_DIR / f"{preset_id}.pptx"

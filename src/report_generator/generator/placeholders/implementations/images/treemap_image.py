@@ -21,7 +21,12 @@ import mpl_extra.treemap as tr
 
 # mpl_extra uses chained DataFrame assignment which triggers pandas Copy-on-Write warnings;
 # this is a known upstream issue in the third-party library.
-warnings.filterwarnings("ignore", category=FutureWarning, module="mpl_extra", message=".*ChainedAssignmentError.*")
+warnings.filterwarnings(
+    "ignore",
+    category=FutureWarning,
+    module="mpl_extra",
+    message=".*ChainedAssignmentError.*",
+)
 import pandas as pd
 
 from report_generator.generator.domain import (
