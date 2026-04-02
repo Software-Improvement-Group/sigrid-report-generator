@@ -48,7 +48,7 @@ def _populate_chart(presentation: Presentation, key: str) -> None:
 class MaintainabilityGalaxyChartPlaceholder(Placeholder):
     """Traditional SIG benchmark galaxy chart."""
 
-    key = "GALAXY_SLIDE"
+    key = "GALAXY_CHART"
     __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
