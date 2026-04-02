@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 import logging
+import warnings
 from abc import ABC
 from typing import Callable, ClassVar
 
@@ -244,37 +245,43 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
                 name: cls.NA_STAR_COLOR for name in fig_data["system_names"]
             }
 
-        tr.treemap(
-            axes=ax,
-            data=df,
-            area="volumes",
-            levels=["root_names", "system_names"],
-            top=True,
-            fill="system_names",
-            cmap=color_mapping,
-            labels="labels",
-            rectprops={"ec": "w", "pad": (0, 0, 0, 4.5)},  # 'Grouped by' headers
-            textprops={
-                "fontfamily": "sans-serif",
-                "reflow": True,
-                "place": "center",
-                "grow": True,
-                "max_fontsize": 7,
-                "color": "k",
-                "pady": 1,
-                "padx": 1,
-            },  # Text inside squares
-            subgroup_rectprops={"root_names": {"ec": "w", "fc": cls.BUNDLE_COLOR}},
-            subgroup_textprops={
-                "root_names": {
-                    "place": "top center",
-                    "max_fontsize": 8,
-                    "pady": 2,
+        # mpl_extra uses chained DataFrame assignment internally, which triggers a
+        # pandas Copy-on-Write FutureWarning. This is a known upstream issue.
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore", category=FutureWarning, message=".*ChainedAssignmentError.*"
+            )
+            tr.treemap(
+                axes=ax,
+                data=df,
+                area="volumes",
+                levels=["root_names", "system_names"],
+                top=True,
+                fill="system_names",
+                cmap=color_mapping,
+                labels="labels",
+                rectprops={"ec": "w", "pad": (0, 0, 0, 4.5)},  # 'Grouped by' headers
+                textprops={
                     "fontfamily": "sans-serif",
+                    "reflow": True,
+                    "place": "center",
+                    "grow": True,
+                    "max_fontsize": 7,
                     "color": "k",
-                }
-            },
-        )
+                    "pady": 1,
+                    "padx": 1,
+                },  # Text inside squares
+                subgroup_rectprops={"root_names": {"ec": "w", "fc": cls.BUNDLE_COLOR}},
+                subgroup_textprops={
+                    "root_names": {
+                        "place": "top center",
+                        "max_fontsize": 8,
+                        "pady": 2,
+                        "fontfamily": "sans-serif",
+                        "color": "k",
+                    }
+                },
+            )
         ax.axis("off")
         return fig
 
