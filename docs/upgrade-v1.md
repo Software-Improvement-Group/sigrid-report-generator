@@ -48,7 +48,7 @@ the placeholder key in the Selection Pane.
 **Special case — `GALAXY_SLIDE`:**
 
 In v0, the code found the slide via the `GALAXY_SLIDE` text marker, then looked for a chart named
-`CHART_1` on that slide. In v1, the chart shape itself must be named `GALAXY_SLIDE`.
+`CHART_1` on that slide. In v1, the chart shape itself must be named `GALAXY_CHART`.
 
 ---
 
