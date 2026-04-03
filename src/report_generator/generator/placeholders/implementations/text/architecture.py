@@ -86,17 +86,23 @@ def arch_observation():
 @text_placeholder()
 def arch_worst_metric_remark():
     """Remark about the lowest rating metric in the system's Architecture Quality analysis."""
-    return smart_remarks.arch_worst_metric_remark(
-        architecture_data.ratings["systemProperties"]
-    ) or ""
+    return (
+        smart_remarks.arch_worst_metric_remark(
+            architecture_data.ratings["systemProperties"]
+        )
+        or ""
+    )
 
 
 @text_placeholder()
 def arch_best_metric_remark():
     """Remark about the highest rating metric in the system's Architecture Quality analysis."""
-    return smart_remarks.arch_best_metric_remark(
-        architecture_data.ratings["systemProperties"]
-    ) or ""
+    return (
+        smart_remarks.arch_best_metric_remark(
+            architecture_data.ratings["systemProperties"]
+        )
+        or ""
+    )
 
 
 @parameterized_text_placeholder(
