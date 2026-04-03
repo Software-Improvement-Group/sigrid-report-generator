@@ -44,7 +44,7 @@ class TestPlaceholders:
         """All placeholder keys must only contain uppercase letters, digits, and underscores,
         and must contain at least one underscore. Parameterized keys may additionally contain {parameter} tokens."""
         valid_key = re.compile(
-            r"^(?=[A-Z0-9_]*_)[A-Z0-9_]+(\{[A-Z0-9_a-z]+\}[A-Z0-9_]*)*$"
+            r"^(?=.*_)[A-Z0-9_]+(\{[A-Z0-9_a-z]+\}[A-Z0-9_]*)*$"
         )
         invalid = [ph.key for ph in placeholders if not valid_key.match(ph.key)]
         assert not invalid, f"Placeholder keys with invalid characters: {invalid}"
