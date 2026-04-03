@@ -115,7 +115,7 @@ def portfolio_osh_relative():
 
 
 @parameterized_text_placeholder(
-    custom_key="portfolio_osh_RATING_{parameter}", parameters=list(OSHMetric)
+    custom_key="PORTFOLIO_OSH_RATING_{parameter}", parameters=list(OSHMetric)
 )
 def portfolio_osh_rating_param(metric: OSHMetric):
     """The 0.5-5.5 star rating for this OSH metric."""
