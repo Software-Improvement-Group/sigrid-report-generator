@@ -14,11 +14,12 @@
 
 import inspect
 
-from . import osh_charts, security_findings
+from . import maintainability_galaxy_charts, osh_charts, security_findings
 
 _all_implementations = {
     **security_findings.__dict__,
     **osh_charts.__dict__,
+    **maintainability_galaxy_charts.__dict__,
 }
 
 _placeholders_map = {

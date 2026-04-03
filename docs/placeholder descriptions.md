@@ -237,6 +237,7 @@ To use these placeholders, rename the chart shape in the Selection Pane to match
 | `OSH_PORTFOLIO_OTHER_RISKS_GRAPH`        | PPTX       | OSH portfolio-level freshness, stability, management, and activity risk bar chart.                         |
 | `OSH_PORTFOLIO_VULN_LEGAL_GRAPH`         | PPTX       | OSH portfolio-level vulnerability and legal risk bar chart.                                                |
 | `OSH_VULN_LEGAL_GRAPH`                   | PPTX       | OSH system-level vulnerability and legal risk bar chart.                                                   |
+| `PORTFOLIO_GALAXY_CHART`                 | PPTX       | Portfolio-level galaxy chart with one data point per system.                                               |
 | `PORTFOLIO_SECURITY_FINDINGS_CRITICAL`   | PPTX       | PowerPoint chart showing new, existing, and resolved critical security findings over the last 12 months.   |
 | `PORTFOLIO_SECURITY_FINDINGS_HIGH`       | PPTX       | PowerPoint chart showing new, existing, and resolved high security findings over the last 12 months.       |
 | `PORTFOLIO_SECURITY_FINDINGS_MEDIUM`     | PPTX       | PowerPoint chart showing new, existing, and resolved medium security findings over the last 12 months.     |
