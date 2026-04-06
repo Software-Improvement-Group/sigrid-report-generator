@@ -78,11 +78,32 @@ class TestSigridHygienePortfolioData:
             {"systemName": "sys1", "active": True, "isDevelopmentOnly": False}
         ]
 
-        mock_api.get_portfolio_architecture_findings.return_value = {
-            "snapshotDate": (
-                datetime.now() - timedelta(days=5)
-            ).isoformat(),  # 5 days old
-        }
+        mock_api.get_portfolio_architecture_findings.return_value = [
+            {
+                "analysisDate": (
+                    datetime.now() - timedelta(days=5)
+                ).isoformat(),  # 5 days old
+                "customer": "test_customer",
+                "modelVersion": "2025",
+                "ratings": {},
+                "snapshotDate": (
+                    datetime.now() - timedelta(days=5)
+                ).isoformat(),  # 5 days old
+                "system": "sys1",
+            },
+            {
+                "analysisDate": (
+                    datetime.now() - timedelta(days=10)
+                ).isoformat(),  # 10 days old
+                "customer": "test_customer",
+                "modelVersion": "2025",
+                "ratings": {},
+                "snapshotDate": (
+                    datetime.now() - timedelta(days=10)
+                ).isoformat(),  # 5 days old
+                "system": "inactive_system",
+            },
+        ]
 
         result = sigrid_hygiene_portfolio_data.get_snapshot_freshness()
 
@@ -152,21 +173,21 @@ class TestSigridHygienePortfolioData:
 
         # Result admin: [5]
         result_admin = sigrid_hygiene_portfolio_data.get_last_access_time_users(
-            user="ADMIN"
+            role="ADMIN"
         )
         assert len(result_admin) == 1
         assert len(result_admin[0]) == 5
 
         # Result maintainer: [40]
         result_maintainer = sigrid_hygiene_portfolio_data.get_last_access_time_users(
-            user="MAINTAINER"
+            role="MAINTAINER"
         )
         assert len(result_maintainer) == 1
         assert len(result_maintainer[0]) == 40
 
         # Result user: [420]
         result_user = sigrid_hygiene_portfolio_data.get_last_access_time_users(
-            user="USER"
+            role="USER"
         )
         assert len(result_user) == 1
         assert len(result_user[0]) == 420
