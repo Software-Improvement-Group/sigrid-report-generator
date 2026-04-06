@@ -26,6 +26,7 @@ from report_generator.generator.domain import (
     sigrid_hygiene_portfolio_data,
 )
 from report_generator.generator.placeholders import rendering
+from report_generator.generator.placeholders.formatting import formatters
 from report_generator.generator.placeholders.implementations.base import (
     Placeholder,
     PlaceholderDocType,
@@ -464,11 +465,15 @@ class SnapshotFreshnessChartPlaceholder(_AbstractCategoryChartPlaceholder):
 
     @classmethod
     def labels(cls):
-        return sigrid_hygiene_portfolio_data.get_snapshot_freshness_labels
+        return ["Total", "1 week", "1 month", "3 months", "6 months", ">6 months"]
 
     @classmethod
     def series(cls):
-        return sigrid_hygiene_portfolio_data.get_snapshot_freshness()
+        freshness_days = sigrid_hygiene_portfolio_data.get_snapshot_freshness()
+        result = [
+            formatters.split_days_into_buckets(freshness_days, buckets=[7, 30, 90, 180])
+        ]
+        return result
 
     @classmethod
     def axis_label(cls):
@@ -496,11 +501,25 @@ class UsersLastLoginChartPlaceholder(_AbstractCategoryChartPlaceholder):
 
     @classmethod
     def labels(cls):
-        return sigrid_hygiene_portfolio_data.get_last_access_time_labels
+        return ["Total", "1 week", "1 month", "3 months", "1 year", ">1 year"]
 
     @classmethod
     def series(cls):
-        return sigrid_hygiene_portfolio_data.get_last_access_time_users()
+        buckets = [7, 30, 90, 365]
+        days_admin = sigrid_hygiene_portfolio_data.get_last_access_time_users(
+            role="ADMIN"
+        )
+        days_maintainer = sigrid_hygiene_portfolio_data.get_last_access_time_users(
+            role="MAINTAINER"
+        )
+        days_user = sigrid_hygiene_portfolio_data.get_last_access_time_users(
+            role="USER"
+        )
+        return [
+            formatters.split_days_into_buckets(days_admin, buckets=buckets),
+            formatters.split_days_into_buckets(days_maintainer, buckets=buckets),
+            formatters.split_days_into_buckets(days_user, buckets=buckets),
+        ]
 
     @classmethod
     def series_names(cls):

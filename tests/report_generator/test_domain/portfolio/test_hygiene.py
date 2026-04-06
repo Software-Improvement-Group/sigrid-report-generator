@@ -78,7 +78,7 @@ class TestSigridHygienePortfolioData:
             {"systemName": "sys1", "active": True, "isDevelopmentOnly": False}
         ]
 
-        mock_api.get_architecture_findings.return_value = {
+        mock_api.get_portfolio_architecture_findings.return_value = {
             "snapshotDate": (
                 datetime.now() - timedelta(days=5)
             ).isoformat(),  # 5 days old
@@ -86,9 +86,9 @@ class TestSigridHygienePortfolioData:
 
         result = sigrid_hygiene_portfolio_data.get_snapshot_freshness()
 
-        # Format: [[total, <1wk, 1mo, 3mo, 6mo, >6mo]]
-        assert result[0][0] == 1  # total systems
-        assert result[0][1] == 1  # in "< 7 days" bucket
+        # Format: [5]
+        assert len(result) == 1  # total systems
+        assert result.contains(5)  # values contained
 
     @patch(
         "report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio.sigrid_api"
@@ -137,36 +137,40 @@ class TestSigridHygienePortfolioData:
             "users": [
                 {
                     "role": "ADMIN",
-                    "lastLoginAt": (
-                        datetime.now() - timedelta(days=5)
-                    ).isoformat(),
+                    "lastLoginAt": (datetime.now() - timedelta(days=5)).isoformat(),
                 },  # <7 days
                 {
                     "role": "MAINTAINER",
-                    "lastLoginAt": (
-                        datetime.now() - timedelta(days=40)
-                    ).isoformat(),
+                    "lastLoginAt": (datetime.now() - timedelta(days=40)).isoformat(),
                 },  # ~40 days
                 {
                     "role": "USER",
-                    "lastLoginAt": (
-                        datetime.now() - timedelta(days=420)
-                    ).isoformat(),
+                    "lastLoginAt": (datetime.now() - timedelta(days=420)).isoformat(),
                 },  # >365 days
             ]
         }
 
-        result = sigrid_hygiene_portfolio_data.get_last_access_time_users()
+        # Result admin: [5]
+        result_admin = sigrid_hygiene_portfolio_data.get_last_access_time_users(
+            user="ADMIN"
+        )
+        assert len(result_admin) == 1
+        assert len(result_admin[0]) == 5
 
-        # Result shape: 3 rows (roles), 6 columns (total + 5 buckets)
-        assert len(result) == 3
-        assert len(result[0]) == 6
+        # Result maintainer: [40]
+        result_maintainer = sigrid_hygiene_portfolio_data.get_last_access_time_users(
+            user="MAINTAINER"
+        )
+        assert len(result_maintainer) == 1
+        assert len(result_maintainer[0]) == 40
 
-        # Admin: should be in <7 days bucket
-        assert result[0][1] == 1  # bucket 1 for ADMIN (<7 days)
+        # Result user: [420]
+        result_user = sigrid_hygiene_portfolio_data.get_last_access_time_users(
+            user="USER"
+        )
+        assert len(result_user) == 1
+        assert len(result_user[0]) == 420
 
-        # Maintainer: should be in 30 < days < 90 category
-        assert result[1][3] == 1  # bucket for 30-90 days
-
-        # User: > 1 year
-        assert result[2][5] == 1  # last bucket > 365 days
+        # Result default value (role = user): [420]
+        result_default = sigrid_hygiene_portfolio_data.get_last_access_time_users()
+        assert result_default == result_user

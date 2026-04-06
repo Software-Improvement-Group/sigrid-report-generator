@@ -15,8 +15,6 @@
 from datetime import datetime
 from functools import cached_property
 
-import numpy as np
-import pandas as pd
 from dateutil import parser
 
 from report_generator.generator.context import sigrid_api
@@ -57,19 +55,11 @@ class SigridHygienePortfolioData:
         ]
 
     @cached_property
-    def get_snapshot_freshness_labels(self):
-        return ["Total", "1 week", "1 month", "3 months", "6 months", ">6 months"]
-
-    @cached_property
     def get_eol_deactivated_systems_labels(self):
         return ["Total", "Deactivated", "EOL", "EOL & Deactivated"]
 
-    @cached_property
-    def get_last_access_time_labels(self):
-        return ["Total", "1 week", "1 month", "3 months", "1 year", ">1 year"]
-
-    def _compute_metadata_dataframe(self):
-        df = pd.DataFrame(columns=self.metadata_fields)
+    def _compute_list_metadata_dict(self):
+        list_system_dict = []
         metadata = {system["systemName"]: system for system in self.get_metadata}
         active_systems = [
             name
@@ -78,33 +68,37 @@ class SigridHygienePortfolioData:
         ]
 
         for system in active_systems:
-            row = {}
+            system_dict = {}
 
             for field in self.metadata_fields:
                 value_metadata = metadata[system][field]
-                row[field] = 0 if not value_metadata else 1
+                system_dict[field] = 0 if not value_metadata else 1
 
-            df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
+            list_system_dict.append(system_dict)
 
-        return df
+        return list_system_dict
 
     def get_portfolio_metadata_completeness(self):
-        metadata_df = self._compute_metadata_dataframe()
-        column_completeness = metadata_df.sum().to_dict()
-        total_systems = len(metadata_df)
-        row = [[], []]
+        list_system_dict = self._compute_list_metadata_dict()
+        total_systems = len(list_system_dict)
+
+        # If there are no systems, then all metadata values completeness is 0%
+        if total_systems == 0:
+            return [[0] * len(self.metadata_fields), [100] * len(self.metadata_fields)]
+
+        complete_row = []
+        missing_row = []
+        field_completeness = {
+            field: sum(system[field] == 1 for system in list_system_dict)
+            for field in self.metadata_fields
+        }
 
         for field in self.metadata_fields:
-            complete = (
-                0
-                if total_systems == 0
-                else np.round(
-                    column_completeness[field] / total_systems * 100, 0
-                ).astype(int)
-            )
-            row = np.hstack((row, [[complete], [100 - complete]]))
+            complete = int(round(field_completeness[field] / total_systems * 100, 0))
+            complete_row.append(complete)
+            missing_row.append(100 - complete)
 
-        return row
+        return [complete_row, missing_row]
 
     def get_snapshot_freshness(self):
         metadata = {system["systemName"]: system for system in self.get_metadata}
@@ -113,29 +107,19 @@ class SigridHygienePortfolioData:
             for name, meta in metadata.items()
             if meta["active"] and not meta["isDevelopmentOnly"]
         ]
+        list_freshness_days = []
         time_now = datetime.now()
-        days_7 = 0
-        days_30 = 0
-        days_90 = 0
-        days_180 = 0
-        days_more = 0
+        portfolio_architecture = sigrid_api.get_portfolio_architecture_findings()
 
-        for system in active_systems:
-            snapshot_date = sigrid_api.get_architecture_findings(system)["snapshotDate"]
-            freshness = (time_now - parser.isoparse(snapshot_date)).days
+        for system_architecture in portfolio_architecture:
+            if system_architecture["system"] in active_systems:
+                if "snapshotDate" in system_architecture:
+                    freshness = (
+                        time_now - parser.isoparse(system_architecture["snapshotDate"])
+                    ).days
+                    list_freshness_days.append(freshness)
 
-            if freshness < 7:
-                days_7 += 1
-            elif freshness < 30:
-                days_30 += 1
-            elif freshness < 90:
-                days_90 += 1
-            elif freshness < 180:
-                days_180 += 1
-            else:
-                days_more += 1
-
-        return [[len(active_systems), days_7, days_30, days_90, days_180, days_more]]
+        return list_freshness_days
 
     def get_eol_deactivated_systems(self):
         metadata = {system["systemName"]: system for system in self.get_metadata}
@@ -158,38 +142,17 @@ class SigridHygienePortfolioData:
             ]
         ]
 
-    def get_last_access_time_users(self):
+    def get_last_access_time_users(self, role="USER"):
         users = sigrid_api.get_users()["users"]
-        roles = ["ADMIN", "MAINTAINER", "USER"]
         time_now = datetime.now()
 
-        # 5 time buckets (7, 30, 90, 365, >365 days) x 3 roles
-        buckets = np.zeros((5, 3), dtype=int)
+        list_freshness_days = [
+            (time_now - parser.isoparse(user["lastLoginAt"])).days
+            for user in users
+            if user["lastLoginAt"] is not None and user["role"] == role
+        ]
 
-        for i, role in enumerate(roles):
-            freshness_list = [
-                (time_now - parser.isoparse(user["lastLoginAt"])).days
-                for user in users
-                if user["lastLoginAt"] is not None and user["role"] == role
-            ]
-
-            for days in freshness_list:
-                if days < 7:
-                    buckets[0, i] += 1
-                elif days < 30:
-                    buckets[1, i] += 1
-                elif days < 90:
-                    buckets[2, i] += 1
-                elif days < 365:
-                    buckets[3, i] += 1
-                else:
-                    buckets[4, i] += 1
-
-        totals = buckets.sum(axis=0)
-        # result: 3 rows (roles) x 6 columns (total + 5 time buckets)
-        result = np.column_stack((totals, buckets.T))
-
-        return result.tolist()
+        return list_freshness_days
 
 
 sigrid_hygiene_portfolio_data = SigridHygienePortfolioData()
