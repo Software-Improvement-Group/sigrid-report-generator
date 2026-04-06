@@ -109,7 +109,8 @@ class TestSigridHygienePortfolioData:
 
         # Format: [5]
         assert len(result) == 1  # total systems
-        assert result.contains(5)  # values contained
+        assert 5 in result  # values contained (5 from active system)
+        assert 10 not in result # values not contained (10 from inactive system)
 
     @patch(
         "report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio.sigrid_api"
@@ -176,21 +177,21 @@ class TestSigridHygienePortfolioData:
             role="ADMIN"
         )
         assert len(result_admin) == 1
-        assert len(result_admin[0]) == 5
+        assert 5 in result_admin
 
         # Result maintainer: [40]
         result_maintainer = sigrid_hygiene_portfolio_data.get_last_access_time_users(
             role="MAINTAINER"
         )
         assert len(result_maintainer) == 1
-        assert len(result_maintainer[0]) == 40
+        assert 40 in result_maintainer
 
         # Result user: [420]
         result_user = sigrid_hygiene_portfolio_data.get_last_access_time_users(
             role="USER"
         )
         assert len(result_user) == 1
-        assert len(result_user[0]) == 420
+        assert 420 in result_user
 
         # Result default value (role = user): [420]
         result_default = sigrid_hygiene_portfolio_data.get_last_access_time_users()
