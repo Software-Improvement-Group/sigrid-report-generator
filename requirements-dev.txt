@@ -1,0 +1,12 @@
+# Development dependencies for sigrid-report-generator
+# Includes production dependencies plus testing/linting tools
+# Mirrors setup.cfg [options.extras_require] test section
+# All dependencies pinned to explicit versions for reproducibility
+
+-r requirements.txt
+
+pytest==8.3.3
+pytest-mock==3.14.0
+freezegun==1.5.1
+ruff==0.15.8
+import-linter==2.1

@@ -18,12 +18,14 @@ jobs:
         with:
           args: "check --output-format=github"
           src: "."
+          version: "0.15.8"
 
       - name: "Ruff format check"
         uses: astral-sh/ruff-action@4919ec5cf1f49eff0871dbcea0da843445b837e6 # v3
         with:
           args: "format --check --diff"
           src: "."
+          version: "0.15.8"
 
   architecture-lint:
     name: "Architecture lint"
@@ -35,7 +37,9 @@ jobs:
       - name: "Set up Python"
         uses: actions/setup-python@v6
         with:
-          python-version: "3.14"
+          python-version: "3.13"
+          cache: 'pip'
+          cache-dependency-path: '**/setup.cfg'
 
       - name: "Install dependencies"
         run: pip install -e ".[test]"

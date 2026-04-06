@@ -260,7 +260,7 @@ def find_charts(presentation: Presentation, key: str):
         shape.chart
         for slide in presentation.slides
         for shape in slide.shapes
-        if shape.has_chart and shape.name == key
+        if shape.has_chart and shape.name.strip() == key
     ]
     logging.debug(f"Finds for {key}: {len(charts)}")
     return charts
@@ -271,7 +271,7 @@ def find_tables(presentation: Presentation, key: str):
         shape.table
         for slide in presentation.slides
         for shape in slide.shapes
-        if shape.has_table and shape.name == key
+        if shape.has_table and shape.name.strip() == key
     ]
     logging.debug(f"Finds for {key}: {len(tables)}")
     return tables
