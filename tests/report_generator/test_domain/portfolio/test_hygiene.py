@@ -110,7 +110,7 @@ class TestSigridHygienePortfolioData:
         # Format: [5]
         assert len(result) == 1  # total systems
         assert 5 in result  # values contained (5 from active system)
-        assert 10 not in result # values not contained (10 from inactive system)
+        assert 10 not in result  # values not contained (10 from inactive system)
 
     @patch(
         "report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio.sigrid_api"
