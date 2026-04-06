@@ -36,10 +36,23 @@ from report_generator.generator.placeholders.implementations.base import (
 def _build_chart_data(values: dict) -> CategoryChartData:
     chart_data = CategoryChartData()
     chart_data.categories = values["labels"]
+    series = values["series"]
     series_names = values.get("seriesNames", [])
-    for idx, y in enumerate(values["series"]):
-        name = series_names[idx] if idx < len(series_names) else values["axisLabel"]
-        chart_data.add_series(name, y)
+
+    # Case 1: No custom series names -> use axisLabel for all series
+    if not series_names:
+        for y in values["series"]:
+            chart_data.add_series(values["axisLabel"], y)
+    # Case 2: Exact match between names and series -> map 1:1
+    elif len(series_names) == len(series):
+        for name, y in zip(series_names, series):
+            chart_data.add_series(name, y)
+    else:
+        raise ValueError(
+            f"seriesNames length ({len(series_names)}) does not match "
+            f"series length ({len(series)})."
+        )
+
     return chart_data
 
 
