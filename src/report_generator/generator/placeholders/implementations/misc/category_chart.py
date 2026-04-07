@@ -469,10 +469,10 @@ class MetadataCompletenessChartPlaceholder(_AbstractCategoryChartPlaceholder):
 
     @classmethod
     def series(cls):
-        data = sigrid_hygiene_portfolio_data.metadata_completeness
+        values = list(sigrid_hygiene_portfolio_data.metadata_completeness.values())
         return [
-            [v[0] for v in data.values()],
-            [v[1] for v in data.values()],
+            [v[0] for v in values],
+            [v[1] for v in values],
         ]
 
     @classmethod

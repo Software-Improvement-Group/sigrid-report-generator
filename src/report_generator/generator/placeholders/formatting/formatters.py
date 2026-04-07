@@ -88,6 +88,7 @@ def from_json_name(json_name: str) -> str:
 
 
 def split_days_into_buckets(days: list[int], buckets: list[int]) -> list[int]:
+    # Sort buckets ascendingly
     buckets = sorted(buckets)
 
     # Initialize counters (one per bucket, plus one for > last bucket)
