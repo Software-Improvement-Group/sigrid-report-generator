@@ -69,7 +69,7 @@ more information.
 
 <img src="docs/img/sample-modernization.png" width="500" />
 
-**System maintainability one-pager:** Simple report that focuses on a system's maintainability system, both in terms
+**System maintainability one-pager:** Simple report that focuses on a system's maintainability, both in terms
 of its current state and its progress over time.
 
 - Example: `report-generator -c <your-customer> -s <your-system> --layout system-maintainability-one-pager`

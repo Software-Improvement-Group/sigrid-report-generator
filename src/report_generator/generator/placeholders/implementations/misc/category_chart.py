@@ -462,11 +462,18 @@ class MetadataCompletenessChartPlaceholder(_AbstractCategoryChartPlaceholder):
 
     @classmethod
     def labels(cls):
-        return sigrid_hygiene_portfolio_data.get_metadata_fields_labels
+        return [
+            formatters.from_json_name(key)
+            for key in sigrid_hygiene_portfolio_data.metadata_completeness.keys()
+        ]
 
     @classmethod
     def series(cls):
-        return sigrid_hygiene_portfolio_data.get_portfolio_metadata_completeness()
+        data = sigrid_hygiene_portfolio_data.metadata_completeness
+        return [
+            [v[0] for v in data.values()],
+            [v[1] for v in data.values()],
+        ]
 
     @classmethod
     def axis_label(cls):
@@ -498,7 +505,7 @@ class EolDeactivatedSystemsChartPlaceholder(_AbstractCategoryChartPlaceholder):
 
     @classmethod
     def labels(cls):
-        return sigrid_hygiene_portfolio_data.get_eol_deactivated_systems_labels
+        return sigrid_hygiene_portfolio_data.eol_deactivated_systems_labels
 
     @classmethod
     def series(cls):

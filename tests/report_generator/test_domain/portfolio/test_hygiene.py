@@ -17,6 +17,7 @@ from unittest.mock import patch
 
 from freezegun import freeze_time
 
+from report_generator.generator.context.sigrid_api import SigridAccessDeniedError
 from report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio import (
     sigrid_hygiene_portfolio_data,
 )
@@ -28,11 +29,9 @@ class TestSigridHygienePortfolioData:
     def teardown_method(self):
         """Clean up cached properties after each test case."""
         cache_attrs = [
-            "get_metadata",
-            "get_metadata_fields_labels",
-            "get_snapshot_freshness_labels",
-            "get_eol_deactivated_systems_labels",
-            "get_last_access_time_labels",
+            "metadata",
+            "metadata_completeness",
+            "eol_deactivated_systems_labels",
         ]
 
         for attr in cache_attrs:
@@ -61,12 +60,11 @@ class TestSigridHygienePortfolioData:
             }
         ]
 
-        row = sigrid_hygiene_portfolio_data.get_portfolio_metadata_completeness()
+        data = sigrid_hygiene_portfolio_data.metadata_completeness
 
-        # We expect: for each metadata field -> (1 or 0) completeness vs missing
-        assert len(row) == 2  # two rows: complete %, missing %
-        assert len(row[0]) == len(sigrid_hygiene_portfolio_data.metadata_fields)
-        assert all(v in (0, 100) for v in row[0])
+        # We expect one entry per metadata field, each with (complete%, missing%)
+        assert len(data) == len(sigrid_hygiene_portfolio_data.metadata_fields)
+        assert all(v[0] in (0, 100) and v[1] in (0, 100) for v in data.values())
 
     @freeze_time("2026-03-15 00:00:00")
     @patch(
@@ -100,7 +98,7 @@ class TestSigridHygienePortfolioData:
                 "ratings": {},
                 "snapshotDate": (
                     datetime.now() - timedelta(days=10)
-                ).isoformat(),  # 5 days old
+                ).isoformat(),  # 10 days old
                 "system": "inactive_system",
             },
         ]
@@ -196,3 +194,19 @@ class TestSigridHygienePortfolioData:
         # Result default value (role = user): [420]
         result_default = sigrid_hygiene_portfolio_data.get_last_access_time_users()
         assert result_default == result_user
+
+    @patch(
+        "report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio.sigrid_api"
+    )
+    def test_last_access_time_users_access_denied(self, mock_api):
+        """Test that a 403 error from the users endpoint is handled gracefully."""
+        mock_api.SigridAccessDeniedError = SigridAccessDeniedError
+        mock_api.get_users.side_effect = SigridAccessDeniedError(
+            "https://sigrid-says.com/rest/auth/api/user-management/customer/users",
+            "customer",
+            None,
+        )
+
+        result = sigrid_hygiene_portfolio_data.get_last_access_time_users()
+
+        assert result == []

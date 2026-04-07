@@ -223,9 +223,9 @@ To use these placeholders, rename the chart shape in the Selection Pane to match
 
 | Key                                      | Supports   | Description                                                                                                |
 |:-----------------------------------------|:-----------|:-----------------------------------------------------------------------------------------------------------|
-| `EOL_DEACTIVATED_CHART`                  | PPTX       | Chart showing the number of End-of-life systems that have also been deactivated.                           |
-| `GALAXY_SLIDE`                           | PPTX       | Traditional SIG benchmark galaxy chart.                                                                    |
-| `METADATA_COMPLETENESS_CHART`            | PPTX       | Chart showing the number of systems that have each metadata field filled in.                               |
+| `EOL_DEACTIVATED_CHART`                  | PPTX       | Chart showing counts for Total systems, Deactivated systems, EOL systems, and systems that are both EOL and deactivated. |
+| `GALAXY_CHART`                           | PPTX       | Traditional SIG benchmark galaxy chart.                                                                    |
+| `METADATA_COMPLETENESS_CHART`            | PPTX       | Chart showing the percentage of systems with each metadata field complete or missing.                      |
 | `MODERNIZATION_SCATTER_PLOT_CHART`       | PPTX       |                                                                                                            |
 | `OBJECTIVES_ARCHITECTURE_CHART`          | PPTX       |                                                                                                            |
 | `OBJECTIVES_CAPABILITY_CHART`            | PPTX       |                                                                                                            |

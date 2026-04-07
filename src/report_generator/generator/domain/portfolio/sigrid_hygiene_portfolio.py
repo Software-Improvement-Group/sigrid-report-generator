@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import logging
 from datetime import datetime
 from functools import cached_property
 
@@ -36,31 +37,16 @@ class SigridHygienePortfolioData:
         ]
 
     @cached_property
-    def get_metadata(self):
+    def metadata(self):
         return sigrid_api.get_portfolio_metadata()
 
     @cached_property
-    def get_metadata_fields_labels(self):
-        return [
-            "Distribution strategy",
-            "Application type",
-            "Deployment type",
-            "Target industry",
-            "Lifecycle phase",
-            "Business criticality",
-            "In production since",
-            "Supplier",
-            "Team",
-            "Division",
-        ]
-
-    @cached_property
-    def get_eol_deactivated_systems_labels(self):
+    def eol_deactivated_systems_labels(self):
         return ["Total", "Deactivated", "EOL", "EOL & Deactivated"]
 
     def _compute_list_metadata_dict(self):
         list_system_dict = []
-        metadata = {system["systemName"]: system for system in self.get_metadata}
+        metadata = {system["systemName"]: system for system in self.metadata}
         active_systems = [
             name
             for name, meta in metadata.items()
@@ -78,30 +64,29 @@ class SigridHygienePortfolioData:
 
         return list_system_dict
 
-    def get_portfolio_metadata_completeness(self):
+    @cached_property
+    def metadata_completeness(self):
         list_system_dict = self._compute_list_metadata_dict()
         total_systems = len(list_system_dict)
 
         # If there are no systems, then all metadata values completeness is 0%
         if total_systems == 0:
-            return [[0] * len(self.metadata_fields), [100] * len(self.metadata_fields)]
+            return {field: (0, 100) for field in self.metadata_fields}
 
-        complete_row = []
-        missing_row = []
         field_completeness = {
             field: sum(system[field] == 1 for system in list_system_dict)
             for field in self.metadata_fields
         }
 
+        result = {}
         for field in self.metadata_fields:
             complete = int(round(field_completeness[field] / total_systems * 100, 0))
-            complete_row.append(complete)
-            missing_row.append(100 - complete)
+            result[field] = (complete, 100 - complete)
 
-        return [complete_row, missing_row]
+        return result
 
     def get_snapshot_freshness(self):
-        metadata = {system["systemName"]: system for system in self.get_metadata}
+        metadata = {system["systemName"]: system for system in self.metadata}
         active_systems = [
             name
             for name, meta in metadata.items()
@@ -122,7 +107,7 @@ class SigridHygienePortfolioData:
         return list_freshness_days
 
     def get_eol_deactivated_systems(self):
-        metadata = {system["systemName"]: system for system in self.get_metadata}
+        metadata = {system["systemName"]: system for system in self.metadata}
         deactivated_systems = [
             name
             for name, meta in metadata.items()
@@ -143,7 +128,16 @@ class SigridHygienePortfolioData:
         ]
 
     def get_last_access_time_users(self, role="USER"):
-        users = sigrid_api.get_users()["users"]
+        try:
+            users = sigrid_api.get_users()["users"]
+        except sigrid_api.SigridAccessDeniedError:
+            logging.warning(
+                "Could not retrieve user data: access denied (403). "
+                "The USERS_LAST_LOGIN_CHART will be empty. "
+                "Administrator role is required to access user data."
+            )
+            return []
+
         time_now = datetime.now()
 
         list_freshness_days = [
