@@ -128,6 +128,10 @@ To use custom placeholders in your own templates outside of this project:
 2. Define placeholders by extending the `Placeholder` class or using helper functions.
 3. Interact with the ReportGenerator class to register the placeholders and generate the report.
 
+**Placeholder key naming rules:** Keys must consist only of uppercase letters (`A–Z`), digits (`0–9`), and underscores
+(`_`), and must contain at least one underscore. Parameterized keys may additionally contain a `{parameter}` token,
+e.g. `RATING_{parameter}`. Keys that do not follow this convention may not be recognized by the template engine.
+
 Note: These instructions are for creating extensions in your own projects. For extending this project itself, please
 refer to the developer documentation in [docs/developers.md](docs/developers.md).
 
