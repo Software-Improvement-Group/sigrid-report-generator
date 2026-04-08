@@ -31,7 +31,8 @@ class TestSigridHygienePortfolioData:
         cache_attrs = [
             "metadata",
             "metadata_completeness",
-            "eol_deactivated_systems_labels",
+            "snapshot_freshness",
+            "eol_deactivated_systems",
         ]
 
         for attr in cache_attrs:
@@ -103,12 +104,16 @@ class TestSigridHygienePortfolioData:
             },
         ]
 
-        result = sigrid_hygiene_portfolio_data.get_snapshot_freshness()
+        result = sigrid_hygiene_portfolio_data.snapshot_freshness
 
-        # Format: [5]
+        # Format: {"sys1": 5}
         assert len(result) == 1  # total systems
-        assert 5 in result  # values contained (5 from active system)
-        assert 10 not in result  # values not contained (10 from inactive system)
+        assert "sys1" in result.keys()  # systems contained
+        assert "inactive_system" not in result.keys()  # systems not contained
+        assert 5 in result.values()  # values contained (5 from active system)
+        assert (
+            10 not in result.values()
+        )  # values not contained (10 from inactive system)
 
     @patch(
         "report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio.sigrid_api"
@@ -136,7 +141,7 @@ class TestSigridHygienePortfolioData:
             },
         ]
 
-        result = sigrid_hygiene_portfolio_data.get_eol_deactivated_systems()
+        result = sigrid_hygiene_portfolio_data.eol_deactivated_systems
 
         # Total systems: 3
         assert result[0][0] == 3

@@ -489,9 +489,11 @@ class SnapshotFreshnessChartPlaceholder(_AbstractCategoryChartPlaceholder):
 
     @classmethod
     def series(cls):
-        freshness_days = sigrid_hygiene_portfolio_data.get_snapshot_freshness()
+        freshness_days = sigrid_hygiene_portfolio_data.snapshot_freshness
         result = [
-            formatters.split_days_into_buckets(freshness_days, buckets=[7, 30, 90, 180])
+            formatters.split_days_into_buckets(
+                freshness_days.values(), buckets=[7, 30, 90, 180]
+            )
         ]
         return result
 
@@ -505,11 +507,11 @@ class EolDeactivatedSystemsChartPlaceholder(_AbstractCategoryChartPlaceholder):
 
     @classmethod
     def labels(cls):
-        return sigrid_hygiene_portfolio_data.eol_deactivated_systems_labels
+        return ["Total", "Deactivated", "EOL", "EOL & Deactivated"]
 
     @classmethod
     def series(cls):
-        return sigrid_hygiene_portfolio_data.get_eol_deactivated_systems()
+        return sigrid_hygiene_portfolio_data.eol_deactivated_systems
 
     @classmethod
     def axis_label(cls):

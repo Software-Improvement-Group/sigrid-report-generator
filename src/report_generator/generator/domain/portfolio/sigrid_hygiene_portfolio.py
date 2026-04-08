@@ -40,10 +40,6 @@ class SigridHygienePortfolioData:
     def metadata(self):
         return sigrid_api.get_portfolio_metadata()
 
-    @cached_property
-    def eol_deactivated_systems_labels(self):
-        return ["Total", "Deactivated", "EOL", "EOL & Deactivated"]
-
     def _compute_list_metadata_dict(self):
         list_system_dict = []
         metadata = {system["systemName"]: system for system in self.metadata}
@@ -85,14 +81,15 @@ class SigridHygienePortfolioData:
 
         return result
 
-    def get_snapshot_freshness(self):
+    @cached_property
+    def snapshot_freshness(self):
         metadata = {system["systemName"]: system for system in self.metadata}
         active_systems = [
             name
             for name, meta in metadata.items()
             if meta["active"] and not meta["isDevelopmentOnly"]
         ]
-        list_freshness_days = []
+        dict_freshness_days = {}
         time_now = datetime.now()
         portfolio_architecture = sigrid_api.get_portfolio_architecture_findings()
 
@@ -102,11 +99,12 @@ class SigridHygienePortfolioData:
                     freshness = (
                         time_now - parser.isoparse(system_architecture["snapshotDate"])
                     ).days
-                    list_freshness_days.append(freshness)
+                    dict_freshness_days[system_architecture["system"]] = freshness
 
-        return list_freshness_days
+        return dict_freshness_days
 
-    def get_eol_deactivated_systems(self):
+    @cached_property
+    def eol_deactivated_systems(self):
         metadata = {system["systemName"]: system for system in self.metadata}
         deactivated_systems = [
             name
@@ -127,7 +125,8 @@ class SigridHygienePortfolioData:
             ]
         ]
 
-    def get_last_access_time_users(self, role="USER"):
+    @staticmethod
+    def get_last_access_time_users(role="USER"):
         try:
             users = sigrid_api.get_users()["users"]
         except sigrid_api.SigridAccessDeniedError:
