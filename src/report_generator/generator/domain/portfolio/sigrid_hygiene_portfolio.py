@@ -12,12 +12,13 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import cached_property
 
 from dateutil import parser
 
 from report_generator.generator.context import sigrid_api
+from report_generator.generator.utils.time_series import Period
 
 
 class SigridHygienePortfolioData:
@@ -153,6 +154,36 @@ class SigridHygienePortfolioData:
         ]
 
         return list_freshness_days
+
+    def get_objectives_coverage(self):
+        metadata = {system["systemName"]: system for system in self.get_metadata}
+        active_systems = [
+            name
+            for name, meta in metadata.items()
+            if meta["active"] and not meta["isDevelopmentOnly"]
+        ]
+
+        time_now = datetime.now()
+        period = Period(time_now - timedelta(days=1), time_now)
+        objectives = sigrid_api.get_objectives_evaluation(period)["systems"]
+        list_system_dict = []
+
+        for system in objectives:
+            system_dict = {
+                "MAINTAINABILITY": 0,
+                "ARCHITECTURE_QUALITY": 0,
+                "OPEN_SOURCE_HEALTH": 0,
+                "SECURITY": 0,
+            }
+            if system["systemName"] in active_systems:
+                for objective in system["objectives"]:
+                    if (
+                        objective["feature"] in system_dict
+                        and system_dict[objective["feature"]] == 0
+                    ):
+                        system_dict[objective["feature"]] = 1
+
+            list_system_dict.append(system_dict)
 
 
 sigrid_hygiene_portfolio_data = SigridHygienePortfolioData()

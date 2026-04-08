@@ -541,3 +541,26 @@ class UsersLastLoginChartPlaceholder(_AbstractCategoryChartPlaceholder):
     @classmethod
     def axis_label(cls):
         return "Users"
+
+
+class ObjectivesCoverageChartPlaceholder(_AbstractCategoryChartPlaceholder):
+    key = "OBJECTIVES_COVERAGE_CHART"
+
+    @classmethod
+    def labels(cls):
+        return [
+            "Total",
+            "All capabilities",
+            "Maintainability",
+            "Architecture",
+            "OSH",
+            "Security",
+        ]
+
+    @classmethod
+    def series(cls):
+        return sigrid_hygiene_portfolio_data.get_objectives_coverage()
+
+    @classmethod
+    def axis_label(cls):
+        return "Systems"
