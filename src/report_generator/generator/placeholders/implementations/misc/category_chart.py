@@ -492,7 +492,7 @@ class SnapshotFreshnessChartPlaceholder(_AbstractCategoryChartPlaceholder):
         freshness_days = sigrid_hygiene_portfolio_data.snapshot_freshness
         result = [
             formatters.split_days_into_buckets(
-                freshness_days.values(), buckets=[7, 30, 90, 180]
+                list(freshness_days.values()), buckets=[7, 30, 90, 180]
             )
         ]
         return result
