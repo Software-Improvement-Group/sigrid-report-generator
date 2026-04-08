@@ -43,13 +43,8 @@ class SigridHygienePortfolioData:
     def _compute_list_metadata_dict(self):
         list_system_dict = []
         metadata = {system["systemName"]: system for system in self.metadata}
-        active_systems = [
-            name
-            for name, meta in metadata.items()
-            if meta["active"] and not meta["isDevelopmentOnly"]
-        ]
 
-        for system in active_systems:
+        for system in metadata.keys():
             system_dict = {}
 
             for field in self.metadata_fields:
@@ -83,12 +78,7 @@ class SigridHygienePortfolioData:
 
     @cached_property
     def snapshot_freshness(self):
-        metadata = {system["systemName"]: system for system in self.metadata}
-        active_systems = [
-            name
-            for name, meta in metadata.items()
-            if meta["active"] and not meta["isDevelopmentOnly"]
-        ]
+        active_systems = [system["systemName"] for system in self.metadata]
         dict_freshness_days = {}
         time_now = datetime.now()
         portfolio_architecture = sigrid_api.get_portfolio_architecture_findings()
@@ -105,7 +95,10 @@ class SigridHygienePortfolioData:
 
     @cached_property
     def eol_deactivated_systems(self):
-        metadata = {system["systemName"]: system for system in self.metadata}
+        metadata = {
+            system["systemName"]: system
+            for system in sigrid_api.get_portfolio_metadata(hide_deactivated=False)
+        }
         deactivated_systems = [
             name
             for name, meta in metadata.items()
