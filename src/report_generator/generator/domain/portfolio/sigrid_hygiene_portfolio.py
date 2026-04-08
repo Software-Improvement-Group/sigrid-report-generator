@@ -125,7 +125,6 @@ class SigridHygienePortfolioData:
         except sigrid_api.SigridAccessDeniedError:
             logging.warning(
                 "Could not retrieve user data: access denied (403). "
-                "The USERS_LAST_LOGIN_CHART will be empty. "
                 "Administrator role is required to access user data."
             )
             return []
