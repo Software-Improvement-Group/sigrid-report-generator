@@ -12,12 +12,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import logging
 from abc import ABC, abstractmethod
 from typing import Callable
 
 from pptx.chart.data import CategoryChartData
 from pptx.presentation import Presentation
 
+from report_generator.generator.context import sigrid_api
 from report_generator.generator.domain import (
     maintainability_data,
     modernization_data,
@@ -462,11 +464,18 @@ class MetadataCompletenessChartPlaceholder(_AbstractCategoryChartPlaceholder):
 
     @classmethod
     def labels(cls):
-        return sigrid_hygiene_portfolio_data.get_metadata_fields_labels
+        return [
+            formatters.from_json_name(key)
+            for key in sigrid_hygiene_portfolio_data.metadata_completeness.keys()
+        ]
 
     @classmethod
     def series(cls):
-        return sigrid_hygiene_portfolio_data.get_portfolio_metadata_completeness()
+        values = list(sigrid_hygiene_portfolio_data.metadata_completeness.values())
+        return [
+            [v[0] for v in values],
+            [v[1] for v in values],
+        ]
 
     @classmethod
     def axis_label(cls):
@@ -482,9 +491,11 @@ class SnapshotFreshnessChartPlaceholder(_AbstractCategoryChartPlaceholder):
 
     @classmethod
     def series(cls):
-        freshness_days = sigrid_hygiene_portfolio_data.get_snapshot_freshness()
+        freshness_days = sigrid_hygiene_portfolio_data.snapshot_freshness
         result = [
-            formatters.split_days_into_buckets(freshness_days, buckets=[7, 30, 90, 180])
+            formatters.split_days_into_buckets(
+                list(freshness_days.values()), buckets=[7, 30, 90, 180]
+            )
         ]
         return result
 
@@ -498,11 +509,11 @@ class EolDeactivatedSystemsChartPlaceholder(_AbstractCategoryChartPlaceholder):
 
     @classmethod
     def labels(cls):
-        return sigrid_hygiene_portfolio_data.get_eol_deactivated_systems_labels
+        return ["Total", "Deactivated", "EOL", "EOL & Deactivated"]
 
     @classmethod
     def series(cls):
-        return sigrid_hygiene_portfolio_data.get_eol_deactivated_systems()
+        return sigrid_hygiene_portfolio_data.eol_deactivated_systems
 
     @classmethod
     def axis_label(cls):
@@ -519,15 +530,25 @@ class UsersLastLoginChartPlaceholder(_AbstractCategoryChartPlaceholder):
     @classmethod
     def series(cls):
         buckets = [7, 30, 90, 365]
-        days_admin = sigrid_hygiene_portfolio_data.get_last_access_time_users(
-            role="ADMIN"
-        )
-        days_maintainer = sigrid_hygiene_portfolio_data.get_last_access_time_users(
-            role="MAINTAINER"
-        )
-        days_user = sigrid_hygiene_portfolio_data.get_last_access_time_users(
-            role="USER"
-        )
+        try:
+            days_admin = sigrid_hygiene_portfolio_data.get_last_access_time_users(
+                role="ADMIN"
+            )
+            days_maintainer = sigrid_hygiene_portfolio_data.get_last_access_time_users(
+                role="MAINTAINER"
+            )
+            days_user = sigrid_hygiene_portfolio_data.get_last_access_time_users(
+                role="USER"
+            )
+        except sigrid_api.SigridAccessDeniedError:
+            logging.warning(
+                "Could not retrieve user data: access denied (403). "
+                "The USERS_LAST_LOGIN_CHART will be empty. "
+                "Administrator role is required to access user data."
+            )
+            empty_series = [0] * (len(buckets) + 2)
+            return [empty_series.copy(), empty_series.copy(), empty_series.copy()]
+
         return [
             formatters.split_days_into_buckets(days_admin, buckets=buckets),
             formatters.split_days_into_buckets(days_maintainer, buckets=buckets),

@@ -14,6 +14,7 @@
 
 import logging
 import math
+import re
 
 from report_generator.generator.utils.star_rating import calculate_star_rating_integer
 
@@ -78,6 +79,12 @@ def format_diff(old_rating: float, new_rating: float) -> str:
         return f"- {abs(diff):.1f}"
     else:
         return "="
+
+
+def from_json_name(json_name: str) -> str:
+    """Convert a camelCase JSON field name to a human-readable label."""
+    words = re.sub(r"([A-Z])", r" \1", json_name).strip()
+    return words[0].upper() + words[1:]
 
 
 def split_days_into_buckets(days: list[int], buckets: list[int]) -> list[int]:

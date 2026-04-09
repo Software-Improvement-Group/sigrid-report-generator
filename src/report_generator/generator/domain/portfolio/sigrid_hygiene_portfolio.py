@@ -37,38 +37,14 @@ class SigridHygienePortfolioData:
         ]
 
     @cached_property
-    def get_metadata(self):
+    def metadata(self):
         return sigrid_api.get_portfolio_metadata()
-
-    @cached_property
-    def get_metadata_fields_labels(self):
-        return [
-            "Distribution strategy",
-            "Application type",
-            "Deployment type",
-            "Target industry",
-            "Lifecycle phase",
-            "Business criticality",
-            "In production since",
-            "Supplier",
-            "Team",
-            "Division",
-        ]
-
-    @cached_property
-    def get_eol_deactivated_systems_labels(self):
-        return ["Total", "Deactivated", "EOL", "EOL & Deactivated"]
 
     def _compute_list_metadata_dict(self):
         list_system_dict = []
-        metadata = {system["systemName"]: system for system in self.get_metadata}
-        active_systems = [
-            name
-            for name, meta in metadata.items()
-            if meta["active"] and not meta["isDevelopmentOnly"]
-        ]
+        metadata = {system["systemName"]: system for system in self.metadata}
 
-        for system in active_systems:
+        for system in metadata.keys():
             system_dict = {}
 
             for field in self.metadata_fields:
@@ -79,36 +55,31 @@ class SigridHygienePortfolioData:
 
         return list_system_dict
 
-    def get_portfolio_metadata_completeness(self):
+    @cached_property
+    def metadata_completeness(self):
         list_system_dict = self._compute_list_metadata_dict()
         total_systems = len(list_system_dict)
 
         # If there are no systems, then all metadata values completeness is 0%
         if total_systems == 0:
-            return [[0] * len(self.metadata_fields), [100] * len(self.metadata_fields)]
+            return {field: (0, 100) for field in self.metadata_fields}
 
-        complete_row = []
-        missing_row = []
         field_completeness = {
             field: sum(system[field] == 1 for system in list_system_dict)
             for field in self.metadata_fields
         }
 
+        result = {}
         for field in self.metadata_fields:
             complete = int(round(field_completeness[field] / total_systems * 100, 0))
-            complete_row.append(complete)
-            missing_row.append(100 - complete)
+            result[field] = (complete, 100 - complete)
 
-        return [complete_row, missing_row]
+        return result
 
-    def get_snapshot_freshness(self):
-        metadata = {system["systemName"]: system for system in self.get_metadata}
-        active_systems = [
-            name
-            for name, meta in metadata.items()
-            if meta["active"] and not meta["isDevelopmentOnly"]
-        ]
-        list_freshness_days = []
+    @cached_property
+    def snapshot_freshness(self):
+        active_systems = [system["systemName"] for system in self.metadata]
+        dict_freshness_days = {}
         time_now = datetime.now()
         portfolio_architecture = sigrid_api.get_portfolio_architecture_findings()
 
@@ -118,12 +89,16 @@ class SigridHygienePortfolioData:
                     freshness = (
                         time_now - parser.isoparse(system_architecture["snapshotDate"])
                     ).days
-                    list_freshness_days.append(freshness)
+                    dict_freshness_days[system_architecture["system"]] = freshness
 
-        return list_freshness_days
+        return dict_freshness_days
 
-    def get_eol_deactivated_systems(self):
-        metadata = {system["systemName"]: system for system in self.get_metadata}
+    @cached_property
+    def eol_deactivated_systems(self):
+        metadata = {
+            system["systemName"]: system
+            for system in sigrid_api.get_portfolio_metadata(hide_deactivated=False)
+        }
         deactivated_systems = [
             name
             for name, meta in metadata.items()
@@ -143,7 +118,8 @@ class SigridHygienePortfolioData:
             ]
         ]
 
-    def get_last_access_time_users(self, role="USER"):
+    @staticmethod
+    def get_last_access_time_users(role="USER"):
         users = sigrid_api.get_users()["users"]
         time_now = datetime.now()
 

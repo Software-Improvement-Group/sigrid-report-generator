@@ -212,8 +212,8 @@ def _make_request(endpoint):
 
 
 @_sigrid_api_request()
-def get_portfolio_metadata():
-    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/system-metadata/{_customer}"
+def get_portfolio_metadata(hide_deactivated: bool = True):
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/system-metadata/{_customer}?hideDeactivatedSystems={str(hide_deactivated).lower()}"
     return _make_request(endpoint)
 
 

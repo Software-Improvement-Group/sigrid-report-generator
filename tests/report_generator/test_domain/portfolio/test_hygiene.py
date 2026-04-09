@@ -28,11 +28,10 @@ class TestSigridHygienePortfolioData:
     def teardown_method(self):
         """Clean up cached properties after each test case."""
         cache_attrs = [
-            "get_metadata",
-            "get_metadata_fields_labels",
-            "get_snapshot_freshness_labels",
-            "get_eol_deactivated_systems_labels",
-            "get_last_access_time_labels",
+            "metadata",
+            "metadata_completeness",
+            "snapshot_freshness",
+            "eol_deactivated_systems",
         ]
 
         for attr in cache_attrs:
@@ -61,12 +60,11 @@ class TestSigridHygienePortfolioData:
             }
         ]
 
-        row = sigrid_hygiene_portfolio_data.get_portfolio_metadata_completeness()
+        data = sigrid_hygiene_portfolio_data.metadata_completeness
 
-        # We expect: for each metadata field -> (1 or 0) completeness vs missing
-        assert len(row) == 2  # two rows: complete %, missing %
-        assert len(row[0]) == len(sigrid_hygiene_portfolio_data.metadata_fields)
-        assert all(v in (0, 100) for v in row[0])
+        # We expect one entry per metadata field, each with (complete%, missing%)
+        assert len(data) == len(sigrid_hygiene_portfolio_data.metadata_fields)
+        assert all(v[0] in (0, 100) and v[1] in (0, 100) for v in data.values())
 
     @freeze_time("2026-03-15 00:00:00")
     @patch(
@@ -100,17 +98,21 @@ class TestSigridHygienePortfolioData:
                 "ratings": {},
                 "snapshotDate": (
                     datetime.now() - timedelta(days=10)
-                ).isoformat(),  # 5 days old
+                ).isoformat(),  # 10 days old
                 "system": "inactive_system",
             },
         ]
 
-        result = sigrid_hygiene_portfolio_data.get_snapshot_freshness()
+        result = sigrid_hygiene_portfolio_data.snapshot_freshness
 
-        # Format: [5]
+        # Format: {"sys1": 5}
         assert len(result) == 1  # total systems
-        assert 5 in result  # values contained (5 from active system)
-        assert 10 not in result  # values not contained (10 from inactive system)
+        assert "sys1" in result.keys()  # systems contained
+        assert "inactive_system" not in result.keys()  # systems not contained
+        assert 5 in result.values()  # values contained (5 from active system)
+        assert (
+            10 not in result.values()
+        )  # values not contained (10 from inactive system)
 
     @patch(
         "report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio.sigrid_api"
@@ -138,7 +140,7 @@ class TestSigridHygienePortfolioData:
             },
         ]
 
-        result = sigrid_hygiene_portfolio_data.get_eol_deactivated_systems()
+        result = sigrid_hygiene_portfolio_data.eol_deactivated_systems
 
         # Total systems: 3
         assert result[0][0] == 3
