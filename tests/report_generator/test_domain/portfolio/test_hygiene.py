@@ -32,6 +32,7 @@ class TestSigridHygienePortfolioData:
             "metadata_completeness",
             "snapshot_freshness",
             "eol_deactivated_systems",
+            "objectives_coverage",
         ]
 
         for attr in cache_attrs:
@@ -198,3 +199,81 @@ class TestSigridHygienePortfolioData:
         # Result default value (role = user): [420]
         result_default = sigrid_hygiene_portfolio_data.get_last_access_time_users()
         assert result_default == result_user
+
+    @patch(
+        "report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio.sigrid_api"
+    )
+    def test_objectives_coverage_no_systems(self, mocker):
+        """Return correct result when portfolio is empty."""
+        mocker.patch.object(
+            sigrid_hygiene_portfolio_data,
+            "_compute_list_objectives_dict",
+            return_value=[],
+        )
+
+        capabilities = list(sigrid_hygiene_portfolio_data.capabilities)
+
+        result = sigrid_hygiene_portfolio_data.objectives_coverage
+
+        # All values should be set to 0
+        assert result["TOTAL"] == 0
+        assert result["ALL_CAPABILITIES"] == 0
+        for capability in capabilities:
+            assert result[capability] == 0
+
+    @patch(
+        "report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio.sigrid_api"
+    )
+    def test_objectives_coverage_all_capabilities(self, mocker):
+        """All systems have objectives set for all capabilities."""
+        capabilities = list(sigrid_hygiene_portfolio_data.capabilities)
+
+        # 2 systems with objectives set for all capabilities
+        system = {cap: 1 for cap in capabilities}
+        systems = [system.copy(), system.copy()]
+
+        mocker.patch.object(
+            sigrid_hygiene_portfolio_data,
+            "_compute_list_objectives_dict",
+            return_value=systems,
+        )
+
+        result = sigrid_hygiene_portfolio_data.objectives_coverage
+
+        # Every capability appears twice
+        assert result["TOTAL"] == 2
+        assert result["ALL_CAPABILITIES"] == 2
+        for capability in capabilities:
+            assert result[capability] == 2
+
+    @patch(
+        "report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio.sigrid_api"
+    )
+    def test_objectives_coverage_mixed_capabilities(self, mocker):
+        """Mixed systems with partial objectives coverage."""
+        capabilities = list(sigrid_hygiene_portfolio_data.capabilities)
+
+        systems = [
+            {
+                cap: (1 if i % 2 == 0 else 0) for i, cap in enumerate(capabilities)
+            },  # alternating 1/0
+            {
+                cap: (0 if i % 2 == 0 else 1) for i, cap in enumerate(capabilities)
+            },  # alternating 0/1 (i.e. opposite pattern)
+            {cap: 1 for cap in capabilities},  # all=1
+        ]
+
+        mocker.patch.object(
+            sigrid_hygiene_portfolio_data,
+            "_compute_list_objectives_dict",
+            return_value=systems,
+        )
+
+        result = sigrid_hygiene_portfolio_data.objectives_coverage
+
+        assert result["TOTAL"] == 3
+        assert result["ALL_CAPABILITIES"] == 1  # only last system
+
+        # Each capability is present twice (1 time from system 3 and 1 time from either system 1 or 2)
+        for capability in capabilities:
+            assert result[capability] == 2
