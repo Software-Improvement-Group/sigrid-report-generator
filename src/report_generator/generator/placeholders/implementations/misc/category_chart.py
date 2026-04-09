@@ -570,17 +570,13 @@ class ObjectivesCoverageChartPlaceholder(_AbstractCategoryChartPlaceholder):
     @classmethod
     def labels(cls):
         return [
-            "Total",
-            "All capabilities",
-            "Maintainability",
-            "Architecture",
-            "OSH",
-            "Security",
+            capability.title().replace("_", " ")
+            for capability in sigrid_hygiene_portfolio_data.objectives_coverage.keys()
         ]
 
     @classmethod
     def series(cls):
-        return sigrid_hygiene_portfolio_data.get_objectives_coverage()
+        return [list(sigrid_hygiene_portfolio_data.objectives_coverage.values())]
 
     @classmethod
     def axis_label(cls):

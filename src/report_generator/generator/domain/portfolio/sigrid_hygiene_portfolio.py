@@ -36,6 +36,13 @@ class SigridHygienePortfolioData:
             "divisionName",
         ]
 
+        self.capabilities = [
+            "MAINTAINABILITY",
+            "ARCHITECTURE_QUALITY",
+            "OPEN_SOURCE_HEALTH",
+            "SECURITY",
+        ]
+
     @cached_property
     def metadata(self):
         return sigrid_api.get_portfolio_metadata()
@@ -131,35 +138,50 @@ class SigridHygienePortfolioData:
 
         return list_freshness_days
 
-    def get_objectives_coverage(self):
-        metadata = {system["systemName"]: system for system in self.get_metadata}
-        active_systems = [
-            name
-            for name, meta in metadata.items()
-            if meta["active"] and not meta["isDevelopmentOnly"]
-        ]
-
+    def _compute_list_objectives_dict(self):
         time_now = datetime.now()
-        period = Period(time_now - timedelta(days=1), time_now)
-        objectives = sigrid_api.get_objectives_evaluation(period)["systems"]
+        period = Period(time_now - timedelta(seconds=5), time_now)
+        portfolio_objectives = sigrid_api.get_objectives_evaluation(period)["systems"]
         list_system_dict = []
 
-        for system in objectives:
-            system_dict = {
-                "MAINTAINABILITY": 0,
-                "ARCHITECTURE_QUALITY": 0,
-                "OPEN_SOURCE_HEALTH": 0,
-                "SECURITY": 0,
-            }
-            if system["systemName"] in active_systems:
-                for objective in system["objectives"]:
-                    if (
-                        objective["feature"] in system_dict
-                        and system_dict[objective["feature"]] == 0
-                    ):
-                        system_dict[objective["feature"]] = 1
+        for system in portfolio_objectives:
+            system_dict = {capability: 0 for capability in self.capabilities}
+
+            for objective in system["objectives"]:
+                if (
+                    objective["feature"] in self.capabilities
+                    and system_dict[objective["feature"]] == 0
+                ):
+                    system_dict[objective["feature"]] = 1
 
             list_system_dict.append(system_dict)
+
+        return list_system_dict
+
+    @cached_property
+    def objectives_coverage(self):
+        list_system_dict = self._compute_list_objectives_dict()
+        total_systems = len(list_system_dict)
+
+        if total_systems == 0:
+            return {
+                "TOTAL": 0,
+                "ALL_CAPABILITIES": 0,
+                **{capability: 0 for capability in self.capabilities},
+            }
+
+        all_capabilities = sum(
+            1 for system in list_system_dict if all(val == 1 for val in system.values())
+        )
+
+        return {
+            "TOTAL": total_systems,
+            "ALL_CAPABILITIES": all_capabilities,
+            **{
+                capability: (sum(system[capability] for system in list_system_dict))
+                for capability in self.capabilities
+            },
+        }
 
 
 sigrid_hygiene_portfolio_data = SigridHygienePortfolioData()
