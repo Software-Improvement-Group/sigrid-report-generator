@@ -35,7 +35,9 @@ class TestPortfolioHygienePlaceholders:
         mocker.patch.object(
             sigrid_hygiene_portfolio_data,
             "get_last_access_time_users",
-            side_effect=sigrid_api.SigridAccessDeniedError,
+            side_effect=sigrid_api.SigridAccessDeniedError(
+                url="fake_url", customer="fake_customer", system="fake_system"
+            ),
         )
 
         # Capture log output
