@@ -233,22 +233,21 @@ class TestSigridHygienePortfolioData:
         ]
 
         mock_api.get_objectives_evaluation.return_value = {
-            'systems':
-            [
+            "systems": [
                 {
-                    'objectives': [
-                        {'feature': 'MAINTAINABILITY'},
-                        {'feature': 'OPEN_SOURCE_HEALTH'},
+                    "objectives": [
+                        {"feature": "MAINTAINABILITY"},
+                        {"feature": "OPEN_SOURCE_HEALTH"},
                     ],
-                    'systemName': 'sys1'
+                    "systemName": "sys1",
                 },
                 {
-                    'objectives': [
-                        {'feature': 'MAINTAINABILITY'},
-                        {'feature': 'OPEN_SOURCE_HEALTH'},
+                    "objectives": [
+                        {"feature": "MAINTAINABILITY"},
+                        {"feature": "OPEN_SOURCE_HEALTH"},
                     ],
-                    'systemName': 'sys2'
-                }
+                    "systemName": "sys2",
+                },
             ]
         }
 
