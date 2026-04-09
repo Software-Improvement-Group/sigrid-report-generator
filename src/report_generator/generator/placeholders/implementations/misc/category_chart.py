@@ -12,19 +12,23 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import logging
 from abc import ABC, abstractmethod
 from typing import Callable
 
 from pptx.chart.data import CategoryChartData
 from pptx.presentation import Presentation
 
+from report_generator.generator.context import sigrid_api
 from report_generator.generator.domain import (
     maintainability_data,
     modernization_data,
     objectives_data,
     progress_sigrid_data,
+    sigrid_hygiene_portfolio_data,
 )
 from report_generator.generator.placeholders import rendering
+from report_generator.generator.placeholders.formatting import formatters
 from report_generator.generator.placeholders.implementations.base import (
     Placeholder,
     PlaceholderDocType,
@@ -34,8 +38,23 @@ from report_generator.generator.placeholders.implementations.base import (
 def _build_chart_data(values: dict) -> CategoryChartData:
     chart_data = CategoryChartData()
     chart_data.categories = values["labels"]
-    for y in values["series"]:
-        chart_data.add_series(values["axisLabel"], y)
+    series = values["series"]
+    series_names = values.get("seriesNames", [])
+
+    # Case 1: No custom series names -> use axisLabel for all series
+    if not series_names:
+        for y in values["series"]:
+            chart_data.add_series(values["axisLabel"], y)
+    # Case 2: Exact match between names and series -> map 1:1
+    elif len(series_names) == len(series):
+        for name, y in zip(series_names, series):
+            chart_data.add_series(name, y)
+    else:
+        raise ValueError(
+            f"seriesNames length ({len(series_names)}) does not match "
+            f"series length ({len(series)})."
+        )
+
     return chart_data
 
 
@@ -73,6 +92,10 @@ class _AbstractCategoryChartPlaceholder(Placeholder, ABC):
         pass
 
     @classmethod
+    def series_names(cls):
+        return []
+
+    @classmethod
     def colors(cls):
         return []
 
@@ -86,6 +109,7 @@ class _AbstractCategoryChartPlaceholder(Placeholder, ABC):
         return {
             "labels": cls.labels(),
             "series": cls.series(),
+            "seriesNames": cls.series_names(),
             "colors": cls.colors(),
             "axisLabel": cls.axis_label(),
         }
@@ -433,3 +457,108 @@ class ObjectivesStatusChartSigridPlaceholder(_AbstractCategoryChartPlaceholder):
     @classmethod
     def axis_label(cls):
         return "Percentage of portfolio"
+
+
+class MetadataCompletenessChartPlaceholder(_AbstractCategoryChartPlaceholder):
+    key = "METADATA_COMPLETENESS_CHART"
+
+    @classmethod
+    def labels(cls):
+        return [
+            formatters.from_json_name(key)
+            for key in sigrid_hygiene_portfolio_data.metadata_completeness.keys()
+        ]
+
+    @classmethod
+    def series(cls):
+        values = list(sigrid_hygiene_portfolio_data.metadata_completeness.values())
+        return [
+            [v[0] for v in values],
+            [v[1] for v in values],
+        ]
+
+    @classmethod
+    def axis_label(cls):
+        return "Percentage of portfolio"
+
+
+class SnapshotFreshnessChartPlaceholder(_AbstractCategoryChartPlaceholder):
+    key = "SNAPSHOT_FRESHNESS_CHART"
+
+    @classmethod
+    def labels(cls):
+        return ["Total", "1 week", "1 month", "3 months", "6 months", ">6 months"]
+
+    @classmethod
+    def series(cls):
+        freshness_days = sigrid_hygiene_portfolio_data.snapshot_freshness
+        result = [
+            formatters.split_days_into_buckets(
+                list(freshness_days.values()), buckets=[7, 30, 90, 180]
+            )
+        ]
+        return result
+
+    @classmethod
+    def axis_label(cls):
+        return "Systems"
+
+
+class EolDeactivatedSystemsChartPlaceholder(_AbstractCategoryChartPlaceholder):
+    key = "EOL_DEACTIVATED_CHART"
+
+    @classmethod
+    def labels(cls):
+        return ["Total", "Deactivated", "EOL", "EOL & Deactivated"]
+
+    @classmethod
+    def series(cls):
+        return sigrid_hygiene_portfolio_data.eol_deactivated_systems
+
+    @classmethod
+    def axis_label(cls):
+        return "Systems"
+
+
+class UsersLastLoginChartPlaceholder(_AbstractCategoryChartPlaceholder):
+    key = "USERS_LAST_LOGIN_CHART"
+
+    @classmethod
+    def labels(cls):
+        return ["Total", "1 week", "1 month", "3 months", "1 year", ">1 year"]
+
+    @classmethod
+    def series(cls):
+        buckets = [7, 30, 90, 365]
+        try:
+            days_admin = sigrid_hygiene_portfolio_data.get_last_access_time_users(
+                role="ADMIN"
+            )
+            days_maintainer = sigrid_hygiene_portfolio_data.get_last_access_time_users(
+                role="MAINTAINER"
+            )
+            days_user = sigrid_hygiene_portfolio_data.get_last_access_time_users(
+                role="USER"
+            )
+        except sigrid_api.SigridAccessDeniedError:
+            logging.warning(
+                "Could not retrieve user data: access denied (403). "
+                "The USERS_LAST_LOGIN_CHART will be empty. "
+                "Administrator role is required to access user data."
+            )
+            empty_series = [0] * (len(buckets) + 2)
+            return [empty_series.copy(), empty_series.copy(), empty_series.copy()]
+
+        return [
+            formatters.split_days_into_buckets(days_admin, buckets=buckets),
+            formatters.split_days_into_buckets(days_maintainer, buckets=buckets),
+            formatters.split_days_into_buckets(days_user, buckets=buckets),
+        ]
+
+    @classmethod
+    def series_names(cls):
+        return ["Admin", "Maintainer", "User"]
+
+    @classmethod
+    def axis_label(cls):
+        return "Users"

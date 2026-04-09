@@ -57,6 +57,10 @@ def generate_portfolio_overview(output_path: str) -> None:
     _generate_report("portfolio-overview.pptx", output_path)
 
 
+def generate_hygiene_report(output_path: str) -> None:
+    _generate_report("hygiene-report.pptx", output_path)
+
+
 _preset_reports: dict[str, Callable[[str], None]] = {
     "system-summary": generate_system_summary,
     "debug": generate_debug_docx,
@@ -66,6 +70,7 @@ _preset_reports: dict[str, Callable[[str], None]] = {
     "refactoring-candidates": generate_refactoring_candidates_report,
     "system-maintainability-one-pager": generate_system_maintainability_one_pager,
     "portfolio-overview": generate_portfolio_overview,
+    "hygiene-report": generate_hygiene_report,
 }
 
 SYSTEM_LEVEL_PRESETS = {

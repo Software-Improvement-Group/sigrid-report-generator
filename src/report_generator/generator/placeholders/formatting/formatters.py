@@ -14,6 +14,7 @@
 
 import logging
 import math
+import re
 
 from report_generator.generator.utils.star_rating import calculate_star_rating_integer
 
@@ -78,3 +79,34 @@ def format_diff(old_rating: float, new_rating: float) -> str:
         return f"- {abs(diff):.1f}"
     else:
         return "="
+
+
+def from_json_name(json_name: str) -> str:
+    """Convert a camelCase JSON field name to a human-readable label."""
+    words = re.sub(r"([A-Z])", r" \1", json_name).strip()
+    return words[0].upper() + words[1:]
+
+
+def split_days_into_buckets(days: list[int], buckets: list[int]) -> list[int]:
+    # Sort buckets ascendingly
+    buckets = sorted(buckets)
+
+    # Initialize counters (one per bucket, plus one for > last bucket)
+    counts = [0] * (len(buckets) + 1)
+
+    # Iterate through each day value and place into bucket
+    for value in days:
+        placed = False
+
+        for i, b in enumerate(buckets):
+            if value < b:
+                counts[i] += 1
+                placed = True
+                break
+
+        # If not placed in any bucket, belongs in > last bucket
+        if not placed:
+            counts[-1] += 1
+
+    # Prepend total number of values
+    return [len(days), *counts]

@@ -221,39 +221,43 @@ Use these placeholders anywhere in your PowerPoint/Word template. `report-genera
 
 To use these placeholders, rename the chart shape in the Selection Pane to match the placeholder key exactly (see instructions below). `report-generator` identifies charts by their shape name, not by a separate marker. If you want to use this chart, be sure to copy it from a standard template and modify its layout BUT NOT its structure or chart type.
 
-| Key                                      | Supports   | Description                                                                                                |
-|:-----------------------------------------|:-----------|:-----------------------------------------------------------------------------------------------------------|
-| `GALAXY_CHART`                           | PPTX       | Traditional SIG benchmark galaxy chart.                                                                    |
-| `MODERNIZATION_SCATTER_PLOT_CHART`       | PPTX       |                                                                                                            |
-| `OBJECTIVES_ARCHITECTURE_CHART`          | PPTX       |                                                                                                            |
-| `OBJECTIVES_CAPABILITY_CHART`            | PPTX       |                                                                                                            |
-| `OBJECTIVES_MAINTAINABILITY_CHART`       | PPTX       |                                                                                                            |
-| `OBJECTIVES_OSH_CHART`                   | PPTX       |                                                                                                            |
-| `OBJECTIVES_OVERALL_CHART`               | PPTX       |                                                                                                            |
-| `OBJECTIVES_SECURITY_CHART`              | PPTX       |                                                                                                            |
-| `OBJECTIVES_STATUS_CHART`                | PPTX       |                                                                                                            |
-| `OBJECTIVES_TEAM_CHART`                  | PPTX       |                                                                                                            |
-| `OSH_OTHER_RISKS_GRAPH`                  | PPTX       | OSH system-level freshness, stability, management, and activity risk bar chart.                            |
-| `OSH_PORTFOLIO_OTHER_RISKS_GRAPH`        | PPTX       | OSH portfolio-level freshness, stability, management, and activity risk bar chart.                         |
-| `OSH_PORTFOLIO_VULN_LEGAL_GRAPH`         | PPTX       | OSH portfolio-level vulnerability and legal risk bar chart.                                                |
-| `OSH_VULN_LEGAL_GRAPH`                   | PPTX       | OSH system-level vulnerability and legal risk bar chart.                                                   |
-| `PORTFOLIO_GALAXY_CHART`                 | PPTX       | Portfolio-level galaxy chart with one data point per system.                                               |
-| `PORTFOLIO_SECURITY_FINDINGS_CRITICAL`   | PPTX       | PowerPoint chart showing new, existing, and resolved critical security findings over the last 12 months.   |
-| `PORTFOLIO_SECURITY_FINDINGS_HIGH`       | PPTX       | PowerPoint chart showing new, existing, and resolved high security findings over the last 12 months.       |
-| `PORTFOLIO_SECURITY_FINDINGS_MEDIUM`     | PPTX       | PowerPoint chart showing new, existing, and resolved medium security findings over the last 12 months.     |
-| `PORTFOLIO_SECURITY_RESOLUTION_CRITICAL` | PPTX       | PowerPoint chart showing resolution times of critical security findings over the last 12 months.           |
-| `PORTFOLIO_SECURITY_RESOLUTION_HIGH`     | PPTX       | PowerPoint chart showing resolution times of high security findings over the last 12 months.               |
-| `PORTFOLIO_SECURITY_RESOLUTION_MEDIUM`   | PPTX       | PowerPoint chart showing resolution times of medium security findings over the last 12 months.             |
-| `PROGRESS_ARCHITECTURE_TIME_CHART`       | PPTX       |                                                                                                            |
-| `PROGRESS_CAPABILITY_CHART`              | PPTX       |                                                                                                            |
-| `PROGRESS_MAINTAINABILITY_TIME_CHART`    | PPTX       |                                                                                                            |
-| `PROGRESS_OSH_TIME_CHART`                | PPTX       |                                                                                                            |
-| `PROGRESS_SECURITY_TIME_CHART`           | PPTX       |                                                                                                            |
-| `PROGRESS_STATUS_CHART`                  | PPTX       |                                                                                                            |
-| `PROGRESS_TIME_CHART`                    | PPTX       |                                                                                                            |
-| `TECHNICAL_DEBT_SYSTEMS_CHART`           | PPTX       |                                                                                                            |
-| `TECHNOLOGY_CHART`                       | PPTX       | Chart with volume (in % of person months of code) per technology.                                          |
-| `TEST_CODE_RATIO_CHART`                  | PPTX       | Pie chart with volume and % of test code per technology, colored in line with the SIG test code benchmark. |
+| Key                                      | Supports | Description                                                                                                              |
+|:-----------------------------------------|:---------|:-------------------------------------------------------------------------------------------------------------------------|
+| `EOL_DEACTIVATED_CHART`                  | PPTX     | Chart showing counts for Total systems, Deactivated systems, EOL systems, and systems that are both EOL and deactivated. |
+| `GALAXY_CHART`                           | PPTX     | Traditional SIG benchmark galaxy chart.                                                                                  |
+| `METADATA_COMPLETENESS_CHART`            | PPTX     | Chart showing the percentage of systems with each metadata field complete or missing.                                    |
+| `MODERNIZATION_SCATTER_PLOT_CHART`       | PPTX     |                                                                                                                          |
+| `OBJECTIVES_ARCHITECTURE_CHART`          | PPTX     |                                                                                                                          |
+| `OBJECTIVES_CAPABILITY_CHART`            | PPTX     |                                                                                                                          |
+| `OBJECTIVES_MAINTAINABILITY_CHART`       | PPTX     |                                                                                                                          |
+| `OBJECTIVES_OSH_CHART`                   | PPTX     |                                                                                                                          |
+| `OBJECTIVES_OVERALL_CHART`               | PPTX     |                                                                                                                          |
+| `OBJECTIVES_SECURITY_CHART`              | PPTX     |                                                                                                                          |
+| `OBJECTIVES_STATUS_CHART`                | PPTX     |                                                                                                                          |
+| `OBJECTIVES_TEAM_CHART`                  | PPTX     |                                                                                                                          |
+| `OSH_OTHER_RISKS_GRAPH`                  | PPTX     | OSH system-level freshness, stability, management, and activity risk bar chart.                                          |
+| `OSH_PORTFOLIO_OTHER_RISKS_GRAPH`        | PPTX     | OSH portfolio-level freshness, stability, management, and activity risk bar chart.                                       |
+| `OSH_PORTFOLIO_VULN_LEGAL_GRAPH`         | PPTX     | OSH portfolio-level vulnerability and legal risk bar chart.                                                              |
+| `OSH_VULN_LEGAL_GRAPH`                   | PPTX     | OSH system-level vulnerability and legal risk bar chart.                                                                 |
+| `PORTFOLIO_GALAXY_CHART`                 | PPTX     | Portfolio-level galaxy chart with one data point per system.                                                             |
+| `PORTFOLIO_SECURITY_FINDINGS_CRITICAL`   | PPTX     | PowerPoint chart showing new, existing, and resolved critical security findings over the last 12 months.                 |
+| `PORTFOLIO_SECURITY_FINDINGS_HIGH`       | PPTX     | PowerPoint chart showing new, existing, and resolved high security findings over the last 12 months.                     |
+| `PORTFOLIO_SECURITY_FINDINGS_MEDIUM`     | PPTX     | PowerPoint chart showing new, existing, and resolved medium security findings over the last 12 months.                   |
+| `PORTFOLIO_SECURITY_RESOLUTION_CRITICAL` | PPTX     | PowerPoint chart showing resolution times of critical security findings over the last 12 months.                         |
+| `PORTFOLIO_SECURITY_RESOLUTION_HIGH`     | PPTX     | PowerPoint chart showing resolution times of high security findings over the last 12 months.                             |
+| `PORTFOLIO_SECURITY_RESOLUTION_MEDIUM`   | PPTX     | PowerPoint chart showing resolution times of medium security findings over the last 12 months.                           |
+| `PROGRESS_ARCHITECTURE_TIME_CHART`       | PPTX     |                                                                                                                          |
+| `PROGRESS_CAPABILITY_CHART`              | PPTX     |                                                                                                                          |
+| `PROGRESS_MAINTAINABILITY_TIME_CHART`    | PPTX     |                                                                                                                          |
+| `PROGRESS_OSH_TIME_CHART`                | PPTX     |                                                                                                                          |
+| `PROGRESS_SECURITY_TIME_CHART`           | PPTX     |                                                                                                                          |
+| `PROGRESS_STATUS_CHART`                  | PPTX     |                                                                                                                          |
+| `PROGRESS_TIME_CHART`                    | PPTX     |                                                                                                                          |
+| `SNAPSHOT_FRESHNESS_CHART`               | PPTX     | Chart showing the distribution in time of the last snapshot of the systems.                                              |
+| `TECHNICAL_DEBT_SYSTEMS_CHART`           | PPTX     |                                                                                                                          |
+| `TECHNOLOGY_CHART`                       | PPTX     | Chart with volume (in % of person months of code) per technology.                                                        |
+| `TEST_CODE_RATIO_CHART`                  | PPTX     | Pie chart with volume and % of test code per technology, colored in line with the SIG test code benchmark.               |
+| `USERS_LAST_LOGIN_CHART`                 | PPTX     | Chart showing the distribution in time of the last login of the users stratified by user role.                           |
 
 ## Dynamic Table Placeholders
 

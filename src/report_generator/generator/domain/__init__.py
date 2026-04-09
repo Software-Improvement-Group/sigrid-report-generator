@@ -43,6 +43,9 @@ from report_generator.generator.domain.portfolio.security_dashboard_resolution_t
 from report_generator.generator.domain.portfolio.security_portfolio import (
     security_ratings_portfolio_data,
 )
+from report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio import (
+    sigrid_hygiene_portfolio_data,
+)
 from report_generator.generator.domain.system.architecture import architecture_data
 from report_generator.generator.domain.system.maintainability import (
     maintainability_data,

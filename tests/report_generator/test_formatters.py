@@ -81,3 +81,42 @@ class TestMaintainabilityPortfolioFormatting:
         assert "About 3" in result
         assert "(30%)" in result
         assert "above 4 stars" in result
+
+
+class TestSplitDaysIntoBuckets:
+    def test_basic_bucketing(self):
+        # buckets: total, <10, <20, >=20
+        assert formatters.split_days_into_buckets(
+            days=[5, 12, 7, 25, 19, 3], buckets=[10, 20]
+        ) == [
+            6,  # total
+            3,  # <10: 5, 7, 3
+            2,  # <20: 12, 19
+            1,  # >=20: 25
+        ]
+
+    def test_empty_days(self):
+        assert formatters.split_days_into_buckets(days=[], buckets=[5, 10]) == [
+            0,  # total
+            0,  # <5
+            0,  # <10
+            0,  # >=10
+        ]
+
+    def test_empty_buckets(self):
+        # All values should go into "> last bucket"
+        assert formatters.split_days_into_buckets(days=[1, 2, 3], buckets=[]) == [
+            3,  # total
+            3,  # all values fall into final bucket
+        ]
+
+    def test_random_order_values_in_buckets(self):
+        assert formatters.split_days_into_buckets(
+            days=[4, 12, 7, 25, 19, 3], buckets=[5, 20, 10]
+        ) == [
+            6,  # total
+            2,  # <5: 3, 4
+            1,  # <10: 7
+            2,  # <20: 12, 19
+            1,  # >=20: 25
+        ]

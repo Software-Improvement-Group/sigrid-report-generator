@@ -69,7 +69,7 @@ more information.
 
 <img src="docs/img/sample-modernization.png" width="500" />
 
-**System maintainability one-pager:** Simple report that focus on a system's maintainability system, both in terms
+**System maintainability one-pager:** Simple report that focuses on a system's maintainability, both in terms
 of its current state and its progress over time.
 
 - Example: `report-generator -c <your-customer> -s <your-system> --layout system-maintainability-one-pager`
@@ -88,6 +88,17 @@ a specified period in time.
   using the `--team` and/or `--division` flags, for example: `--team aap --team noot`.
 
 <img src="docs/img/sample-portfolio-overview.png" width="400">
+
+**Hygiene report:** Presents metrics related to the healthcare of a Sigrid portfolio, such as completeness of metadata
+fields, user activity or upload freshness of the systems.
+
+- Example: `report-generator -c <your-customer> --layout hygiene-report`.
+- The report does not use a certain reporting period. It presents the most recent data available in Sigrid.
+- Actionable data underpinning the visualizations in the hygiene report can be downloaded in a readable Excel format
+  via the [Excel exports tool](https://github.com/Software-Improvement-Group/sigrid-integrations/tree/main/excel-exports)
+  in the public Sigrid integrations repository.
+
+<img src="docs/img/sample-hygiene.png" width="400">
 
 ### Troubleshooting
 
