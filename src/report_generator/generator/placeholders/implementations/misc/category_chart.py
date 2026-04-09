@@ -546,7 +546,8 @@ class UsersLastLoginChartPlaceholder(_AbstractCategoryChartPlaceholder):
                 "The USERS_LAST_LOGIN_CHART will be empty. "
                 "Administrator role is required to access user data."
             )
-            return [[0] * len(buckets), [0] * len(buckets), [0] * len(buckets)]
+            empty_series = [0] * (len(buckets) + 2)
+            return [empty_series.copy(), empty_series.copy(), empty_series.copy()]
 
         return [
             formatters.split_days_into_buckets(days_admin, buckets=buckets),
