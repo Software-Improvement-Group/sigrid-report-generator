@@ -36,7 +36,8 @@ class TestSigridHygienePortfolioData:
         ]
 
         for attr in cache_attrs:
-            sigrid_hygiene_portfolio_data.__dict__.pop(attr, None)
+            if hasattr(sigrid_hygiene_portfolio_data, attr):
+                delattr(sigrid_hygiene_portfolio_data, attr)
 
     @patch(
         "report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio.sigrid_api"
