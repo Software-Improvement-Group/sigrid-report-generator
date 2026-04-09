@@ -17,7 +17,6 @@ from unittest.mock import patch
 
 from freezegun import freeze_time
 
-from report_generator.generator.context.sigrid_api import SigridAccessDeniedError
 from report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio import (
     sigrid_hygiene_portfolio_data,
 )
@@ -199,19 +198,3 @@ class TestSigridHygienePortfolioData:
         # Result default value (role = user): [420]
         result_default = sigrid_hygiene_portfolio_data.get_last_access_time_users()
         assert result_default == result_user
-
-    @patch(
-        "report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio.sigrid_api"
-    )
-    def test_last_access_time_users_access_denied(self, mock_api):
-        """Test that a 403 error from the users endpoint is handled gracefully."""
-        mock_api.SigridAccessDeniedError = SigridAccessDeniedError
-        mock_api.get_users.side_effect = SigridAccessDeniedError(
-            "https://sigrid-says.com/rest/auth/api/user-management/customer/users",
-            "customer",
-            None,
-        )
-
-        result = sigrid_hygiene_portfolio_data.get_last_access_time_users()
-
-        assert result == []

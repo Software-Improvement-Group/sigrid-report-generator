@@ -12,12 +12,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import logging
 from abc import ABC, abstractmethod
 from typing import Callable
 
 from pptx.chart.data import CategoryChartData
 from pptx.presentation import Presentation
 
+from report_generator.generator.context import sigrid_api
 from report_generator.generator.domain import (
     maintainability_data,
     modernization_data,
@@ -528,15 +530,24 @@ class UsersLastLoginChartPlaceholder(_AbstractCategoryChartPlaceholder):
     @classmethod
     def series(cls):
         buckets = [7, 30, 90, 365]
-        days_admin = sigrid_hygiene_portfolio_data.get_last_access_time_users(
-            role="ADMIN"
-        )
-        days_maintainer = sigrid_hygiene_portfolio_data.get_last_access_time_users(
-            role="MAINTAINER"
-        )
-        days_user = sigrid_hygiene_portfolio_data.get_last_access_time_users(
-            role="USER"
-        )
+        try:
+            days_admin = sigrid_hygiene_portfolio_data.get_last_access_time_users(
+                role="ADMIN"
+            )
+            days_maintainer = sigrid_hygiene_portfolio_data.get_last_access_time_users(
+                role="MAINTAINER"
+            )
+            days_user = sigrid_hygiene_portfolio_data.get_last_access_time_users(
+                role="USER"
+            )
+        except sigrid_api.SigridAccessDeniedError:
+            logging.warning(
+                "Could not retrieve user data: access denied (403). "
+                "The USERS_LAST_LOGIN_CHART will be empty. "
+                "Administrator role is required to access user data."
+            )
+            return [[0] * len(buckets), [0] * len(buckets), [0] * len(buckets)]
+
         return [
             formatters.split_days_into_buckets(days_admin, buckets=buckets),
             formatters.split_days_into_buckets(days_maintainer, buckets=buckets),

@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import logging
+
 from datetime import datetime
 from functools import cached_property
 
@@ -120,15 +120,7 @@ class SigridHygienePortfolioData:
 
     @staticmethod
     def get_last_access_time_users(role="USER"):
-        try:
-            users = sigrid_api.get_users()["users"]
-        except sigrid_api.SigridAccessDeniedError:
-            logging.warning(
-                "Could not retrieve user data: access denied (403). "
-                "Administrator role is required to access user data."
-            )
-            return []
-
+        users = sigrid_api.get_users()["users"]
         time_now = datetime.now()
 
         list_freshness_days = [
