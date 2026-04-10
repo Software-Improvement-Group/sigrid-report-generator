@@ -229,6 +229,7 @@ To use these placeholders, rename the chart shape in the Selection Pane to match
 | `MODERNIZATION_SCATTER_PLOT_CHART`       | PPTX     |                                                                                                                          |
 | `OBJECTIVES_ARCHITECTURE_CHART`          | PPTX     |                                                                                                                          |
 | `OBJECTIVES_CAPABILITY_CHART`            | PPTX     |                                                                                                                          |
+| `OBJECTIVES_COVERAGE_CHART`              | PPTX     | PowerPoint chart showing number of systems that have objectives set for each capability.                                 |
 | `OBJECTIVES_MAINTAINABILITY_CHART`       | PPTX     |                                                                                                                          |
 | `OBJECTIVES_OSH_CHART`                   | PPTX     |                                                                                                                          |
 | `OBJECTIVES_OVERALL_CHART`               | PPTX     |                                                                                                                          |

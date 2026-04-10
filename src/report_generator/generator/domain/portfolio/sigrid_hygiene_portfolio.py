@@ -12,13 +12,13 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import cached_property
 
 from dateutil import parser
 
 from report_generator.generator.context import sigrid_api
+from report_generator.generator.utils.time_series import Period
 
 
 class SigridHygienePortfolioData:
@@ -34,6 +34,13 @@ class SigridHygienePortfolioData:
             "supplierNames",
             "teamNames",
             "divisionName",
+        ]
+
+        self.capabilities = [
+            "MAINTAINABILITY",
+            "ARCHITECTURE_QUALITY",
+            "OPEN_SOURCE_HEALTH",
+            "SECURITY",
         ]
 
     @cached_property
@@ -130,6 +137,51 @@ class SigridHygienePortfolioData:
         ]
 
         return list_freshness_days
+
+    def _compute_list_objectives_dict(self):
+        time_now = datetime.now()
+        period = Period(time_now - timedelta(days=1), time_now)
+        portfolio_objectives = sigrid_api.get_objectives_evaluation(period)["systems"]
+        list_system_dict = []
+
+        for system in portfolio_objectives:
+            system_dict = {capability: 0 for capability in self.capabilities}
+
+            for objective in system["objectives"]:
+                if (
+                    objective["feature"] in self.capabilities
+                    and system_dict[objective["feature"]] == 0
+                ):
+                    system_dict[objective["feature"]] = 1
+
+            list_system_dict.append(system_dict)
+
+        return list_system_dict
+
+    @cached_property
+    def objectives_coverage(self):
+        list_system_dict = self._compute_list_objectives_dict()
+        total_systems = len(list_system_dict)
+
+        if total_systems == 0:
+            return {
+                "TOTAL": 0,
+                "ALL_CAPABILITIES": 0,
+                **{capability: 0 for capability in self.capabilities},
+            }
+
+        all_capabilities = sum(
+            1 for system in list_system_dict if all(val == 1 for val in system.values())
+        )
+
+        return {
+            "TOTAL": total_systems,
+            "ALL_CAPABILITIES": all_capabilities,
+            **{
+                capability: (sum(system[capability] for system in list_system_dict))
+                for capability in self.capabilities
+            },
+        }
 
 
 sigrid_hygiene_portfolio_data = SigridHygienePortfolioData()

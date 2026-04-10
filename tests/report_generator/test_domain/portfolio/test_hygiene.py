@@ -25,6 +25,10 @@ from report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio import
 class TestSigridHygienePortfolioData:
     """Test cases for SigridHygienePortfolioData model."""
 
+    def setup_method(self):
+        """Store the original capabilities so tests do not leak state."""
+        self._original_capabilities = list(sigrid_hygiene_portfolio_data.capabilities)
+
     def teardown_method(self):
         """Clean up cached properties after each test case."""
         cache_attrs = [
@@ -32,10 +36,13 @@ class TestSigridHygienePortfolioData:
             "metadata_completeness",
             "snapshot_freshness",
             "eol_deactivated_systems",
+            "objectives_coverage",
         ]
 
         for attr in cache_attrs:
             sigrid_hygiene_portfolio_data.__dict__.pop(attr, None)
+
+        sigrid_hygiene_portfolio_data.capabilities = self._original_capabilities
 
     @patch(
         "report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio.sigrid_api"
@@ -198,3 +205,96 @@ class TestSigridHygienePortfolioData:
         # Result default value (role = user): [420]
         result_default = sigrid_hygiene_portfolio_data.get_last_access_time_users()
         assert result_default == result_user
+
+    @patch(
+        "report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio.sigrid_api"
+    )
+    def test_objectives_coverage_no_systems(self, mock_api):
+        """Return correct result when portfolio is empty."""
+        sigrid_hygiene_portfolio_data.capabilities = [
+            "MAINTAINABILITY",
+            "ARCHITECTURE_QUALITY",
+            "OPEN_SOURCE_HEALTH",
+            "SECURITY",
+        ]
+
+        mock_api.get_objectives_evaluation.return_value = {"systems": []}
+
+        result = sigrid_hygiene_portfolio_data.objectives_coverage
+
+        # All values should be set to 0
+        assert result["TOTAL"] == 0
+        assert result["ALL_CAPABILITIES"] == 0
+        for capability in sigrid_hygiene_portfolio_data.capabilities:
+            assert result[capability] == 0
+
+    @patch(
+        "report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio.sigrid_api"
+    )
+    def test_objectives_coverage_all_capabilities(self, mock_api):
+        """All systems have objectives set for all capabilities."""
+        sigrid_hygiene_portfolio_data.capabilities = [
+            "MAINTAINABILITY",
+            "OPEN_SOURCE_HEALTH",
+        ]
+
+        mock_api.get_objectives_evaluation.return_value = {
+            "systems": [
+                {
+                    "objectives": [
+                        {"feature": "MAINTAINABILITY"},
+                        {"feature": "OPEN_SOURCE_HEALTH"},
+                    ],
+                    "systemName": "sys1",
+                },
+                {
+                    "objectives": [
+                        {"feature": "MAINTAINABILITY"},
+                        {"feature": "OPEN_SOURCE_HEALTH"},
+                    ],
+                    "systemName": "sys2",
+                },
+            ]
+        }
+
+        result = sigrid_hygiene_portfolio_data.objectives_coverage
+
+        # Every capability appears twice
+        assert result["TOTAL"] == 2
+        assert result["ALL_CAPABILITIES"] == 2
+        for capability in sigrid_hygiene_portfolio_data.capabilities:
+            assert result[capability] == 2
+
+    @patch(
+        "report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio.sigrid_api"
+    )
+    def test_objectives_coverage_mixed_capabilities(self, mock_api):
+        """Mixed systems with partial objectives coverage."""
+        sigrid_hygiene_portfolio_data.capabilities = [
+            "MAINTAINABILITY",
+            "OPEN_SOURCE_HEALTH",
+        ]
+
+        mock_api.get_objectives_evaluation.return_value = {
+            "systems": [
+                {
+                    "objectives": [
+                        {"feature": "MAINTAINABILITY"},
+                    ],
+                    "systemName": "sys1",
+                },
+                {
+                    "objectives": [
+                        {"feature": "OPEN_SOURCE_HEALTH"},
+                    ],
+                    "systemName": "sys2",
+                },
+            ]
+        }
+
+        result = sigrid_hygiene_portfolio_data.objectives_coverage
+
+        assert result["TOTAL"] == 2
+        assert result["ALL_CAPABILITIES"] == 0
+        for capability in sigrid_hygiene_portfolio_data.capabilities:
+            assert result[capability] == 1
