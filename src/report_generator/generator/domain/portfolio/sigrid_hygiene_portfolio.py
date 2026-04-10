@@ -140,7 +140,7 @@ class SigridHygienePortfolioData:
 
     def _compute_list_objectives_dict(self):
         time_now = datetime.now()
-        period = Period(time_now - timedelta(seconds=5), time_now)
+        period = Period(time_now - timedelta(days=1), time_now)
         portfolio_objectives = sigrid_api.get_objectives_evaluation(period)["systems"]
         list_system_dict = []
 
