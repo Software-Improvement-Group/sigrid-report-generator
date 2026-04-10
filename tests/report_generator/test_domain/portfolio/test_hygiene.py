@@ -25,6 +25,10 @@ from report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio import
 class TestSigridHygienePortfolioData:
     """Test cases for SigridHygienePortfolioData model."""
 
+    def setup_method(self):
+        """Store the original capabilities so tests do not leak state."""
+        self._original_capabilities = list(sigrid_hygiene_portfolio_data.capabilities)
+
     def teardown_method(self):
         """Clean up cached properties after each test case."""
         cache_attrs = [
@@ -37,6 +41,8 @@ class TestSigridHygienePortfolioData:
 
         for attr in cache_attrs:
             sigrid_hygiene_portfolio_data.__dict__.pop(attr, None)
+
+        sigrid_hygiene_portfolio_data.capabilities = self._original_capabilities
 
     @patch(
         "report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio.sigrid_api"
