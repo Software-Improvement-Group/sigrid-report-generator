@@ -89,7 +89,12 @@ class TestRefactoringCandidatesTableDuplicationTech:
         )
 
     def test_allowed_parameters(self):
-        assert RefactoringCandidatesTableDuplicationTech.allowed_parameters == [1, 2, 3, 4]
+        assert RefactoringCandidatesTableDuplicationTech.allowed_parameters == (
+            1,
+            2,
+            3,
+            4,
+        )
 
     def test_value_filters_candidates(self, mocker):
         _mock_sorted_tech(mocker, ["csharp", "java"])
@@ -119,7 +124,9 @@ class TestRefactoringCandidatesTableDuplicationTech:
 
     def test_value_returns_header_only_for_out_of_range_tech(self, mocker):
         _mock_sorted_tech(mocker, ["csharp"])
-        mocker.patch.object(refactoring_candidates_data, "get_candidates", return_value=[])
+        mocker.patch.object(
+            refactoring_candidates_data, "get_candidates", return_value=[]
+        )
         result = RefactoringCandidatesTableDuplicationTech.value(4)
         assert result == [["Description", "Redundant LOC", "Level", "Technology"]]
 
@@ -132,7 +139,7 @@ class TestRefactoringCandidatesTableUnitSizeTech:
         )
 
     def test_allowed_parameters(self):
-        assert RefactoringCandidatesTableUnitSizeTech.allowed_parameters == [1, 2, 3, 4]
+        assert RefactoringCandidatesTableUnitSizeTech.allowed_parameters == (1, 2, 3, 4)
 
     def test_value_filters_candidates(self, mocker):
         _mock_sorted_tech(mocker, ["csharp", "java"])
@@ -145,14 +152,25 @@ class TestRefactoringCandidatesTableUnitSizeTech:
             ],
         )
         result = RefactoringCandidatesTableUnitSizeTech.value(1)
-        assert result[0] == ["Unit name", "LOC", "McCabe", "Parameters", "Component", "Technology"]
+        assert result[0] == [
+            "Unit name",
+            "LOC",
+            "McCabe",
+            "Parameters",
+            "Component",
+            "Technology",
+        ]
         assert len(result) == 2  # header + 1 csharp row
 
     def test_value_returns_header_only_for_out_of_range_tech(self, mocker):
         _mock_sorted_tech(mocker, ["csharp"])
-        mocker.patch.object(refactoring_candidates_data, "get_candidates", return_value=[])
+        mocker.patch.object(
+            refactoring_candidates_data, "get_candidates", return_value=[]
+        )
         result = RefactoringCandidatesTableUnitSizeTech.value(4)
-        assert result == [["Unit name", "LOC", "McCabe", "Parameters", "Component", "Technology"]]
+        assert result == [
+            ["Unit name", "LOC", "McCabe", "Parameters", "Component", "Technology"]
+        ]
 
 
 class TestRefactoringCandidatesTableUnitComplexityTech:
@@ -163,13 +181,22 @@ class TestRefactoringCandidatesTableUnitComplexityTech:
         )
 
     def test_allowed_parameters(self):
-        assert RefactoringCandidatesTableUnitComplexityTech.allowed_parameters == [1, 2, 3, 4]
+        assert RefactoringCandidatesTableUnitComplexityTech.allowed_parameters == (
+            1,
+            2,
+            3,
+            4,
+        )
 
     def test_value_returns_header_only_for_others_tech(self, mocker):
         _mock_sorted_tech(mocker, ["others"])
-        mocker.patch.object(refactoring_candidates_data, "get_candidates", return_value=[])
+        mocker.patch.object(
+            refactoring_candidates_data, "get_candidates", return_value=[]
+        )
         result = RefactoringCandidatesTableUnitComplexityTech.value(1)
-        assert result == [["Unit name", "LOC", "McCabe", "Parameters", "Component", "Technology"]]
+        assert result == [
+            ["Unit name", "LOC", "McCabe", "Parameters", "Component", "Technology"]
+        ]
 
 
 class TestRefactoringCandidatesTableUnitInterfacingTech:
@@ -180,13 +207,22 @@ class TestRefactoringCandidatesTableUnitInterfacingTech:
         )
 
     def test_allowed_parameters(self):
-        assert RefactoringCandidatesTableUnitInterfacingTech.allowed_parameters == [1, 2, 3, 4]
+        assert RefactoringCandidatesTableUnitInterfacingTech.allowed_parameters == (
+            1,
+            2,
+            3,
+            4,
+        )
 
     def test_value_returns_header_only_for_out_of_range_tech(self, mocker):
         _mock_sorted_tech(mocker, ["csharp"])
-        mocker.patch.object(refactoring_candidates_data, "get_candidates", return_value=[])
+        mocker.patch.object(
+            refactoring_candidates_data, "get_candidates", return_value=[]
+        )
         result = RefactoringCandidatesTableUnitInterfacingTech.value(4)
-        assert result == [["Unit name", "LOC", "McCabe", "Parameters", "Component", "Technology"]]
+        assert result == [
+            ["Unit name", "LOC", "McCabe", "Parameters", "Component", "Technology"]
+        ]
 
 
 class TestRefactoringCandidatesTableModuleCouplingTech:
@@ -197,7 +233,12 @@ class TestRefactoringCandidatesTableModuleCouplingTech:
         )
 
     def test_allowed_parameters(self):
-        assert RefactoringCandidatesTableModuleCouplingTech.allowed_parameters == [1, 2, 3, 4]
+        assert RefactoringCandidatesTableModuleCouplingTech.allowed_parameters == (
+            1,
+            2,
+            3,
+            4,
+        )
 
     def test_value_filters_candidates(self, mocker):
         _mock_sorted_tech(mocker, ["csharp", "java"])
@@ -205,8 +246,18 @@ class TestRefactoringCandidatesTableModuleCouplingTech:
             refactoring_candidates_data,
             "get_candidates",
             return_value=[
-                {"technology": "csharp", "file": "src/Foo.cs", "fanIn": 5, "component": "Core"},
-                {"technology": "java", "file": "src/Bar.java", "fanIn": 3, "component": "Api"},
+                {
+                    "technology": "csharp",
+                    "file": "src/Foo.cs",
+                    "fanIn": 5,
+                    "component": "Core",
+                },
+                {
+                    "technology": "java",
+                    "file": "src/Bar.java",
+                    "fanIn": 3,
+                    "component": "Api",
+                },
             ],
         )
         result = RefactoringCandidatesTableModuleCouplingTech.value(2)
@@ -215,7 +266,9 @@ class TestRefactoringCandidatesTableModuleCouplingTech:
 
     def test_value_returns_header_only_for_out_of_range_tech(self, mocker):
         _mock_sorted_tech(mocker, ["csharp"])
-        mocker.patch.object(refactoring_candidates_data, "get_candidates", return_value=[])
+        mocker.patch.object(
+            refactoring_candidates_data, "get_candidates", return_value=[]
+        )
         result = RefactoringCandidatesTableModuleCouplingTech.value(4)
         assert result == [["File name", "LOC", "Fan-in", "Component", "Technology"]]
 
@@ -228,7 +281,10 @@ class TestRefactoringCandidatesTableComponentIndependenceTech:
         )
 
     def test_allowed_parameters(self):
-        assert RefactoringCandidatesTableComponentIndependenceTech.allowed_parameters == [1, 2, 3, 4]
+        assert (
+            RefactoringCandidatesTableComponentIndependenceTech.allowed_parameters
+            == (1, 2, 3, 4)
+        )
 
     def test_value_filters_candidates(self, mocker):
         _mock_sorted_tech(mocker, ["csharp", "java"])
@@ -246,6 +302,8 @@ class TestRefactoringCandidatesTableComponentIndependenceTech:
 
     def test_value_returns_header_only_for_out_of_range_tech(self, mocker):
         _mock_sorted_tech(mocker, ["csharp"])
-        mocker.patch.object(refactoring_candidates_data, "get_candidates", return_value=[])
+        mocker.patch.object(
+            refactoring_candidates_data, "get_candidates", return_value=[]
+        )
         result = RefactoringCandidatesTableComponentIndependenceTech.value(4)
         assert result == [["File name", "LOC", "Component", "Technology"]]
