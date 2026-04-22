@@ -460,6 +460,8 @@ class ObjectivesStatusChartSigridPlaceholder(_AbstractCategoryChartPlaceholder):
 
 
 class MetadataCompletenessChartPlaceholder(_AbstractCategoryChartPlaceholder):
+    """Chart showing the percentage of systems with each metadata field complete or missing."""
+
     key = "METADATA_COMPLETENESS_CHART"
 
     @classmethod
@@ -483,6 +485,8 @@ class MetadataCompletenessChartPlaceholder(_AbstractCategoryChartPlaceholder):
 
 
 class SnapshotFreshnessChartPlaceholder(_AbstractCategoryChartPlaceholder):
+    """Chart showing the distribution in time of the last snapshot of the systems."""
+
     key = "SNAPSHOT_FRESHNESS_CHART"
 
     @classmethod
@@ -505,6 +509,8 @@ class SnapshotFreshnessChartPlaceholder(_AbstractCategoryChartPlaceholder):
 
 
 class EolDeactivatedSystemsChartPlaceholder(_AbstractCategoryChartPlaceholder):
+    """Chart showing counts for Total systems, Deactivated systems, EOL systems, and systems that are both EOL and deactivated."""
+
     key = "EOL_DEACTIVATED_CHART"
 
     @classmethod
@@ -521,6 +527,8 @@ class EolDeactivatedSystemsChartPlaceholder(_AbstractCategoryChartPlaceholder):
 
 
 class UsersLastLoginChartPlaceholder(_AbstractCategoryChartPlaceholder):
+    """Chart showing the distribution in time of the last login of the users stratified by user role."""
+
     key = "USERS_LAST_LOGIN_CHART"
 
     @classmethod
@@ -565,6 +573,8 @@ class UsersLastLoginChartPlaceholder(_AbstractCategoryChartPlaceholder):
 
 
 class ObjectivesCoverageChartPlaceholder(_AbstractCategoryChartPlaceholder):
+    """Chart showing number of systems that have objectives set for each capability as well as all capabilities."""
+
     key = "OBJECTIVES_COVERAGE_CHART"
 
     @classmethod
