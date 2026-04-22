@@ -8,3 +8,6 @@ __pycache__
 out.pptx
 out.docx
 ~$*.*
+
+# Claude user config
+.claude/settings.local.json

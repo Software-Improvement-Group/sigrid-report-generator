@@ -5,9 +5,7 @@
       "Bash(ruff check:*)",
       "WebFetch(domain:docs.sigrid-says.com)",
       "mcp__SigridCode__code_quality_guardrails"
-    ],
-    "deny": [],
-    "ask": []
+    ]
   },
   "hooks": {
     "PostToolUse": [
@@ -21,17 +19,5 @@
         ]
       }
     ]
-  },
-  "mcpServers": {
-    "SigridCode": {
-      "command": "npx",
-      "args": [
-        "mcp-remote",
-        "https://sigrid-says.com/mcp",
-        "--header",
-        "Authorization: Bearer ${SIGRID_TOKEN}",
-        "--allow-http"
-      ]
-    }
   }
 }
