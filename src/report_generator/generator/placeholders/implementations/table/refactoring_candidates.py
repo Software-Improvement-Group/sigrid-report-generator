@@ -279,7 +279,7 @@ class RefactoringCandidatesTableDuplicationTech(
     _AbstractRefactoringCandidatesTableTechPlaceholder,
     RefactoringCandidatesTableDuplication,
 ):
-    """Table for refactoring candidates related to code duplication, filtered by technology. Headers are: Description, Redundant LOC, Level, Technology."""
+    """Table for refactoring candidates related to code duplication, filtered by technology. Headers are: Description, Redundant LOC, Level."""
 
     key = "REFACTORING_CANDIDATES_TABLE_DUPLICATION_TECH_{tech_idx}"
 
@@ -288,7 +288,7 @@ class RefactoringCandidatesTableUnitSizeTech(
     _AbstractRefactoringCandidatesTableTechPlaceholder,
     RefactoringCandidatesTableUnitSize,
 ):
-    """Table for refactoring candidates related to unit size, filtered by technology. Headers are: Unit name, LOC, McCabe, Parameters, Component, Technology."""
+    """Table for refactoring candidates related to unit size, filtered by technology. Headers are: Unit name, LOC, McCabe, Parameters, Component."""
 
     key = "REFACTORING_CANDIDATES_TABLE_UNIT_SIZE_TECH_{tech_idx}"
 
@@ -297,7 +297,7 @@ class RefactoringCandidatesTableUnitComplexityTech(
     _AbstractRefactoringCandidatesTableTechPlaceholder,
     RefactoringCandidatesTableUnitComplexity,
 ):
-    """Table for refactoring candidates related to unit complexity, filtered by technology. Headers are: Unit name, LOC, McCabe, Parameters, Component, Technology."""
+    """Table for refactoring candidates related to unit complexity, filtered by technology. Headers are: Unit name, LOC, McCabe, Parameters, Component."""
 
     key = "REFACTORING_CANDIDATES_TABLE_UNIT_COMPLEXITY_TECH_{tech_idx}"
 
@@ -306,7 +306,7 @@ class RefactoringCandidatesTableUnitInterfacingTech(
     _AbstractRefactoringCandidatesTableTechPlaceholder,
     RefactoringCandidatesTableUnitInterfacing,
 ):
-    """Table for refactoring candidates related to unit interfacing, filtered by technology. Headers are: Unit name, LOC, McCabe, Parameters, Component, Technology."""
+    """Table for refactoring candidates related to unit interfacing, filtered by technology. Headers are: Unit name, LOC, McCabe, Parameters, Component."""
 
     key = "REFACTORING_CANDIDATES_TABLE_UNIT_INTERFACING_TECH_{tech_idx}"
 
@@ -315,7 +315,7 @@ class RefactoringCandidatesTableModuleCouplingTech(
     _AbstractRefactoringCandidatesTableTechPlaceholder,
     RefactoringCandidatesTableModuleCoupling,
 ):
-    """Table for refactoring candidates related to module coupling, filtered by technology. Headers are: File name, LOC, Fan-in, Component, Technology."""
+    """Table for refactoring candidates related to module coupling, filtered by technology. Headers are: File name, LOC, Fan-in, Component."""
 
     key = "REFACTORING_CANDIDATES_TABLE_MODULE_COUPLING_TECH_{tech_idx}"
 
@@ -324,6 +324,6 @@ class RefactoringCandidatesTableComponentIndependenceTech(
     _AbstractRefactoringCandidatesTableTechPlaceholder,
     RefactoringCandidatesTableComponentIndependence,
 ):
-    """Table for refactoring candidates related to component independence, filtered by technology. Headers are: File name, LOC, Component, Technology."""
+    """Table for refactoring candidates related to component independence, filtered by technology. Headers are: File name, LOC, Component."""
 
     key = "REFACTORING_CANDIDATES_TABLE_COMPONENT_INDEPENDENCE_TECH_{tech_idx}"
