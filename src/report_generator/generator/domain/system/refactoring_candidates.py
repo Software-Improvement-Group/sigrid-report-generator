@@ -21,7 +21,7 @@ class RefactoringCandidatesData:
     @staticmethod
     def _get_api_data(metric: MaintMetric):
         return sigrid_api.get_maintainability_refactoring_candidates(
-            system_property=metric, count=20
+            system_property=metric, count=100
         )
 
     @lru_cache  # noqa: B019

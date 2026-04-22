@@ -21,6 +21,7 @@ from pptx import Presentation
 
 from report_generator.generator.placeholders.implementations import placeholders
 from report_generator.generator.placeholders.implementations.base import (
+    PARAMETER_TOKEN_PATTERN,
     PlaceholderDocType,
 )
 from report_generator.generator.report import Report, ReportType
@@ -98,7 +99,9 @@ class TestPlaceholders:
                     if placeholder_cls.is_parameterized():
                         # Collect expected keys for all parameters
                         for param in placeholder_cls.allowed_parameters:
-                            key = placeholder_cls.key.format(parameter=param)
+                            key = PARAMETER_TOKEN_PATTERN.sub(
+                                str(param), placeholder_cls.key, count=1
+                            )
                             expected_log_entries.add(key)
 
                         # Resolve once per report type; ParameterizedPlaceholder.resolve

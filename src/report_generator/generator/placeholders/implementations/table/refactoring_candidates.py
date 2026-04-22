@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 from report_generator.generator.domain import refactoring_candidates_data
 from report_generator.generator.domain.system.maintainability import (
@@ -247,12 +247,8 @@ class RefactoringCandidatesTableComponentIndependence(
 
 
 def _get_technology_name_at_index(tech_index: int) -> str | None:
-    tech_list = maintainability_data.sorted_tech
-    idx = tech_index - 1
-    if idx < 0 or idx >= len(tech_list):
-        return None
-    name = tech_list[idx]["name"]
-    return None if name == "others" else name
+    name = maintainability_data.sorted_tech_get_key(tech_index - 1, "name", None)
+    return None if name in (None, "others") else name
 
 
 def _filter_by_technology(candidates: list, tech_index: int) -> list:
@@ -263,104 +259,71 @@ def _filter_by_technology(candidates: list, tech_index: int) -> list:
 
 
 class _AbstractRefactoringCandidatesTableTechPlaceholder(
-    ParameterizedPlaceholder, TablePlaceholder
+    ParameterizedPlaceholder, _AbstractRefactoringCandidatesTablePlaceholder, ABC
 ):
+    """Mixin that adds per-technology filtering to a refactoring candidates table.
+
+    Must be combined with a concrete original table class that supplies `metric`
+    and `_to_table_matrix`. Concrete subclasses only need to declare a `key`.
+    """
+
     allowed_parameters = (1, 2, 3, 4)
+
+    @classmethod
+    def value(cls, tech_index: int) -> TableMatrix:
+        candidates = refactoring_candidates_data.get_candidates(cls.metric)
+        return cls._to_table_matrix(_filter_by_technology(candidates, tech_index))
 
 
 class RefactoringCandidatesTableDuplicationTech(
-    _AbstractRefactoringCandidatesTableTechPlaceholder
+    _AbstractRefactoringCandidatesTableTechPlaceholder,
+    RefactoringCandidatesTableDuplication,
 ):
     """Table for refactoring candidates related to code duplication, filtered by technology. Headers are: Description, Redundant LOC, Level, Technology."""
 
-    key = "REFACTORING_CANDIDATES_TABLE_DUPLICATION_TECH_{parameter}"
-
-    @classmethod
-    def value(cls, tech_index: int) -> TableMatrix:
-        candidates = refactoring_candidates_data.get_candidates(MaintMetric.DUPLICATION)
-        return RefactoringCandidatesTableDuplication._to_table_matrix(
-            _filter_by_technology(candidates, tech_index)
-        )
+    key = "REFACTORING_CANDIDATES_TABLE_DUPLICATION_TECH_{tech_idx}"
 
 
 class RefactoringCandidatesTableUnitSizeTech(
-    _AbstractRefactoringCandidatesTableTechPlaceholder
+    _AbstractRefactoringCandidatesTableTechPlaceholder,
+    RefactoringCandidatesTableUnitSize,
 ):
     """Table for refactoring candidates related to unit size, filtered by technology. Headers are: Unit name, LOC, McCabe, Parameters, Component, Technology."""
 
-    key = "REFACTORING_CANDIDATES_TABLE_UNIT_SIZE_TECH_{parameter}"
-
-    @classmethod
-    def value(cls, tech_index: int) -> TableMatrix:
-        candidates = refactoring_candidates_data.get_candidates(MaintMetric.UNIT_SIZE)
-        return RefactoringCandidatesTableUnitSize._to_table_matrix(
-            _filter_by_technology(candidates, tech_index)
-        )
+    key = "REFACTORING_CANDIDATES_TABLE_UNIT_SIZE_TECH_{tech_idx}"
 
 
 class RefactoringCandidatesTableUnitComplexityTech(
-    _AbstractRefactoringCandidatesTableTechPlaceholder
+    _AbstractRefactoringCandidatesTableTechPlaceholder,
+    RefactoringCandidatesTableUnitComplexity,
 ):
     """Table for refactoring candidates related to unit complexity, filtered by technology. Headers are: Unit name, LOC, McCabe, Parameters, Component, Technology."""
 
-    key = "REFACTORING_CANDIDATES_TABLE_UNIT_COMPLEXITY_TECH_{parameter}"
-
-    @classmethod
-    def value(cls, tech_index: int) -> TableMatrix:
-        candidates = refactoring_candidates_data.get_candidates(
-            MaintMetric.UNIT_COMPLEXITY
-        )
-        return RefactoringCandidatesTableUnitComplexity._to_table_matrix(
-            _filter_by_technology(candidates, tech_index)
-        )
+    key = "REFACTORING_CANDIDATES_TABLE_UNIT_COMPLEXITY_TECH_{tech_idx}"
 
 
 class RefactoringCandidatesTableUnitInterfacingTech(
-    _AbstractRefactoringCandidatesTableTechPlaceholder
+    _AbstractRefactoringCandidatesTableTechPlaceholder,
+    RefactoringCandidatesTableUnitInterfacing,
 ):
     """Table for refactoring candidates related to unit interfacing, filtered by technology. Headers are: Unit name, LOC, McCabe, Parameters, Component, Technology."""
 
-    key = "REFACTORING_CANDIDATES_TABLE_UNIT_INTERFACING_TECH_{parameter}"
-
-    @classmethod
-    def value(cls, tech_index: int) -> TableMatrix:
-        candidates = refactoring_candidates_data.get_candidates(
-            MaintMetric.UNIT_INTERFACING
-        )
-        return RefactoringCandidatesTableUnitInterfacing._to_table_matrix(
-            _filter_by_technology(candidates, tech_index)
-        )
+    key = "REFACTORING_CANDIDATES_TABLE_UNIT_INTERFACING_TECH_{tech_idx}"
 
 
 class RefactoringCandidatesTableModuleCouplingTech(
-    _AbstractRefactoringCandidatesTableTechPlaceholder
+    _AbstractRefactoringCandidatesTableTechPlaceholder,
+    RefactoringCandidatesTableModuleCoupling,
 ):
     """Table for refactoring candidates related to module coupling, filtered by technology. Headers are: File name, LOC, Fan-in, Component, Technology."""
 
-    key = "REFACTORING_CANDIDATES_TABLE_MODULE_COUPLING_TECH_{parameter}"
-
-    @classmethod
-    def value(cls, tech_index: int) -> TableMatrix:
-        candidates = refactoring_candidates_data.get_candidates(
-            MaintMetric.MODULE_COUPLING
-        )
-        return RefactoringCandidatesTableModuleCoupling._to_table_matrix(
-            _filter_by_technology(candidates, tech_index)
-        )
+    key = "REFACTORING_CANDIDATES_TABLE_MODULE_COUPLING_TECH_{tech_idx}"
 
 
 class RefactoringCandidatesTableComponentIndependenceTech(
-    _AbstractRefactoringCandidatesTableTechPlaceholder
+    _AbstractRefactoringCandidatesTableTechPlaceholder,
+    RefactoringCandidatesTableComponentIndependence,
 ):
     """Table for refactoring candidates related to component independence, filtered by technology. Headers are: File name, LOC, Component, Technology."""
 
-    key = "REFACTORING_CANDIDATES_TABLE_COMPONENT_INDEPENDENCE_TECH_{parameter}"
-
-    @classmethod
-    def value(cls, tech_index: int) -> TableMatrix:
-        candidates = refactoring_candidates_data.get_candidates(
-            MaintMetric.COMPONENT_INDEPENDENCE
-        )
-        return RefactoringCandidatesTableComponentIndependence._to_table_matrix(
-            _filter_by_technology(candidates, tech_index)
-        )
+    key = "REFACTORING_CANDIDATES_TABLE_COMPONENT_INDEPENDENCE_TECH_{tech_idx}"

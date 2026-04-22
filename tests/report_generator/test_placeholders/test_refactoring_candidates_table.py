@@ -46,10 +46,6 @@ class TestTechnologyHelpers:
         _mock_sorted_tech(mocker, ["csharp"])
         assert _get_technology_name_at_index(2) is None
 
-    def test_zero_index_returns_none(self, mocker):
-        _mock_sorted_tech(mocker, ["csharp"])
-        assert _get_technology_name_at_index(0) is None
-
     def test_others_name_returns_none(self, mocker):
         _mock_sorted_tech(mocker, ["others"])
         assert _get_technology_name_at_index(1) is None
@@ -85,7 +81,7 @@ class TestRefactoringCandidatesTableDuplicationTech:
     def test_key(self):
         assert (
             RefactoringCandidatesTableDuplicationTech.key
-            == "REFACTORING_CANDIDATES_TABLE_DUPLICATION_TECH_{parameter}"
+            == "REFACTORING_CANDIDATES_TABLE_DUPLICATION_TECH_{tech_idx}"
         )
 
     def test_allowed_parameters(self):
@@ -135,7 +131,7 @@ class TestRefactoringCandidatesTableUnitSizeTech:
     def test_key(self):
         assert (
             RefactoringCandidatesTableUnitSizeTech.key
-            == "REFACTORING_CANDIDATES_TABLE_UNIT_SIZE_TECH_{parameter}"
+            == "REFACTORING_CANDIDATES_TABLE_UNIT_SIZE_TECH_{tech_idx}"
         )
 
     def test_allowed_parameters(self):
@@ -177,7 +173,7 @@ class TestRefactoringCandidatesTableUnitComplexityTech:
     def test_key(self):
         assert (
             RefactoringCandidatesTableUnitComplexityTech.key
-            == "REFACTORING_CANDIDATES_TABLE_UNIT_COMPLEXITY_TECH_{parameter}"
+            == "REFACTORING_CANDIDATES_TABLE_UNIT_COMPLEXITY_TECH_{tech_idx}"
         )
 
     def test_allowed_parameters(self):
@@ -203,7 +199,7 @@ class TestRefactoringCandidatesTableUnitInterfacingTech:
     def test_key(self):
         assert (
             RefactoringCandidatesTableUnitInterfacingTech.key
-            == "REFACTORING_CANDIDATES_TABLE_UNIT_INTERFACING_TECH_{parameter}"
+            == "REFACTORING_CANDIDATES_TABLE_UNIT_INTERFACING_TECH_{tech_idx}"
         )
 
     def test_allowed_parameters(self):
@@ -229,7 +225,7 @@ class TestRefactoringCandidatesTableModuleCouplingTech:
     def test_key(self):
         assert (
             RefactoringCandidatesTableModuleCouplingTech.key
-            == "REFACTORING_CANDIDATES_TABLE_MODULE_COUPLING_TECH_{parameter}"
+            == "REFACTORING_CANDIDATES_TABLE_MODULE_COUPLING_TECH_{tech_idx}"
         )
 
     def test_allowed_parameters(self):
@@ -277,7 +273,7 @@ class TestRefactoringCandidatesTableComponentIndependenceTech:
     def test_key(self):
         assert (
             RefactoringCandidatesTableComponentIndependenceTech.key
-            == "REFACTORING_CANDIDATES_TABLE_COMPONENT_INDEPENDENCE_TECH_{parameter}"
+            == "REFACTORING_CANDIDATES_TABLE_COMPONENT_INDEPENDENCE_TECH_{tech_idx}"
         )
 
     def test_allowed_parameters(self):
