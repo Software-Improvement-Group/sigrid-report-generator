@@ -581,3 +581,20 @@ class ObjectivesCoverageChartPlaceholder(_AbstractCategoryChartPlaceholder):
     @classmethod
     def axis_label(cls):
         return "Systems"
+
+
+class ModelVersionsChartPlaceholder(_AbstractCategoryChartPlaceholder):
+    """Chart showing the model versions for the systems of a portfolio."""
+    key = "PORTFOLIO_MODEL_VERSIONS_CHART"
+
+    @classmethod
+    def labels(cls):
+        return [list(sigrid_hygiene_portfolio_data.model_versions.keys())]
+
+    @classmethod
+    def series(cls):
+        return [list(sigrid_hygiene_portfolio_data.model_versions.values())]
+
+    @classmethod
+    def axis_label(cls):
+        return "Systems"

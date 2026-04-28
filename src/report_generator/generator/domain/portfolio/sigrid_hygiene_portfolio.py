@@ -130,5 +130,30 @@ class SigridHygienePortfolioData:
 
         return list_freshness_days
 
+    @cached_property
+    def model_versions(self):
+        active_systems = [system["systemName"] for system in self.metadata]
+        dict_model_versions = {}
+        portfolio_architecture = sigrid_api.get_portfolio_architecture_findings()
+
+        active_architectures = [
+            a for a in portfolio_architecture if a["system"] in active_systems
+        ]
+
+        for system_architecture in portfolio_architecture:
+            if system_architecture["system"] in active_systems:
+                try:
+                    model_version = int(system_architecture["modelVersion"])
+                    if model_version in dict_model_versions:
+                        dict_model_versions[model_version] += 1
+                    else:
+                        dict_model_versions[model_version] = 1
+                except (TypeError, ValueError):
+                    continue
+
+        sorted_dict = dict(sorted(dict_model_versions.items(), reverse=True))
+
+        return sorted_dict
+
 
 sigrid_hygiene_portfolio_data = SigridHygienePortfolioData()
