@@ -266,7 +266,7 @@ class _AbstractRefactoringCandidatesTableTechPlaceholder(
     Must be combined with a concrete original table class that supplies `metric`
     and `_to_table_matrix`. Concrete subclasses only need to declare a `key`.
 
-    Parameters 1–4 correspond to ranks in the domain model's ``sorted_tech`` top-5
+    Parameters 1-4 correspond to ranks in the domain model's ``sorted_tech`` top-5
     list (the fifth entry is always "others" and is excluded, hence only 4 parameters
     are allowed).
     """
