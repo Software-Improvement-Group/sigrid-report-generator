@@ -129,24 +129,6 @@ def maint_date_year():
 
 
 @text_placeholder()
-def maint_size():
-    """Description of the system volume."""
-    volume_rating = maintainability_data.data.get("volume")
-    if volume_rating is None:
-        return ""
-    if volume_rating < 1.5:
-        return "very large"
-    elif volume_rating < 2.5:
-        return "large"
-    elif volume_rating < 3.5:
-        return "medium-sized"
-    elif volume_rating < 4.5:
-        return "small"
-    else:
-        return "very small"
-
-
-@text_placeholder()
 def test_code_ratio():
     """The test/code ratio of the system. Measured as a ratio of total production code against total test code. No decimals."""
     return format(maintainability_data.data["testCodeRatio"], ".0%")
@@ -326,10 +308,7 @@ def tech_risk(idx: int):
 def maint_rating_param(metric: MaintMetric):
     """The 0.5-5.5 star rating for this metric."""
     metric_key = metric.to_json_name()
-    rating = maintainability_data.data.get(metric_key)
-    if rating is None:
-        return ""
-    return star_rating_round(rating)
+    return star_rating_round(maintainability_data.data[metric_key])
 
 
 @parameterized_text_placeholder(
@@ -338,10 +317,8 @@ def maint_rating_param(metric: MaintMetric):
 def maint_rating_diff_param(metric: MaintMetric):
     """The rating difference for the specified metric within the reporting period."""
     metric_key = metric.to_json_name()
-    old_rating = maintainability_data.start_snapshot.get(metric_key)
-    new_rating = maintainability_data.data.get(metric_key)
-    if old_rating is None or new_rating is None:
-        return ""
+    old_rating = maintainability_data.start_snapshot[metric_key]
+    new_rating = maintainability_data.data[metric_key]
     return format_diff(old_rating, new_rating)
 
 
@@ -351,10 +328,7 @@ def maint_rating_diff_param(metric: MaintMetric):
 def maint_stars_param(metric: MaintMetric):
     """Stars corresponding to this metric rating."""
     metric_key = metric.to_json_name()
-    rating = maintainability_data.data.get(metric_key)
-    if rating is None:
-        return ""
-    return calculate_stars(rating)
+    return calculate_stars(maintainability_data.data[metric_key])
 
 
 @text_placeholder()

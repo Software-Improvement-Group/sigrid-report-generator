@@ -19,7 +19,6 @@ from report_generator.generator.utils.constants import (
 )
 
 MAINT_BEST_METRIC_TEXT = {
-    MaintMetric.VOLUME: "The system is small and therefore easier to maintain.",
     MaintMetric.DUPLICATION: "The system shows low risk in its duplicated logic.",
     MaintMetric.UNIT_SIZE: "The system shows low risk in unit sizing",
     MaintMetric.UNIT_COMPLEXITY: "The system shows low risk in unit complexity.",
@@ -30,7 +29,6 @@ MAINT_BEST_METRIC_TEXT = {
 }
 
 MAINT_WORST_METRIC_TEXT = {
-    MaintMetric.VOLUME: "The system's large size hinders its effective maintenance",
     MaintMetric.DUPLICATION: "The system shows high risk in duplicated code",
     MaintMetric.UNIT_SIZE: "The system has a pattern of oversized units of code",
     MaintMetric.UNIT_COMPLEXITY: "The system has a pattern of complex units.",

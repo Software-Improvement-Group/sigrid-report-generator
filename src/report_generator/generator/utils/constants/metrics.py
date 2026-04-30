@@ -30,7 +30,6 @@ class MetricEnum(Enum):
 
 
 class MaintMetric(MetricEnum):
-    VOLUME = "VOLUME"
     DUPLICATION = "DUPLICATION"
     UNIT_SIZE = "UNIT_SIZE"
     UNIT_COMPLEXITY = "UNIT_COMPLEXITY"

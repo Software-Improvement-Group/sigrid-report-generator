@@ -38,10 +38,10 @@ def list_value_for_idx(idx: int):
 from report_generator.generator.placeholders import parameterized_text_placeholder, MultiParameterList
 
 
-metrics = ["VOLUME", "DUPLICATION", "UNIT_SIZE", "UNIT_COMPLEXITY"]
+metrics = ["DUPLICATION", "UNIT_SIZE", "UNIT_COMPLEXITY"]
 groups = ["CHANGED_CODE", "NEW_CODE"]
 
-# Generates keys like MAINT_VOLUME_CHANGED_CODE, MAINT_DUPLICATION_NEW_CODE, etc.
+# Generates keys like MAINT_UNIT_COMPLEXITY_CHANGED_CODE, MAINT_DUPLICATION_NEW_CODE, etc.
 @parameterized_text_placeholder(custom_key="MAINT_{metric}_{group}",
                                 parameters=MultiParameterList(metrics, groups))
 def maint_metric_by_group(metric: str, group: str):
@@ -58,7 +58,7 @@ from report_generator.generator.placeholders import MultiParameterList, renderin
 from report_generator.generator.placeholders.implementations.base import ParameterizedPlaceholder
 
 
-metrics = ["VOLUME", "DUPLICATION", "UNIT_SIZE", "UNIT_COMPLEXITY"]
+metrics = ["DUPLICATION", "UNIT_SIZE", "UNIT_COMPLEXITY"]
 groups = ["CHANGED_CODE", "NEW_CODE"]
 
 
