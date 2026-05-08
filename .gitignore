@@ -4,6 +4,9 @@ __pycache__
 *.egg-info/
 .vscode/
 
+# User claude settings
+.claude/settings.local.json
+
 # To protect against people accidentally running in this directory
 out.pptx
 out.docx

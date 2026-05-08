@@ -21,17 +21,5 @@
         ]
       }
     ]
-  },
-  "mcpServers": {
-    "SigridCode": {
-      "command": "npx",
-      "args": [
-        "mcp-remote",
-        "https://sigrid-says.com/mcp",
-        "--header",
-        "Authorization: Bearer ${SIGRID_TOKEN}",
-        "--allow-http"
-      ]
-    }
   }
 }
