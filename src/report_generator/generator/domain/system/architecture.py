@@ -40,11 +40,9 @@ class ArchitectureData:
         return self.ratings["subcharacteristics"]
 
     def get_score_for_prop_or_subchar(self, metric_or_subchar):
-        return (
-            self.system_properties[metric_or_subchar]
-            if metric_or_subchar in self.system_properties
-            else self.subcharacteristics[metric_or_subchar]
-        )
+        if metric_or_subchar in self.system_properties:
+            return self.system_properties.get(metric_or_subchar, 0)
+        return self.subcharacteristics.get(metric_or_subchar, 0)
 
 
 architecture_data = ArchitectureData()

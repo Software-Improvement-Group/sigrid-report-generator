@@ -5,9 +5,7 @@
       "Bash(ruff check:*)",
       "WebFetch(domain:docs.sigrid-says.com)",
       "mcp__SigridCode__code_quality_guardrails"
-    ],
-    "deny": [],
-    "ask": []
+    ]
   },
   "hooks": {
     "PostToolUse": [
@@ -16,7 +14,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "ruff check --fix . && ruff format . && lint-imports"
+            "command": "ruff check --fix --unfixable=F401 . && ruff format . && lint-imports"
           }
         ]
       }
