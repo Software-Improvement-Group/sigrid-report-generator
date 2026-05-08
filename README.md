@@ -100,6 +100,13 @@ fields, user activity or upload freshness of the systems.
 
 <img src="docs/img/sample-hygiene.png" width="400">
 
+**Portfolio baseline report:** Presents the state of a Sigrid portfolio right after the onboarding has been
+completed. It includes aspects related to the portfolio hygiene, status of objectives and overview scores.
+
+- Example: `report-generator -c <your-customer> --layout portfolio-baseline-report`.
+- Make sure to set the start and end dates on the same day. Since this is a baseline report, there is no delta time
+  interval to report over.
+
 ### Troubleshooting
 
 If there is an error, and you can't figure out what causes it, run the tool again with the `-d` parameter appended to
