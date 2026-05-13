@@ -128,7 +128,7 @@ def portfolio_period_maint_change_summary():
     if stats["maintainability-change"]["biggest-decrease"]:
         key = next(iter(stats["maintainability-change"]["biggest-decrease"]))
         res.append(
-            f"The largest decrease in maintainability rating was experienced by {portfolio_display_name(key)} ({int(10 * stats['maintainability-change']['decrease'][key]) / 10})."
+            f"The largest decrease in maintainability rating was experienced by {portfolio_display_name(key)} ({int(10 * stats['maintainability-change']['biggest-decrease'][key]) / 10})."
         )
     if res:
         return "\n".join(res)
