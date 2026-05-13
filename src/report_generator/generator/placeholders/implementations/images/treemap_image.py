@@ -17,7 +17,6 @@ from abc import ABC
 from typing import Callable, ClassVar
 
 import matplotlib.pyplot as plt
-import mpl_extra.treemap as tr
 import pandas as pd
 
 from report_generator.generator.domain import (
@@ -34,6 +33,7 @@ from report_generator.generator.placeholders.formatting import formatters
 from report_generator.generator.placeholders.implementations.images.base import (
     _AbstractParameterizedImagePlaceholder,
 )
+from report_generator.generator.utils import treemap as tr
 from report_generator.generator.utils.constants.metadata import (
     METADATA_BUSINESS_CRITICALITY_MAPPING,
     METADATA_DEPLOYMENT_MAPPING,
