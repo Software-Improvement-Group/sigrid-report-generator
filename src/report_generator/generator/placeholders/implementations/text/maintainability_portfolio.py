@@ -21,11 +21,11 @@ from report_generator.generator.domain.portfolio.maintainability_portfolio.stati
 from report_generator.generator.placeholders.formatting.formatters import (
     star_rating_round,
 )
-
-from .base import text_placeholder
 from report_generator.generator.placeholders.implementations.utils import (
     portfolio_display_name,
 )
+
+from .base import text_placeholder
 
 
 def _format_percentage(percentage):
