@@ -6,6 +6,7 @@ component_base_dirs:
 
 exclude:
   - ".*/generate_placeholder_docs.py"
+  - ".*/utils/treemap/_.*.py" #vendored files imported from matplotlib-extra module
 
 languages:
   - name: "Python"
