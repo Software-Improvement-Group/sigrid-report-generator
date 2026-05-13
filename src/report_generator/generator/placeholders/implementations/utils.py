@@ -17,4 +17,6 @@ from report_generator.generator.domain import maintainability_portfolio_data
 
 def portfolio_display_name(system_name: str) -> str:
     md = maintainability_portfolio_data.get_system_metadata(system_name)
+    if md is None:
+        return system_name
     return md.get("displayName") or system_name
