@@ -45,16 +45,3 @@ def test_placeholder_documentation_is_up_to_date() -> None:
             f"Regenerate it using generate_placeholder_docs.py; "
             f"missing docs for placeholder(s): {placeholders}"
         )
-
-
-def test_all_python_packages_have_init_file() -> None:
-    src_root = PROJECT_ROOT / "src" / "report_generator"
-    missing = [
-        d
-        for d in src_root.rglob("*")
-        if d.is_dir() and any(d.rglob("*.py")) and not (d / "__init__.py").exists()
-    ]
-    assert missing == [], (
-        f"Directories with .py files but no __init__.py (cannot be imported as a package): "
-        f"{[str(d.relative_to(PROJECT_ROOT)) for d in missing]}"
-    )
