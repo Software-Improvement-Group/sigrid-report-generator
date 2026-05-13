@@ -240,7 +240,7 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
         if not color_mapping:
             # Create default color mapping for all systems if none exists
             logging.warning(
-                f"Empty colruor_mapping detected, creating default mapping for {len(fig_data['system_names'])} systems"
+                f"Empty color_mapping detected, creating default mapping for {len(fig_data['system_names'])} systems"
             )
             color_mapping = {
                 name: cls.NA_STAR_COLOR for name in fig_data["system_names"]
