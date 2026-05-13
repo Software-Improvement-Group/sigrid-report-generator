@@ -13,7 +13,7 @@
 #  limitations under the License.
 
 from functools import cached_property
-from typing import Optional
+from typing import NamedTuple, Optional
 
 from report_generator.generator.domain.portfolio.maintainability_portfolio import (
     maintainability_portfolio_data,
@@ -24,6 +24,13 @@ from report_generator.generator.domain.portfolio.maintainability_portfolio.data 
 )
 from report_generator.generator.domain.portfolio.shared import utils
 from report_generator.generator.utils.star_rating import calculate_star_rating_integer
+
+
+class _SystemSnapshot(NamedTuple):
+    start: dict
+    end: dict
+    start_date: object
+    end_date: object
 
 
 def _categorize_test_code_ratio(ratio):
@@ -77,19 +84,10 @@ def _update_star_statistics(statistics, end_snapshot):
     statistics["maintainability"]["number-of-systems"] += 1
 
 
-def _update_best_changes(
-    system_name,
-    start_snapshot,
-    end_snapshot,
-    start_date,
-    end_date,
-    period_start,
-    best_inc,
-    best_dec,
-):
+def _update_best_changes(system_name, snap, period_start, best_inc, best_dec):
     diff = 0
-    if start_date != end_date and start_date >= period_start:
-        diff = end_snapshot["maintainability"] - start_snapshot["maintainability"]
+    if snap.start_date != snap.end_date and snap.start_date >= period_start:
+        diff = snap.end["maintainability"] - snap.start["maintainability"]
         if diff > best_inc[1]:
             best_inc = (system_name, diff)
         if diff < best_dec[1]:
@@ -98,20 +96,13 @@ def _update_best_changes(
 
 
 def _collect_averages_data(
-    start_snapshot,
-    end_snapshot,
-    start_date,
-    period_start,
-    start_maintainability_ratings,
-    end_maintainability_ratings,
-    start_volumes,
-    end_volumes,
+    snap, period_start, start_ratings, end_ratings, start_vols, end_vols
 ):
-    if start_date < period_start:
-        start_maintainability_ratings.append(start_snapshot["maintainability"])
-        start_volumes.append(start_snapshot["volumeInPersonMonths"])
-    end_maintainability_ratings.append(end_snapshot["maintainability"])
-    end_volumes.append(end_snapshot["volumeInPersonMonths"])
+    if snap.start_date < period_start:
+        start_ratings.append(snap.start["maintainability"])
+        start_vols.append(snap.start["volumeInPersonMonths"])
+    end_ratings.append(snap.end["maintainability"])
+    end_vols.append(snap.end["volumeInPersonMonths"])
 
 
 def _update_volume_change(statistics, system_name, start_snapshot, end_snapshot):
@@ -257,36 +248,31 @@ class MaintainabilityPortfolioStats:
             if not is_system_active(md):
                 continue
 
-            start_snapshot = maintainability_portfolio_data.start_snapshot(system_name)
-            end_snapshot = maintainability_portfolio_data.end_snapshot(system_name)
-            start_date = parse_date(start_snapshot["maintainabilityDate"])
-            end_date = parse_date(end_snapshot["maintainabilityDate"])
+            _start = maintainability_portfolio_data.start_snapshot(system_name)
+            _end = maintainability_portfolio_data.end_snapshot(system_name)
+            snap = _SystemSnapshot(
+                start=_start,
+                end=_end,
+                start_date=parse_date(_start["maintainabilityDate"]),
+                end_date=parse_date(_end["maintainabilityDate"]),
+            )
 
-            _update_star_statistics(statistics, end_snapshot)
+            _update_star_statistics(statistics, snap.end)
             best_inc, best_dec, diff = _update_best_changes(
-                system_name,
-                start_snapshot,
-                end_snapshot,
-                start_date,
-                end_date,
-                period_start,
-                best_inc,
-                best_dec,
+                system_name, snap, period_start, best_inc, best_dec
             )
             _update_change_count(statistics, diff)
-            _update_volume_change(statistics, system_name, start_snapshot, end_snapshot)
+            _update_volume_change(statistics, system_name, snap.start, snap.end)
             _update_test_code_ratio_change(
                 statistics,
                 system_name,
-                start_snapshot,
-                end_snapshot,
-                start_date,
-                end_date,
+                snap.start,
+                snap.end,
+                snap.start_date,
+                snap.end_date,
             )
             _collect_averages_data(
-                start_snapshot,
-                end_snapshot,
-                start_date,
+                snap,
                 period_start,
                 start_maintainability_ratings,
                 end_maintainability_ratings,

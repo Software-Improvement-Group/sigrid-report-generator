@@ -88,36 +88,25 @@ def set_context(
         _rest_url = f"{base_url.rstrip('/')}/rest"
 
 
-def reset_context(
-    reset_bearer_token: Optional[bool] = None,
-    reset_customer: Optional[bool] = None,
-    reset_system: Optional[bool] = None,
-    reset_period: Optional[bool] = None,
-    reset_base_url: Optional[bool] = None,
-) -> None:
-    """Reset context values. If no parameters are provided, resets all values."""
+def reset_context(*fields: str) -> None:
+    """Reset context values. Pass field names to reset selectively; no args resets all."""
     global _bearer_token, _customer, _system, _period, _rest_url
 
-    reset_all = all(
-        param is None
-        for param in [
-            reset_bearer_token,
-            reset_customer,
-            reset_system,
-            reset_period,
-            reset_base_url,
-        ]
+    targets = (
+        set(fields)
+        if fields
+        else {"bearer_token", "customer", "system", "period", "base_url"}
     )
 
-    if reset_all or reset_bearer_token:
+    if "bearer_token" in targets:
         _bearer_token = None
-    if reset_all or reset_customer:
+    if "customer" in targets:
         _customer = None
-    if reset_all or reset_system:
+    if "system" in targets:
         _system = None
-    if reset_all or reset_period:
+    if "period" in targets:
         _period = None
-    if reset_all or reset_base_url:
+    if "base_url" in targets:
         _rest_url = f"{DEFAULT_BASE_URL}/rest"
 
 
