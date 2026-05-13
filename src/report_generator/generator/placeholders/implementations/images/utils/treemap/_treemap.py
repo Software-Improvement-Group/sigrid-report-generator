@@ -19,6 +19,7 @@ from matplotlib import cm
 
 from . import _autofit_text as _at
 from . import _container as trc
+from ._pad import parse_pad
 
 
 def treemap(
@@ -151,113 +152,107 @@ def treemap(
 def draw_subgroup(axes, subgroup, top, norm_y, cmap, rectprops, textprops, is_leaf):
     rect_artists = []
     text_artists = []
-    handles_artists = None
-    mappable_artists = None
-
-    if "_fill_" in subgroup.columns:
-        colors = get_colormap(cmap, subgroup["_fill_"])
-        fill_is_numeric = np.issubdtype(subgroup.loc[:, "_fill_"].dtype, np.number)
-        if fill_is_numeric:
-            max_value = subgroup["_fill_"].max()
-            min_value = subgroup["_fill_"].min()
-            norm = mcolors.Normalize(vmin=min_value, vmax=max_value)
-            mappable_artists = cm.ScalarMappable(norm, colors)
-        else:
-            handles_artists = [
-                mpatches.Patch(color=v, label=k) for k, v in colors.items()
-            ]
+    handles_artists, mappable_artists, fill_info = _resolve_fill(cmap, subgroup)
 
     for idx in subgroup.index:
-        if ("_fill_" in subgroup.columns) and fill_is_numeric:
-            rectprops["color"] = colors(norm(subgroup.loc[idx, "_fill_"]))
-        elif "_fill_" in subgroup.columns:
-            rectprops["color"] = colors[subgroup.loc[idx, "_fill_"]]
+        _apply_fill_color(rectprops, subgroup, idx, fill_info)
 
         rect = subgroup.loc[idx, "_rect_"]
         y0 = norm_y - rect["y"] - rect["dy"] if top else rect["y"]
         kwargs = {k: v for k, v in rectprops.items() if k != "pad"}
         patch = mpatches.Rectangle((rect["x"], y0), rect["dx"], rect["dy"], **kwargs)
         axes.add_patch(patch)
-
         rect_artists.append(patch)
 
         if textprops and ("_label_" in subgroup.columns):
-            extra = [
-                "grow",
-                "reflow",
-                "xmax",
-                "ymax",
-                "place",
-                "max_fontsize",
-                "min_fontsize",
-                "padx",
-                "pady",
-            ]
-            grow = textprops.get("grow", False)
-            reflow = textprops.get("reflow", False)
-            xmax = textprops.get("xmax", 1)
-            ymax = textprops.get("ymax", 1)
-            place = textprops.get("place", "center")
-            max_fontsize = textprops.get("max_fontsize", None)
-            min_fontsize = textprops.get("min_fontsize", None)
-            padx = textprops.get("padx", None)
-            pady = textprops.get("pady", None)
-
-            xa0, ya0, width, height = rect["x"], y0, rect["dx"], rect["dy"]
-
-            marginx = patch.get_linewidth() if padx is None else padx
-            marginy = patch.get_linewidth() if pady is None else pady
-            offsetx = points2dist(marginx, axes.figure.get_dpi(), axes.transData)
-            offsety = points2dist(marginy, axes.figure.get_dpi(), axes.transData)
-            (x, y, ha, va) = get_position(
-                xa0, ya0, width, height, place, (offsetx, offsety)
-            )
-
-            text_kwargs = {k: v for k, v in textprops.items() if k not in extra}
-
-            padx1 = marginx if xmax == 1 else 0
-            pady1 = marginy if ymax == 1 else 0
-
-            if is_leaf:
-                txtobj = _at.AutofitText(
-                    (x, y),
-                    xmax * width,
-                    ymax * height,
-                    subgroup.loc[idx, "_label_"],
-                    pad=(padx1, pady1),
-                    reflow=reflow,
-                    grow=grow,
-                    max_fontsize=max_fontsize,
-                    min_fontsize=min_fontsize,
-                    ha=ha,
-                    va=va,
-                    **text_kwargs,
-                )
-            else:
-                if isinstance(idx, tuple):
-                    subgroup_label = [lbl for lbl in idx if lbl][-1]
-                else:
-                    subgroup_label = idx
-                txtobj = _at.AutofitText(
-                    (x, y),
-                    xmax * width,
-                    ymax * height,
-                    subgroup_label,
-                    pad=(padx1, pady1),
-                    reflow=reflow,
-                    grow=grow,
-                    max_fontsize=max_fontsize,
-                    min_fontsize=min_fontsize,
-                    ha=ha,
-                    va=va,
-                    **text_kwargs,
-                )
-
+            label = _get_tile_label(subgroup, idx, is_leaf)
+            txtobj = _create_text_artist(axes, patch, rect, y0, label, textprops)
             axes.add_artist(txtobj)
-
             text_artists.append(txtobj)
 
     return rect_artists, text_artists, handles_artists, mappable_artists
+
+
+def _resolve_fill(cmap, subgroup):
+    if "_fill_" not in subgroup.columns:
+        return None, None, None
+
+    colors = get_colormap(cmap, subgroup["_fill_"])
+    fill_is_numeric = np.issubdtype(subgroup.loc[:, "_fill_"].dtype, np.number)
+    if fill_is_numeric:
+        norm = mcolors.Normalize(
+            vmin=subgroup["_fill_"].min(), vmax=subgroup["_fill_"].max()
+        )
+        mappable = cm.ScalarMappable(norm, colors)
+        return None, mappable, (colors, norm, True)
+
+    handles = [mpatches.Patch(color=v, label=k) for k, v in colors.items()]
+    return handles, None, (colors, None, False)
+
+
+def _apply_fill_color(rectprops, subgroup, idx, fill_info):
+    if fill_info is None:
+        return
+    colors, norm, is_numeric = fill_info
+    if is_numeric:
+        rectprops["color"] = colors(norm(subgroup.loc[idx, "_fill_"]))
+    else:
+        rectprops["color"] = colors[subgroup.loc[idx, "_fill_"]]
+
+
+def _get_tile_label(subgroup, idx, is_leaf):
+    if is_leaf:
+        return subgroup.loc[idx, "_label_"]
+    if isinstance(idx, tuple):
+        return [lbl for lbl in idx if lbl][-1]
+    return idx
+
+
+_TEXT_EXTRA_KEYS = frozenset(
+    [
+        "grow",
+        "reflow",
+        "xmax",
+        "ymax",
+        "place",
+        "max_fontsize",
+        "min_fontsize",
+        "padx",
+        "pady",
+    ]
+)
+
+
+def _create_text_artist(axes, patch, rect, y0, label, textprops):
+    xmax = textprops.get("xmax", 1)
+    ymax = textprops.get("ymax", 1)
+    padx = textprops.get("padx", None)
+    pady = textprops.get("pady", None)
+
+    width, height = rect["dx"], rect["dy"]
+    marginx = patch.get_linewidth() if padx is None else padx
+    marginy = patch.get_linewidth() if pady is None else pady
+    offsetx = points2dist(marginx, axes.figure.get_dpi(), axes.transData)
+    offsety = points2dist(marginy, axes.figure.get_dpi(), axes.transData)
+
+    place = textprops.get("place", "center")
+    x, y, ha, va = get_position(rect["x"], y0, width, height, place, (offsetx, offsety))
+    text_kwargs = {k: v for k, v in textprops.items() if k not in _TEXT_EXTRA_KEYS}
+
+    return _at.AutofitText(
+        (x, y),
+        xmax * width,
+        ymax * height,
+        label,
+        pad=(marginx if xmax == 1 else 0, marginy if ymax == 1 else 0),
+        reflow=textprops.get("reflow", False),
+        grow=textprops.get("grow", False),
+        max_fontsize=textprops.get("max_fontsize", None),
+        min_fontsize=textprops.get("min_fontsize", None),
+        ha=ha,
+        va=va,
+        **text_kwargs,
+    )
 
 
 def points2dist(points, dpi, transform):
@@ -365,20 +360,7 @@ def squarify_subgroups(
     return data
 
 
-def get_surrounding_pad(pad):
-    if isinstance(pad, (int, float)):
-        pad_left, pad_right, pad_top, pad_bottom = pad, pad, pad, pad
-    elif isinstance(pad, tuple) and (len(pad) == 2):
-        pad_left, pad_top = pad
-        pad_right, pad_bottom = pad
-    elif isinstance(pad, tuple) and (len(pad) == 4):
-        pad_left, pad_right, pad_top, pad_bottom = pad
-    else:
-        raise ValueError(
-            "`pad` can only be a number, or a tuple of two or four numbers."
-        )
-
-    return pad_left, pad_right, pad_top, pad_bottom
+get_surrounding_pad = parse_pad
 
 
 def squarify_data(df, x, y, dx, dy, split):
@@ -430,103 +412,85 @@ def get_plot_data(data, area=None, labels=None, fill=None, levels=None):
     if levels is None:
         levels = []
 
-    area_colname = "_area_"
-    label_colname = "_label_"
-    fill_colname = "_fill_"
-
-    if isinstance(data, pd.DataFrame):
-        if area is None:
-            raise TypeError(
-                "`area` must be specified when `data` is a DataFrame. "
-                "It can be a `str`, a `number` or a list of `numbers`."
-            )
-
-        if isinstance(area, str):
-            try:
-                selected_data = data.loc[:, [*levels, area]].copy()
-            except KeyError as exc:
-                raise KeyError(
-                    "columns specified by `area` or `levels` not included in `data`."
-                ) from exc
-
-            selected_data = selected_data.rename(columns={area: area_colname})
-
-        elif isinstance(area, (int, float)):
-            try:
-                selected_data = data.loc[:, levels].copy()
-            except KeyError as exc:
-                raise KeyError(
-                    "columns specified by `levels` not included in `data`."
-                ) from exc
-            selected_data[area_colname] = area
-
-        else:
-            try:
-                selected_data = data.loc[:, levels].copy()
-            except KeyError as exc:
-                raise KeyError(
-                    "columns specified by `levels` not included in `data`."
-                ) from exc
-
-            area_arr = np.array(area)
-
-            if np.issubdtype(area_arr.dtype, np.number):
-                try:
-                    selected_data[area_colname] = area_arr
-                except ValueError as exc:
-                    raise ValueError(
-                        "The length of `area` does not match the length of `data`."
-                    ) from exc
-            else:
-                raise ValueError("`area` must be all numbers.")
-
-    else:
-        data_arr = np.atleast_1d(data)
-        if np.issubdtype(data_arr.dtype, np.number):
-            selected_data = pd.DataFrame({"_area_": data_arr})
-        else:
-            raise ValueError("`data` must be all numbers.")
-
-    if isinstance(labels, str):
-        try:
-            selected_data[label_colname] = data.loc[:, labels]
-        except KeyError as exc:
-            raise KeyError(
-                "column specified by `labels` not included in `data`."
-            ) from exc
-        except AttributeError as exc:
-            raise ValueError(
-                "`data` does not support `labels` specified by a string. "
-                "Specify the `labels` by a list of string."
-            ) from exc
-    elif labels is not None:
-        label_arr = np.atleast_1d(labels)
-        try:
-            selected_data[label_colname] = label_arr
-        except ValueError as exc:
-            raise ValueError(
-                "The length of `labels` does not match the length of `data`."
-            ) from exc
-
-    if isinstance(fill, str):
-        try:
-            selected_data[fill_colname] = data.loc[:, fill]
-        except KeyError as exc:
-            raise KeyError(
-                "column specified by `fill` not included in `data`."
-            ) from exc
-        except AttributeError as exc:
-            raise ValueError(
-                "`data` does not support `fill` specified by a string. "
-                "Specify the `fill` by a list."
-            ) from exc
-    elif fill is not None:
-        fill_arr = np.atleast_1d(fill)
-        try:
-            selected_data[fill_colname] = fill_arr
-        except ValueError as exc:
-            raise ValueError(
-                "The length of `fill` does not match the length of `data`."
-            ) from exc
+    selected_data = _select_area_data(data, area, levels)
+    _attach_column(selected_data, data, labels, "_label_")
+    _attach_column(selected_data, data, fill, "_fill_")
 
     return selected_data.fillna("")
+
+
+def _select_area_data(data, area, levels):
+    if isinstance(data, pd.DataFrame):
+        return _area_from_dataframe(data, area, levels)
+
+    data_arr = np.atleast_1d(data)
+    if np.issubdtype(data_arr.dtype, np.number):
+        return pd.DataFrame({"_area_": data_arr})
+    raise ValueError("`data` must be all numbers.")
+
+
+def _area_from_dataframe(data, area, levels):
+    if area is None:
+        raise TypeError(
+            "`area` must be specified when `data` is a DataFrame. "
+            "It can be a `str`, a `number` or a list of `numbers`."
+        )
+
+    if isinstance(area, str):
+        try:
+            selected_data = data.loc[:, [*levels, area]].copy()
+        except KeyError as exc:
+            raise KeyError(
+                "columns specified by `area` or `levels` not included in `data`."
+            ) from exc
+        return selected_data.rename(columns={area: "_area_"})
+
+    selected_data = _select_levels_columns(data, levels)
+
+    if isinstance(area, (int, float)):
+        selected_data["_area_"] = area
+        return selected_data
+
+    area_arr = np.array(area)
+    if not np.issubdtype(area_arr.dtype, np.number):
+        raise ValueError("`area` must be all numbers.")
+    try:
+        selected_data["_area_"] = area_arr
+    except ValueError as exc:
+        raise ValueError(
+            "The length of `area` does not match the length of `data`."
+        ) from exc
+    return selected_data
+
+
+def _select_levels_columns(data, levels):
+    try:
+        return data.loc[:, levels].copy()
+    except KeyError as exc:
+        raise KeyError("columns specified by `levels` not included in `data`.") from exc
+
+
+def _attach_column(selected_data, data, value, colname):
+    if value is None:
+        return
+
+    if isinstance(value, str):
+        try:
+            selected_data[colname] = data.loc[:, value]
+        except KeyError as exc:
+            raise KeyError(
+                f"column specified by `{colname.strip('_')}` not included in `data`."
+            ) from exc
+        except AttributeError as exc:
+            raise ValueError(
+                f"`data` does not support `{colname.strip('_')}` specified by a string. "
+                f"Specify the `{colname.strip('_')}` by a list."
+            ) from exc
+    else:
+        arr = np.atleast_1d(value)
+        try:
+            selected_data[colname] = arr
+        except ValueError as exc:
+            raise ValueError(
+                f"The length of `{colname.strip('_')}` does not match the length of `data`."
+            ) from exc

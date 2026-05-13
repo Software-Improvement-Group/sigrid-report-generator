@@ -4,7 +4,7 @@
       "Bash(ruff format:*)",
       "Bash(ruff check:*)",
       "WebFetch(domain:docs.sigrid-says.com)",
-      "mcp__SigridCode__code_quality_guardrails"
+      "mcp__plugin_sigrid_sigrid__code_quality_guardrails"
     ]
   },
   "hooks": {

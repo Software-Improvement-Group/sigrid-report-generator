@@ -12,6 +12,8 @@ import matplotlib.transforms as trans
 from matplotlib.backends.backend_agg import get_hinting_flag
 from matplotlib.font_manager import findfont, get_font
 
+from ._pad import parse_pad
+
 
 class AutofitText(mtext.Text):
     def __repr__(self):
@@ -99,84 +101,90 @@ class AutofitText(mtext.Text):
             return
 
         transform = self.get_transform()
+        width_px, height_px = self._get_padded_dimensions(renderer, transform)
 
-        width_in_pixels, height_in_pixels = self._dist2pixels(
-            transform, self._width, self._height
-        )
-
-        fontsize = self.get_fontsize()
-        dpi = renderer.dpi
-        original_txt = self._origin_text
-        self._text = original_txt
-
-        pad_left, pad_right, pad_top, pad_bottom = self._get_pad(self._pad)
-        padleft_in_pixels = renderer.points_to_pixels(pad_left)
-        padright_in_pixels = renderer.points_to_pixels(pad_right)
-        padtop_in_pixels = renderer.points_to_pixels(pad_top)
-        padbottom_in_pixels = renderer.points_to_pixels(pad_bottom)
-        width_in_pixels -= padleft_in_pixels + padright_in_pixels
-        height_in_pixels -= padtop_in_pixels + padbottom_in_pixels
-
-        bbox = self.get_window_extent(renderer, dpi=dpi)
-
-        if bbox.width == 0 or bbox.height == 0:
-            adjusted_fontsize = 1
-        else:
-            adjusted_fontsize = min(
-                fontsize * width_in_pixels / bbox.width,
-                fontsize * height_in_pixels / bbox.height,
-            )
-
+        self._text = self._origin_text
+        adjusted_fontsize = self._compute_base_fontsize(renderer, width_px, height_px)
         adjusted_fontsize = self._adjust_fontsize(
             adjusted_fontsize, self._max_fontsize, self._min_fontsize
         )
 
         if self._reflow:
-            words = self._split_words(original_txt)
-            fontsizes = []
-
-            for line_num in range(2, len(words) + 1):
-                adjusted_size_txt = self._get_wrapped_fontsize(
-                    original_txt,
-                    height_in_pixels,
-                    width_in_pixels,
-                    line_num,
-                    self._linespacing,
-                    dpi,
-                    self.get_fontproperties(),
-                )
-                fontsizes.append(adjusted_size_txt)
-
-            if fontsizes:
-                if self._grow:
-                    adjusted_size, wrap_txt, _ = max(fontsizes, key=lambda x: x[0])
-                else:
-                    adjusted_size, wrap_txt, _ = min(fontsizes, key=lambda x: x[2])
-
-                adjusted_size = self._adjust_fontsize(
-                    adjusted_size, self._max_fontsize, self._min_fontsize
-                )
-                if adjusted_fontsize < adjusted_size:
-                    adjusted_fontsize = adjusted_size
-                    self._text = "\n".join(wrap_txt)
+            adjusted_fontsize = self._apply_reflow(
+                adjusted_fontsize, width_px, height_px, renderer.dpi
+            )
 
         self._fontproperties.set_size(adjusted_fontsize)
 
         if self._show_rect:
-            x0, y0, *_ = self.get_window_extent(renderer).bounds
-            x0, y0 = transform.inverted().transform((x0, y0))
-            rect = mpatches.Rectangle(
-                (x0, y0),
-                self._width,
-                self._height,
-                fill=False,
-                ls="--",
-                transform=transform,
-            )
-            rect.draw(renderer)
-            self._rect = rect
+            self._draw_debug_rect(renderer, transform)
 
         super().draw(renderer)
+
+    def _get_padded_dimensions(self, renderer, transform):
+        width_px, height_px = self._dist2pixels(transform, self._width, self._height)
+        pad_left, pad_right, pad_top, pad_bottom = self._get_pad(self._pad)
+        width_px -= renderer.points_to_pixels(pad_left) + renderer.points_to_pixels(
+            pad_right
+        )
+        height_px -= renderer.points_to_pixels(pad_top) + renderer.points_to_pixels(
+            pad_bottom
+        )
+        return width_px, height_px
+
+    def _compute_base_fontsize(self, renderer, width_px, height_px):
+        fontsize = self.get_fontsize()
+        bbox = self.get_window_extent(renderer, dpi=renderer.dpi)
+        if bbox.width == 0 or bbox.height == 0:
+            return 1
+        return min(
+            fontsize * width_px / bbox.width,
+            fontsize * height_px / bbox.height,
+        )
+
+    def _apply_reflow(self, current_fontsize, width_px, height_px, dpi):
+        words = self._split_words(self._origin_text)
+        fontsizes = [
+            self._get_wrapped_fontsize(
+                self._origin_text,
+                height_px,
+                width_px,
+                n,
+                self._linespacing,
+                dpi,
+                self.get_fontproperties(),
+            )
+            for n in range(2, len(words) + 1)
+        ]
+        if not fontsizes:
+            return current_fontsize
+
+        if self._grow:
+            adjusted_size, wrap_txt, _ = max(fontsizes, key=lambda x: x[0])
+        else:
+            adjusted_size, wrap_txt, _ = min(fontsizes, key=lambda x: x[2])
+
+        adjusted_size = self._adjust_fontsize(
+            adjusted_size, self._max_fontsize, self._min_fontsize
+        )
+        if current_fontsize < adjusted_size:
+            self._text = "\n".join(wrap_txt)
+            return adjusted_size
+        return current_fontsize
+
+    def _draw_debug_rect(self, renderer, transform):
+        x0, y0, *_ = self.get_window_extent(renderer).bounds
+        x0, y0 = transform.inverted().transform((x0, y0))
+        rect = mpatches.Rectangle(
+            (x0, y0),
+            self._width,
+            self._height,
+            fill=False,
+            ls="--",
+            transform=transform,
+        )
+        rect.draw(renderer)
+        self._rect = rect
 
     @property
     def width(self):
@@ -318,15 +326,4 @@ class AutofitText(mtext.Text):
         return width_in_pixels, height_in_pixels
 
     def _get_pad(self, pad):
-        if isinstance(pad, (int, float)):
-            pad_left, pad_right, pad_top, pad_bottom = pad, pad, pad, pad
-        elif isinstance(pad, tuple) and (len(pad) == 2):
-            pad_left, pad_top = pad
-            pad_right, pad_bottom = pad
-        elif isinstance(pad, tuple) and (len(pad) == 4):
-            pad_left, pad_right, pad_top, pad_bottom = pad
-        else:
-            raise ValueError(
-                "`pad` can only be a number, or a tuple of two or four numbers."
-            )
-        return pad_left, pad_right, pad_top, pad_bottom
+        return parse_pad(pad)
