@@ -31,7 +31,7 @@ ignore = [
 "__init__.py" = ["F401"] # allow unused imports to specify module interface
 "tests/**" = ["PLC2701"]
 "src/report_generator/generator/placeholders/**" = ["PLC2701"]
-"src/report_generator/generator/utils/treemap/_*.py" = ["CPY001"] # vendored MIT code (Copyright 2022 Chenyu Lue)
+"src/report_generator/generator/placeholders/implementations/images/utils/treemap/_*.py" = ["CPY001"] # vendored MIT code (Copyright 2022 Chenyu Lue)
 
 [lint.flake8-copyright]
 notice-rgx = "#  Copyright Software Improvement Group"

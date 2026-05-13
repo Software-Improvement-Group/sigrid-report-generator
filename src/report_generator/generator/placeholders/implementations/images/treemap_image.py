@@ -32,7 +32,9 @@ from report_generator.generator.placeholders.formatting import formatters
 from report_generator.generator.placeholders.implementations.images.base import (
     _AbstractParameterizedImagePlaceholder,
 )
-from report_generator.generator.utils import treemap as tr
+from report_generator.generator.placeholders.implementations.images.utils import (
+    treemap as tr,
+)
 from report_generator.generator.utils.constants.metadata import (
     METADATA_BUSINESS_CRITICALITY_MAPPING,
     METADATA_DEPLOYMENT_MAPPING,
@@ -238,7 +240,7 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
         if not color_mapping:
             # Create default color mapping for all systems if none exists
             logging.warning(
-                f"Empty color_mapping detected, creating default mapping for {len(fig_data['system_names'])} systems"
+                f"Empty colruor_mapping detected, creating default mapping for {len(fig_data['system_names'])} systems"
             )
             color_mapping = {
                 name: cls.NA_STAR_COLOR for name in fig_data["system_names"]
