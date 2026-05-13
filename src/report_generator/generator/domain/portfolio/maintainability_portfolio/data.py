@@ -62,6 +62,12 @@ class MaintainabilityPortfolioData(RatedPortfolioMixin):
     def get_system_metadata(self, system_name):
         return utils.get_system_metadata(self.metadata, system_name)
 
+    def get_system_display_name(self, system_name: str) -> str:
+        md = self.get_system_metadata(system_name)
+        if md is None:
+            return system_name
+        return md.get("displayName") or system_name
+
     @staticmethod
     def _get_head_entry(system):
         return {

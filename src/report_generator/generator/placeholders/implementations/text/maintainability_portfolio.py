@@ -21,9 +21,6 @@ from report_generator.generator.domain.portfolio.maintainability_portfolio.stati
 from report_generator.generator.placeholders.formatting.formatters import (
     star_rating_round,
 )
-from report_generator.generator.placeholders.implementations.utils import (
-    portfolio_display_name,
-)
 
 from .base import text_placeholder
 
@@ -123,12 +120,12 @@ def portfolio_period_maint_change_summary():
     if stats["maintainability-change"]["biggest-increase"]:
         key = next(iter(stats["maintainability-change"]["biggest-increase"]))
         res.append(
-            f"The largest increase in maintainability rating was experienced by {portfolio_display_name(key)} ({int(10 * stats['maintainability-change']['biggest-increase'][key]) / 10})."
+            f"The largest increase in maintainability rating was experienced by {maintainability_portfolio_data.get_system_display_name(key)} ({int(10 * stats['maintainability-change']['biggest-increase'][key]) / 10})."
         )
     if stats["maintainability-change"]["biggest-decrease"]:
         key = next(iter(stats["maintainability-change"]["biggest-decrease"]))
         res.append(
-            f"The largest decrease in maintainability rating was experienced by {portfolio_display_name(key)} ({int(10 * stats['maintainability-change']['biggest-decrease'][key]) / 10})."
+            f"The largest decrease in maintainability rating was experienced by {maintainability_portfolio_data.get_system_display_name(key)} ({int(10 * stats['maintainability-change']['biggest-decrease'][key]) / 10})."
         )
     if res:
         return "\n".join(res)
@@ -226,14 +223,14 @@ def portfolio_maint_biggest_changes():
         system = next(iter(biggest_increase.keys()))
         diff = biggest_increase[system]
         res.append(
-            f"The largest increase in maintainability rating was experienced by {portfolio_display_name(system)} ({int(diff * 10) / 10} stars)."
+            f"The largest increase in maintainability rating was experienced by {maintainability_portfolio_data.get_system_display_name(system)} ({int(diff * 10) / 10} stars)."
         )
     biggest_decrease = stats["maintainability-change"]["biggest-decrease"]
     if biggest_decrease:
         system = next(iter(biggest_decrease.keys()))
         diff = biggest_decrease[system]
         res.append(
-            f"The largest decrease in maintainability rating was experienced by {portfolio_display_name(system)} ({int(diff * 10) / 10} stars)."
+            f"The largest decrease in maintainability rating was experienced by {maintainability_portfolio_data.get_system_display_name(system)} ({int(diff * 10) / 10} stars)."
         )
     if res:
         return " ".join(res)
@@ -246,7 +243,9 @@ def portfolio_maint_largest_increase_system():
     stats = maintainability_portfolio_stats.statistics
     biggest_increase = stats["maintainability-change"]["biggest-increase"]
     if biggest_increase:
-        return portfolio_display_name(next(iter(biggest_increase.keys())))
+        return maintainability_portfolio_data.get_system_display_name(
+            next(iter(biggest_increase.keys()))
+        )
     return None
 
 
@@ -267,7 +266,9 @@ def portfolio_maint_largest_decrease_system():
     stats = maintainability_portfolio_stats.statistics
     biggest_decrease = stats["maintainability-change"]["biggest-decrease"]
     if biggest_decrease:
-        return portfolio_display_name(next(iter(biggest_decrease.keys())))
+        return maintainability_portfolio_data.get_system_display_name(
+            next(iter(biggest_decrease.keys()))
+        )
     return None
 
 
@@ -422,7 +423,7 @@ def portfolio_test_code_biggest_changes():
         diff = biggest_increase[system]
         percentage_change = round(diff * 100, 1)
         res.append(
-            f"The largest increase in test code ratio was experienced by {portfolio_display_name(system)} (+{percentage_change}%)."
+            f"The largest increase in test code ratio was experienced by {maintainability_portfolio_data.get_system_display_name(system)} (+{percentage_change}%)."
         )
     biggest_decrease = stats["test-code-ratio-change"]["biggest-decrease"]
     if biggest_decrease:
@@ -430,7 +431,7 @@ def portfolio_test_code_biggest_changes():
         diff = biggest_decrease[system]
         percentage_change = round(abs(diff) * 100, 1)
         res.append(
-            f"The largest decrease in test code ratio was experienced by {portfolio_display_name(system)} (-{percentage_change}%)."
+            f"The largest decrease in test code ratio was experienced by {maintainability_portfolio_data.get_system_display_name(system)} (-{percentage_change}%)."
         )
     if res:
         return " ".join(res)

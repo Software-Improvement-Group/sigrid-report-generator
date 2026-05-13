@@ -25,9 +25,6 @@ from report_generator.generator.placeholders.implementations.base import (
     Placeholder,
     PlaceholderDocType,
 )
-from report_generator.generator.placeholders.implementations.utils import (
-    portfolio_display_name,
-)
 
 
 def _build_xy_chart_data(
@@ -76,7 +73,8 @@ def _populate_portfolio_chart(presentation: Presentation) -> None:
         return
     chart_data = _build_portfolio_chart_data()
     display_names = [
-        portfolio_display_name(n) for n in maintainability_portfolio_data.system_names
+        maintainability_portfolio_data.get_system_display_name(n)
+        for n in maintainability_portfolio_data.system_names
     ]
     for chart in charts:
         chart.replace_data(chart_data)
