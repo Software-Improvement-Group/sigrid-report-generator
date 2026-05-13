@@ -245,36 +245,36 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
             }
 
         tr.treemap(
-                axes=ax,
-                data=df,
-                area="volumes",
-                levels=["root_names", "system_names"],
-                top=True,
-                fill="system_names",
-                cmap=color_mapping,
-                labels="labels",
-                rectprops={"ec": "w", "pad": (0, 0, 0, 4.5)},  # 'Grouped by' headers
-                textprops={
+            axes=ax,
+            data=df,
+            area="volumes",
+            levels=["root_names", "system_names"],
+            top=True,
+            fill="system_names",
+            cmap=color_mapping,
+            labels="labels",
+            rectprops={"ec": "w", "pad": (0, 0, 0, 4.5)},  # 'Grouped by' headers
+            textprops={
+                "fontfamily": "sans-serif",
+                "reflow": True,
+                "place": "center",
+                "grow": True,
+                "max_fontsize": 7,
+                "color": "k",
+                "pady": 1,
+                "padx": 1,
+            },  # Text inside squares
+            subgroup_rectprops={"root_names": {"ec": "w", "fc": cls.BUNDLE_COLOR}},
+            subgroup_textprops={
+                "root_names": {
+                    "place": "top center",
+                    "max_fontsize": 8,
+                    "pady": 2,
                     "fontfamily": "sans-serif",
-                    "reflow": True,
-                    "place": "center",
-                    "grow": True,
-                    "max_fontsize": 7,
                     "color": "k",
-                    "pady": 1,
-                    "padx": 1,
-                },  # Text inside squares
-                subgroup_rectprops={"root_names": {"ec": "w", "fc": cls.BUNDLE_COLOR}},
-                subgroup_textprops={
-                    "root_names": {
-                        "place": "top center",
-                        "max_fontsize": 8,
-                        "pady": 2,
-                        "fontfamily": "sans-serif",
-                        "color": "k",
-                    }
-                },
-            )
+                }
+            },
+        )
         ax.axis("off")
         return fig
 
