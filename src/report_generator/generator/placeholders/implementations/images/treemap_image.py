@@ -12,7 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 import logging
-import warnings
 from abc import ABC
 from typing import Callable, ClassVar
 
@@ -245,13 +244,7 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
                 name: cls.NA_STAR_COLOR for name in fig_data["system_names"]
             }
 
-        # mpl_extra uses chained DataFrame assignment internally, which triggers a
-        # pandas Copy-on-Write FutureWarning. This is a known upstream issue.
-        with warnings.catch_warnings():
-            warnings.filterwarnings(
-                "ignore", category=FutureWarning, message=".*ChainedAssignmentError.*"
-            )
-            tr.treemap(
+        tr.treemap(
                 axes=ax,
                 data=df,
                 area="volumes",
