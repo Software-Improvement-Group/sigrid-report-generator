@@ -11,3 +11,22 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+
+from pathlib import Path
+
+PROJECT_ROOT = next(
+    p for p in Path(__file__).resolve().parents if p.name == "sigrid-report-generator"
+)
+
+
+def test_all_python_packages_have_init_file() -> None:
+    src_root = PROJECT_ROOT / "src" / "report_generator"
+    missing = [
+        d
+        for d in src_root.rglob("*")
+        if d.is_dir() and any(d.rglob("*.py")) and not (d / "__init__.py").exists()
+    ]
+    assert missing == [], (
+        "Directories with .py files but no __init__.py (cannot be imported as a package): "
+        f"{[str(d.relative_to(PROJECT_ROOT)) for d in missing]}"
+    )
