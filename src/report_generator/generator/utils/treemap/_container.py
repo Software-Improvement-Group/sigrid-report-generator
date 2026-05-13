@@ -10,7 +10,7 @@ class TreemapContainer(Container):
     Container for the artist of treemap plots.
 
     The container contains a tuple of the *patches* themselves as well as some
-    additoinal attributes.
+    additional attributes.
 
     Attributes
     ----------
