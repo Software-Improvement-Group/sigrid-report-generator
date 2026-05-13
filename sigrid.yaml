@@ -5,8 +5,8 @@ component_base_dirs:
   - "tests/report_generator"
 
 exclude:
-  - ".*/generate_placeholder_docs.py"
-  - ".*/utils/treemap/_.*.py" #vendored files imported from matplotlib-extra module
+  - ".*/generate_placeholder_docs[.]py"
+  - ".*/utils/treemap/_.*[.]py" #vendored files imported from matplotlib-extra module
 
 languages:
   - name: "Python"
