@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import logging
 from functools import cached_property
 
 from report_generator.generator.context import sigrid_api
@@ -51,6 +52,18 @@ class SecurityRatingsPortfolioData(RatedPortfolioMixin):
         return utils.get_rating_and_volume_from_system(
             system, lambda s: s.get("rating"), "systemName"
         )
+
+    @cached_property
+    def security_findings(self):
+        result = []
+        for system_name in self.system_names:
+            try:
+                findings = sigrid_api.get_security_findings(system_name)
+            except Exception:
+                logging.warning(f"Could not retrieve security findings for system '{system_name}'")
+                findings = []
+            result.append({"systemName": system_name, "findings": findings})
+        return result
 
 
 security_ratings_portfolio_data = SecurityRatingsPortfolioData()
