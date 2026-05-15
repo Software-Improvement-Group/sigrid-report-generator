@@ -277,22 +277,9 @@ def get_security_findings(system):
     return _make_request(endpoint)
 
 
-@_sigrid_api_request()
-def get_portfolio_security_findings():
-    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/security-findings/{_customer}"
-    return _make_request(endpoint)
-
-
 @_sigrid_api_request(with_system=True)
 def get_reliability_findings(system):
     endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/reliability-findings/{_customer}/{system}"
-    return _make_request(endpoint)
-
-
-@_sigrid_api_request(with_system=True)
-def get_security_dashboard_findings(system):
-    argument = f"&endDate={_period[1]}" if _period else ""
-    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/finding-ratios/{_customer}/{system}?feature=security{argument}"
     return _make_request(endpoint)
 
 
@@ -307,13 +294,6 @@ def get_portfolio_security_dashboard_findings():
 def get_portfolio_reliability_dashboard_findings():
     argument = f"&endDate={_period[1]}" if _period else ""
     endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/finding-ratios/{_customer}?feature=reliability{argument}"
-    return _make_request(endpoint)
-
-
-@_sigrid_api_request(with_system=True)
-def get_security_resolution_time_findings(system):
-    argument = f"&endDate={_period[1]}" if _period else ""
-    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/resolution-times/{_customer}/{system}?feature=security{argument}"
     return _make_request(endpoint)
 
 
