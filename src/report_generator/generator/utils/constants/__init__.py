@@ -28,6 +28,7 @@ from .metrics import (
     MetricEnum,
     OSHMetric,
 )
+from .severity import SEVERITY_ORDER
 
 __all__ = [
     "METADATA_APPLICATION_TYPE_MAPPING",

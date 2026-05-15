@@ -279,7 +279,9 @@ def get_security_findings(system):
 
 @_sigrid_api_request(with_system=True)
 def get_reliability_findings(system):
-    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/reliability-findings/{_customer}/{system}"
+    endpoint = (
+        f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/reliability-findings/{_customer}/{system}"
+    )
     return _make_request(endpoint)
 
 

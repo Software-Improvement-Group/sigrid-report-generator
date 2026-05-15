@@ -24,7 +24,14 @@ from report_generator.generator.domain.portfolio.security_dashboard_resolution_t
     security_dashboard_resolution_times_portfolio_data,
 )
 from report_generator.generator.domain.portfolio.security_portfolio import (
+    SecurityRatingsPortfolioData,
     security_ratings_portfolio_data,
+)
+from report_generator.generator.domain.portfolio.shared.findings_above_severity import (
+    FALLBACK_SEVERITY_THRESHOLD,
+    build_objective_index,
+    count_findings_above_severity,
+    count_for_system,
 )
 
 
@@ -1278,3 +1285,275 @@ class TestSecurityDashboardResolutionTimesPortfolioData:
         assert "system1" in names
         assert "system2" in names
         assert "system3" in names
+
+
+class TestBuildObjectiveIndex:
+    """Unit tests for build_objective_index helper."""
+
+    def test_returns_matching_objective(self):
+        systems = [
+            {
+                "systemName": "sys1",
+                "objectives": [
+                    {
+                        "type": "SECURITY_MAX_SEVERITY",
+                        "target": "HIGH",
+                        "targetMetAtEnd": "NOT_MET",
+                    },
+                    {"type": "OTHER", "target": "LOW", "targetMetAtEnd": "MET"},
+                ],
+            }
+        ]
+        index = build_objective_index(systems, "SECURITY_MAX_SEVERITY")
+        result = index.get("sys1")
+        assert result is not None
+        assert result["type"] == "SECURITY_MAX_SEVERITY"
+        assert result["target"] == "HIGH"
+
+    def test_absent_system_not_in_index(self):
+        systems = [{"systemName": "other", "objectives": []}]
+        index = build_objective_index(systems, "SECURITY_MAX_SEVERITY")
+        assert index.get("sys1") is None
+
+    def test_returns_none_when_no_matching_objective_type(self):
+        systems = [
+            {
+                "systemName": "sys1",
+                "objectives": [
+                    {"type": "OTHER", "target": "LOW", "targetMetAtEnd": "MET"}
+                ],
+            }
+        ]
+        index = build_objective_index(systems, "SECURITY_MAX_SEVERITY")
+        assert index.get("sys1") is None
+
+    def test_returns_none_for_empty_objectives(self):
+        systems = [{"systemName": "sys1", "objectives": []}]
+        index = build_objective_index(systems, "SECURITY_MAX_SEVERITY")
+        assert index.get("sys1") is None
+
+    def test_indexes_multiple_systems(self):
+        systems = [
+            {
+                "systemName": "sys1",
+                "objectives": [
+                    {
+                        "type": "SECURITY_MAX_SEVERITY",
+                        "target": "HIGH",
+                        "targetMetAtEnd": "MET",
+                    }
+                ],
+            },
+            {"systemName": "sys2", "objectives": []},
+        ]
+        index = build_objective_index(systems, "SECURITY_MAX_SEVERITY")
+        assert index["sys1"]["target"] == "HIGH"
+        assert index["sys2"] is None
+
+
+class TestCountFindingsAboveSeverity:
+    """Unit tests for count_findings_above_severity helper."""
+
+    def test_counts_findings_strictly_above_target(self):
+        findings = [
+            {"severity": "LOW"},
+            {"severity": "MEDIUM"},
+            {"severity": "HIGH"},
+            {"severity": "CRITICAL"},
+        ]
+        assert count_findings_above_severity(findings, "MEDIUM") == 2
+
+    def test_target_at_highest_returns_zero(self):
+        findings = [{"severity": "HIGH"}, {"severity": "CRITICAL"}]
+        assert count_findings_above_severity(findings, "CRITICAL") == 0
+
+    def test_target_at_lowest_counts_all_above(self):
+        findings = [
+            {"severity": "LOW"},
+            {"severity": "MEDIUM"},
+            {"severity": "HIGH"},
+        ]
+        assert count_findings_above_severity(findings, "INFORMATION") == 3
+
+    def test_unknown_target_severity_returns_zero(self):
+        findings = [{"severity": "HIGH"}]
+        assert count_findings_above_severity(findings, "UNKNOWN") == 0
+
+    def test_unknown_finding_severity_is_skipped(self):
+        findings = [{"severity": "UNKNOWN"}, {"severity": "CRITICAL"}]
+        assert count_findings_above_severity(findings, "HIGH") == 1
+
+    def test_empty_findings_returns_zero(self):
+        assert count_findings_above_severity([], "MEDIUM") == 0
+
+
+class TestCountForSystem:
+    """Unit tests for count_for_system helper."""
+
+    def test_no_objective_counts_high_and_critical(self):
+        findings = [
+            {"severity": "LOW"},
+            {"severity": "MEDIUM"},
+            {"severity": "HIGH"},
+            {"severity": "CRITICAL"},
+        ]
+        assert count_for_system(findings, None) == count_findings_above_severity(
+            findings, FALLBACK_SEVERITY_THRESHOLD
+        )
+
+    def test_objective_met_returns_zero(self):
+        findings = [{"severity": "CRITICAL"}]
+        objective = {"targetMetAtEnd": "MET", "target": "HIGH"}
+        assert count_for_system(findings, objective) == 0
+
+    def test_objective_not_met_delegates_to_count_helper(self):
+        findings = [
+            {"severity": "LOW"},
+            {"severity": "HIGH"},
+            {"severity": "CRITICAL"},
+        ]
+        objective = {"targetMetAtEnd": "NOT_MET", "target": "LOW"}
+        assert count_for_system(findings, objective) == 2
+
+
+class TestFindingsAboveObjective:
+    """Integration-style tests for SecurityRatingsPortfolioData.findings_above_objective."""
+
+    def _make_instance(self, ratings_data):
+        instance = SecurityRatingsPortfolioData()
+        instance.__dict__["data"] = ratings_data
+        instance.__dict__["system_names"] = [s["systemName"] for s in ratings_data]
+        return instance
+
+    @patch("report_generator.generator.domain.portfolio.security_portfolio.sigrid_api")
+    def test_objective_met_returns_zero(self, mock_api):
+        instance = self._make_instance([{"systemName": "sys1", "rating": 4.0}])
+        instance.__dict__["security_findings"] = [
+            {"systemName": "sys1", "findings": [{"severity": "CRITICAL"}]}
+        ]
+        mock_api.get_period.return_value = ("2024-01-01", "2024-12-31")
+        mock_api.get_objectives_evaluation.return_value = {
+            "systems": [
+                {
+                    "systemName": "sys1",
+                    "objectives": [
+                        {
+                            "type": "SECURITY_MAX_SEVERITY",
+                            "target": "HIGH",
+                            "targetMetAtEnd": "MET",
+                        }
+                    ],
+                }
+            ]
+        }
+
+        result = instance.findings_above_objective
+        assert result == [{"systemName": "sys1", "findings_above_objective": 0}]
+
+    @patch("report_generator.generator.domain.portfolio.security_portfolio.sigrid_api")
+    def test_no_objective_uses_fallback(self, mock_api):
+        instance = self._make_instance([{"systemName": "sys1", "rating": 3.0}])
+        instance.__dict__["security_findings"] = [
+            {
+                "systemName": "sys1",
+                "findings": [
+                    {"severity": "LOW"},
+                    {"severity": "HIGH"},
+                    {"severity": "CRITICAL"},
+                ],
+            }
+        ]
+        mock_api.get_period.return_value = ("2024-01-01", "2024-12-31")
+        mock_api.get_objectives_evaluation.return_value = {"systems": []}
+
+        result = instance.findings_above_objective
+        assert result == [{"systemName": "sys1", "findings_above_objective": 2}]
+
+    @patch("report_generator.generator.domain.portfolio.security_portfolio.sigrid_api")
+    def test_objective_not_met_counts_above_target(self, mock_api):
+        instance = self._make_instance([{"systemName": "sys1", "rating": 2.5}])
+        instance.__dict__["security_findings"] = [
+            {
+                "systemName": "sys1",
+                "findings": [
+                    {"severity": "LOW"},
+                    {"severity": "HIGH"},
+                    {"severity": "CRITICAL"},
+                ],
+            }
+        ]
+        mock_api.get_period.return_value = ("2024-01-01", "2024-12-31")
+        mock_api.get_objectives_evaluation.return_value = {
+            "systems": [
+                {
+                    "systemName": "sys1",
+                    "objectives": [
+                        {
+                            "type": "SECURITY_MAX_SEVERITY",
+                            "target": "HIGH",
+                            "targetMetAtEnd": "NOT_MET",
+                        }
+                    ],
+                }
+            ]
+        }
+
+        result = instance.findings_above_objective
+        assert result == [{"systemName": "sys1", "findings_above_objective": 1}]
+
+    @patch("report_generator.generator.domain.portfolio.security_portfolio.sigrid_api")
+    def test_multiple_systems_mixed_objectives(self, mock_api):
+        instance = self._make_instance(
+            [
+                {"systemName": "sys1", "rating": 4.0},
+                {"systemName": "sys2", "rating": 3.0},
+                {"systemName": "sys3", "rating": 2.0},
+            ]
+        )
+        instance.__dict__["security_findings"] = [
+            {"systemName": "sys1", "findings": [{"severity": "CRITICAL"}]},
+            {
+                "systemName": "sys2",
+                "findings": [{"severity": "HIGH"}, {"severity": "CRITICAL"}],
+            },
+            {
+                "systemName": "sys3",
+                "findings": [{"severity": "LOW"}, {"severity": "HIGH"}],
+            },
+        ]
+        mock_api.get_period.return_value = ("2024-01-01", "2024-12-31")
+        mock_api.get_objectives_evaluation.return_value = {
+            "systems": [
+                {
+                    "systemName": "sys1",
+                    "objectives": [
+                        {
+                            "type": "SECURITY_MAX_SEVERITY",
+                            "target": "HIGH",
+                            "targetMetAtEnd": "MET",
+                        }
+                    ],
+                },
+                {
+                    "systemName": "sys2",
+                    "objectives": [
+                        {
+                            "type": "SECURITY_MAX_SEVERITY",
+                            "target": "HIGH",
+                            "targetMetAtEnd": "NOT_MET",
+                        }
+                    ],
+                },
+                {
+                    "systemName": "sys3",
+                    "objectives": [],
+                },
+            ]
+        }
+
+        result = instance.findings_above_objective
+        assert result == [
+            {"systemName": "sys1", "findings_above_objective": 0},
+            {"systemName": "sys2", "findings_above_objective": 1},
+            {"systemName": "sys3", "findings_above_objective": 1},
+        ]

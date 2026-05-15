@@ -28,11 +28,19 @@ class TestReliabilityPortfolioData:
         """Clean up portfolio context and cached data after each test."""
         reset_context()
 
-        cache_attrs = ["data", "metadata", "period", "system_names", "reliability_findings"]
+        cache_attrs = [
+            "data",
+            "metadata",
+            "period",
+            "system_names",
+            "reliability_findings",
+        ]
         for attr in cache_attrs:
             reliability_ratings_portfolio_data.__dict__.pop(attr, None)
 
-    @patch("report_generator.generator.domain.portfolio.reliability_portfolio.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.reliability_portfolio.sigrid_api"
+    )
     def test_get_system_returns_correct_system(self, mock_sigrid_api):
         """Test that get_system returns correct system data."""
         mock_data = [
@@ -49,7 +57,9 @@ class TestReliabilityPortfolioData:
         assert system["systemName"] == "system1"
         assert abs(system["rating"] - 4.5) < 0.01
 
-    @patch("report_generator.generator.domain.portfolio.reliability_portfolio.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.reliability_portfolio.sigrid_api"
+    )
     def test_system_names_returns_all_systems(self, mock_sigrid_api):
         """Test that system_names property returns all system names."""
         mock_data = [
@@ -69,14 +79,19 @@ class TestReliabilityPortfolioData:
         assert "system2" in names
         assert "system3" in names
 
-    @patch("report_generator.generator.domain.portfolio.reliability_portfolio.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.reliability_portfolio.sigrid_api"
+    )
     def test_reliability_findings_aggregates_per_system(self, mock_sigrid_api):
         """Test that reliability_findings returns findings per system."""
         mock_data = [
             {"systemName": "system1", "rating": 4.5},
             {"systemName": "system2", "rating": 3.8},
         ]
-        findings_system1 = [{"id": "a1", "severity": "HIGH"}, {"id": "a2", "severity": "LOW"}]
+        findings_system1 = [
+            {"id": "a1", "severity": "HIGH"},
+            {"id": "a2", "severity": "LOW"},
+        ]
         findings_system2 = [{"id": "b1", "severity": "CRITICAL"}]
 
         mock_sigrid_api.get_portfolio_reliability_ratings.return_value = mock_data
@@ -94,7 +109,9 @@ class TestReliabilityPortfolioData:
         assert result[0] == {"systemName": "system1", "findings": findings_system1}
         assert result[1] == {"systemName": "system2", "findings": findings_system2}
 
-    @patch("report_generator.generator.domain.portfolio.reliability_portfolio.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.reliability_portfolio.sigrid_api"
+    )
     def test_reliability_findings_handles_api_error_gracefully(self, mock_sigrid_api):
         """Test that a failing API call for one system returns empty findings and logs a warning."""
         mock_data = [
@@ -118,7 +135,9 @@ class TestReliabilityPortfolioData:
         assert result[0] == {"systemName": "system1", "findings": findings_system1}
         assert result[1] == {"systemName": "system2", "findings": []}
 
-    @patch("report_generator.generator.domain.portfolio.reliability_portfolio.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.reliability_portfolio.sigrid_api"
+    )
     def test_reliability_findings_empty_portfolio(self, mock_sigrid_api):
         """Test that reliability_findings returns an empty list when there are no systems."""
         mock_sigrid_api.get_portfolio_reliability_ratings.return_value = []
@@ -130,7 +149,9 @@ class TestReliabilityPortfolioData:
 
         assert result == []
 
-    @patch("report_generator.generator.domain.portfolio.reliability_portfolio.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.reliability_portfolio.sigrid_api"
+    )
     def test_reliability_findings_uses_fresh_instance(self, mock_sigrid_api):
         """Test that a fresh instance fetches its own findings independently."""
         mock_data = [
@@ -147,3 +168,154 @@ class TestReliabilityPortfolioData:
 
         assert result == [{"systemName": "system1", "findings": findings}]
         mock_sigrid_api.get_reliability_findings.assert_called_once_with("system1")
+
+
+class TestFindingsAboveObjectiveReliability:
+    """Tests for ReliabilityRatingsPortfolioData.findings_above_objective."""
+
+    def _make_instance(self, ratings_data):
+        instance = ReliabilityRatingsPortfolioData()
+        instance.__dict__["data"] = ratings_data
+        instance.__dict__["system_names"] = [s["systemName"] for s in ratings_data]
+        return instance
+
+    @patch(
+        "report_generator.generator.domain.portfolio.reliability_portfolio.sigrid_api"
+    )
+    def test_objective_met_returns_zero(self, mock_api):
+        instance = self._make_instance([{"systemName": "sys1", "rating": 4.0}])
+        instance.__dict__["reliability_findings"] = [
+            {"systemName": "sys1", "findings": [{"severity": "CRITICAL"}]}
+        ]
+        mock_api.get_period.return_value = ("2024-01-01", "2024-12-31")
+        mock_api.get_objectives_evaluation.return_value = {
+            "systems": [
+                {
+                    "systemName": "sys1",
+                    "objectives": [
+                        {
+                            "type": "RELIABILITY_MAX_SEVERITY",
+                            "target": "HIGH",
+                            "targetMetAtEnd": "MET",
+                        }
+                    ],
+                }
+            ]
+        }
+
+        result = instance.findings_above_objective
+        assert result == [{"systemName": "sys1", "findings_above_objective": 0}]
+
+    @patch(
+        "report_generator.generator.domain.portfolio.reliability_portfolio.sigrid_api"
+    )
+    def test_no_objective_uses_fallback(self, mock_api):
+        instance = self._make_instance([{"systemName": "sys1", "rating": 3.0}])
+        instance.__dict__["reliability_findings"] = [
+            {
+                "systemName": "sys1",
+                "findings": [
+                    {"severity": "LOW"},
+                    {"severity": "HIGH"},
+                    {"severity": "CRITICAL"},
+                ],
+            }
+        ]
+        mock_api.get_period.return_value = ("2024-01-01", "2024-12-31")
+        mock_api.get_objectives_evaluation.return_value = {"systems": []}
+
+        result = instance.findings_above_objective
+        assert result == [{"systemName": "sys1", "findings_above_objective": 2}]
+
+    @patch(
+        "report_generator.generator.domain.portfolio.reliability_portfolio.sigrid_api"
+    )
+    def test_objective_not_met_counts_above_target(self, mock_api):
+        instance = self._make_instance([{"systemName": "sys1", "rating": 2.5}])
+        instance.__dict__["reliability_findings"] = [
+            {
+                "systemName": "sys1",
+                "findings": [
+                    {"severity": "LOW"},
+                    {"severity": "HIGH"},
+                    {"severity": "CRITICAL"},
+                ],
+            }
+        ]
+        mock_api.get_period.return_value = ("2024-01-01", "2024-12-31")
+        mock_api.get_objectives_evaluation.return_value = {
+            "systems": [
+                {
+                    "systemName": "sys1",
+                    "objectives": [
+                        {
+                            "type": "RELIABILITY_MAX_SEVERITY",
+                            "target": "HIGH",
+                            "targetMetAtEnd": "NOT_MET",
+                        }
+                    ],
+                }
+            ]
+        }
+
+        result = instance.findings_above_objective
+        assert result == [{"systemName": "sys1", "findings_above_objective": 1}]
+
+    @patch(
+        "report_generator.generator.domain.portfolio.reliability_portfolio.sigrid_api"
+    )
+    def test_multiple_systems_mixed_objectives(self, mock_api):
+        instance = self._make_instance(
+            [
+                {"systemName": "sys1", "rating": 4.0},
+                {"systemName": "sys2", "rating": 3.0},
+                {"systemName": "sys3", "rating": 2.0},
+            ]
+        )
+        instance.__dict__["reliability_findings"] = [
+            {"systemName": "sys1", "findings": [{"severity": "CRITICAL"}]},
+            {
+                "systemName": "sys2",
+                "findings": [{"severity": "HIGH"}, {"severity": "CRITICAL"}],
+            },
+            {
+                "systemName": "sys3",
+                "findings": [{"severity": "LOW"}, {"severity": "HIGH"}],
+            },
+        ]
+        mock_api.get_period.return_value = ("2024-01-01", "2024-12-31")
+        mock_api.get_objectives_evaluation.return_value = {
+            "systems": [
+                {
+                    "systemName": "sys1",
+                    "objectives": [
+                        {
+                            "type": "RELIABILITY_MAX_SEVERITY",
+                            "target": "HIGH",
+                            "targetMetAtEnd": "MET",
+                        }
+                    ],
+                },
+                {
+                    "systemName": "sys2",
+                    "objectives": [
+                        {
+                            "type": "RELIABILITY_MAX_SEVERITY",
+                            "target": "HIGH",
+                            "targetMetAtEnd": "NOT_MET",
+                        }
+                    ],
+                },
+                {
+                    "systemName": "sys3",
+                    "objectives": [],
+                },
+            ]
+        }
+
+        result = instance.findings_above_objective
+        assert result == [
+            {"systemName": "sys1", "findings_above_objective": 0},
+            {"systemName": "sys2", "findings_above_objective": 1},
+            {"systemName": "sys3", "findings_above_objective": 1},
+        ]

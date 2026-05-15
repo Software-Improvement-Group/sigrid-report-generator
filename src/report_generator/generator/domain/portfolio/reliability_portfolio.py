@@ -20,9 +20,16 @@ from report_generator.generator.context.portfolio_filters import (
     filter_data_on_portfolio_arguments,
 )
 from report_generator.generator.domain.portfolio.shared import utils
+from report_generator.generator.domain.portfolio.shared.findings_above_severity import (
+    build_objective_index,
+    count_for_system,
+)
 from report_generator.generator.domain.portfolio.shared.rated_mixin import (
     RatedPortfolioMixin,
 )
+from report_generator.generator.utils.time_series import Period
+
+_OBJECTIVE_TYPE = "RELIABILITY_MAX_SEVERITY"
 
 
 class ReliabilityRatingsPortfolioData(RatedPortfolioMixin):
@@ -60,10 +67,28 @@ class ReliabilityRatingsPortfolioData(RatedPortfolioMixin):
             try:
                 findings = sigrid_api.get_reliability_findings(system_name)
             except Exception:
-                logging.warning(f"Could not retrieve reliability findings for system '{system_name}'")
+                logging.warning(
+                    f"Could not retrieve reliability findings for system '{system_name}'"
+                )
                 findings = []
             result.append({"systemName": system_name, "findings": findings})
         return result
+
+    @cached_property
+    def findings_above_objective(self):
+        period = Period(*sigrid_api.get_period())
+        objectives_systems = sigrid_api.get_objectives_evaluation(period)["systems"]
+        objective_index = build_objective_index(objectives_systems, _OBJECTIVE_TYPE)
+        return [
+            {
+                "systemName": entry["systemName"],
+                "findings_above_objective": count_for_system(
+                    entry["findings"],
+                    objective_index.get(entry["systemName"]),
+                ),
+            }
+            for entry in self.reliability_findings
+        ]
 
 
 reliability_ratings_portfolio_data = ReliabilityRatingsPortfolioData()
