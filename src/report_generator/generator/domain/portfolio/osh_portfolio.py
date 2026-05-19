@@ -22,7 +22,24 @@ from report_generator.generator.domain.portfolio.shared import utils
 from report_generator.generator.domain.portfolio.shared.rated_mixin import (
     RatedPortfolioMixin,
 )
-from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
+from report_generator.generator.domain.shared.osh_base import (
+    OSHMetricsBase,
+    component_version_staleness_days,
+    map_cves_to_affected_libraries,
+    vulnerability_severity_counts,
+)
+
+
+def count_cves_for_portfolio(cves_per_system: dict) -> dict:
+    result: dict = {}
+    for system_cves in cves_per_system.values():
+        if not system_cves:
+            continue
+        for cve, data in system_cves.items():
+            if cve not in result:
+                result[cve] = {"count": 0}
+            result[cve]["count"] += data["count"]
+    return result
 
 
 class OSHRatingsPortfolioData(RatedPortfolioMixin, OSHMetricsBase):
@@ -273,6 +290,35 @@ class OSHRatingsPortfolioData(RatedPortfolioMixin, OSHMetricsBase):
     @cached_property
     def system_names(self):
         return utils.system_names_helper(self.raw_data["systems"], "systemName")
+
+    @cached_property
+    def vulnerability_distribution(self) -> dict[str, int]:
+        res = []
+        for system_name in self.system_names:
+            system = self.find_system(system_name)["sbom"]
+            if system is not None:
+                res += system.get("vulnerabilities", [])
+        return vulnerability_severity_counts(res)
+
+    @cached_property
+    def cves_mapped_to_libraries(self) -> dict[str, dict]:
+        res = {}
+        for system_name in self.system_names:
+            system = self.find_system(system_name)["sbom"]
+            if system is not None:
+                res[system_name] = map_cves_to_affected_libraries(
+                    system.get("components", []), system.get("vulnerabilities", [])
+                )
+        return count_cves_for_portfolio(res)
+
+    @cached_property
+    def age_distribution(self) -> list[int]:
+        res = []
+        for system_name in self.system_names:
+            system = self.find_system(system_name)["sbom"]
+            if system is not None:
+                res += component_version_staleness_days(system.get("components", []))
+        return res
 
     def get_score_for_prop(self, prop):
         """Calculate aggregated rating for a specific OSH metric across all systems."""

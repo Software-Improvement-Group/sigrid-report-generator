@@ -4,7 +4,7 @@
 #
 # Modifications from the original:
 # - Replaced deprecated cm.get_cmap() with matplotlib.colormaps (Matplotlib 3.9+)
-# - Fixed pandas Copy-on-Write violations in get_plot_data() (pandas 2.0+)
+# - Fixed pandas Copy-on-Write violations (pandas 2.0+)
 
 import itertools
 
@@ -342,6 +342,7 @@ def squarify_subgroups(
         else:
             sub_pad = subgroup_pads.get(level, pad)
             pad_left, pad_right, pad_top, pad_bottom = get_surrounding_pad(sub_pad)
+            subgroup = data[level].copy()
             parent_idx = set(idx[:-1] for idx in subgroup.index)
             for parent in parent_idx:
                 child_group = subgroup.loc[parent, :].copy()
@@ -361,6 +362,7 @@ def squarify_subgroups(
                     split=False,
                 )
                 subgroup.loc[parent, rect_colname] = child_group[rect_colname].values
+            data[level] = subgroup
 
     return data
 
@@ -386,7 +388,7 @@ def squarify_data(df, x, y, dx, dy, split):
     rect_colname = "_rect_"
     sorted_df = df.sort_values(by=area_colname, ascending=False).copy()
     if split:
-        sorted_df[rect_colname] = squarify.padded_squarify(
+        sorted_df.loc[:, rect_colname] = squarify.padded_squarify(
             sizes=squarify.normalize_sizes(sorted_df[area_colname].values, dx, dy),
             x=x,
             y=y,
@@ -394,7 +396,7 @@ def squarify_data(df, x, y, dx, dy, split):
             dy=dy,
         )
     else:
-        sorted_df[rect_colname] = squarify.squarify(
+        sorted_df.loc[:, rect_colname] = squarify.squarify(
             sizes=squarify.normalize_sizes(sorted_df[area_colname].values, dx, dy),
             x=x,
             y=y,
@@ -421,7 +423,7 @@ def get_subgroups(data, split=False, levels=None):
         current_level.append(level)
         subgroups[level] = data.groupby(by=current_level, dropna=False).agg(agg_fun)
         if split and level == levels[0]:
-            subgroups[level]["_area_"] = 1
+            subgroups[level] = subgroups[level].assign(_area_=1)
 
     return subgroups
 

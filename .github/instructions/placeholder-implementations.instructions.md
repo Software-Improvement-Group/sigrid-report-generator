@@ -49,3 +49,20 @@ shapes, charts, paragraphs, or tables. The computed value does not depend on ind
 positions — only the subsequent draw/render step does.
 
 Flag any `resolve_*` method where `value_cb()` or `value_fn()` is invoked inside a shape/chart/paragraph/table loop.
+
+## Domain layer is mandatory
+
+Placeholders are the view layer — they format, they do not fetch or transform:
+
+1. **No direct data access.** Never import from `context/` or call `sigrid_api`. All data arrives via domain objects.
+2. **No data orchestration.** Never pass output from one domain object into another domain object's method — that
+   composition belongs as a property on the domain object itself.
+3. **No data transformation.** Filtering, aggregating, reshaping dicts, computing averages — all domain work.
+
+Heuristic: if `value()` exceeds ~10 lines, manipulates dict keys from API responses, or calls multiple domain
+methods to assemble an intermediate value, domain logic has leaked in.
+
+## Error handling
+
+`_call_resolve_method` in `base.py` already catches failures (`SigridAPIRequestFailedError`, `KeyError`,
+`AttributeError`, `ValueError`), logs them, and lets report generation continue. 

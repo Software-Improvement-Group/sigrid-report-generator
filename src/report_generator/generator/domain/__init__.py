@@ -17,6 +17,7 @@ from functools import reduce
 from report_generator.generator.context.portfolio_filters import (
     portfolio_arguments_command,
 )
+from report_generator.generator.domain.external.epss import epss_data
 from report_generator.generator.domain.portfolio.architecture_portfolio import (
     architecture_portfolio_data,
 )
@@ -42,6 +43,9 @@ from report_generator.generator.domain.portfolio.security_dashboard_resolution_t
 )
 from report_generator.generator.domain.portfolio.reliability_portfolio import (
     reliability_ratings_portfolio_data,
+)
+from report_generator.generator.domain.portfolio.security_findings_portfolio import (
+    security_findings_portfolio_data,
 )
 from report_generator.generator.domain.portfolio.security_portfolio import (
     security_ratings_portfolio_data,

@@ -11,8 +11,10 @@ layouts and custom user-provided templates, using a placeholder system to map Si
 ## Architecture enforcement
 
 This repository uses a layered architecture (`context → domain → placeholders → rendering`); see
-`docs/architecture.md` for the full explanation. During code review, flag the following layer boundary
-violations:
+`docs/architecture.md` for the full explanation. Think of it as MVC: `domain/` is the model (data + logic),
+`placeholders/` is the view (presentation only), and `context/` is a data-access layer that the model owns.
+
+During code review, flag the following layer boundary violations:
 
 1. **`context/` interpreting data:** Does new code in `context/` parse, reshape, or apply any semantic meaning to API
    responses? → `context/` returns raw JSON only; interpretation belongs in `domain/`.
@@ -34,6 +36,13 @@ violations:
 
 6. **`presets/` using internals:** Does a new or changed preset import from anywhere inside `generator/` other than the
    public `ReportGenerator` API? → Presets are thin wrappers and must not depend on generator internals.
+
+7. **`placeholders/` doing data work:** Does new code in `placeholders/implementations/` import from `context/`,
+   call `sigrid_api`, or transform raw data (filter, aggregate, reshape)? → Placeholders only format; data arrives
+   via `domain/`.
+
+8. **`placeholders/` orchestrating domain:** Does a placeholder pass output from one domain object into another
+   domain object's method? → That wiring belongs in `domain/`; domain objects expose ready-to-consume values.
 
 Do not flag import order, unused imports, or dependency direction — a separate CI job enforces those, so review comments
 on them just create noise.

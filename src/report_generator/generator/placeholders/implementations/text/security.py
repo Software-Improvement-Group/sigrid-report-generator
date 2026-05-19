@@ -57,3 +57,33 @@ def security_cvss_low():
 @text_placeholder()
 def security_relative():
     return f"{relative_to_market_average(security_data.security_rating)} market average"
+
+
+@text_placeholder()
+def security_total_cvss_findings_raw():
+    """Total number of security findings with a CVSS severity (critical + high + medium + low)."""
+    return f"{security_data.count_findings('CRITICAL') + security_data.count_findings('HIGH') + security_data.count_findings('MEDIUM') + security_data.count_findings('LOW')}"
+
+
+@text_placeholder()
+def security_cvss_critical_raw():
+    """Number of security findings with CVSS critical severity."""
+    return f"{security_data.count_findings('CRITICAL')}"
+
+
+@text_placeholder()
+def security_cvss_high_raw():
+    """Number of security findings with CVSS high severity."""
+    return f"{security_data.count_findings('HIGH')}"
+
+
+@text_placeholder()
+def security_cvss_medium_raw():
+    """Number of security findings with CVSS medium severity."""
+    return f"{security_data.count_findings('MEDIUM')}"
+
+
+@text_placeholder()
+def security_cvss_low_raw():
+    """Number of security findings with CVSS low severity."""
+    return f"{security_data.count_findings('LOW')}"
