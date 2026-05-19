@@ -73,6 +73,18 @@ presets/        Named report configurations. Each is a thin wrapper around Repor
 The import boundaries above are mechanically enforced by `import-linter` (configured in `pyproject.toml`). Run
 `lint-imports` to check.
 
+### Common violations
+
+**Skipping domain:** Placeholder implementations that import from `context/` or do data transformation
+(filtering, aggregation, reshaping) inline. Domain must always mediate.
+
+**Orchestrating in placeholders:** A placeholder retrieves a value from one domain object and passes it
+to another domain object's method. That wiring belongs in domain — domain objects expose ready-to-consume
+values.
+
+**Error swallowing:** Adding try/except in placeholder implementations. The base class `_call_resolve_method`
+handles failures centrally — a failing placeholder logs the error and report generation continues.
+
 ### Adding a placeholder
 
 1. Add a domain object or property in `domain/system/` or `domain/portfolio/` if new data is needed.

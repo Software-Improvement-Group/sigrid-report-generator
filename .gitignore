@@ -11,6 +11,8 @@ __pycache__
 out.pptx
 out.docx
 ~$*.*
+generated_*.pptx
+generated_*.docx
 
 # Claude user config
 .claude/settings.local.json
