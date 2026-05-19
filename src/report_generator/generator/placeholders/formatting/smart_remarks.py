@@ -116,15 +116,13 @@ def maint_observation(maintainability_data):
 
 def maint_observations(maintainability_data):
     sorted_metric_data = sort_metrics(maintainability_data, list(MaintMetric))
-    res = ""
+    observations = []
     for sorted_metric in sorted_metric_data:
         if sorted_metric[1] < 2.5:
-            res += worst_metric_observation(sorted_metric)
-            res += "\n"
+            observations.append(worst_metric_observation(sorted_metric))
         if sorted_metric[1] > 3.5:
-            res += best_metric_observation(sorted_metric)
-            res += "\n"
-    return res
+            observations.append(best_metric_observation(sorted_metric))
+    return "\n".join(observations)
 
 
 def best_metric_observation(best_metric):
