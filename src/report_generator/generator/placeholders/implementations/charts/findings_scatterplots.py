@@ -43,7 +43,9 @@ def _functional_suitability_y_axis_max(max_ratio: float) -> float:
     return max(1.0, math.ceil(max_ratio * 10) / 10)
 
 
-def _build_scatterplot_data(domain_data, series_name: str) -> tuple[XyChartData, list[str], int]:
+def _build_scatterplot_data(
+    domain_data, series_name: str
+) -> tuple[XyChartData, list[str], int]:
     findings_index = {
         entry["systemName"]: entry["findings_above_objective"]
         for entry in domain_data.findings_above_objective
@@ -57,7 +59,9 @@ def _build_scatterplot_data(domain_data, series_name: str) -> tuple[XyChartData,
     return chart_data, display_names, max_findings
 
 
-def _collect_points(domain_data, findings_by_name: dict[str, int]) -> tuple[list, list[str]]:
+def _collect_points(
+    domain_data, findings_by_name: dict[str, int]
+) -> tuple[list, list[str]]:
     points = []
     display_names = []
     for system_name in domain_data.system_names:
@@ -74,7 +78,9 @@ def _collect_points(domain_data, findings_by_name: dict[str, int]) -> tuple[list
     return points, display_names
 
 
-def _populate_charts(charts, chart_data, display_names: list[str], max_findings: int) -> None:
+def _populate_charts(
+    charts, chart_data, display_names: list[str], max_findings: int
+) -> None:
     for chart in charts:
         chart.replace_data(chart_data)
         chart.category_axis.minimum_scale = 0
@@ -96,7 +102,9 @@ def _populate_functional_suitability_charts(
             point.data_label.text_frame.text = display_names[i]
 
 
-def _build_functional_suitability_scatterplot_data() -> tuple[XyChartData, list[str], _FunctionalSuitabilityBounds]:
+def _build_functional_suitability_scatterplot_data() -> tuple[
+    XyChartData, list[str], _FunctionalSuitabilityBounds
+]:
     findings_count_index = {
         entry["systemName"]: len(entry["findings"])
         for entry in reliability_ratings_portfolio_data.functional_suitability_findings
@@ -122,15 +130,21 @@ def _collect_functional_suitability_points(
         if test_code_ratio is None:
             continue
         points.append((findings_count_index.get(system_name, 0), test_code_ratio))
-        display_names.append(maintainability_portfolio_data.get_system_display_name(system_name))
+        display_names.append(
+            maintainability_portfolio_data.get_system_display_name(system_name)
+        )
     return points, display_names
 
 
-def _resolve_scatterplot_pptx(presentation, key: str, domain_data, series_name: str) -> None:
+def _resolve_scatterplot_pptx(
+    presentation, key: str, domain_data, series_name: str
+) -> None:
     charts = rendering.pptx.find_charts(presentation, key)
     if not charts:
         return
-    chart_data, display_names, max_findings = _build_scatterplot_data(domain_data, series_name)
+    chart_data, display_names, max_findings = _build_scatterplot_data(
+        domain_data, series_name
+    )
     _populate_charts(charts, chart_data, display_names, max_findings)
 
 
@@ -142,12 +156,16 @@ class PortfolioSecurityScatterplotPlaceholder(Placeholder):
 
     @classmethod
     def value(cls):
-        chart_data, _, __ = _build_scatterplot_data(security_ratings_portfolio_data, "Security")
+        chart_data, _, __ = _build_scatterplot_data(
+            security_ratings_portfolio_data, "Security"
+        )
         return chart_data
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, _) -> None:
-        _resolve_scatterplot_pptx(presentation, key, security_ratings_portfolio_data, "Security")
+        _resolve_scatterplot_pptx(
+            presentation, key, security_ratings_portfolio_data, "Security"
+        )
 
 
 class PortfolioReliabilityScatterplotPlaceholder(Placeholder):
@@ -158,12 +176,16 @@ class PortfolioReliabilityScatterplotPlaceholder(Placeholder):
 
     @classmethod
     def value(cls):
-        chart_data, _, __ = _build_scatterplot_data(reliability_ratings_portfolio_data, "Reliability")
+        chart_data, _, __ = _build_scatterplot_data(
+            reliability_ratings_portfolio_data, "Reliability"
+        )
         return chart_data
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, _) -> None:
-        _resolve_scatterplot_pptx(presentation, key, reliability_ratings_portfolio_data, "Reliability")
+        _resolve_scatterplot_pptx(
+            presentation, key, reliability_ratings_portfolio_data, "Reliability"
+        )
 
 
 class PortfolioNpr5333FunctionalSuitabilityScatterplotPlaceholder(Placeholder):
@@ -182,5 +204,9 @@ class PortfolioNpr5333FunctionalSuitabilityScatterplotPlaceholder(Placeholder):
         charts = rendering.pptx.find_charts(presentation, key)
         if not charts:
             return
-        chart_data, display_names, bounds = _build_functional_suitability_scatterplot_data()
-        _populate_functional_suitability_charts(charts, chart_data, display_names, bounds)
+        chart_data, display_names, bounds = (
+            _build_functional_suitability_scatterplot_data()
+        )
+        _populate_functional_suitability_charts(
+            charts, chart_data, display_names, bounds
+        )

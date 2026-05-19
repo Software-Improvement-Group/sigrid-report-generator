@@ -64,6 +64,7 @@ def generate_hygiene_report(output_path: str) -> None:
 def generate_portfolio_baseline_report(output_path: str) -> None:
     _generate_report("portfolio-baseline-report.pptx", output_path)
 
+
 def generate_npr_5333_overview(output_path: str) -> None:
     _generate_report("npr-5333-overview.pptx", output_path)
 

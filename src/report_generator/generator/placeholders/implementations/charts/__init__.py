@@ -14,7 +14,12 @@
 
 import inspect
 
-from . import findings_scatterplots, maintainability_galaxy_charts, osh_charts, security_findings
+from . import (
+    findings_scatterplots,
+    maintainability_galaxy_charts,
+    osh_charts,
+    security_findings,
+)
 
 _all_implementations = {
     **security_findings.__dict__,

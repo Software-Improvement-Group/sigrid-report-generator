@@ -35,14 +35,14 @@ from report_generator.generator.domain.portfolio.osh_portfolio import osh_portfo
 from report_generator.generator.domain.portfolio.progress_sigrid import (
     progress_sigrid_data,
 )
+from report_generator.generator.domain.portfolio.reliability_portfolio import (
+    reliability_ratings_portfolio_data,
+)
 from report_generator.generator.domain.portfolio.security_dashboard_findings_portfolio import (
     security_dashboard_findings_portfolio_data,
 )
 from report_generator.generator.domain.portfolio.security_dashboard_resolution_times_portfolio import (
     security_dashboard_resolution_times_portfolio_data,
-)
-from report_generator.generator.domain.portfolio.reliability_portfolio import (
-    reliability_ratings_portfolio_data,
 )
 from report_generator.generator.domain.portfolio.security_findings_portfolio import (
     security_findings_portfolio_data,

@@ -31,12 +31,34 @@ from report_generator.generator.utils.time_series import Period
 
 _OBJECTIVE_TYPE = "RELIABILITY_MAX_SEVERITY"
 
-_NPR5333_FUNCTIONAL_SUITABILITY_CWES: frozenset[str] = frozenset([
-    "CWE-129", "CWE-248", "CWE-369", "CWE-390", "CWE-391", "CWE-392",
-    "CWE-456", "CWE-457", "CWE-476", "CWE-478", "CWE-480", "CWE-484",
-    "CWE-597", "CWE-667", "CWE-682", "CWE-783", "CWE-820", "CWE-821",
-    "CWE-835", "CWE-1041", "CWE-1052", "CWE-1075", "CWE-1095", "CWE-1121",
-])
+_NPR5333_FUNCTIONAL_SUITABILITY_CWES: frozenset[str] = frozenset(
+    [
+        "CWE-129",
+        "CWE-248",
+        "CWE-369",
+        "CWE-390",
+        "CWE-391",
+        "CWE-392",
+        "CWE-456",
+        "CWE-457",
+        "CWE-476",
+        "CWE-478",
+        "CWE-480",
+        "CWE-484",
+        "CWE-597",
+        "CWE-667",
+        "CWE-682",
+        "CWE-783",
+        "CWE-820",
+        "CWE-821",
+        "CWE-835",
+        "CWE-1041",
+        "CWE-1052",
+        "CWE-1075",
+        "CWE-1095",
+        "CWE-1121",
+    ]
+)
 
 
 class ReliabilityRatingsPortfolioData(RatedPortfolioMixin):
@@ -87,7 +109,8 @@ class ReliabilityRatingsPortfolioData(RatedPortfolioMixin):
             {
                 "systemName": entry["systemName"],
                 "findings": [
-                    f for f in entry["findings"]
+                    f
+                    for f in entry["findings"]
                     if f.get("cweId") in _NPR5333_FUNCTIONAL_SUITABILITY_CWES
                 ],
             }
@@ -113,7 +136,7 @@ class ReliabilityRatingsPortfolioData(RatedPortfolioMixin):
 
 reliability_ratings_portfolio_data = ReliabilityRatingsPortfolioData()
 
-'''Example API response:
+"""Example API response:
 [
     {
         "id": "0009b8df-82db-43a9-b216-e2391ae72b54",
@@ -216,4 +239,4 @@ reliability_ratings_portfolio_data = ReliabilityRatingsPortfolioData()
         "isSeverityOverridden": false
     }
 ]
-'''
+"""
