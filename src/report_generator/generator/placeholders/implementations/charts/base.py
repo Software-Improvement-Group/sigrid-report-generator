@@ -12,25 +12,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import inspect
+import math
 
-from . import findings_scatterplots, maintainability_galaxy_charts, osh_charts, security_findings
 
-_all_implementations = {
-    **security_findings.__dict__,
-    **osh_charts.__dict__,
-    **maintainability_galaxy_charts.__dict__,
-    **findings_scatterplots.__dict__,
-}
-
-_placeholders_map = {
-    name: obj
-    for name, obj in _all_implementations.items()
-    if inspect.isclass(obj)
-    and hasattr(obj, "__placeholder__")
-    and not inspect.isabstract(obj)
-}
-
-placeholders = set(_placeholders_map.values())
-
-__all__ = list(_placeholders_map.keys())
+def findings_x_axis_max(value: int) -> int:
+    """Round up to the next half-order-of-magnitude step, with a minimum of 20."""
+    value = max(value, 10)
+    magnitude = 10 ** math.floor(math.log10(value))
+    step = magnitude // 2
+    return (value // step + 1) * step

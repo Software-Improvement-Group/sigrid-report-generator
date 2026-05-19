@@ -40,6 +40,9 @@ from report_generator.generator.domain.portfolio.security_dashboard_findings_por
 from report_generator.generator.domain.portfolio.security_dashboard_resolution_times_portfolio import (
     security_dashboard_resolution_times_portfolio_data,
 )
+from report_generator.generator.domain.portfolio.reliability_portfolio import (
+    reliability_ratings_portfolio_data,
+)
 from report_generator.generator.domain.portfolio.security_portfolio import (
     security_ratings_portfolio_data,
 )
