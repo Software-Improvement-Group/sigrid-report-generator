@@ -31,6 +31,13 @@ from report_generator.generator.utils.time_series import Period
 
 _OBJECTIVE_TYPE = "RELIABILITY_MAX_SEVERITY"
 
+_NPR5333_FUNCTIONAL_SUITABILITY_CWES: frozenset[str] = frozenset([
+    "CWE-129", "CWE-248", "CWE-369", "CWE-390", "CWE-391", "CWE-392",
+    "CWE-456", "CWE-457", "CWE-476", "CWE-478", "CWE-480", "CWE-484",
+    "CWE-597", "CWE-667", "CWE-682", "CWE-783", "CWE-820", "CWE-821",
+    "CWE-835", "CWE-1041", "CWE-1052", "CWE-1075", "CWE-1095", "CWE-1121",
+])
+
 
 class ReliabilityRatingsPortfolioData(RatedPortfolioMixin):
     @cached_property
@@ -75,6 +82,19 @@ class ReliabilityRatingsPortfolioData(RatedPortfolioMixin):
         return result
 
     @cached_property
+    def functional_suitability_findings(self):
+        return [
+            {
+                "systemName": entry["systemName"],
+                "findings": [
+                    f for f in entry["findings"]
+                    if f.get("cweId") in _NPR5333_FUNCTIONAL_SUITABILITY_CWES
+                ],
+            }
+            for entry in self.reliability_findings
+        ]
+
+    @cached_property
     def findings_above_objective(self):
         period = Period(*sigrid_api.get_period())
         objectives_systems = sigrid_api.get_objectives_evaluation(period)["systems"]
@@ -92,3 +112,108 @@ class ReliabilityRatingsPortfolioData(RatedPortfolioMixin):
 
 
 reliability_ratings_portfolio_data = ReliabilityRatingsPortfolioData()
+
+'''Example API response:
+[
+    {
+        "id": "0009b8df-82db-43a9-b216-e2391ae72b54",
+        "href": "https://sigrid-says.com/opendemo/elasticsearch/-/security/0009b8df-82db-43a9-b216-e2391ae72b54",
+        "firstSeenAnalysisDate": "2025-11-11",
+        "lastSeenAnalysisDate": "2026-05-17",
+        "firstSeenSnapshotDate": "2025-11-11",
+        "lastSeenSnapshotDate": "2026-05-17",
+        "filePath": "x-pack/plugin/esql/src/internalClusterTest/java/org/elasticsearch/xpack/esql/action/FailingPauseFieldPlugin.java",
+        "startLine": 43,
+        "endLine": 43,
+        "component": "x-pack",
+        "type": "Method ignores return value",
+        "cweId": "CWE-252",
+        "severity": "MEDIUM",
+        "impact": "MEDIUM",
+        "exploitability": "HIGH",
+        "severityScore": 6.6,
+        "impactScore": 3.3,
+        "exploitabilityScore": 3.3,
+        "status": "RAW",
+        "remark": null,
+        "toolName": "SpotBugs",
+        "ruleId": "RV_RETURN_VALUE_IGNORED",
+        "weaknessIds": [
+            "CWE-252"
+        ],
+        "categories": [
+            "8. Error Handling"
+        ],
+        "fingerprint": "feff53bf794fe32db1ae926ee416765654a881754bff87c4a022ad93d742eb19",
+        "isManualFinding": false,
+        "isSeverityOverridden": false
+    },
+    {
+        "id": "00191ea2-ca38-4295-b052-fb714c3552a6",
+        "href": "https://sigrid-says.com/opendemo/elasticsearch/-/security/00191ea2-ca38-4295-b052-fb714c3552a6",
+        "firstSeenAnalysisDate": "2022-05-16",
+        "lastSeenAnalysisDate": "2026-05-17",
+        "firstSeenSnapshotDate": "2022-05-16",
+        "lastSeenSnapshotDate": "2026-05-17",
+        "filePath": "server/src/internalClusterTest/java/org/elasticsearch/search/aggregations/bucket/IpTermsIT.java",
+        "startLine": 75,
+        "endLine": 75,
+        "component": "server",
+        "type": "Using hardcoded IP addresses is security-sensitive",
+        "cweId": "CWE-547",
+        "severity": "INFORMATION",
+        "impact": "INFORMATION",
+        "exploitability": "INFORMATION",
+        "severityScore": 0.0,
+        "impactScore": 0.0,
+        "exploitabilityScore": 0.0,
+        "status": "RAW",
+        "remark": null,
+        "toolName": "SonarQube (Java)",
+        "ruleId": "S1313",
+        "weaknessIds": [
+            "CWE-547",
+            "SIG-CLOUD-17"
+        ],
+        "categories": [
+            "7. Hard-coded Configuration"
+        ],
+        "fingerprint": "4d3ce15b3906a69ce39e5326e7a7a53e8663a3641cb7dff2d49d4453de62f464",
+        "isManualFinding": false,
+        "isSeverityOverridden": false
+    },
+    {
+        "id": "003ec8e8-170f-4926-835a-c63a82bd7e3e",
+        "href": "https://sigrid-says.com/opendemo/elasticsearch/-/security/003ec8e8-170f-4926-835a-c63a82bd7e3e",
+        "firstSeenAnalysisDate": "2025-11-11",
+        "lastSeenAnalysisDate": "2026-05-17",
+        "firstSeenSnapshotDate": "2025-11-11",
+        "lastSeenSnapshotDate": "2026-05-17",
+        "filePath": "x-pack/plugin/core/src/main/java/org/elasticsearch/xpack/core/ilm/LifecycleOperationMetadata.java",
+        "startLine": 100,
+        "endLine": 100,
+        "component": "x-pack",
+        "type": "Method uses immediate execution of a block of code that is often not used",
+        "cweId": "CWE-670",
+        "severity": "MEDIUM",
+        "impact": "MEDIUM",
+        "exploitability": "HIGH",
+        "severityScore": 6.8,
+        "impactScore": 3.3,
+        "exploitabilityScore": 3.5,
+        "status": "RAW",
+        "remark": null,
+        "toolName": "FB Contrib",
+        "ruleId": "OI_OPTIONAL_ISSUES_USES_IMMEDIATE_EXECUTION",
+        "weaknessIds": [
+            "CWE-670"
+        ],
+        "categories": [
+            "2. Logic & Data Flow"
+        ],
+        "fingerprint": "8ed0c71849d10c5f6b85db64fe0d530f80fe34441a7325640d49918273a22656",
+        "isManualFinding": false,
+        "isSeverityOverridden": false
+    }
+]
+'''

@@ -319,3 +319,98 @@ class TestFindingsAboveObjectiveReliability:
             {"systemName": "sys2", "findings_above_objective": 1},
             {"systemName": "sys3", "findings_above_objective": 1},
         ]
+
+
+class TestFunctionalSuitabilityFindings:
+    """Tests for ReliabilityRatingsPortfolioData.functional_suitability_findings."""
+
+    def _make_instance(self, system_names, reliability_findings):
+        instance = ReliabilityRatingsPortfolioData()
+        instance.__dict__["system_names"] = system_names
+        instance.__dict__["reliability_findings"] = reliability_findings
+        return instance
+
+    def test_filters_to_npr5333_cwes_only(self):
+        instance = self._make_instance(
+            ["sys1"],
+            [
+                {
+                    "systemName": "sys1",
+                    "findings": [
+                        {"cweId": "CWE-476", "severity": "HIGH"},
+                        {"cweId": "CWE-252", "severity": "MEDIUM"},
+                        {"cweId": "CWE-835", "severity": "CRITICAL"},
+                    ],
+                }
+            ],
+        )
+
+        result = instance.functional_suitability_findings
+
+        assert len(result) == 1
+        assert result[0]["systemName"] == "sys1"
+        assert len(result[0]["findings"]) == 2
+        assert all(f["cweId"] in {"CWE-476", "CWE-835"} for f in result[0]["findings"])
+
+    def test_empty_findings_when_no_matching_cwes(self):
+        instance = self._make_instance(
+            ["sys1"],
+            [
+                {
+                    "systemName": "sys1",
+                    "findings": [
+                        {"cweId": "CWE-252", "severity": "MEDIUM"},
+                        {"cweId": "CWE-547", "severity": "LOW"},
+                    ],
+                }
+            ],
+        )
+
+        result = instance.functional_suitability_findings
+
+        assert result == [{"systemName": "sys1", "findings": []}]
+
+    def test_finding_without_cwe_id_is_excluded(self):
+        instance = self._make_instance(
+            ["sys1"],
+            [
+                {
+                    "systemName": "sys1",
+                    "findings": [
+                        {"severity": "HIGH"},
+                        {"cweId": None, "severity": "MEDIUM"},
+                        {"cweId": "CWE-682", "severity": "CRITICAL"},
+                    ],
+                }
+            ],
+        )
+
+        result = instance.functional_suitability_findings
+
+        assert len(result[0]["findings"]) == 1
+        assert result[0]["findings"][0]["cweId"] == "CWE-682"
+
+    def test_multiple_systems_filtered_independently(self):
+        instance = self._make_instance(
+            ["sys1", "sys2"],
+            [
+                {
+                    "systemName": "sys1",
+                    "findings": [
+                        {"cweId": "CWE-476"},
+                        {"cweId": "CWE-999"},
+                    ],
+                },
+                {
+                    "systemName": "sys2",
+                    "findings": [
+                        {"cweId": "CWE-999"},
+                    ],
+                },
+            ],
+        )
+
+        result = instance.functional_suitability_findings
+
+        assert result[0] == {"systemName": "sys1", "findings": [{"cweId": "CWE-476"}]}
+        assert result[1] == {"systemName": "sys2", "findings": []}
