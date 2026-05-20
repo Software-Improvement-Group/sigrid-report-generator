@@ -20,6 +20,7 @@ from pptx.presentation import Presentation
 
 from report_generator.generator.domain import (
     maintainability_portfolio_data,
+    npr_5333_functional_suitability_portfolio_data,
     reliability_ratings_portfolio_data,
     security_ratings_portfolio_data,
 )
@@ -107,7 +108,7 @@ def _build_functional_suitability_scatterplot_data() -> tuple[
 ]:
     findings_count_index = {
         entry["systemName"]: len(entry["findings"])
-        for entry in reliability_ratings_portfolio_data.functional_suitability_findings
+        for entry in npr_5333_functional_suitability_portfolio_data.findings
     }
     points, display_names = _collect_functional_suitability_points(findings_count_index)
     chart_data = XyChartData()
@@ -124,7 +125,7 @@ def _collect_functional_suitability_points(
 ) -> tuple[list, list[str]]:
     points = []
     display_names = []
-    for system_name in reliability_ratings_portfolio_data.system_names:
+    for system_name in npr_5333_functional_suitability_portfolio_data.system_names:
         snapshot = maintainability_portfolio_data.end_snapshot(system_name)
         test_code_ratio = snapshot.get("testCodeRatio") if snapshot else None
         if test_code_ratio is None:
