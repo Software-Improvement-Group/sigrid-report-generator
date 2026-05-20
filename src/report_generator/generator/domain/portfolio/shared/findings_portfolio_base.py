@@ -49,7 +49,10 @@ class FindingsRatingsPortfolioBase(RatedPortfolioMixin):
     @cached_property
     @filter_data_on_portfolio_arguments(system_tag="systemName")
     def data(self):
-        return getattr(sigrid_api, self._portfolio_ratings_api_method)()
+        return sorted(
+            getattr(sigrid_api, self._portfolio_ratings_api_method)(),
+            key=lambda s: s["systemName"],
+        )
 
     @cached_property
     def period(self):

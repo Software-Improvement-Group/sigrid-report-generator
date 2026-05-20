@@ -74,12 +74,18 @@ class Npr5333FunctionalSuitabilityPortfolioData:
     @cached_property
     @filter_data_on_portfolio_arguments(system_tag="systemName")
     def _reliability_ratings(self):
-        return sigrid_api.get_portfolio_reliability_ratings()
+        return sorted(
+            sigrid_api.get_portfolio_reliability_ratings(),
+            key=lambda s: s["systemName"],
+        )
 
     @cached_property
     @filter_data_on_portfolio_arguments(system_tag="systemName")
     def _security_ratings(self):
-        return sigrid_api.get_portfolio_security_ratings()
+        return sorted(
+            sigrid_api.get_portfolio_security_ratings(),
+            key=lambda s: s["systemName"],
+        )
 
     @cached_property
     def system_names(self):
