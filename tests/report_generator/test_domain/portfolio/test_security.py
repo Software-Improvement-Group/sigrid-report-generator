@@ -27,11 +27,10 @@ from report_generator.generator.domain.portfolio.security_portfolio import (
     SecurityRatingsPortfolioData,
     security_ratings_portfolio_data,
 )
-from report_generator.generator.domain.portfolio.shared.findings_above_severity import (
+from report_generator.generator.domain.shared.findings_severity import (
     FALLBACK_SEVERITY_THRESHOLD,
-    build_objective_index,
+    count_findings_above_objective,
     count_findings_above_severity,
-    count_for_system,
 )
 
 
@@ -1291,70 +1290,6 @@ class TestSecurityDashboardResolutionTimesPortfolioData:
         assert "system3" in names
 
 
-class TestBuildObjectiveIndex:
-    """Unit tests for build_objective_index helper."""
-
-    def test_returns_matching_objective(self):
-        systems = [
-            {
-                "systemName": "sys1",
-                "objectives": [
-                    {
-                        "type": "SECURITY_MAX_SEVERITY",
-                        "target": "HIGH",
-                        "targetMetAtEnd": "NOT_MET",
-                    },
-                    {"type": "OTHER", "target": "LOW", "targetMetAtEnd": "MET"},
-                ],
-            }
-        ]
-        index = build_objective_index(systems, "SECURITY_MAX_SEVERITY")
-        result = index.get("sys1")
-        assert result is not None
-        assert result["type"] == "SECURITY_MAX_SEVERITY"
-        assert result["target"] == "HIGH"
-
-    def test_absent_system_not_in_index(self):
-        systems = [{"systemName": "other", "objectives": []}]
-        index = build_objective_index(systems, "SECURITY_MAX_SEVERITY")
-        assert index.get("sys1") is None
-
-    def test_returns_none_when_no_matching_objective_type(self):
-        systems = [
-            {
-                "systemName": "sys1",
-                "objectives": [
-                    {"type": "OTHER", "target": "LOW", "targetMetAtEnd": "MET"}
-                ],
-            }
-        ]
-        index = build_objective_index(systems, "SECURITY_MAX_SEVERITY")
-        assert index.get("sys1") is None
-
-    def test_returns_none_for_empty_objectives(self):
-        systems = [{"systemName": "sys1", "objectives": []}]
-        index = build_objective_index(systems, "SECURITY_MAX_SEVERITY")
-        assert index.get("sys1") is None
-
-    def test_indexes_multiple_systems(self):
-        systems = [
-            {
-                "systemName": "sys1",
-                "objectives": [
-                    {
-                        "type": "SECURITY_MAX_SEVERITY",
-                        "target": "HIGH",
-                        "targetMetAtEnd": "MET",
-                    }
-                ],
-            },
-            {"systemName": "sys2", "objectives": []},
-        ]
-        index = build_objective_index(systems, "SECURITY_MAX_SEVERITY")
-        assert index["sys1"]["target"] == "HIGH"
-        assert index["sys2"] is None
-
-
 class TestCountFindingsAboveSeverity:
     """Unit tests for count_findings_above_severity helper."""
 
@@ -1391,8 +1326,8 @@ class TestCountFindingsAboveSeverity:
         assert count_findings_above_severity([], "MEDIUM") == 0
 
 
-class TestCountForSystem:
-    """Unit tests for count_for_system helper."""
+class TestCountFindingsAboveObjective:
+    """Unit tests for count_findings_above_objective helper."""
 
     def test_no_objective_counts_high_and_critical(self):
         findings = [
@@ -1401,14 +1336,14 @@ class TestCountForSystem:
             {"severity": "HIGH"},
             {"severity": "CRITICAL"},
         ]
-        assert count_for_system(findings, None) == count_findings_above_severity(
-            findings, FALLBACK_SEVERITY_THRESHOLD
-        )
+        assert count_findings_above_objective(
+            findings, None
+        ) == count_findings_above_severity(findings, FALLBACK_SEVERITY_THRESHOLD)
 
     def test_objective_met_returns_zero(self):
         findings = [{"severity": "CRITICAL"}]
         objective = {"targetMetAtEnd": "MET", "target": "HIGH"}
-        assert count_for_system(findings, objective) == 0
+        assert count_findings_above_objective(findings, objective) == 0
 
     def test_objective_not_met_delegates_to_count_helper(self):
         findings = [
@@ -1417,7 +1352,7 @@ class TestCountForSystem:
             {"severity": "CRITICAL"},
         ]
         objective = {"targetMetAtEnd": "NOT_MET", "target": "LOW"}
-        assert count_for_system(findings, objective) == 2
+        assert count_findings_above_objective(findings, objective) == 2
 
 
 class TestFindingsAboveObjective:

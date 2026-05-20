@@ -19,18 +19,6 @@ from report_generator.generator.utils.constants.severity import SEVERITY_ORDER
 FALLBACK_SEVERITY_THRESHOLD = "MEDIUM"
 
 
-def build_objective_index(
-    objectives_systems: list, objective_type: str
-) -> dict[str, dict]:
-    return {
-        system["systemName"]: next(
-            (obj for obj in system["objectives"] if obj["type"] == objective_type),
-            None,
-        )
-        for system in objectives_systems
-    }
-
-
 def count_findings_above_severity(findings: list, target_severity: str) -> int:
     target_rank = SEVERITY_ORDER.get(target_severity)
     if target_rank is None:
@@ -49,7 +37,7 @@ def count_findings_above_severity(findings: list, target_severity: str) -> int:
     return count
 
 
-def count_for_system(findings: list, objective: dict | None) -> int:
+def count_findings_above_objective(findings: list, objective: dict | None) -> int:
     if objective is None:
         return count_findings_above_severity(findings, FALLBACK_SEVERITY_THRESHOLD)
     if objective["targetMetAtEnd"] == "MET":

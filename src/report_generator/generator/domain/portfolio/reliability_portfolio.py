@@ -15,8 +15,36 @@
 from functools import cached_property
 
 from report_generator.generator.domain.portfolio.shared.findings_portfolio_base import (
-    NPR5333_FUNCTIONAL_SUITABILITY_CWES,
     FindingsRatingsPortfolioBase,
+)
+
+_NPR5333_FUNCTIONAL_SUITABILITY_CWES: frozenset[str] = frozenset(
+    [
+        "CWE-129",
+        "CWE-248",
+        "CWE-369",
+        "CWE-390",
+        "CWE-391",
+        "CWE-392",
+        "CWE-456",
+        "CWE-457",
+        "CWE-476",
+        "CWE-478",
+        "CWE-480",
+        "CWE-484",
+        "CWE-597",
+        "CWE-667",
+        "CWE-682",
+        "CWE-783",
+        "CWE-820",
+        "CWE-821",
+        "CWE-835",
+        "CWE-1041",
+        "CWE-1052",
+        "CWE-1075",
+        "CWE-1095",
+        "CWE-1121",
+    ]
 )
 
 
@@ -37,7 +65,7 @@ class ReliabilityRatingsPortfolioData(FindingsRatingsPortfolioBase):
                 "findings": [
                     f
                     for f in entry["findings"]
-                    if f.get("cweId") in NPR5333_FUNCTIONAL_SUITABILITY_CWES
+                    if f.get("cweId") in _NPR5333_FUNCTIONAL_SUITABILITY_CWES
                 ],
             }
             for entry in self._raw_findings

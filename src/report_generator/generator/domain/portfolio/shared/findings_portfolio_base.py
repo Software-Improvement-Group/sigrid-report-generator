@@ -20,43 +20,25 @@ from report_generator.generator.context.portfolio_filters import (
     filter_data_on_portfolio_arguments,
 )
 from report_generator.generator.domain.portfolio.shared import utils
-from report_generator.generator.domain.portfolio.shared.findings_above_severity import (
-    build_objective_index,
-    count_for_system,
-)
 from report_generator.generator.domain.portfolio.shared.rated_mixin import (
     RatedPortfolioMixin,
 )
+from report_generator.generator.domain.shared.findings_severity import (
+    count_findings_above_objective,
+)
 from report_generator.generator.utils.time_series import Period
 
-NPR5333_FUNCTIONAL_SUITABILITY_CWES: frozenset[str] = frozenset(
-    [
-        "CWE-129",
-        "CWE-248",
-        "CWE-369",
-        "CWE-390",
-        "CWE-391",
-        "CWE-392",
-        "CWE-456",
-        "CWE-457",
-        "CWE-476",
-        "CWE-478",
-        "CWE-480",
-        "CWE-484",
-        "CWE-597",
-        "CWE-667",
-        "CWE-682",
-        "CWE-783",
-        "CWE-820",
-        "CWE-821",
-        "CWE-835",
-        "CWE-1041",
-        "CWE-1052",
-        "CWE-1075",
-        "CWE-1095",
-        "CWE-1121",
-    ]
-)
+
+def _build_objective_index(
+    objectives_systems: list, objective_type: str
+) -> dict[str, dict]:
+    return {
+        system["systemName"]: next(
+            (obj for obj in system["objectives"] if obj["type"] == objective_type),
+            None,
+        )
+        for system in objectives_systems
+    }
 
 
 class FindingsRatingsPortfolioBase(RatedPortfolioMixin):
@@ -109,13 +91,13 @@ class FindingsRatingsPortfolioBase(RatedPortfolioMixin):
     def findings_above_objective(self):
         period = Period(*sigrid_api.get_period())
         objectives_systems = sigrid_api.get_objectives_evaluation(period)["systems"]
-        objective_index = build_objective_index(
+        objective_index = _build_objective_index(
             objectives_systems, self._objective_type
         )
         return [
             {
                 "systemName": entry["systemName"],
-                "findings_above_objective": count_for_system(
+                "findings_above_objective": count_findings_above_objective(
                     entry["findings"],
                     objective_index.get(entry["systemName"]),
                 ),
