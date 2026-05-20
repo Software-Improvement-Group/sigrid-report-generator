@@ -19,6 +19,16 @@ from functools import cached_property
 
 from report_generator.generator.domain.external.epss import epss_data
 
+_RISK_LABEL = {0: "critical", 1: "high", 2: "medium", 3: "low", 4: "no_risk"}
+_RISK_PROPERTY_NAMES = [
+    "sigrid:risk:vulnerability",
+    "sigrid:risk:legal",
+    "sigrid:risk:freshness",
+    "sigrid:risk:stability",
+    "sigrid:risk:management",
+    "sigrid:risk:activity",
+]
+
 _SEVERITY_LEVELS = ("critical", "high", "medium", "low")
 
 
@@ -149,6 +159,23 @@ class OSHMetricsBase(ABC):
             "management": self.management_risk_distribution,
             "activity": self.activity_risk_distribution,
         }
+
+    def _get_risk_value(self, properties: list, risk_name: str) -> int:
+        """Return integer risk level (0=critical … 4=no_risk) for a single property name."""
+        risk_mapping = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
+        for prop in properties:
+            if prop.get("name") == risk_name:
+                return risk_mapping.get(prop.get("value"), 4)
+        return 4
+
+    def _categorize_risk_level(self, risk_level: int, risk_counts: dict) -> None:
+        """Increment the appropriate risk count based on the risk level."""
+        risk_counts[_RISK_LABEL.get(risk_level, "no_risk")] += 1
+
+    def _highest_risk_for_component(self, component: dict) -> int:
+        """Return the highest (lowest integer) risk level across all OSH categories for a component."""
+        props = component.get("properties", [])
+        return min(self._get_risk_value(props, name) for name in _RISK_PROPERTY_NAMES)
 
     @property
     @abstractmethod

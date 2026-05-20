@@ -198,3 +198,33 @@ def osh_known_vulnerabilities_low():
     """Number of known vulnerabilities with CVSS low severity."""
     distr = osh_data.vulnerability_distribution
     return f"{distr['low']}"
+
+
+@text_placeholder()
+def osh_critical_risk():
+    """Number of dependency occurrences with critical-level risk across all OSH categories."""
+    return osh_data.library_risk_levels["critical"]
+
+
+@text_placeholder()
+def osh_high_risk():
+    """Number of dependency occurrences with high-level risk across all OSH categories."""
+    return osh_data.library_risk_levels["high"]
+
+
+@text_placeholder()
+def osh_medium_risk():
+    """Number of dependency occurrences with medium-level risk across all OSH categories."""
+    return osh_data.library_risk_levels["medium"]
+
+
+@text_placeholder()
+def osh_low_risk():
+    """Number of dependency occurrences with low-level risk across all OSH categories."""
+    return osh_data.library_risk_levels["low"]
+
+
+@text_placeholder()
+def osh_no_risk():
+    """Number of dependency occurrences with no OSH risk."""
+    return osh_data.library_risk_levels["no_risk"]

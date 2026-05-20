@@ -150,12 +150,6 @@ class OSHRatingsPortfolioData(RatedPortfolioMixin, OSHMetricsBase):
 
         return highest_risk
 
-    def _categorize_risk_level(self, risk_level, risk_counts):
-        """Increment the appropriate risk count based on the risk level."""
-        risk_mapping = {0: "critical", 1: "high", 2: "medium", 3: "low", 4: "no_risk"}
-        category = risk_mapping.get(risk_level, "no_risk")
-        risk_counts[category] += 1
-
     @cached_property
     def system_risk_levels(self):
         """Calculate the highest risk level for each system and count systems by risk level."""
@@ -171,67 +165,17 @@ class OSHRatingsPortfolioData(RatedPortfolioMixin, OSHMetricsBase):
 
         return risk_counts
 
-    def _get_library_identifier(self, component):
-        """Create unique identifier for a library."""
-        return f"{component.get('name', '')}:{component.get('version', '')}"
-
-    def _get_library_risk_levels(self, component):
-        """Get risk levels across all categories for a library component."""
-        props = component.get("properties", [])
-        return [
-            self._get_risk_value(props, "sigrid:risk:vulnerability"),
-            self._get_risk_value(props, "sigrid:risk:legal"),
-            self._get_risk_value(props, "sigrid:risk:freshness"),
-            self._get_risk_value(props, "sigrid:risk:stability"),
-            self._get_risk_value(props, "sigrid:risk:management"),
-            self._get_risk_value(props, "sigrid:risk:activity"),
-        ]
-
-    def _process_component(self, component, processed_libraries, risk_counts):
-        """Process a single component and update risk tracking."""
-        lib_id = self._get_library_identifier(component)
-        lib_risks = self._get_library_risk_levels(component)
-        highest_risk = min(lib_risks)
-
-        if (
-            lib_id not in processed_libraries
-            or highest_risk < processed_libraries[lib_id]
-        ):
-            if lib_id in processed_libraries:
-                self._decrement_risk_count(risk_counts, processed_libraries[lib_id])
-            processed_libraries[lib_id] = highest_risk
-            self._categorize_risk_level(highest_risk, risk_counts)
-
     @cached_property
     def library_risk_levels(self):
-        """Calculate risk level counts for libraries, counting each library once by its highest risk."""
+        """Count each library by its highest risk level across all OSH categories."""
         risk_counts = {"critical": 0, "high": 0, "medium": 0, "low": 0, "no_risk": 0}
-        processed_libraries = {}
 
         for system in self.raw_data.get("systems", []):
-            sbom = system.get("sbom", {})
-            components = sbom.get("components", [])
-
-            for component in components:
-                self._process_component(component, processed_libraries, risk_counts)
+            for component in system.get("sbom", {}).get("components", []):
+                highest_risk = self._highest_risk_for_component(component)
+                self._categorize_risk_level(highest_risk, risk_counts)
 
         return risk_counts
-
-    def _get_risk_value(self, properties, risk_name):
-        """Extract risk value from component properties."""
-        risk_mapping = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
-
-        for prop in properties:
-            if prop.get("name") == risk_name:
-                risk = prop.get("value", "UNKNOWN")
-                return risk_mapping.get(risk, 4)
-        return 4  # no_risk
-
-    def _decrement_risk_count(self, risk_counts, risk_level):
-        """Decrement the count for a risk level."""
-        risk_mapping = {0: "critical", 1: "high", 2: "medium", 3: "low", 4: "no_risk"}
-        category = risk_mapping.get(risk_level, "no_risk")
-        risk_counts[category] -= 1
 
     @property
     def vulnerability_summary(self):

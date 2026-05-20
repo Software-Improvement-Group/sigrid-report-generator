@@ -17,7 +17,7 @@ from pathlib import Path
 
 from report_generator import presets
 
-PERIOD = ("2026-01-11", "2026-03-8")
+PERIOD = ("2026-01-11", "2026-03-08")
 
 INTEGRATION_DIR = Path(__file__).parent
 TEMPLATES_DIR = INTEGRATION_DIR / "templates"

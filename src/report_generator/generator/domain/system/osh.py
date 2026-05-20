@@ -132,5 +132,16 @@ class OSHData(OSHMetricsBase):
     def age_distribution(self) -> list[int]:
         return component_version_staleness_days(self.components)
 
+    @cached_property
+    def library_risk_levels(self) -> dict[str, int]:
+        """Count each dependency occurrence by its highest risk level across all OSH categories."""
+        risk_counts = {"critical": 0, "high": 0, "medium": 0, "low": 0, "no_risk": 0}
+
+        for component in self.raw_data.get("components", []):
+            highest_risk = self._highest_risk_for_component(component)
+            self._categorize_risk_level(highest_risk, risk_counts)
+
+        return risk_counts
+
 
 osh_data = OSHData()
