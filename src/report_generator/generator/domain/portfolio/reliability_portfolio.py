@@ -12,96 +12,24 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import logging
 from functools import cached_property
 
-from report_generator.generator.context import sigrid_api
-from report_generator.generator.context.portfolio_filters import (
-    filter_data_on_portfolio_arguments,
+from report_generator.generator.domain.portfolio.shared.findings_portfolio_base import (
+    FindingsRatingsPortfolioBase,
+    NPR5333_FUNCTIONAL_SUITABILITY_CWES,
 )
-from report_generator.generator.domain.portfolio.shared import utils
-from report_generator.generator.domain.portfolio.shared.findings_above_severity import (
-    build_objective_index,
-    count_for_system,
-)
-from report_generator.generator.domain.portfolio.shared.rated_mixin import (
-    RatedPortfolioMixin,
-)
-from report_generator.generator.utils.time_series import Period
 
 _OBJECTIVE_TYPE = "RELIABILITY_MAX_SEVERITY"
 
-_NPR5333_FUNCTIONAL_SUITABILITY_CWES: frozenset[str] = frozenset(
-    [
-        "CWE-129",
-        "CWE-248",
-        "CWE-369",
-        "CWE-390",
-        "CWE-391",
-        "CWE-392",
-        "CWE-456",
-        "CWE-457",
-        "CWE-476",
-        "CWE-478",
-        "CWE-480",
-        "CWE-484",
-        "CWE-597",
-        "CWE-667",
-        "CWE-682",
-        "CWE-783",
-        "CWE-820",
-        "CWE-821",
-        "CWE-835",
-        "CWE-1041",
-        "CWE-1052",
-        "CWE-1075",
-        "CWE-1095",
-        "CWE-1121",
-    ]
-)
 
+class ReliabilityRatingsPortfolioData(FindingsRatingsPortfolioBase):
+    _objective_type = _OBJECTIVE_TYPE
+    _portfolio_ratings_api_method = "get_portfolio_reliability_ratings"
+    _findings_api_method = "get_reliability_findings"
 
-class ReliabilityRatingsPortfolioData(RatedPortfolioMixin):
-    @cached_property
-    @filter_data_on_portfolio_arguments(system_tag="systemName")
-    def data(self):
-        return sigrid_api.get_portfolio_reliability_ratings()
-
-    @cached_property
-    def period(self):
-        return None, sigrid_api.get_period()[1]
-
-    def get_system(self, system):
-        return utils.get_system_helper(system, self.data, "systemName")
-
-    @cached_property
-    def system_names(self):
-        return utils.system_names_helper(self.data, "systemName")
-
-    def _rated_systems(self):
-        return self.data
-
-    def _extract_rating(self, system):
-        return system.get("rating")
-
-    def _get_rating_and_volume(self, system):
-        return utils.get_rating_and_volume_from_system(
-            system, lambda s: s.get("rating"), "systemName"
-        )
-
-    @cached_property
+    @property
     def reliability_findings(self):
-        result = []
-        for system_name in self.system_names:
-            try:
-                findings = sigrid_api.get_reliability_findings(system_name)
-            except Exception:
-                logging.warning(
-                    f"Could not retrieve reliability findings for system '{system_name}'"
-                )
-                findings = []
-            result.append({"systemName": system_name, "findings": findings})
-        return result
+        return self._raw_findings
 
     @cached_property
     def functional_suitability_findings(self):
@@ -111,26 +39,10 @@ class ReliabilityRatingsPortfolioData(RatedPortfolioMixin):
                 "findings": [
                     f
                     for f in entry["findings"]
-                    if f.get("cweId") in _NPR5333_FUNCTIONAL_SUITABILITY_CWES
+                    if f.get("cweId") in NPR5333_FUNCTIONAL_SUITABILITY_CWES
                 ],
             }
-            for entry in self.reliability_findings
-        ]
-
-    @cached_property
-    def findings_above_objective(self):
-        period = Period(*sigrid_api.get_period())
-        objectives_systems = sigrid_api.get_objectives_evaluation(period)["systems"]
-        objective_index = build_objective_index(objectives_systems, _OBJECTIVE_TYPE)
-        return [
-            {
-                "systemName": entry["systemName"],
-                "findings_above_objective": count_for_system(
-                    entry["findings"],
-                    objective_index.get(entry["systemName"]),
-                ),
-            }
-            for entry in self.reliability_findings
+            for entry in self._raw_findings
         ]
 
 

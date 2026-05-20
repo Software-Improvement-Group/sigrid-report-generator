@@ -12,83 +12,21 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import logging
-from functools import cached_property
-
-from report_generator.generator.context import sigrid_api
-from report_generator.generator.context.portfolio_filters import (
-    filter_data_on_portfolio_arguments,
+from report_generator.generator.domain.portfolio.shared.findings_portfolio_base import (
+    FindingsRatingsPortfolioBase,
 )
-from report_generator.generator.domain.portfolio.shared import utils
-from report_generator.generator.domain.portfolio.shared.findings_above_severity import (
-    build_objective_index,
-    count_for_system,
-)
-from report_generator.generator.domain.portfolio.shared.rated_mixin import (
-    RatedPortfolioMixin,
-)
-from report_generator.generator.utils.time_series import Period
 
 _OBJECTIVE_TYPE = "SECURITY_MAX_SEVERITY"
 
 
-class SecurityRatingsPortfolioData(RatedPortfolioMixin):
-    @cached_property
-    @filter_data_on_portfolio_arguments(system_tag="systemName")
-    def data(self):
-        return sigrid_api.get_portfolio_security_ratings()
+class SecurityRatingsPortfolioData(FindingsRatingsPortfolioBase):
+    _objective_type = _OBJECTIVE_TYPE
+    _portfolio_ratings_api_method = "get_portfolio_security_ratings"
+    _findings_api_method = "get_security_findings"
 
-    @cached_property
-    def period(self):
-        return None, sigrid_api.get_period()[1]
-
-    def get_system(self, system):
-        return utils.get_system_helper(system, self.data, "systemName")
-
-    @cached_property
-    def system_names(self):
-        return utils.system_names_helper(self.data, "systemName")
-
-    def _rated_systems(self):
-        return self.data
-
-    def _extract_rating(self, system):
-        return system.get("rating")
-
-    def _get_rating_and_volume(self, system):
-        return utils.get_rating_and_volume_from_system(
-            system, lambda s: s.get("rating"), "systemName"
-        )
-
-    @cached_property
+    @property
     def security_findings(self):
-        result = []
-        for system_name in self.system_names:
-            try:
-                findings = sigrid_api.get_security_findings(system_name)
-            except Exception:
-                logging.warning(
-                    f"Could not retrieve security findings for system '{system_name}'"
-                )
-                findings = []
-            result.append({"systemName": system_name, "findings": findings})
-        return result
-
-    @cached_property
-    def findings_above_objective(self):
-        period = Period(*sigrid_api.get_period())
-        objectives_systems = sigrid_api.get_objectives_evaluation(period)["systems"]
-        objective_index = build_objective_index(objectives_systems, _OBJECTIVE_TYPE)
-        return [
-            {
-                "systemName": entry["systemName"],
-                "findings_above_objective": count_for_system(
-                    entry["findings"],
-                    objective_index.get(entry["systemName"]),
-                ),
-            }
-            for entry in self.security_findings
-        ]
+        return self._raw_findings
 
 
 security_ratings_portfolio_data = SecurityRatingsPortfolioData()

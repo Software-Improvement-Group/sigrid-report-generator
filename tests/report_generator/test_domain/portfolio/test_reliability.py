@@ -33,13 +33,13 @@ class TestReliabilityPortfolioData:
             "metadata",
             "period",
             "system_names",
-            "reliability_findings",
+            "_raw_findings",
         ]
         for attr in cache_attrs:
             reliability_ratings_portfolio_data.__dict__.pop(attr, None)
 
     @patch(
-        "report_generator.generator.domain.portfolio.reliability_portfolio.sigrid_api"
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
     )
     def test_get_system_returns_correct_system(self, mock_sigrid_api):
         """Test that get_system returns correct system data."""
@@ -58,7 +58,7 @@ class TestReliabilityPortfolioData:
         assert abs(system["rating"] - 4.5) < 0.01
 
     @patch(
-        "report_generator.generator.domain.portfolio.reliability_portfolio.sigrid_api"
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
     )
     def test_system_names_returns_all_systems(self, mock_sigrid_api):
         """Test that system_names property returns all system names."""
@@ -80,7 +80,7 @@ class TestReliabilityPortfolioData:
         assert "system3" in names
 
     @patch(
-        "report_generator.generator.domain.portfolio.reliability_portfolio.sigrid_api"
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
     )
     def test_reliability_findings_aggregates_per_system(self, mock_sigrid_api):
         """Test that reliability_findings returns findings per system."""
@@ -100,7 +100,7 @@ class TestReliabilityPortfolioData:
             findings_system2,
         ]
 
-        for attr in ["data", "system_names", "reliability_findings"]:
+        for attr in ["data", "system_names", "_raw_findings"]:
             reliability_ratings_portfolio_data.__dict__.pop(attr, None)
 
         result = reliability_ratings_portfolio_data.reliability_findings
@@ -110,7 +110,7 @@ class TestReliabilityPortfolioData:
         assert result[1] == {"systemName": "system2", "findings": findings_system2}
 
     @patch(
-        "report_generator.generator.domain.portfolio.reliability_portfolio.sigrid_api"
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
     )
     def test_reliability_findings_handles_api_error_gracefully(self, mock_sigrid_api):
         """Test that a failing API call for one system returns empty findings and logs a warning."""
@@ -126,7 +126,7 @@ class TestReliabilityPortfolioData:
             Exception("API error"),
         ]
 
-        for attr in ["data", "system_names", "reliability_findings"]:
+        for attr in ["data", "system_names", "_raw_findings"]:
             reliability_ratings_portfolio_data.__dict__.pop(attr, None)
 
         result = reliability_ratings_portfolio_data.reliability_findings
@@ -136,13 +136,13 @@ class TestReliabilityPortfolioData:
         assert result[1] == {"systemName": "system2", "findings": []}
 
     @patch(
-        "report_generator.generator.domain.portfolio.reliability_portfolio.sigrid_api"
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
     )
     def test_reliability_findings_empty_portfolio(self, mock_sigrid_api):
         """Test that reliability_findings returns an empty list when there are no systems."""
         mock_sigrid_api.get_portfolio_reliability_ratings.return_value = []
 
-        for attr in ["data", "system_names", "reliability_findings"]:
+        for attr in ["data", "system_names", "_raw_findings"]:
             reliability_ratings_portfolio_data.__dict__.pop(attr, None)
 
         result = reliability_ratings_portfolio_data.reliability_findings
@@ -150,7 +150,7 @@ class TestReliabilityPortfolioData:
         assert result == []
 
     @patch(
-        "report_generator.generator.domain.portfolio.reliability_portfolio.sigrid_api"
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
     )
     def test_reliability_findings_uses_fresh_instance(self, mock_sigrid_api):
         """Test that a fresh instance fetches its own findings independently."""
@@ -180,11 +180,11 @@ class TestFindingsAboveObjectiveReliability:
         return instance
 
     @patch(
-        "report_generator.generator.domain.portfolio.reliability_portfolio.sigrid_api"
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
     )
     def test_objective_met_returns_zero(self, mock_api):
         instance = self._make_instance([{"systemName": "sys1", "rating": 4.0}])
-        instance.__dict__["reliability_findings"] = [
+        instance.__dict__["_raw_findings"] = [
             {"systemName": "sys1", "findings": [{"severity": "CRITICAL"}]}
         ]
         mock_api.get_period.return_value = ("2024-01-01", "2024-12-31")
@@ -207,11 +207,11 @@ class TestFindingsAboveObjectiveReliability:
         assert result == [{"systemName": "sys1", "findings_above_objective": 0}]
 
     @patch(
-        "report_generator.generator.domain.portfolio.reliability_portfolio.sigrid_api"
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
     )
     def test_no_objective_uses_fallback(self, mock_api):
         instance = self._make_instance([{"systemName": "sys1", "rating": 3.0}])
-        instance.__dict__["reliability_findings"] = [
+        instance.__dict__["_raw_findings"] = [
             {
                 "systemName": "sys1",
                 "findings": [
@@ -228,11 +228,11 @@ class TestFindingsAboveObjectiveReliability:
         assert result == [{"systemName": "sys1", "findings_above_objective": 2}]
 
     @patch(
-        "report_generator.generator.domain.portfolio.reliability_portfolio.sigrid_api"
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
     )
     def test_objective_not_met_counts_above_target(self, mock_api):
         instance = self._make_instance([{"systemName": "sys1", "rating": 2.5}])
-        instance.__dict__["reliability_findings"] = [
+        instance.__dict__["_raw_findings"] = [
             {
                 "systemName": "sys1",
                 "findings": [
@@ -262,7 +262,7 @@ class TestFindingsAboveObjectiveReliability:
         assert result == [{"systemName": "sys1", "findings_above_objective": 1}]
 
     @patch(
-        "report_generator.generator.domain.portfolio.reliability_portfolio.sigrid_api"
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
     )
     def test_multiple_systems_mixed_objectives(self, mock_api):
         instance = self._make_instance(
@@ -272,7 +272,7 @@ class TestFindingsAboveObjectiveReliability:
                 {"systemName": "sys3", "rating": 2.0},
             ]
         )
-        instance.__dict__["reliability_findings"] = [
+        instance.__dict__["_raw_findings"] = [
             {"systemName": "sys1", "findings": [{"severity": "CRITICAL"}]},
             {
                 "systemName": "sys2",
@@ -327,7 +327,7 @@ class TestFunctionalSuitabilityFindings:
     def _make_instance(self, system_names, reliability_findings):
         instance = ReliabilityRatingsPortfolioData()
         instance.__dict__["system_names"] = system_names
-        instance.__dict__["reliability_findings"] = reliability_findings
+        instance.__dict__["_raw_findings"] = reliability_findings
         return instance
 
     def test_filters_to_npr5333_cwes_only(self):
