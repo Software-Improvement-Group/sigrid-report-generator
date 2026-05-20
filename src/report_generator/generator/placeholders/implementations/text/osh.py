@@ -12,9 +12,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import statistics
+
 from report_generator.generator.domain import osh_data
 from report_generator.generator.placeholders.formatting.formatters import (
     calculate_stars,
+    format_percentage_excluding_100_percent,
     star_rating_round,
 )
 from report_generator.generator.utils.constants import OSHMetric
@@ -145,3 +148,83 @@ def osh_rating_param(metric: OSHMetric):
 def osh_stars_param(metric: OSHMetric):
     """Stars corresponding to this OSH metric rating."""
     return calculate_stars(osh_data.get_rating_for_metric(metric))
+
+
+@text_placeholder()
+def osh_probability_of_exploit():
+    """Probability that at least one known vulnerability in this system can be exploited within 30 days."""
+    return format_percentage_excluding_100_percent(osh_data.exploit_probability)
+
+
+@text_placeholder()
+def osh_average_library_age():
+    """Average number of days since the next release of each dependency."""
+    distr = osh_data.age_distribution
+    if not distr:
+        return "N/A"
+    return f"{int(statistics.mean(distr))} days"
+
+
+@text_placeholder()
+def osh_known_vulnerabilities_total_minus_unknown():
+    """Total number of known vulnerabilities with a CVSS severity (critical + high + medium + low)."""
+    distr = osh_data.vulnerability_distribution
+    return f"{distr['critical'] + distr['high'] + distr['medium'] + distr['low']}"
+
+
+@text_placeholder()
+def osh_known_vulnerabilities_critical():
+    """Number of known vulnerabilities with CVSS critical severity."""
+    distr = osh_data.vulnerability_distribution
+    return f"{distr['critical']}"
+
+
+@text_placeholder()
+def osh_known_vulnerabilities_high():
+    """Number of known vulnerabilities with CVSS high severity."""
+    distr = osh_data.vulnerability_distribution
+    return f"{distr['high']}"
+
+
+@text_placeholder()
+def osh_known_vulnerabilities_medium():
+    """Number of known vulnerabilities with CVSS medium severity."""
+    distr = osh_data.vulnerability_distribution
+    return f"{distr['medium']}"
+
+
+@text_placeholder()
+def osh_known_vulnerabilities_low():
+    """Number of known vulnerabilities with CVSS low severity."""
+    distr = osh_data.vulnerability_distribution
+    return f"{distr['low']}"
+
+
+@text_placeholder()
+def osh_critical_risk():
+    """Number of dependency occurrences with critical-level risk across all OSH categories."""
+    return osh_data.library_risk_levels["critical"]
+
+
+@text_placeholder()
+def osh_high_risk():
+    """Number of dependency occurrences with high-level risk across all OSH categories."""
+    return osh_data.library_risk_levels["high"]
+
+
+@text_placeholder()
+def osh_medium_risk():
+    """Number of dependency occurrences with medium-level risk across all OSH categories."""
+    return osh_data.library_risk_levels["medium"]
+
+
+@text_placeholder()
+def osh_low_risk():
+    """Number of dependency occurrences with low-level risk across all OSH categories."""
+    return osh_data.library_risk_levels["low"]
+
+
+@text_placeholder()
+def osh_no_risk():
+    """Number of dependency occurrences with no OSH risk."""
+    return osh_data.library_risk_levels["no_risk"]

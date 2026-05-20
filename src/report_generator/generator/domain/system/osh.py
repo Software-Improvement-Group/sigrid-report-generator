@@ -18,7 +18,13 @@ from functools import cached_property, lru_cache
 from typing import Union
 
 from report_generator.generator.context import sigrid_api
-from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
+from report_generator.generator.domain.shared.osh_base import (
+    OSHMetricsBase,
+    _find_cyclonedx_property_value,
+    component_version_staleness_days,
+    map_cves_to_affected_libraries,
+    vulnerability_severity_counts,
+)
 from report_generator.generator.utils.constants import MetricEnum, OSHMetric
 
 
@@ -27,13 +33,6 @@ class _SystemMetric(MetricEnum):
 
 
 OSHMetricOrSystem = Union[OSHMetric, _SystemMetric]
-
-
-def _find_cyclonedx_property_value(properties, key):
-    for prop in properties:
-        if prop["name"] == key:
-            return prop["value"]
-    return None
 
 
 class OSHData(OSHMetricsBase):
@@ -46,6 +45,14 @@ class OSHData(OSHMetricsBase):
         return datetime.strptime(
             self.raw_data["metadata"]["timestamp"], "%Y-%m-%dT%H:%M:%SZ"
         )
+
+    @cached_property
+    def components(self):
+        return self.raw_data.get("components", [])
+
+    @cached_property
+    def vulnerabilities(self):
+        return self.raw_data.get("vulnerabilities", [])
 
     @cached_property
     def system_rating(self) -> float:
@@ -112,6 +119,29 @@ class OSHData(OSHMetricsBase):
     @cached_property
     def dependencies_count(self) -> int:
         return len(self.raw_data["components"])
+
+    @cached_property
+    def vulnerability_distribution(self) -> dict[str, int]:
+        return vulnerability_severity_counts(self.vulnerabilities)
+
+    @cached_property
+    def cves_mapped_to_libraries(self) -> dict[str, dict]:
+        return map_cves_to_affected_libraries(self.components, self.vulnerabilities)
+
+    @cached_property
+    def age_distribution(self) -> list[int]:
+        return component_version_staleness_days(self.components)
+
+    @cached_property
+    def library_risk_levels(self) -> dict[str, int]:
+        """Count each dependency occurrence by its highest risk level across all OSH categories."""
+        risk_counts = {"critical": 0, "high": 0, "medium": 0, "low": 0, "no_risk": 0}
+
+        for component in self.raw_data.get("components", []):
+            highest_risk = self._highest_risk_for_component(component)
+            self._categorize_risk_level(highest_risk, risk_counts)
+
+        return risk_counts
 
 
 osh_data = OSHData()

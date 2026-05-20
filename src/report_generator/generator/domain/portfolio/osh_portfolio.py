@@ -22,7 +22,24 @@ from report_generator.generator.domain.portfolio.shared import utils
 from report_generator.generator.domain.portfolio.shared.rated_mixin import (
     RatedPortfolioMixin,
 )
-from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
+from report_generator.generator.domain.shared.osh_base import (
+    OSHMetricsBase,
+    component_version_staleness_days,
+    map_cves_to_affected_libraries,
+    vulnerability_severity_counts,
+)
+
+
+def count_cves_for_portfolio(cves_per_system: dict) -> dict:
+    result: dict = {}
+    for system_cves in cves_per_system.values():
+        if not system_cves:
+            continue
+        for cve, data in system_cves.items():
+            if cve not in result:
+                result[cve] = {"count": 0}
+            result[cve]["count"] += data["count"]
+    return result
 
 
 class OSHRatingsPortfolioData(RatedPortfolioMixin, OSHMetricsBase):
@@ -133,12 +150,6 @@ class OSHRatingsPortfolioData(RatedPortfolioMixin, OSHMetricsBase):
 
         return highest_risk
 
-    def _categorize_risk_level(self, risk_level, risk_counts):
-        """Increment the appropriate risk count based on the risk level."""
-        risk_mapping = {0: "critical", 1: "high", 2: "medium", 3: "low", 4: "no_risk"}
-        category = risk_mapping.get(risk_level, "no_risk")
-        risk_counts[category] += 1
-
     @cached_property
     def system_risk_levels(self):
         """Calculate the highest risk level for each system and count systems by risk level."""
@@ -154,67 +165,17 @@ class OSHRatingsPortfolioData(RatedPortfolioMixin, OSHMetricsBase):
 
         return risk_counts
 
-    def _get_library_identifier(self, component):
-        """Create unique identifier for a library."""
-        return f"{component.get('name', '')}:{component.get('version', '')}"
-
-    def _get_library_risk_levels(self, component):
-        """Get risk levels across all categories for a library component."""
-        props = component.get("properties", [])
-        return [
-            self._get_risk_value(props, "sigrid:risk:vulnerability"),
-            self._get_risk_value(props, "sigrid:risk:legal"),
-            self._get_risk_value(props, "sigrid:risk:freshness"),
-            self._get_risk_value(props, "sigrid:risk:stability"),
-            self._get_risk_value(props, "sigrid:risk:management"),
-            self._get_risk_value(props, "sigrid:risk:activity"),
-        ]
-
-    def _process_component(self, component, processed_libraries, risk_counts):
-        """Process a single component and update risk tracking."""
-        lib_id = self._get_library_identifier(component)
-        lib_risks = self._get_library_risk_levels(component)
-        highest_risk = min(lib_risks)
-
-        if (
-            lib_id not in processed_libraries
-            or highest_risk < processed_libraries[lib_id]
-        ):
-            if lib_id in processed_libraries:
-                self._decrement_risk_count(risk_counts, processed_libraries[lib_id])
-            processed_libraries[lib_id] = highest_risk
-            self._categorize_risk_level(highest_risk, risk_counts)
-
     @cached_property
     def library_risk_levels(self):
-        """Calculate risk level counts for libraries, counting each library once by its highest risk."""
+        """Count each library by its highest risk level across all OSH categories."""
         risk_counts = {"critical": 0, "high": 0, "medium": 0, "low": 0, "no_risk": 0}
-        processed_libraries = {}
 
         for system in self.raw_data.get("systems", []):
-            sbom = system.get("sbom", {})
-            components = sbom.get("components", [])
-
-            for component in components:
-                self._process_component(component, processed_libraries, risk_counts)
+            for component in system.get("sbom", {}).get("components", []):
+                highest_risk = self._highest_risk_for_component(component)
+                self._categorize_risk_level(highest_risk, risk_counts)
 
         return risk_counts
-
-    def _get_risk_value(self, properties, risk_name):
-        """Extract risk value from component properties."""
-        risk_mapping = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
-
-        for prop in properties:
-            if prop.get("name") == risk_name:
-                risk = prop.get("value", "UNKNOWN")
-                return risk_mapping.get(risk, 4)
-        return 4  # no_risk
-
-    def _decrement_risk_count(self, risk_counts, risk_level):
-        """Decrement the count for a risk level."""
-        risk_mapping = {0: "critical", 1: "high", 2: "medium", 3: "low", 4: "no_risk"}
-        category = risk_mapping.get(risk_level, "no_risk")
-        risk_counts[category] -= 1
 
     @property
     def vulnerability_summary(self):
@@ -273,6 +234,35 @@ class OSHRatingsPortfolioData(RatedPortfolioMixin, OSHMetricsBase):
     @cached_property
     def system_names(self):
         return utils.system_names_helper(self.raw_data["systems"], "systemName")
+
+    @cached_property
+    def vulnerability_distribution(self) -> dict[str, int]:
+        res = []
+        for system_name in self.system_names:
+            system = self.find_system(system_name)["sbom"]
+            if system is not None:
+                res += system.get("vulnerabilities", [])
+        return vulnerability_severity_counts(res)
+
+    @cached_property
+    def cves_mapped_to_libraries(self) -> dict[str, dict]:
+        res = {}
+        for system_name in self.system_names:
+            system = self.find_system(system_name)["sbom"]
+            if system is not None:
+                res[system_name] = map_cves_to_affected_libraries(
+                    system.get("components", []), system.get("vulnerabilities", [])
+                )
+        return count_cves_for_portfolio(res)
+
+    @cached_property
+    def age_distribution(self) -> list[int]:
+        res = []
+        for system_name in self.system_names:
+            system = self.find_system(system_name)["sbom"]
+            if system is not None:
+                res += component_version_staleness_days(system.get("components", []))
+        return res
 
     def get_score_for_prop(self, prop):
         """Calculate aggregated rating for a specific OSH metric across all systems."""

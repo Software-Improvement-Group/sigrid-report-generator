@@ -110,3 +110,11 @@ def split_days_into_buckets(days: list[int], buckets: list[int]) -> list[int]:
 
     # Prepend total number of values
     return [len(days), *counts]
+
+
+def format_percentage_excluding_100_percent(percentage: float) -> str:
+    if percentage < 0.01:
+        return "< 1%"
+    if percentage > 0.99:
+        return ">99%"
+    return f"{percentage:.0%}"
