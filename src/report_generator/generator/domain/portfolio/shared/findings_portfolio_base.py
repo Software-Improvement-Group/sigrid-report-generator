@@ -109,7 +109,9 @@ class FindingsRatingsPortfolioBase(RatedPortfolioMixin):
     def findings_above_objective(self):
         period = Period(*sigrid_api.get_period())
         objectives_systems = sigrid_api.get_objectives_evaluation(period)["systems"]
-        objective_index = build_objective_index(objectives_systems, self._objective_type)
+        objective_index = build_objective_index(
+            objectives_systems, self._objective_type
+        )
         return [
             {
                 "systemName": entry["systemName"],

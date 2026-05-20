@@ -16,11 +16,9 @@ from report_generator.generator.domain.portfolio.shared.findings_portfolio_base 
     FindingsRatingsPortfolioBase,
 )
 
-_OBJECTIVE_TYPE = "SECURITY_MAX_SEVERITY"
-
 
 class SecurityRatingsPortfolioData(FindingsRatingsPortfolioBase):
-    _objective_type = _OBJECTIVE_TYPE
+    _objective_type = "SECURITY_MAX_SEVERITY"
     _portfolio_ratings_api_method = "get_portfolio_security_ratings"
     _findings_api_method = "get_security_findings"
 

@@ -1125,7 +1125,9 @@ class TestSecurityPortfolioData:
         for attr in cache_attrs:
             security_ratings_portfolio_data.__dict__.pop(attr, None)
 
-    @patch("report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
+    )
     def test_get_system_returns_correct_system(self, mock_sigrid_api):
         """Test that get_system returns correct system data."""
         mock_data = [
@@ -1142,7 +1144,9 @@ class TestSecurityPortfolioData:
         assert system["systemName"] == "system1"
         assert abs(system["securityRating"] - 4.5) < 0.01
 
-    @patch("report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
+    )
     def test_system_names_returns_all_systems(self, mock_sigrid_api):
         """Test that system_names property returns all system names."""
         mock_data = [
@@ -1425,7 +1429,9 @@ class TestFindingsAboveObjective:
         instance.__dict__["system_names"] = [s["systemName"] for s in ratings_data]
         return instance
 
-    @patch("report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
+    )
     def test_objective_met_returns_zero(self, mock_api):
         instance = self._make_instance([{"systemName": "sys1", "rating": 4.0}])
         instance.__dict__["_raw_findings"] = [
@@ -1450,7 +1456,9 @@ class TestFindingsAboveObjective:
         result = instance.findings_above_objective
         assert result == [{"systemName": "sys1", "findings_above_objective": 0}]
 
-    @patch("report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
+    )
     def test_no_objective_uses_fallback(self, mock_api):
         instance = self._make_instance([{"systemName": "sys1", "rating": 3.0}])
         instance.__dict__["_raw_findings"] = [
@@ -1469,7 +1477,9 @@ class TestFindingsAboveObjective:
         result = instance.findings_above_objective
         assert result == [{"systemName": "sys1", "findings_above_objective": 2}]
 
-    @patch("report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
+    )
     def test_objective_not_met_counts_above_target(self, mock_api):
         instance = self._make_instance([{"systemName": "sys1", "rating": 2.5}])
         instance.__dict__["_raw_findings"] = [
@@ -1501,7 +1511,9 @@ class TestFindingsAboveObjective:
         result = instance.findings_above_objective
         assert result == [{"systemName": "sys1", "findings_above_objective": 1}]
 
-    @patch("report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
+    )
     def test_multiple_systems_mixed_objectives(self, mock_api):
         instance = self._make_instance(
             [

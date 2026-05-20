@@ -15,15 +15,13 @@
 from functools import cached_property
 
 from report_generator.generator.domain.portfolio.shared.findings_portfolio_base import (
-    FindingsRatingsPortfolioBase,
     NPR5333_FUNCTIONAL_SUITABILITY_CWES,
+    FindingsRatingsPortfolioBase,
 )
-
-_OBJECTIVE_TYPE = "RELIABILITY_MAX_SEVERITY"
 
 
 class ReliabilityRatingsPortfolioData(FindingsRatingsPortfolioBase):
-    _objective_type = _OBJECTIVE_TYPE
+    _objective_type = "RELIABILITY_MAX_SEVERITY"
     _portfolio_ratings_api_method = "get_portfolio_reliability_ratings"
     _findings_api_method = "get_reliability_findings"
 
