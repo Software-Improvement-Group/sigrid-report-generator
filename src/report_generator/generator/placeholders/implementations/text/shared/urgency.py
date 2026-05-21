@@ -18,6 +18,13 @@ from pptx.dml.color import RGBColor
 
 MEDIUM_RISK_THRESHOLD = 30
 
+EXPLOIT_PROBABILITY_HIGH_THRESHOLD = 0.50
+EXPLOIT_PROBABILITY_LOW_THRESHOLD = 0.15
+
+LIBRARY_AGE_GREEN_THRESHOLD = 365
+LIBRARY_AGE_YELLOW_THRESHOLD = 730
+LIBRARY_AGE_ORANGE_THRESHOLD = 1278
+
 _WHITE = RGBColor(0xFF, 0xFF, 0xFF)
 _BLACK = RGBColor(0x00, 0x00, 0x00)
 
@@ -31,7 +38,7 @@ class UrgencyColors:
 _URGENCY_COLORS: list[UrgencyColors] = [
     UrgencyColors(shape=RGBColor(0xDC, 0x49, 0x3C), text=_WHITE),  # critical
     UrgencyColors(
-        shape=RGBColor(0xF0, 0x97, 0x1A), text=_BLACK
+        shape=RGBColor(0xF0, 0x97, 0x1A), text=_WHITE
     ),  # high / medium > threshold
     UrgencyColors(shape=RGBColor(0xF1, 0xCF, 0x63), text=_BLACK),  # medium
     UrgencyColors(shape=RGBColor(0x7A, 0xCD, 0x75), text=_WHITE),  # low / none
@@ -62,35 +69,35 @@ def urgency_colors(distr: dict) -> UrgencyColors:
 def exploit_probability_colors(probability: float) -> UrgencyColors:
     if probability == 0.0:
         return _URGENCY_COLORS[3]  # green: no exploitable vulnerabilities
-    if probability > 0.50:
+    if probability > EXPLOIT_PROBABILITY_HIGH_THRESHOLD:
         return _URGENCY_COLORS[0]  # red
-    if probability > 0.15:
+    if probability > EXPLOIT_PROBABILITY_LOW_THRESHOLD:
         return _URGENCY_COLORS[1]  # orange
     return _URGENCY_COLORS[2]  # yellow
 
 
 def exploit_probability_label(probability: float) -> str:
-    if probability > 0.50:
+    if probability > EXPLOIT_PROBABILITY_HIGH_THRESHOLD:
         return "weak"
-    if probability > 0.15:
+    if probability > EXPLOIT_PROBABILITY_LOW_THRESHOLD:
         return "moderate"
     return "strong"
 
 
 def library_age_colors(average_age_days: float) -> UrgencyColors:
-    if average_age_days <= 365:
+    if average_age_days <= LIBRARY_AGE_GREEN_THRESHOLD:
         return _URGENCY_COLORS[3]  # green
-    if average_age_days <= 730:
+    if average_age_days <= LIBRARY_AGE_YELLOW_THRESHOLD:
         return _URGENCY_COLORS[2]  # yellow
-    if average_age_days <= 1278:
+    if average_age_days <= LIBRARY_AGE_ORANGE_THRESHOLD:
         return _URGENCY_COLORS[1]  # orange
     return _URGENCY_COLORS[0]  # red
 
 
 def library_age_label(average_age_days: float) -> str:
-    if average_age_days <= 730:
+    if average_age_days <= LIBRARY_AGE_YELLOW_THRESHOLD:
         return "strong"
-    if average_age_days <= 1278:
+    if average_age_days <= LIBRARY_AGE_ORANGE_THRESHOLD:
         return "moderate"
     return "weak"
 
