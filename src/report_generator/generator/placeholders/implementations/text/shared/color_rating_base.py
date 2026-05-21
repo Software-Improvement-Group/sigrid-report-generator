@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from abc import ABC
+from abc import ABC, abstractmethod
 from enum import Enum, auto
 from typing import Callable
 
@@ -25,6 +25,10 @@ from report_generator.generator.placeholders.formatting import formatters
 from report_generator.generator.placeholders.implementations.base import (
     ParameterizedPlaceholder,
     Placeholder,
+)
+from report_generator.generator.placeholders.implementations.text.shared.urgency import (
+    UrgencyColors,
+    urgency_width,
 )
 from report_generator.generator.placeholders.rendering.common import (
     FontColor,
@@ -84,6 +88,32 @@ class AbstractColoredShapePlaceholder(Placeholder, ABC):
         if not shapes and not paragraphs:
             return
         cls._apply(shapes, paragraphs, key, shape_color, display_value)
+
+
+class AbstractUrgencyShapePlaceholder(AbstractColoredShapePlaceholder, ABC):
+    """Colors a shape and sets text color based on urgency, with a right-anchored width."""
+
+    @classmethod
+    @abstractmethod
+    def _get_colors(cls) -> UrgencyColors: ...
+
+    @classmethod
+    def resolve_pptx(cls, presentation: Presentation, key: str, value_cb: Callable):
+        shapes, paragraphs = cls._find(presentation, key)
+        if not shapes and not paragraphs:
+            return
+        colors = cls._get_colors()
+        display_value = value_cb()
+        cls._apply(
+            shapes,
+            paragraphs,
+            key,
+            shape_color=colors.shape,
+            display_value=display_value,
+            width_inches=urgency_width(display_value),
+            width_anchor=WidthAnchor.RIGHT,
+            text_color=colors.text,
+        )
 
 
 class AbstractColorRatingPlaceholder(

@@ -24,15 +24,15 @@ from report_generator.generator.utils.constants import OSHMetric
 
 from ...formatting import smart_remarks
 from .base import parameterized_text_placeholder, text_placeholder
-from .shared.color_rating_base import AbstractColoredShapePlaceholder, WidthAnchor
+from .shared.color_rating_base import AbstractUrgencyShapePlaceholder
 from .shared.urgency import (
+    UrgencyColors,
     exploit_probability_colors,
     exploit_probability_label,
     library_age_colors,
     library_age_label,
     urgency_colors,
     urgency_explanation,
-    urgency_width,
 )
 
 
@@ -231,7 +231,7 @@ def osh_portfolio_known_vulnerabilities_urgency_explanation():
     return urgency_explanation(distr=distr)
 
 
-class OSHPortfolioKnownVulnerabilitiesUrgency(AbstractColoredShapePlaceholder):
+class OSHPortfolioKnownVulnerabilitiesUrgency(AbstractUrgencyShapePlaceholder):
     """Colors a shape red, yellow, or green based on the urgency of known vulnerabilities across the portfolio."""
 
     key = "OSH_PORTFOLIO_KNOWN_VULNERABILITIES_URGENCY"
@@ -241,26 +241,11 @@ class OSHPortfolioKnownVulnerabilitiesUrgency(AbstractColoredShapePlaceholder):
         return "review"
 
     @classmethod
-    def resolve_pptx(cls, presentation, key, value_cb):
-        shapes, paragraphs = cls._find(presentation, key)
-        if not shapes and not paragraphs:
-            return
-        distr = osh_portfolio_data.vulnerability_distribution
-        display_value = value_cb()
-        colors = urgency_colors(distr)
-        cls._apply(
-            shapes,
-            paragraphs,
-            key,
-            shape_color=colors.shape,
-            display_value=display_value,
-            width_inches=urgency_width(display_value),
-            width_anchor=WidthAnchor.RIGHT,
-            text_color=colors.text,
-        )
+    def _get_colors(cls) -> UrgencyColors:
+        return urgency_colors(osh_portfolio_data.vulnerability_distribution)
 
 
-class OSHPortfolioAverageLibraryAgeUrgency(AbstractColoredShapePlaceholder):
+class OSHPortfolioAverageLibraryAgeUrgency(AbstractUrgencyShapePlaceholder):
     """Colors a shape red, orange, yellow, or green based on the average library age across the portfolio."""
 
     key = "OSH_PORTFOLIO_AVERAGE_LIBRARY_AGE_URGENCY"
@@ -270,26 +255,11 @@ class OSHPortfolioAverageLibraryAgeUrgency(AbstractColoredShapePlaceholder):
         return library_age_label(statistics.mean(osh_portfolio_data.age_distribution))
 
     @classmethod
-    def resolve_pptx(cls, presentation, key, value_cb):
-        shapes, paragraphs = cls._find(presentation, key)
-        if not shapes and not paragraphs:
-            return
-        average_age = statistics.mean(osh_portfolio_data.age_distribution)
-        display_value = value_cb()
-        colors = library_age_colors(average_age)
-        cls._apply(
-            shapes,
-            paragraphs,
-            key,
-            shape_color=colors.shape,
-            display_value=display_value,
-            width_inches=urgency_width(display_value),
-            width_anchor=WidthAnchor.RIGHT,
-            text_color=colors.text,
-        )
+    def _get_colors(cls) -> UrgencyColors:
+        return library_age_colors(statistics.mean(osh_portfolio_data.age_distribution))
 
 
-class OSHPortfolioExploitProbabilityUrgency(AbstractColoredShapePlaceholder):
+class OSHPortfolioExploitProbabilityUrgency(AbstractUrgencyShapePlaceholder):
     """Colors a shape red, orange, yellow, or green based on the probability of exploit across the portfolio."""
 
     key = "OSH_PORTFOLIO_PROBABILITY_OF_EXPLOIT_URGENCY"
@@ -299,20 +269,5 @@ class OSHPortfolioExploitProbabilityUrgency(AbstractColoredShapePlaceholder):
         return exploit_probability_label(osh_portfolio_data.exploit_probability)
 
     @classmethod
-    def resolve_pptx(cls, presentation, key, value_cb):
-        shapes, paragraphs = cls._find(presentation, key)
-        if not shapes and not paragraphs:
-            return
-        probability = osh_portfolio_data.exploit_probability
-        display_value = value_cb()
-        colors = exploit_probability_colors(probability)
-        cls._apply(
-            shapes,
-            paragraphs,
-            key,
-            shape_color=colors.shape,
-            display_value=display_value,
-            width_inches=urgency_width(display_value),
-            width_anchor=WidthAnchor.RIGHT,
-            text_color=colors.text,
-        )
+    def _get_colors(cls) -> UrgencyColors:
+        return exploit_probability_colors(osh_portfolio_data.exploit_probability)

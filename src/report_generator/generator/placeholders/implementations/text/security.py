@@ -18,8 +18,8 @@ from report_generator.generator.placeholders.formatting.smart_remarks import (
 )
 
 from .base import text_placeholder
-from .shared.color_rating_base import AbstractColoredShapePlaceholder, WidthAnchor
-from .shared.urgency import urgency_colors, urgency_width
+from .shared.color_rating_base import AbstractUrgencyShapePlaceholder
+from .shared.urgency import UrgencyColors, urgency_colors
 
 
 @text_placeholder()
@@ -91,7 +91,7 @@ def security_cvss_low_raw():
     return f"{security_data.count_findings('LOW')}"
 
 
-class SecurityCVSSUrgency(AbstractColoredShapePlaceholder):
+class SecurityCVSSUrgency(AbstractUrgencyShapePlaceholder):
     """Colors a shape and sets text based on the urgency of security findings."""
 
     key = "SECURITY_CVSS_URGENCY"
@@ -101,25 +101,12 @@ class SecurityCVSSUrgency(AbstractColoredShapePlaceholder):
         return "review"
 
     @classmethod
-    def resolve_pptx(cls, presentation, key, value_cb):
-        shapes, paragraphs = cls._find(presentation, key)
-        if not shapes and not paragraphs:
-            return
-        distr = {
-            "critical": security_data.count_findings("CRITICAL"),
-            "high": security_data.count_findings("HIGH"),
-            "medium": security_data.count_findings("MEDIUM"),
-            "low": security_data.count_findings("LOW"),
-        }
-        display_value = value_cb()
-        colors = urgency_colors(distr)
-        cls._apply(
-            shapes,
-            paragraphs,
-            key,
-            shape_color=colors.shape,
-            display_value=display_value,
-            width_inches=urgency_width(display_value),
-            width_anchor=WidthAnchor.RIGHT,
-            text_color=colors.text,
+    def _get_colors(cls) -> UrgencyColors:
+        return urgency_colors(
+            {
+                "critical": security_data.count_findings("CRITICAL"),
+                "high": security_data.count_findings("HIGH"),
+                "medium": security_data.count_findings("MEDIUM"),
+                "low": security_data.count_findings("LOW"),
+            }
         )
