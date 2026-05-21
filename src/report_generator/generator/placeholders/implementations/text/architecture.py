@@ -12,6 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from typing import ClassVar
+
 from report_generator.generator.domain import architecture_data
 from report_generator.generator.placeholders.formatting.formatters import (
     calculate_stars,
@@ -25,6 +27,7 @@ from report_generator.generator.utils.constants import (
 
 from ...formatting import smart_remarks
 from .base import parameterized_text_placeholder, text_placeholder
+from .shared.color_rating_base import _AbstractColorRatingPlaceholder
 
 
 @text_placeholder()
@@ -125,3 +128,15 @@ def arch_stars_param(metric: MetricEnum):
     """Stars corresponding to this metric or subcharacteristic rating."""
     metric_key = metric.to_json_name()
     return calculate_stars(architecture_data.get_score_for_prop_or_subchar(metric_key))
+
+
+class ArchColorRatingPlaceholder(_AbstractColorRatingPlaceholder):
+    """Fills the rating value and colors the shape to the corresponding rating color for an architecture metric."""
+
+    key = "COLOR_ARCH_RATING_{parameter}"
+    allowed_parameters: ClassVar[list] = list(ArchMetric) + list(ArchSubcharacteristic)
+
+    @classmethod
+    def value(cls, metric: MetricEnum):
+        metric_key = metric.to_json_name()
+        return architecture_data.get_score_for_prop_or_subchar(metric_key)

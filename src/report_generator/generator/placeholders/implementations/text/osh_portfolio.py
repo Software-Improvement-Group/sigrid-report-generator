@@ -24,6 +24,8 @@ from report_generator.generator.utils.constants import OSHMetric
 
 from ...formatting import smart_remarks
 from .base import parameterized_text_placeholder, text_placeholder
+from .shared.color_rating_base import WidthAnchor, _AbstractColoredShapePlaceholder
+from .shared.urgency import urgency_color, urgency_width
 
 
 @text_placeholder()
@@ -212,3 +214,30 @@ def osh_portfolio_known_vulnerabilities_low():
     """Number of known vulnerabilities with CVSS low severity across the portfolio."""
     distr = osh_portfolio_data.vulnerability_distribution
     return f"{distr['low']}"
+
+
+class OshPortfolioKnownVulnerabilitiesUrgency(_AbstractColoredShapePlaceholder):
+    """Colors a shape red, yellow, or green based on the urgency of known vulnerabilities across the portfolio."""
+
+    key = "OSH_PORTFOLIO_KNOWN_VULNERABILITIES_URGENCY"
+
+    @classmethod
+    def value(cls):
+        return "review"
+
+    @classmethod
+    def resolve_pptx(cls, presentation, key, value_cb):
+        shapes, paragraphs = cls._find(presentation, key)
+        if not shapes and not paragraphs:
+            return
+        distr = osh_portfolio_data.vulnerability_distribution
+        display_value = value_cb()
+        cls._apply(
+            shapes,
+            paragraphs,
+            key,
+            shape_color=urgency_color(distr),
+            display_value=display_value,
+            width_inches=urgency_width(display_value),
+            width_anchor=WidthAnchor.RIGHT,
+        )

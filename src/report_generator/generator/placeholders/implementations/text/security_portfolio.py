@@ -23,6 +23,8 @@ from report_generator.generator.placeholders.formatting.formatters import (
 )
 
 from .base import text_placeholder
+from .shared.color_rating_base import WidthAnchor, _AbstractColoredShapePlaceholder
+from .shared.urgency import urgency_color, urgency_width
 
 
 @text_placeholder()
@@ -394,3 +396,35 @@ def security_portfolio_cvss_medium_raw():
 def security_portfolio_cvss_low_raw():
     """Number of security findings with CVSS low severity across the portfolio."""
     return f"{security_findings_portfolio_data.count_findings('LOW')}"
+
+
+class SecurityPortfolioCVSSUrgency(_AbstractColoredShapePlaceholder):
+    """Colors a shape and sets text based on the urgency of security findings across the portfolio."""
+
+    key = "SECURITY_PORTFOLIO_CVSS_URGENCY"
+
+    @classmethod
+    def value(cls):
+        return "review"
+
+    @classmethod
+    def resolve_pptx(cls, presentation, key, value_cb):
+        shapes, paragraphs = cls._find(presentation, key)
+        if not shapes and not paragraphs:
+            return
+        distr = {
+            "critical": security_findings_portfolio_data.count_findings("CRITICAL"),
+            "high": security_findings_portfolio_data.count_findings("HIGH"),
+            "medium": security_findings_portfolio_data.count_findings("MEDIUM"),
+            "low": security_findings_portfolio_data.count_findings("LOW"),
+        }
+        display_value = value_cb()
+        cls._apply(
+            shapes,
+            paragraphs,
+            key,
+            shape_color=urgency_color(distr),
+            display_value=display_value,
+            width_inches=urgency_width(display_value),
+            width_anchor=WidthAnchor.RIGHT,
+        )

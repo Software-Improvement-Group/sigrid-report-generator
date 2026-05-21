@@ -14,6 +14,7 @@
 
 import logging
 from datetime import datetime
+from typing import ClassVar
 
 from report_generator.generator.domain import maintainability_data, modernization_data
 from report_generator.generator.placeholders.formatting import smart_remarks
@@ -27,6 +28,8 @@ from report_generator.generator.placeholders.implementations.text.base import (
     text_placeholder,
 )
 from report_generator.generator.utils.constants import MaintMetric
+
+from .shared.color_rating_base import _AbstractColorRatingPlaceholder
 
 
 @text_placeholder()
@@ -397,3 +400,15 @@ def renovation_effort_percentage():
     if volume_in_py:
         return f"{(renovation_effort_in_py * 100.0 / volume_in_py):.0f}"
     return "0"
+
+
+class MaintColorRatingPlaceholder(_AbstractColorRatingPlaceholder):
+    """Fills the rating value and colors the shape to the corresponding rating color for a maintainability metric."""
+
+    key = "COLOR_MAINT_RATING_{parameter}"
+    allowed_parameters: ClassVar[list] = list(MaintMetric)
+
+    @classmethod
+    def value(cls, metric: MaintMetric):
+        metric_key = metric.to_json_name()
+        return maintainability_data.data[metric_key]
