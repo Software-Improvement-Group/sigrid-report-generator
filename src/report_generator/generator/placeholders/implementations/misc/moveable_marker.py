@@ -30,7 +30,7 @@ from report_generator.generator.placeholders.formatting.formatters import (
     star_rating_round,
 )
 from report_generator.generator.placeholders.implementations.base import Placeholder
-from report_generator.generator.placeholders.implementations.text.shared.urgency import (
+from report_generator.generator.utils.constants.urgency_thresholds import (
     EXPLOIT_PROBABILITY_HIGH_THRESHOLD,
     EXPLOIT_PROBABILITY_LOW_THRESHOLD,
     LIBRARY_AGE_GREEN_THRESHOLD,
