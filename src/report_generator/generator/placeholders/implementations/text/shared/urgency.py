@@ -19,7 +19,7 @@ _URGENCY_ORANGE = RGBColor(0xF0, 0x97, 0x1A)
 _URGENCY_YELLOW = RGBColor(0xF1, 0xCF, 0x63)
 _URGENCY_GREEN = RGBColor(0x7A, 0xCD, 0x75)
 
-_MEDIUM_RISK_THRESHOLD = 30
+MEDIUM_RISK_THRESHOLD = 30
 
 _URGENCY_WIDTHS: dict[str, float | None] = {
     "strong": 0.62,
@@ -36,7 +36,7 @@ def urgency_width(value: str) -> float | None:
 def urgency_color(distr: dict) -> RGBColor:
     if distr["critical"] > 0:
         return _URGENCY_RED
-    if distr["high"] > 0 or distr["medium"] > _MEDIUM_RISK_THRESHOLD:
+    if distr["high"] > 0 or distr["medium"] > MEDIUM_RISK_THRESHOLD:
         return _URGENCY_ORANGE
     if distr["medium"] > 0:
         return _URGENCY_YELLOW
