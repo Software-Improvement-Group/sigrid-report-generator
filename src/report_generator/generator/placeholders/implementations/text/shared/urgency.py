@@ -34,7 +34,7 @@ _URGENCY_COLORS: list[UrgencyColors] = [
         shape=RGBColor(0xF0, 0x97, 0x1A), text=_BLACK
     ),  # high / medium > threshold
     UrgencyColors(shape=RGBColor(0xF1, 0xCF, 0x63), text=_BLACK),  # medium
-    UrgencyColors(shape=RGBColor(0x7A, 0xCD, 0x75), text=_BLACK),  # low / none
+    UrgencyColors(shape=RGBColor(0x7A, 0xCD, 0x75), text=_WHITE),  # low / none
 ]
 
 _URGENCY_WIDTHS: dict[str, float | None] = {
