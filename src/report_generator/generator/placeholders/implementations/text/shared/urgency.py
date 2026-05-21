@@ -113,3 +113,13 @@ def library_age_label(average_age_days: float) -> str:
 
 def urgency_width(value: str) -> float | None:
     return _URGENCY_WIDTHS.get(value)
+
+
+def urgency_explanation(distr: dict) -> str:
+    if distr["critical"] > 0:
+        return "The presence of critical risks can pose severe exploitation risk, and should be reviewed."
+    if distr["high"] > 0 or distr["medium"] > MEDIUM_RISK_THRESHOLD:
+        return "The codebase contains potentially urgent risks that should be reviewed."
+    if distr["medium"] > 0:
+        return "Medium-risk vulnerabilities were detected. An in-depth review is recommended."
+    return "Only low-risk findings were detected. An in-depth review is still recommended to ensure control."

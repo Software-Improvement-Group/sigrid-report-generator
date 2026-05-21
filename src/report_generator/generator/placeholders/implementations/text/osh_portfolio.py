@@ -26,24 +26,14 @@ from ...formatting import smart_remarks
 from .base import parameterized_text_placeholder, text_placeholder
 from .shared.color_rating_base import AbstractColoredShapePlaceholder, WidthAnchor
 from .shared.urgency import (
-    MEDIUM_RISK_THRESHOLD,
     exploit_probability_colors,
     exploit_probability_label,
     library_age_colors,
     library_age_label,
     urgency_colors,
+    urgency_explanation,
     urgency_width,
 )
-
-
-def _urgency_explanation(distr: dict) -> str:
-    if distr["critical"] > 0:
-        return "The presence of critical risks can pose severe exploitation risk, and should be reviewed."
-    if distr["high"] > 0 or distr["medium"] > MEDIUM_RISK_THRESHOLD:
-        return "The codebase contains potentially urgent risks that should be reviewed."
-    if distr["medium"] > 0:
-        return "Medium-risk vulnerabilities were detected. An in-depth review is recommended."
-    return "Only low-risk findings were detected. An in-depth review is still recommended to ensure control."
 
 
 @text_placeholder()
@@ -238,7 +228,7 @@ def osh_portfolio_known_vulnerabilities_low():
 def osh_portfolio_known_vulnerabilities_urgency_explanation():
     """Provides the explanation for the urgency reported by OSH_PORTFOLIO_KNOWN_VULNERABILITIES_URGENCY."""
     distr = osh_portfolio_data.vulnerability_distribution
-    return _urgency_explanation(distr=distr)
+    return urgency_explanation(distr=distr)
 
 
 class OSHPortfolioKnownVulnerabilitiesUrgency(AbstractColoredShapePlaceholder):

@@ -157,7 +157,7 @@ class _ManagementSummaryMarkerPlaceholder(Placeholder, ABC):
             marker._parent._parent.left += int(value * _MANAGEMENT_SUMMARY_MARKER_RANGE)
 
 
-class _OSHPortfolioUrgencyMarkerPlaceholder(Placeholder, ABC):
+class _OSHUrgencyMarkerPlaceholder(Placeholder, ABC):
     @staticmethod
     def resolve_pptx(
         presentation: Presentation, key: str, value_cb: Callable[[], str]
@@ -252,7 +252,7 @@ def _exploit_probability_position_calculator(probability: float) -> float:
 
 
 class OSHPortfolioAverageLibraryAgeUrgencyMarkerPlaceholder(
-    _OSHPortfolioUrgencyMarkerPlaceholder
+    _OSHUrgencyMarkerPlaceholder
 ):
     key = "OSH_PORTFOLIO_AVERAGE_LIBRARY_AGE_URGENCY_MARKER"
 
@@ -264,7 +264,7 @@ class OSHPortfolioAverageLibraryAgeUrgencyMarkerPlaceholder(
 
 
 class OSHPortfolioExploitProbabilityUrgencyMarkerPlaceholder(
-    _OSHPortfolioUrgencyMarkerPlaceholder
+    _OSHUrgencyMarkerPlaceholder
 ):
     key = "OSH_PORTFOLIO_PROBABILITY_OF_EXPLOIT_URGENCY_MARKER"
 
@@ -273,3 +273,21 @@ class OSHPortfolioExploitProbabilityUrgencyMarkerPlaceholder(
         return _exploit_probability_position_calculator(
             osh_portfolio_data.exploit_probability
         )
+
+
+class OSHAverageLibraryAgeUrgencyMarkerPlaceholder(_OSHUrgencyMarkerPlaceholder):
+    key = "OSH_AVERAGE_LIBRARY_AGE_URGENCY_MARKER"
+
+    @classmethod
+    def value(cls) -> float:
+        return _library_age_marker_position_calculator(
+            statistics.mean(osh_data.age_distribution)
+        )
+
+
+class OSHExploitProbabilityUrgencyMarkerPlaceholder(_OSHUrgencyMarkerPlaceholder):
+    key = "OSH_PROBABILITY_OF_EXPLOIT_URGENCY_MARKER"
+
+    @classmethod
+    def value(cls) -> float:
+        return _exploit_probability_position_calculator(osh_data.exploit_probability)

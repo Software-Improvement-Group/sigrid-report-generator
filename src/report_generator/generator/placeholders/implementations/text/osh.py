@@ -24,6 +24,16 @@ from report_generator.generator.utils.constants import OSHMetric
 
 from ...formatting import smart_remarks
 from .base import parameterized_text_placeholder, text_placeholder
+from .shared.color_rating_base import AbstractColoredShapePlaceholder, WidthAnchor
+from .shared.urgency import (
+    exploit_probability_colors,
+    exploit_probability_label,
+    library_age_colors,
+    library_age_label,
+    urgency_colors,
+    urgency_explanation,
+    urgency_width,
+)
 
 
 @text_placeholder()
@@ -228,3 +238,97 @@ def osh_low_risk():
 def osh_no_risk():
     """Number of dependency occurrences with no OSH risk."""
     return osh_data.library_risk_levels["no_risk"]
+
+
+class OSHKnownVulnerabilitiesUrgency(AbstractColoredShapePlaceholder):
+    """Colors a shape red, yellow, or green based on the urgency of known vulnerabilities."""
+
+    key = "OSH_KNOWN_VULNERABILITIES_URGENCY"
+
+    @classmethod
+    def value(cls):
+        return "review"
+
+    @classmethod
+    def resolve_pptx(cls, presentation, key, value_cb):
+        shapes, paragraphs = cls._find(presentation, key)
+        if not shapes and not paragraphs:
+            return
+        distr = osh_data.vulnerability_distribution
+        display_value = value_cb()
+        colors = urgency_colors(distr)
+        cls._apply(
+            shapes,
+            paragraphs,
+            key,
+            shape_color=colors.shape,
+            display_value=display_value,
+            width_inches=urgency_width(display_value),
+            width_anchor=WidthAnchor.RIGHT,
+            text_color=colors.text,
+        )
+
+
+class OSHAverageLibraryAgeUrgency(AbstractColoredShapePlaceholder):
+    """Colors a shape red, orange, yellow, or green based on the average library age."""
+
+    key = "OSH_AVERAGE_LIBRARY_AGE_URGENCY"
+
+    @classmethod
+    def value(cls):
+        return library_age_label(statistics.mean(osh_data.age_distribution))
+
+    @classmethod
+    def resolve_pptx(cls, presentation, key, value_cb):
+        shapes, paragraphs = cls._find(presentation, key)
+        if not shapes and not paragraphs:
+            return
+        average_age = statistics.mean(osh_data.age_distribution)
+        display_value = value_cb()
+        colors = library_age_colors(average_age)
+        cls._apply(
+            shapes,
+            paragraphs,
+            key,
+            shape_color=colors.shape,
+            display_value=display_value,
+            width_inches=urgency_width(display_value),
+            width_anchor=WidthAnchor.RIGHT,
+            text_color=colors.text,
+        )
+
+
+class OSHExploitProbabilityUrgency(AbstractColoredShapePlaceholder):
+    """Colors a shape red, orange, yellow, or green based on the probability of exploit."""
+
+    key = "OSH_PROBABILITY_OF_EXPLOIT_URGENCY"
+
+    @classmethod
+    def value(cls):
+        return exploit_probability_label(osh_data.exploit_probability)
+
+    @classmethod
+    def resolve_pptx(cls, presentation, key, value_cb):
+        shapes, paragraphs = cls._find(presentation, key)
+        if not shapes and not paragraphs:
+            return
+        probability = osh_data.exploit_probability
+        display_value = value_cb()
+        colors = exploit_probability_colors(probability)
+        cls._apply(
+            shapes,
+            paragraphs,
+            key,
+            shape_color=colors.shape,
+            display_value=display_value,
+            width_inches=urgency_width(display_value),
+            width_anchor=WidthAnchor.RIGHT,
+            text_color=colors.text,
+        )
+
+
+@text_placeholder()
+def osh_known_vulnerabilities_urgency_explanation():
+    """Provides the explanation for the urgency reported by OSH_KNOWN_VULNERABILITIES_URGENCY."""
+    distr = osh_data.vulnerability_distribution
+    return urgency_explanation(distr=distr)

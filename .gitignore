@@ -3,6 +3,7 @@
 __pycache__
 *.egg-info/
 .vscode/
+build/
 
 # User claude settings
 .claude/settings.local.json
