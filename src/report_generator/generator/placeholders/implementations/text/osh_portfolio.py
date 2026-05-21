@@ -25,7 +25,13 @@ from report_generator.generator.utils.constants import OSHMetric
 from ...formatting import smart_remarks
 from .base import parameterized_text_placeholder, text_placeholder
 from .shared.color_rating_base import WidthAnchor, _AbstractColoredShapePlaceholder
-from .shared.urgency import MEDIUM_RISK_THRESHOLD, urgency_color, urgency_width
+from .shared.urgency import (
+    MEDIUM_RISK_THRESHOLD,
+    exploit_probability_colors,
+    exploit_probability_label,
+    urgency_colors,
+    urgency_width,
+)
 
 
 def _urgency_explanation(distr: dict) -> str:
@@ -249,12 +255,43 @@ class OshPortfolioKnownVulnerabilitiesUrgency(_AbstractColoredShapePlaceholder):
             return
         distr = osh_portfolio_data.vulnerability_distribution
         display_value = value_cb()
+        colors = urgency_colors(distr)
         cls._apply(
             shapes,
             paragraphs,
             key,
-            shape_color=urgency_color(distr),
+            shape_color=colors.shape,
             display_value=display_value,
             width_inches=urgency_width(display_value),
             width_anchor=WidthAnchor.RIGHT,
+            text_color=colors.text,
+        )
+
+
+class OshPortfolioExploitProbabilityUrgency(_AbstractColoredShapePlaceholder):
+    """Colors a shape red, orange, yellow, or green based on the probability of exploit across the portfolio."""
+
+    key = "OSH_PORTFOLIO_PROBABILITY_OF_EXPLOIT_URGENCY"
+
+    @classmethod
+    def value(cls):
+        return exploit_probability_label(osh_portfolio_data.exploit_probability)
+
+    @classmethod
+    def resolve_pptx(cls, presentation, key, value_cb):
+        shapes, paragraphs = cls._find(presentation, key)
+        if not shapes and not paragraphs:
+            return
+        probability = osh_portfolio_data.exploit_probability
+        display_value = value_cb()
+        colors = exploit_probability_colors(probability)
+        cls._apply(
+            shapes,
+            paragraphs,
+            key,
+            shape_color=colors.shape,
+            display_value=display_value,
+            width_inches=urgency_width(display_value),
+            width_anchor=WidthAnchor.RIGHT,
+            text_color=colors.text,
         )

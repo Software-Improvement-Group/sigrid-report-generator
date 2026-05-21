@@ -26,6 +26,10 @@ from report_generator.generator.placeholders.implementations.base import (
     ParameterizedPlaceholder,
     Placeholder,
 )
+from report_generator.generator.placeholders.rendering.common import (
+    FontColor,
+    FontProperties,
+)
 
 
 class WidthAnchor(Enum):
@@ -52,6 +56,7 @@ class _AbstractColoredShapePlaceholder(Placeholder, ABC):
         display_value: str,
         width_inches: float | None = None,
         width_anchor: WidthAnchor = WidthAnchor.LEFT,
+        text_color: RGBColor | None = None,
     ):
         for shape in shapes:
             rendering.pptx.set_shape_color(shape, shape_color)
@@ -60,7 +65,12 @@ class _AbstractColoredShapePlaceholder(Placeholder, ABC):
                 if width_anchor == WidthAnchor.RIGHT:
                     shape.left += shape.width - new_width
                 shape.width = new_width
-        rendering.pptx.update_many_paragraphs(paragraphs, key, display_value)
+        font = (
+            FontProperties(color=FontColor(rgb=text_color))
+            if text_color is not None
+            else None
+        )
+        rendering.pptx.update_many_paragraphs(paragraphs, key, display_value, font)
 
     @classmethod
     def resolve_pptx(

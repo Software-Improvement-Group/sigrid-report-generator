@@ -24,7 +24,7 @@ from report_generator.generator.placeholders.formatting.formatters import (
 
 from .base import text_placeholder
 from .shared.color_rating_base import WidthAnchor, _AbstractColoredShapePlaceholder
-from .shared.urgency import urgency_color, urgency_width
+from .shared.urgency import urgency_colors, urgency_width
 
 
 @text_placeholder()
@@ -419,12 +419,14 @@ class SecurityPortfolioCVSSUrgency(_AbstractColoredShapePlaceholder):
             "low": security_findings_portfolio_data.count_findings("LOW"),
         }
         display_value = value_cb()
+        colors = urgency_colors(distr)
         cls._apply(
             shapes,
             paragraphs,
             key,
-            shape_color=urgency_color(distr),
+            shape_color=colors.shape,
             display_value=display_value,
             width_inches=urgency_width(display_value),
             width_anchor=WidthAnchor.RIGHT,
+            text_color=colors.text,
         )
