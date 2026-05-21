@@ -27,7 +27,7 @@ from report_generator.generator.utils.constants import (
 
 from ...formatting import smart_remarks
 from .base import parameterized_text_placeholder, text_placeholder
-from .shared.color_rating_base import _AbstractColorRatingPlaceholder
+from .shared.color_rating_base import AbstractColorRatingPlaceholder
 
 
 @text_placeholder()
@@ -130,7 +130,7 @@ def arch_stars_param(metric: MetricEnum):
     return calculate_stars(architecture_data.get_score_for_prop_or_subchar(metric_key))
 
 
-class ArchColorRatingPlaceholder(_AbstractColorRatingPlaceholder):
+class ArchColorRatingPlaceholder(AbstractColorRatingPlaceholder):
     """Fills the rating value and colors the shape to the corresponding rating color for an architecture metric."""
 
     key = "COLOR_ARCH_RATING_{parameter}"

@@ -23,7 +23,7 @@ from report_generator.generator.placeholders.formatting.formatters import (
 )
 
 from .base import text_placeholder
-from .shared.color_rating_base import WidthAnchor, _AbstractColoredShapePlaceholder
+from .shared.color_rating_base import AbstractColoredShapePlaceholder, WidthAnchor
 from .shared.urgency import urgency_colors, urgency_width
 
 
@@ -398,7 +398,7 @@ def security_portfolio_cvss_low_raw():
     return f"{security_findings_portfolio_data.count_findings('LOW')}"
 
 
-class SecurityPortfolioCVSSUrgency(_AbstractColoredShapePlaceholder):
+class SecurityPortfolioCVSSUrgency(AbstractColoredShapePlaceholder):
     """Colors a shape and sets text based on the urgency of security findings across the portfolio."""
 
     key = "SECURITY_PORTFOLIO_CVSS_URGENCY"

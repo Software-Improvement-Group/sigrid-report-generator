@@ -29,7 +29,7 @@ from report_generator.generator.placeholders.implementations.text.base import (
 )
 from report_generator.generator.utils.constants import MaintMetric
 
-from .shared.color_rating_base import _AbstractColorRatingPlaceholder
+from .shared.color_rating_base import AbstractColorRatingPlaceholder
 
 
 @text_placeholder()
@@ -402,7 +402,7 @@ def renovation_effort_percentage():
     return "0"
 
 
-class MaintColorRatingPlaceholder(_AbstractColorRatingPlaceholder):
+class MaintColorRatingPlaceholder(AbstractColorRatingPlaceholder):
     """Fills the rating value and colors the shape to the corresponding rating color for a maintainability metric."""
 
     key = "COLOR_MAINT_RATING_{parameter}"

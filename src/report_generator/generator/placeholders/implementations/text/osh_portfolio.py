@@ -24,7 +24,7 @@ from report_generator.generator.utils.constants import OSHMetric
 
 from ...formatting import smart_remarks
 from .base import parameterized_text_placeholder, text_placeholder
-from .shared.color_rating_base import WidthAnchor, _AbstractColoredShapePlaceholder
+from .shared.color_rating_base import AbstractColoredShapePlaceholder, WidthAnchor
 from .shared.urgency import (
     MEDIUM_RISK_THRESHOLD,
     exploit_probability_colors,
@@ -239,7 +239,7 @@ def osh_portfolio_known_vulnerabilities_urgency_explanation():
     return _urgency_explanation(distr=distr)
 
 
-class OshPortfolioKnownVulnerabilitiesUrgency(_AbstractColoredShapePlaceholder):
+class OshPortfolioKnownVulnerabilitiesUrgency(AbstractColoredShapePlaceholder):
     """Colors a shape red, yellow, or green based on the urgency of known vulnerabilities across the portfolio."""
 
     key = "OSH_PORTFOLIO_KNOWN_VULNERABILITIES_URGENCY"
@@ -268,7 +268,7 @@ class OshPortfolioKnownVulnerabilitiesUrgency(_AbstractColoredShapePlaceholder):
         )
 
 
-class OshPortfolioExploitProbabilityUrgency(_AbstractColoredShapePlaceholder):
+class OshPortfolioExploitProbabilityUrgency(AbstractColoredShapePlaceholder):
     """Colors a shape red, orange, yellow, or green based on the probability of exploit across the portfolio."""
 
     key = "OSH_PORTFOLIO_PROBABILITY_OF_EXPLOIT_URGENCY"

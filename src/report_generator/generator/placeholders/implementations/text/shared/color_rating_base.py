@@ -37,7 +37,7 @@ class WidthAnchor(Enum):
     RIGHT = auto()  # shape grows/shrinks to the left; right edge stays fixed
 
 
-class _AbstractColoredShapePlaceholder(Placeholder, ABC):
+class AbstractColoredShapePlaceholder(Placeholder, ABC):
     """Colors a shape and replaces its placeholder text with a given value."""
 
     @classmethod
@@ -86,8 +86,8 @@ class _AbstractColoredShapePlaceholder(Placeholder, ABC):
         cls._apply(shapes, paragraphs, key, shape_color, display_value)
 
 
-class _AbstractColorRatingPlaceholder(
-    _AbstractColoredShapePlaceholder, ParameterizedPlaceholder, ABC
+class AbstractColorRatingPlaceholder(
+    AbstractColoredShapePlaceholder, ParameterizedPlaceholder, ABC
 ):
     """Fills this rating value and colors the shape to correspond to the rating color (e.g. yellow for 3 stars)."""
 
