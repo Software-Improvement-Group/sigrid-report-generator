@@ -77,5 +77,23 @@ def exploit_probability_label(probability: float) -> str:
     return "strong"
 
 
+def library_age_colors(average_age_days: float) -> UrgencyColors:
+    if average_age_days <= 365:
+        return _URGENCY_COLORS[3]  # green
+    if average_age_days <= 730:
+        return _URGENCY_COLORS[2]  # yellow
+    if average_age_days <= 1278:
+        return _URGENCY_COLORS[1]  # orange
+    return _URGENCY_COLORS[0]  # red
+
+
+def library_age_label(average_age_days: float) -> str:
+    if average_age_days <= 730:
+        return "strong"
+    if average_age_days <= 1278:
+        return "moderate"
+    return "weak"
+
+
 def urgency_width(value: str) -> float | None:
     return _URGENCY_WIDTHS.get(value)
