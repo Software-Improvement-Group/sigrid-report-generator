@@ -64,7 +64,7 @@ def _band_position(fraction: float) -> float:
 
 
 _OSH_URGENCY_POSITION_GREEN = (
-    -_OSH_PORTFOLIO_URGENCY_MARKER_GREEN_OFFSET / _OSH_PORTFOLIO_URGENCY_MARKER_RANGE
+    (-_OSH_PORTFOLIO_URGENCY_MARKER_GREEN_OFFSET+_OSH_PORTFOLIO_URGENCY_GREEN_MARKER_RANGE/2) / _OSH_PORTFOLIO_URGENCY_MARKER_RANGE
 )
 _OSH_URGENCY_POSITION_YELLOW = _band_position(1 / 6)
 _OSH_URGENCY_POSITION_ORANGE = _band_position(1 / 2)
@@ -160,7 +160,7 @@ class _ManagementSummaryMarkerPlaceholder(Placeholder, ABC):
 class _OSHUrgencyMarkerPlaceholder(Placeholder, ABC):
     @staticmethod
     def resolve_pptx(
-        presentation: Presentation, key: str, value_cb: Callable[[], str]
+        presentation: Presentation, key: str, value_cb: Callable[[], float]
     ) -> None:
         markers = rendering.pptx.find_text_in_presentation(presentation, key)
 
@@ -254,6 +254,8 @@ def _exploit_probability_position_calculator(probability: float) -> float:
 class OSHPortfolioAverageLibraryAgeUrgencyMarkerPlaceholder(
     _OSHUrgencyMarkerPlaceholder
 ):
+    """Moves a marker on the OSH portfolio urgency slider to the position corresponding to the average library age across the portfolio."""
+
     key = "OSH_PORTFOLIO_AVERAGE_LIBRARY_AGE_URGENCY_MARKER"
 
     @classmethod
@@ -266,6 +268,8 @@ class OSHPortfolioAverageLibraryAgeUrgencyMarkerPlaceholder(
 class OSHPortfolioExploitProbabilityUrgencyMarkerPlaceholder(
     _OSHUrgencyMarkerPlaceholder
 ):
+    """Moves a marker on the OSH portfolio urgency slider to the position corresponding to the probability of exploit across the portfolio."""
+
     key = "OSH_PORTFOLIO_PROBABILITY_OF_EXPLOIT_URGENCY_MARKER"
 
     @classmethod
@@ -276,6 +280,8 @@ class OSHPortfolioExploitProbabilityUrgencyMarkerPlaceholder(
 
 
 class OSHAverageLibraryAgeUrgencyMarkerPlaceholder(_OSHUrgencyMarkerPlaceholder):
+    """Moves a marker on the OSH urgency slider to the position corresponding to the average library age for this system."""
+
     key = "OSH_AVERAGE_LIBRARY_AGE_URGENCY_MARKER"
 
     @classmethod
@@ -286,6 +292,8 @@ class OSHAverageLibraryAgeUrgencyMarkerPlaceholder(_OSHUrgencyMarkerPlaceholder)
 
 
 class OSHExploitProbabilityUrgencyMarkerPlaceholder(_OSHUrgencyMarkerPlaceholder):
+    """Moves a marker on the OSH urgency slider to the position corresponding to the probability of exploit for this system."""
+
     key = "OSH_PROBABILITY_OF_EXPLOIT_URGENCY_MARKER"
 
     @classmethod
