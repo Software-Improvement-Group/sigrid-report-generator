@@ -32,7 +32,6 @@ from .shared.urgency import (
     library_age_colors,
     library_age_label,
     urgency_colors,
-    urgency_explanation,
 )
 
 
@@ -286,4 +285,4 @@ class OSHExploitProbabilityUrgency(AbstractUrgencyShapePlaceholder):
 def osh_known_vulnerabilities_urgency_explanation():
     """Provides the explanation for the urgency reported by OSH_KNOWN_VULNERABILITIES_URGENCY."""
     distr = osh_data.vulnerability_distribution
-    return urgency_explanation(distr=distr)
+    return smart_remarks.urgency_explanation(distr=distr)
