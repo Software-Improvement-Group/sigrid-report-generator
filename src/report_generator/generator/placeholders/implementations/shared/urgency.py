@@ -25,15 +25,6 @@ from report_generator.generator.utils.constants.urgency_thresholds import (
     MEDIUM_RISK_THRESHOLD,
 )
 
-__all__ = [
-    "EXPLOIT_PROBABILITY_HIGH_THRESHOLD",
-    "EXPLOIT_PROBABILITY_LOW_THRESHOLD",
-    "LIBRARY_AGE_GREEN_THRESHOLD",
-    "LIBRARY_AGE_ORANGE_THRESHOLD",
-    "LIBRARY_AGE_YELLOW_THRESHOLD",
-    "MEDIUM_RISK_THRESHOLD",
-]
-
 _WHITE = RGBColor(0xFF, 0xFF, 0xFF)
 _BLACK = RGBColor(0x00, 0x00, 0x00)
 
