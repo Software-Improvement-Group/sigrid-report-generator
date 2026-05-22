@@ -13,12 +13,9 @@
 #  limitations under the License.
 
 from abc import ABC, abstractmethod
-from enum import Enum, auto
 from typing import Callable
 
-from pptx.dml.color import RGBColor
 from pptx.presentation import Presentation
-from pptx.util import Inches
 
 from report_generator.generator.placeholders import rendering
 from report_generator.generator.placeholders.formatting import formatters
@@ -34,66 +31,28 @@ from report_generator.generator.placeholders.rendering.common import (
     FontColor,
     FontProperties,
 )
+from report_generator.generator.placeholders.rendering.pptx import ShapeProperties
 
 
-class WidthAnchor(Enum):
-    LEFT = auto()  # shape grows/shrinks to the right; left edge stays fixed
-    RIGHT = auto()  # shape grows/shrinks to the left; right edge stays fixed
+def _apply_colored_shape(
+    shapes,
+    paragraphs,
+    key: str,
+    shape_props: ShapeProperties,
+    display_value: str,
+    text_color=None,
+):
+    for shape in shapes:
+        rendering.pptx.apply_shape_properties(shape, shape_props)
+    font = (
+        FontProperties(color=FontColor(rgb=text_color))
+        if text_color is not None
+        else None
+    )
+    rendering.pptx.update_many_paragraphs(paragraphs, key, display_value, font)
 
 
-class AbstractColoredShapePlaceholder(Placeholder, ABC):
-    """Colors a shape and replaces its placeholder text with a given value."""
-
-    @classmethod
-    def _find(cls, presentation: Presentation, key: str):
-        shapes = rendering.pptx.find_shapes_with_text(presentation, key)
-        paragraphs = rendering.pptx.find_text_in_presentation(presentation, key)
-        return shapes, paragraphs
-
-    @classmethod
-    def _apply(
-        cls,
-        shapes,
-        paragraphs,
-        key: str,
-        shape_color: RGBColor,
-        display_value: str,
-        width_inches: float | None = None,
-        width_anchor: WidthAnchor = WidthAnchor.LEFT,
-        text_color: RGBColor | None = None,
-    ):
-        for shape in shapes:
-            rendering.pptx.set_shape_color(shape, shape_color)
-            # After text replacement, shapes may retain the width of the original placeholder key,
-            # which is typically longer than the display value. width_inches overrides this to the
-            # intended size; WidthAnchor specifies whether the left or right edge remains fixed.
-            if width_inches is not None:
-                new_width = Inches(width_inches)
-                if width_anchor == WidthAnchor.RIGHT:
-                    shape.left += shape.width - new_width
-                shape.width = new_width
-        font = (
-            FontProperties(color=FontColor(rgb=text_color))
-            if text_color is not None
-            else None
-        )
-        rendering.pptx.update_many_paragraphs(paragraphs, key, display_value, font)
-
-    @classmethod
-    def resolve_pptx(
-        cls,
-        presentation: Presentation,
-        key: str,
-        shape_color: RGBColor,
-        display_value: str,
-    ):
-        shapes, paragraphs = cls._find(presentation, key)
-        if not shapes and not paragraphs:
-            return
-        cls._apply(shapes, paragraphs, key, shape_color, display_value)
-
-
-class AbstractUrgencyShapePlaceholder(AbstractColoredShapePlaceholder, ABC):
+class AbstractUrgencyShapePlaceholder(Placeholder, ABC):
     """Colors a shape and sets text color based on urgency, with a right-anchored width."""
 
     @classmethod
@@ -102,38 +61,42 @@ class AbstractUrgencyShapePlaceholder(AbstractColoredShapePlaceholder, ABC):
 
     @classmethod
     def resolve_pptx(cls, presentation: Presentation, key: str, value_cb: Callable):
-        shapes, paragraphs = cls._find(presentation, key)
+        shapes = rendering.pptx.find_shapes_with_text(presentation, key)
+        paragraphs = rendering.pptx.find_text_in_presentation(presentation, key)
         if not shapes and not paragraphs:
             return
         colors = cls._get_colors()
         display_value = value_cb()
-        cls._apply(
+        _apply_colored_shape(
             shapes,
             paragraphs,
             key,
-            shape_color=colors.shape,
+            shape_props=ShapeProperties(
+                color=colors.shape,
+                width_inches=urgency_width(display_value),
+                width_anchor_right=True,
+            ),
             display_value=display_value,
-            width_inches=urgency_width(display_value),
-            width_anchor=WidthAnchor.RIGHT,
             text_color=colors.text,
         )
 
 
-class AbstractColorRatingPlaceholder(
-    AbstractColoredShapePlaceholder, ParameterizedPlaceholder, ABC
-):
+class AbstractColorRatingPlaceholder(ParameterizedPlaceholder, ABC):
     """Fills this rating value and colors the shape to correspond to the rating color (e.g. yellow for 3 stars)."""
 
     @classmethod
     def resolve_pptx(cls, presentation: Presentation, key: str, value_cb: Callable):
-        shapes, paragraphs = cls._find(presentation, key)
+        shapes = rendering.pptx.find_shapes_with_text(presentation, key)
+        paragraphs = rendering.pptx.find_text_in_presentation(presentation, key)
         if not shapes and not paragraphs:
             return
         rating = value_cb()
-        cls._apply(
+        _apply_colored_shape(
             shapes,
             paragraphs,
             key,
-            shape_color=rendering.pptx.determine_rating_color(rating),
+            shape_props=ShapeProperties(
+                color=rendering.pptx.determine_rating_color(rating)
+            ),
             display_value=formatters.star_rating_round(rating),
         )
