@@ -64,6 +64,9 @@ class AbstractColoredShapePlaceholder(Placeholder, ABC):
     ):
         for shape in shapes:
             rendering.pptx.set_shape_color(shape, shape_color)
+            # After text replacement, shapes may retain the width of the original placeholder key,
+            # which is typically longer than the display value. width_inches overrides this to the
+            # intended size; WidthAnchor specifies whether the left or right edge remains fixed.
             if width_inches is not None:
                 new_width = Inches(width_inches)
                 if width_anchor == WidthAnchor.RIGHT:
