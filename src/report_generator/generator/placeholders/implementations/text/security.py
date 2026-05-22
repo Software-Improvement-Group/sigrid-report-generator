@@ -16,7 +16,7 @@ from report_generator.generator.domain import security_data
 from report_generator.generator.placeholders.formatting.smart_remarks import (
     relative_to_market_average,
 )
-from report_generator.generator.placeholders.implementations.shared.color_rating_base import (
+from report_generator.generator.placeholders.implementations.misc.color_rating import (
     AbstractUrgencyShapePlaceholder,
 )
 from report_generator.generator.placeholders.implementations.shared.urgency import (

@@ -21,7 +21,7 @@ from report_generator.generator.domain import (
 from report_generator.generator.placeholders.formatting.formatters import (
     star_rating_round,
 )
-from report_generator.generator.placeholders.implementations.shared.color_rating_base import (
+from report_generator.generator.placeholders.implementations.misc.color_rating import (
     AbstractUrgencyShapePlaceholder,
 )
 from report_generator.generator.placeholders.implementations.shared.urgency import (
