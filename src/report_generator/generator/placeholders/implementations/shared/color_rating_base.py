@@ -23,7 +23,7 @@ from report_generator.generator.placeholders.implementations.base import (
     ParameterizedPlaceholder,
     Placeholder,
 )
-from report_generator.generator.placeholders.implementations.text.shared.urgency import (
+from report_generator.generator.placeholders.implementations.shared.urgency import (
     UrgencyColors,
     urgency_width,
 )

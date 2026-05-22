@@ -16,12 +16,14 @@ import inspect
 
 from . import (
     category_chart,
+    color_rating,
     moveable_marker,
     scatter_plot_chart,
 )
 
 _all_implementations = {
     **category_chart.__dict__,
+    **color_rating.__dict__,
     **moveable_marker.__dict__,
     **scatter_plot_chart.__dict__,
 }

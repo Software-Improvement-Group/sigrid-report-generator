@@ -16,10 +16,15 @@ from report_generator.generator.domain import security_data
 from report_generator.generator.placeholders.formatting.smart_remarks import (
     relative_to_market_average,
 )
+from report_generator.generator.placeholders.implementations.shared.color_rating_base import (
+    AbstractUrgencyShapePlaceholder,
+)
+from report_generator.generator.placeholders.implementations.shared.urgency import (
+    UrgencyColors,
+    urgency_colors,
+)
 
 from .base import text_placeholder
-from .shared.color_rating_base import AbstractUrgencyShapePlaceholder
-from .shared.urgency import UrgencyColors, urgency_colors
 
 
 @text_placeholder()

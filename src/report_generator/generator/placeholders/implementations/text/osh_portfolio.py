@@ -20,12 +20,10 @@ from report_generator.generator.placeholders.formatting.formatters import (
     format_percentage_excluding_100_percent,
     star_rating_round,
 )
-from report_generator.generator.utils.constants import OSHMetric
-
-from ...formatting import smart_remarks
-from .base import parameterized_text_placeholder, text_placeholder
-from .shared.color_rating_base import AbstractUrgencyShapePlaceholder
-from .shared.urgency import (
+from report_generator.generator.placeholders.implementations.shared.color_rating_base import (
+    AbstractUrgencyShapePlaceholder,
+)
+from report_generator.generator.placeholders.implementations.shared.urgency import (
     UrgencyColors,
     exploit_probability_colors,
     exploit_probability_label,
@@ -33,6 +31,10 @@ from .shared.urgency import (
     library_age_label,
     urgency_colors,
 )
+from report_generator.generator.utils.constants import OSHMetric
+
+from ...formatting import smart_remarks
+from .base import parameterized_text_placeholder, text_placeholder
 
 
 @text_placeholder()

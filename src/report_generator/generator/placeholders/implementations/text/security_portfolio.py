@@ -21,10 +21,15 @@ from report_generator.generator.domain import (
 from report_generator.generator.placeholders.formatting.formatters import (
     star_rating_round,
 )
+from report_generator.generator.placeholders.implementations.shared.color_rating_base import (
+    AbstractUrgencyShapePlaceholder,
+)
+from report_generator.generator.placeholders.implementations.shared.urgency import (
+    UrgencyColors,
+    urgency_colors,
+)
 
 from .base import text_placeholder
-from .shared.color_rating_base import AbstractUrgencyShapePlaceholder
-from .shared.urgency import UrgencyColors, urgency_colors
 
 
 @text_placeholder()
