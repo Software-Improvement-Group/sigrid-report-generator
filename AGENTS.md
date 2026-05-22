@@ -102,3 +102,26 @@ Domain modules expose module-level singleton objects (e.g. `maintainability_data
 lazily loaded and cached via `functools.cached_property` or `@cache` on the underlying API calls. Tests that exercise
 domain logic must patch `sigrid_api` functions or call `sigrid_api.set_context()` / `sigrid_api.reset_context()` to
 avoid polluting state across tests.
+
+## Design Quality
+
+### Fail early
+
+Silent defaults (`None`, `0`, `[]`, `""`) are fine when data is genuinely absent — but when they mask a broken
+assumption, they push the failure downstream. A lookup that returns `0` or `None` when "not found" should never happen
+in normal execution is a bug, not missing data. Prefer raising over silently defaulting when absence indicates a
+programming error.
+
+### Python design
+
+Apply standard design principles — single responsibility, clear naming, appropriate use of language features. Examples of
+issues worth fixing:
+
+- ABCs where a `typing.Protocol` would suffice (ABCs force subclassing; protocols are structural).
+- God methods combining parsing, transformation, and side effects.
+- Vague names (`process_data`, `handle`, `result`) that force reading the implementation.
+- Mutable default arguments, broad `isinstance` checks where polymorphism is cleaner.
+
+## Version Bump
+
+Every change to production code requires a version bump in `setup.cfg` (semantic versioning).
