@@ -11,6 +11,7 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+import statistics
 from abc import ABC
 from typing import Callable
 
@@ -21,6 +22,7 @@ from report_generator.generator.domain import (
     maintainability_data,
     modernization_data,
     osh_data,
+    osh_portfolio_data,
     security_data,
 )
 from report_generator.generator.placeholders import rendering
@@ -28,9 +30,46 @@ from report_generator.generator.placeholders.formatting.formatters import (
     star_rating_round,
 )
 from report_generator.generator.placeholders.implementations.base import Placeholder
+from report_generator.generator.utils.constants.urgency_thresholds import (
+    EXPLOIT_PROBABILITY_HIGH_THRESHOLD,
+    EXPLOIT_PROBABILITY_LOW_THRESHOLD,
+    LIBRARY_AGE_GREEN_THRESHOLD,
+    LIBRARY_AGE_ORANGE_THRESHOLD,
+    LIBRARY_AGE_YELLOW_THRESHOLD,
+)
+
+# REMARK: 1 inch in powerpoint shape width equals 914400 EMU. Use this to calculate your ranges.
 
 _RATING_MARKER_MOVE_SIZE = 2200000
 _MANAGEMENT_SUMMARY_MARKER_RANGE = 4000000
+
+_OSH_PORTFOLIO_URGENCY_YELLOW_ORANGE_RED_MARKER_RANGE = 905256
+_OSH_PORTFOLIO_URGENCY_GREEN_MARKER_RANGE = 45720
+_OSH_PORTFOLIO_URGENCY_MARKER_RANGE = (
+    _OSH_PORTFOLIO_URGENCY_YELLOW_ORANGE_RED_MARKER_RANGE
+    + _OSH_PORTFOLIO_URGENCY_GREEN_MARKER_RANGE
+)
+_OSH_PORTFOLIO_URGENCY_MARKER_GREEN_OFFSET = 82296
+
+
+# Precomputed marker positions (as fractions of _OSH_PORTFOLIO_URGENCY_MARKER_RANGE) for each color band.
+# The slider has a small green section on the left, followed by three equal yellow/orange/red bands.
+# The green offset accounts for the marker shape starting slightly left of the slider origin.
+def _band_position(fraction: float) -> float:
+    return (
+        -_OSH_PORTFOLIO_URGENCY_MARKER_GREEN_OFFSET
+        + _OSH_PORTFOLIO_URGENCY_GREEN_MARKER_RANGE
+        + _OSH_PORTFOLIO_URGENCY_MARKER_RANGE * fraction
+    ) / _OSH_PORTFOLIO_URGENCY_MARKER_RANGE
+
+
+_OSH_URGENCY_POSITION_GREEN = (
+    -_OSH_PORTFOLIO_URGENCY_MARKER_GREEN_OFFSET
+    + _OSH_PORTFOLIO_URGENCY_GREEN_MARKER_RANGE / 2
+) / _OSH_PORTFOLIO_URGENCY_MARKER_RANGE
+_OSH_URGENCY_POSITION_YELLOW = _band_position(1 / 6)
+_OSH_URGENCY_POSITION_ORANGE = _band_position(1 / 2)
+_OSH_URGENCY_POSITION_RED = _band_position(5 / 6)
 
 
 def set_marker_move_size(marker_move_size: int) -> None:
@@ -119,6 +158,26 @@ class _ManagementSummaryMarkerPlaceholder(Placeholder, ABC):
             marker._parent._parent.left += int(value * _MANAGEMENT_SUMMARY_MARKER_RANGE)
 
 
+class _OSHUrgencyMarkerPlaceholder(Placeholder, ABC):
+    @staticmethod
+    def resolve_pptx(
+        presentation: Presentation, key: str, value_cb: Callable[[], float]
+    ) -> None:
+        markers = rendering.pptx.find_text_in_presentation(presentation, key)
+
+        if not markers:
+            return
+
+        value = value_cb()
+
+        for marker in markers:
+            rendering.pptx.update_paragraph(marker, key, "")
+            # noinspection PyProtectedMember
+            marker._parent._parent.left += int(
+                value * _OSH_PORTFOLIO_URGENCY_MARKER_RANGE
+            )
+
+
 class ModernizationVolumeMarkerPlaceholder(_ManagementSummaryMarkerPlaceholder):
     key = "MARKER_MODERNIZATION_VOLUME"
 
@@ -171,3 +230,73 @@ class ModernizationEffortMarkerPlaceholder(_ManagementSummaryMarkerPlaceholder):
             for candidate in modernization_data.modernization_candidates
         )
         return effort / modernization_data.total_volume, f"{round(effort)} PY"
+
+
+def _library_age_marker_position_calculator(average_age_days: float) -> float:
+    if average_age_days <= LIBRARY_AGE_GREEN_THRESHOLD:
+        return _OSH_URGENCY_POSITION_GREEN
+    if average_age_days <= LIBRARY_AGE_YELLOW_THRESHOLD:
+        return _OSH_URGENCY_POSITION_YELLOW
+    if average_age_days <= LIBRARY_AGE_ORANGE_THRESHOLD:
+        return _OSH_URGENCY_POSITION_ORANGE
+    return _OSH_URGENCY_POSITION_RED
+
+
+def _exploit_probability_position_calculator(probability: float) -> float:
+    if probability == 0.0:
+        return _OSH_URGENCY_POSITION_GREEN
+    if probability > EXPLOIT_PROBABILITY_HIGH_THRESHOLD:
+        return _OSH_URGENCY_POSITION_RED
+    if probability > EXPLOIT_PROBABILITY_LOW_THRESHOLD:
+        return _OSH_URGENCY_POSITION_ORANGE
+    return _OSH_URGENCY_POSITION_YELLOW
+
+
+class OSHPortfolioAverageLibraryAgeUrgencyMarkerPlaceholder(
+    _OSHUrgencyMarkerPlaceholder
+):
+    """Moves a marker on the OSH portfolio urgency slider to the position corresponding to the average library age across the portfolio."""
+
+    key = "OSH_PORTFOLIO_AVERAGE_LIBRARY_AGE_URGENCY_MARKER"
+
+    @classmethod
+    def value(cls) -> float:
+        return _library_age_marker_position_calculator(
+            statistics.mean(osh_portfolio_data.age_distribution)
+        )
+
+
+class OSHPortfolioExploitProbabilityUrgencyMarkerPlaceholder(
+    _OSHUrgencyMarkerPlaceholder
+):
+    """Moves a marker on the OSH portfolio urgency slider to the position corresponding to the probability of exploit across the portfolio."""
+
+    key = "OSH_PORTFOLIO_PROBABILITY_OF_EXPLOIT_URGENCY_MARKER"
+
+    @classmethod
+    def value(cls) -> float:
+        return _exploit_probability_position_calculator(
+            osh_portfolio_data.exploit_probability
+        )
+
+
+class OSHAverageLibraryAgeUrgencyMarkerPlaceholder(_OSHUrgencyMarkerPlaceholder):
+    """Moves a marker on the OSH urgency slider to the position corresponding to the average library age for this system."""
+
+    key = "OSH_AVERAGE_LIBRARY_AGE_URGENCY_MARKER"
+
+    @classmethod
+    def value(cls) -> float:
+        return _library_age_marker_position_calculator(
+            statistics.mean(osh_data.age_distribution)
+        )
+
+
+class OSHExploitProbabilityUrgencyMarkerPlaceholder(_OSHUrgencyMarkerPlaceholder):
+    """Moves a marker on the OSH urgency slider to the position corresponding to the probability of exploit for this system."""
+
+    key = "OSH_PROBABILITY_OF_EXPLOIT_URGENCY_MARKER"
+
+    @classmethod
+    def value(cls) -> float:
+        return _exploit_probability_position_calculator(osh_data.exploit_probability)

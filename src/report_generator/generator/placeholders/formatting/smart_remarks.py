@@ -17,6 +17,9 @@ from report_generator.generator.utils.constants import (
     MaintMetric,
     MetricEnum,
 )
+from report_generator.generator.utils.constants.urgency_thresholds import (
+    MEDIUM_RISK_THRESHOLD,
+)
 
 MAINT_BEST_METRIC_TEXT = {
     MaintMetric.VOLUME: "The system is small and therefore easier to maintain.",
@@ -260,3 +263,13 @@ def osh_relative_rating(osh_rating):
         return "market average"
     else:
         return "above market average"
+
+
+def urgency_explanation(distr: dict) -> str:
+    if distr["critical"] > 0:
+        return "The presence of critical risks can pose severe exploitation risk, and should be reviewed."
+    if distr["high"] > 0 or distr["medium"] > MEDIUM_RISK_THRESHOLD:
+        return "The codebase contains potentially urgent risks that should be reviewed."
+    if distr["medium"] > 0:
+        return "Medium-risk vulnerabilities were detected. An in-depth review is recommended."
+    return "Only low-risk findings were detected. An in-depth review is still recommended to ensure control."
