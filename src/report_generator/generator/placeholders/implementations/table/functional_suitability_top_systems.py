@@ -60,6 +60,6 @@ class FunctionalSuitabilityTopSystemsTable(TablePlaceholder):
             entry["finding_count"],
             Hyperlink(
                 "link",
-                f"https://sigrid-says.com/{sigrid_api._customer}/{system_name}/-/reliability",
+                f"https://sigrid-says.com/{sigrid_api._customer}/{system_name}/-/overview",
             ),
         ]
