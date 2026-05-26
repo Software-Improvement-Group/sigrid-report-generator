@@ -1120,7 +1120,16 @@ class TestSecurityPortfolioData:
         """Clean up portfolio context and cached data after each test."""
         reset_context()
 
-        cache_attrs = ["data", "metadata", "period", "system_names"]
+        cache_attrs = [
+            "data",
+            "metadata",
+            "period",
+            "system_names",
+            "_raw_findings",
+            "_objective_index",
+            "findings_above_objective",
+            "top_systems_by_findings_above_objective",
+        ]
         for attr in cache_attrs:
             security_ratings_portfolio_data.__dict__.pop(attr, None)
 

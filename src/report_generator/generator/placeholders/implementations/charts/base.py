@@ -17,7 +17,7 @@ import math
 
 def findings_x_axis_max(value: int) -> int:
     """Round up to the next half-order-of-magnitude step, with a minimum of 20."""
-    value = max(value, 10)
+    value = max(value, 15)
     magnitude = 10 ** math.floor(math.log10(value))
     step = magnitude // 2
     return (value // step + 1) * step
