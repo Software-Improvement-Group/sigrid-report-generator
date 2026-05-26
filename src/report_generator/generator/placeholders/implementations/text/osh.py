@@ -228,3 +228,10 @@ def osh_low_risk():
 def osh_no_risk():
     """Number of dependency occurrences with no OSH risk."""
     return osh_data.library_risk_levels["no_risk"]
+
+
+@text_placeholder()
+def osh_known_vulnerabilities_urgency_explanation():
+    """Provides the explanation for the urgency reported by OSH_KNOWN_VULNERABILITIES_URGENCY."""
+    distr = osh_data.vulnerability_distribution
+    return smart_remarks.urgency_explanation(distr=distr)

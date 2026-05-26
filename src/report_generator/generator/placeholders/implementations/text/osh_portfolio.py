@@ -212,3 +212,10 @@ def osh_portfolio_known_vulnerabilities_low():
     """Number of known vulnerabilities with CVSS low severity across the portfolio."""
     distr = osh_portfolio_data.vulnerability_distribution
     return f"{distr['low']}"
+
+
+@text_placeholder()
+def osh_portfolio_known_vulnerabilities_urgency_explanation():
+    """Provides the explanation for the urgency reported by OSH_PORTFOLIO_KNOWN_VULNERABILITIES_URGENCY."""
+    distr = osh_portfolio_data.vulnerability_distribution
+    return smart_remarks.urgency_explanation(distr=distr)

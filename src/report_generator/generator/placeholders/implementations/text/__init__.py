@@ -50,7 +50,7 @@ for module in _modules_to_scan:
     module_placeholders = {
         name: obj
         for name, obj in inspect.getmembers(module, inspect.isclass)
-        if hasattr(obj, "__placeholder__")
+        if hasattr(obj, "__placeholder__") and not inspect.isabstract(obj)
     }
     _placeholders_map.update(module_placeholders)
 

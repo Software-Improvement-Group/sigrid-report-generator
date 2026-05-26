@@ -28,6 +28,7 @@ from pptx.table import Table, _Row
 
 # noinspection PyProtectedMember
 from pptx.text.text import _Paragraph, _Run
+from pptx.util import Inches
 
 from .common import (
     FontProperties,
@@ -231,6 +232,27 @@ def add_xml_element(parent_xml, tag, **attrs):
 
 def set_shape_color(shape, rgb_color):
     shape.fill.fore_color.rgb = rgb_color
+
+
+@dataclass
+class ShapeProperties:
+    """Visual properties to apply to a pptx shape after text replacement."""
+
+    color: RGBColor
+    width_inches: float | None = None
+    # After text replacement, shapes may retain the width of the original placeholder key,
+    # which is typically longer than the display value. width_inches overrides this to the
+    # intended size; width_anchor specifies whether the left or right edge remains fixed.
+    width_anchor_right: bool = False
+
+
+def apply_shape_properties(shape, props: ShapeProperties) -> None:
+    set_shape_color(shape, props.color)
+    if props.width_inches is not None:
+        new_width = Inches(props.width_inches)
+        if props.width_anchor_right:
+            shape.left += shape.width - new_width
+        shape.width = new_width
 
 
 def determine_rating_color(rating):
