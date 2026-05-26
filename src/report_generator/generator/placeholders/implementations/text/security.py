@@ -87,5 +87,3 @@ def security_cvss_medium_raw():
 def security_cvss_low_raw():
     """Number of security findings with CVSS low severity."""
     return f"{security_data.count_findings('LOW')}"
-
-

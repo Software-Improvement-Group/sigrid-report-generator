@@ -230,7 +230,6 @@ def osh_no_risk():
     return osh_data.library_risk_levels["no_risk"]
 
 
-
 @text_placeholder()
 def osh_known_vulnerabilities_urgency_explanation():
     """Provides the explanation for the urgency reported by OSH_KNOWN_VULNERABILITIES_URGENCY."""

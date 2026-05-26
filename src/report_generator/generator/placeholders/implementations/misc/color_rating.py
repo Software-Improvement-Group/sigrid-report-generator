@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import Callable, ClassVar
 
 from pptx.presentation import Presentation
@@ -22,7 +22,6 @@ from report_generator.generator.placeholders import rendering
 from report_generator.generator.placeholders.formatting import formatters
 from report_generator.generator.placeholders.implementations.base import (
     ParameterizedPlaceholder,
-    Placeholder,
 )
 from report_generator.generator.placeholders.rendering.common import (
     FontColor,
