@@ -12,8 +12,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import pytest
 from unittest.mock import PropertyMock
+
+import pytest
 
 from report_generator.generator.context import sigrid_api
 from report_generator.generator.domain import maintainability_portfolio_data
@@ -52,8 +53,18 @@ class TestMaintainabilityTopSystemsTable:
 
     def test_data_rows_are_in_order(self, mocker):
         systems = [
-            {"systemName": "alpha", "displayName": "Alpha", "rating": 1.5, "volume_py": 2.0},
-            {"systemName": "beta", "displayName": "Beta", "rating": 2.0, "volume_py": 1.0},
+            {
+                "systemName": "alpha",
+                "displayName": "Alpha",
+                "rating": 1.5,
+                "volume_py": 2.0,
+            },
+            {
+                "systemName": "beta",
+                "displayName": "Beta",
+                "rating": 2.0,
+                "volume_py": 1.0,
+            },
         ]
         _mock_bottom_systems(mocker, systems)
         result = MaintainabilityTopSystemsTable.value()
@@ -62,7 +73,12 @@ class TestMaintainabilityTopSystemsTable:
 
     def test_display_name_used(self, mocker):
         systems = [
-            {"systemName": "my-system", "displayName": "My System", "rating": 2.0, "volume_py": 3.0},
+            {
+                "systemName": "my-system",
+                "displayName": "My System",
+                "rating": 2.0,
+                "volume_py": 3.0,
+            },
         ]
         _mock_bottom_systems(mocker, systems)
         result = MaintainabilityTopSystemsTable.value()
@@ -70,7 +86,12 @@ class TestMaintainabilityTopSystemsTable:
 
     def test_rating_format(self, mocker):
         systems = [
-            {"systemName": "alpha", "displayName": "Alpha", "rating": 2.5, "volume_py": 1.0},
+            {
+                "systemName": "alpha",
+                "displayName": "Alpha",
+                "rating": 2.5,
+                "volume_py": 1.0,
+            },
         ]
         _mock_bottom_systems(mocker, systems)
         result = MaintainabilityTopSystemsTable.value()
@@ -78,7 +99,12 @@ class TestMaintainabilityTopSystemsTable:
 
     def test_volume_in_row(self, mocker):
         systems = [
-            {"systemName": "alpha", "displayName": "Alpha", "rating": 2.0, "volume_py": 4.2},
+            {
+                "systemName": "alpha",
+                "displayName": "Alpha",
+                "rating": 2.0,
+                "volume_py": 4.2,
+            },
         ]
         _mock_bottom_systems(mocker, systems)
         result = MaintainabilityTopSystemsTable.value()
@@ -86,7 +112,12 @@ class TestMaintainabilityTopSystemsTable:
 
     def test_link_url_format(self, mocker):
         systems = [
-            {"systemName": "my-system", "displayName": "My System", "rating": 2.0, "volume_py": 1.0},
+            {
+                "systemName": "my-system",
+                "displayName": "My System",
+                "rating": 2.0,
+                "volume_py": 1.0,
+            },
         ]
         _mock_bottom_systems(mocker, systems)
         result = MaintainabilityTopSystemsTable.value()

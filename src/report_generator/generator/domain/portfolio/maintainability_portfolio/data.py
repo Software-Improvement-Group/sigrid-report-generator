@@ -167,7 +167,7 @@ class MaintainabilityPortfolioData(RatedPortfolioMixin):
             "rating": snapshot["maintainability"],
             "volume_py": round(snapshot.get("volumeInPersonMonths", 0) / 12.0, 1),
         }
-    
+
     @cached_property
     def bottom_systems_by_maintainability_rating(self) -> list[dict]:
         entries = [

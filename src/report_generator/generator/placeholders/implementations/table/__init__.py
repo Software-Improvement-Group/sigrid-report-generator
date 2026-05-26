@@ -14,7 +14,13 @@
 
 import inspect
 
-from . import functional_suitability_top_systems, maintainability_top_systems, refactoring_candidates, reliability_findings, security_findings
+from . import (
+    functional_suitability_top_systems,
+    maintainability_top_systems,
+    refactoring_candidates,
+    reliability_findings,
+    security_findings,
+)
 
 _all_implementations = {
     **refactoring_candidates.__dict__,

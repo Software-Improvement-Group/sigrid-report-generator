@@ -17,7 +17,9 @@ from report_generator.generator.domain import (
     maintainability_portfolio_data,
     npr_5333_functional_suitability_portfolio_data,
 )
-from report_generator.generator.placeholders.formatting.formatters import ratio_to_percentage
+from report_generator.generator.placeholders.formatting.formatters import (
+    ratio_to_percentage,
+)
 from report_generator.generator.placeholders.implementations.table.base import (
     Hyperlink,
     TableMatrix,
@@ -35,7 +37,11 @@ class FunctionalSuitabilityTopSystemsTable(TablePlaceholder):
 
     @classmethod
     def value(cls) -> TableMatrix:
-        systems = npr_5333_functional_suitability_portfolio_data.top_systems_by_finding_count[:_TOP_N]
+        systems = (
+            npr_5333_functional_suitability_portfolio_data.top_systems_by_finding_count[
+                :_TOP_N
+            ]
+        )
         return [_HEADER] + [cls._format_row(entry) for entry in systems]
 
     @classmethod
@@ -43,10 +49,14 @@ class FunctionalSuitabilityTopSystemsTable(TablePlaceholder):
         system_name = entry["systemName"]
         snapshot = maintainability_portfolio_data.end_snapshot(system_name)
         test_code_ratio = snapshot.get("testCodeRatio") if snapshot else None
-        display_name = maintainability_portfolio_data.get_system_display_name(system_name)
+        display_name = maintainability_portfolio_data.get_system_display_name(
+            system_name
+        )
         return [
             display_name,
-            ratio_to_percentage(test_code_ratio) if test_code_ratio is not None else "N/A",
+            ratio_to_percentage(test_code_ratio)
+            if test_code_ratio is not None
+            else "N/A",
             entry["finding_count"],
             Hyperlink(
                 "link",

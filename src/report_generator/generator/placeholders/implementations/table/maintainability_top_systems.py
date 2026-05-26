@@ -35,7 +35,11 @@ class MaintainabilityTopSystemsTable(TablePlaceholder):
 
     @classmethod
     def value(cls) -> TableMatrix:
-        systems = maintainability_portfolio_data.bottom_systems_by_maintainability_rating[:_TOP_N]
+        systems = (
+            maintainability_portfolio_data.bottom_systems_by_maintainability_rating[
+                :_TOP_N
+            ]
+        )
         return [_HEADER] + [cls._format_row(entry) for entry in systems]
 
     @classmethod

@@ -26,4 +26,6 @@ class ReliabilityFindingsTopSystemsTable(FindingsTopSystemsTableBase):
 
     @classmethod
     def _get_systems(cls) -> list[dict]:
-        return reliability_ratings_portfolio_data.top_systems_by_findings_above_objective
+        return (
+            reliability_ratings_portfolio_data.top_systems_by_findings_above_objective
+        )

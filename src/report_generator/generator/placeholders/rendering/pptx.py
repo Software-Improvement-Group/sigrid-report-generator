@@ -37,6 +37,7 @@ from .common import (
     merge_runs_with_same_formatting,
 )
 
+
 @dataclass
 class Hyperlink:
     text: str

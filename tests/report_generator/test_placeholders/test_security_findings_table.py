@@ -12,8 +12,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import pytest
 from unittest.mock import PropertyMock
+
+import pytest
 
 from report_generator.generator.context import sigrid_api
 from report_generator.generator.domain import security_ratings_portfolio_data
@@ -53,8 +54,18 @@ class TestSecurityFindingsTopSystemsTable:
 
     def test_data_rows_are_in_order(self, mocker):
         systems = [
-            {"systemName": "alpha", "displayName": "Alpha", "findings_above_objective": 10, "rating": 3.5},
-            {"systemName": "beta", "displayName": "Beta", "findings_above_objective": 5, "rating": 2.0},
+            {
+                "systemName": "alpha",
+                "displayName": "Alpha",
+                "findings_above_objective": 10,
+                "rating": 3.5,
+            },
+            {
+                "systemName": "beta",
+                "displayName": "Beta",
+                "findings_above_objective": 5,
+                "rating": 2.0,
+            },
         ]
         _mock_top_systems(mocker, systems)
         result = SecurityFindingsTopSystemsTable.value()
@@ -63,7 +74,12 @@ class TestSecurityFindingsTopSystemsTable:
 
     def test_finding_count_in_row(self, mocker):
         systems = [
-            {"systemName": "alpha", "displayName": "Alpha", "findings_above_objective": 10, "rating": 3.5},
+            {
+                "systemName": "alpha",
+                "displayName": "Alpha",
+                "findings_above_objective": 10,
+                "rating": 3.5,
+            },
         ]
         _mock_top_systems(mocker, systems)
         result = SecurityFindingsTopSystemsTable.value()
