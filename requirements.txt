@@ -1,7 +1,6 @@
 # Production dependencies for sigrid-report-generator
-# These are mirrored from setup.cfg [options] install_requires section
-# When updating dependencies, keep both files in sync
-# All dependencies pinned to explicit versions for reproducibility
+# Pinned versions for reproducible installs. setup.cfg uses >= minimums.
+# When updating dependencies, keep both files in sync.
 
 mistune==3.2.1
 pyyaml==6.0.3
