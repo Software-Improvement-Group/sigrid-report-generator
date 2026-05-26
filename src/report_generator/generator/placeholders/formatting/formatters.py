@@ -47,6 +47,12 @@ def calculate_stars(maintainability_rating: float) -> str:
     return ratings[star_rating - 1]
 
 
+def print_star() -> str:
+    if _USE_SIG_STERREN:
+        return "H"
+    return "★"
+
+
 def maintainability_round(rating) -> str:
     logging.warning(
         "maintainability_round is deprecated and will be removed, use star_rating_round instead"

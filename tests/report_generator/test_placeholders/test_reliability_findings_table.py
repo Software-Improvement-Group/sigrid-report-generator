@@ -15,10 +15,10 @@
 import pytest
 
 from report_generator.generator.context import sigrid_api
-from report_generator.generator.domain import security_ratings_portfolio_data
+from report_generator.generator.domain import reliability_ratings_portfolio_data
 from report_generator.generator.placeholders.formatting import formatters
-from report_generator.generator.placeholders.implementations.table.security_findings import (
-    SecurityFindingsTopSystemsTable,
+from report_generator.generator.placeholders.implementations.table.reliability_findings import (
+    ReliabilityFindingsTopSystemsTable,
 )
 from report_generator.generator.placeholders.rendering.pptx import Hyperlink
 
@@ -31,16 +31,16 @@ def set_customer(monkeypatch):
 
 def _mock_top_systems(mocker, systems):
     mocker.patch.object(
-        type(security_ratings_portfolio_data),
+        type(reliability_ratings_portfolio_data),
         "top_systems_by_findings_above_objective",
         return_value=systems,
     )
 
 
-class TestSecurityFindingsTopSystemsTable:
+class TestReliabilityFindingsTopSystemsTable:
     def test_header_row(self, mocker):
         _mock_top_systems(mocker, [])
-        result = SecurityFindingsTopSystemsTable.value()
+        result = ReliabilityFindingsTopSystemsTable.value()
         assert result[0] == [
             "System",
             "Objective set",
@@ -55,7 +55,7 @@ class TestSecurityFindingsTopSystemsTable:
             {"systemName": "beta", "findings_above_objective": 5, "rating": 2.0},
         ]
         _mock_top_systems(mocker, systems)
-        result = SecurityFindingsTopSystemsTable.value()
+        result = ReliabilityFindingsTopSystemsTable.value()
         assert result[1][0] == "alpha"
         assert result[2][0] == "beta"
 
@@ -64,7 +64,7 @@ class TestSecurityFindingsTopSystemsTable:
             {"systemName": "alpha", "findings_above_objective": 10, "rating": 3.5},
         ]
         _mock_top_systems(mocker, systems)
-        result = SecurityFindingsTopSystemsTable.value()
+        result = ReliabilityFindingsTopSystemsTable.value()
         assert result[1][2] == 10
 
     def test_star_rating_in_row(self, mocker):
@@ -77,7 +77,7 @@ class TestSecurityFindingsTopSystemsTable:
             },
         ]
         _mock_top_systems(mocker, systems)
-        result = SecurityFindingsTopSystemsTable.value()
+        result = ReliabilityFindingsTopSystemsTable.value()
         assert result[1][3] == "3.5★"
 
     def test_link_url_format(self, mocker):
@@ -90,9 +90,9 @@ class TestSecurityFindingsTopSystemsTable:
             },
         ]
         _mock_top_systems(mocker, systems)
-        result = SecurityFindingsTopSystemsTable.value()
+        result = ReliabilityFindingsTopSystemsTable.value()
         assert result[1][4] == Hyperlink(
-            "link", "https://sigrid-says.com/test-customer/my-system/-/security"
+            "link", "https://sigrid-says.com/test-customer/my-system/-/reliability"
         )
 
     def test_none_rating_shows_na(self, mocker):
@@ -105,7 +105,7 @@ class TestSecurityFindingsTopSystemsTable:
             },
         ]
         _mock_top_systems(mocker, systems)
-        result = SecurityFindingsTopSystemsTable.value()
+        result = ReliabilityFindingsTopSystemsTable.value()
         assert result[1][3] == "N/A"
 
     def test_objective_set_with_target(self, mocker):
@@ -118,8 +118,8 @@ class TestSecurityFindingsTopSystemsTable:
             },
         ]
         _mock_top_systems(mocker, systems)
-        result = SecurityFindingsTopSystemsTable.value()
-        assert result[1][1] == "\u2265 High"
+        result = ReliabilityFindingsTopSystemsTable.value()
+        assert result[1][1] == "≥ High"
 
     def test_objective_set_none_shows_na(self, mocker):
         systems = [
@@ -131,10 +131,10 @@ class TestSecurityFindingsTopSystemsTable:
             },
         ]
         _mock_top_systems(mocker, systems)
-        result = SecurityFindingsTopSystemsTable.value()
+        result = ReliabilityFindingsTopSystemsTable.value()
         assert result[1][1] == "N/A"
 
     def test_empty_systems_returns_header_only(self, mocker):
         _mock_top_systems(mocker, [])
-        result = SecurityFindingsTopSystemsTable.value()
+        result = ReliabilityFindingsTopSystemsTable.value()
         assert len(result) == 1

@@ -12,20 +12,22 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from report_generator.generator.domain import security_ratings_portfolio_data
+from report_generator.generator.domain import reliability_ratings_portfolio_data
 from report_generator.generator.placeholders.implementations.table.findings_table_base import (
     FindingsTopSystemsTableBase,
 )
 
 
-class SecurityFindingsTopSystemsTable(FindingsTopSystemsTableBase):
-    """Table of the top 10 systems with the most open security findings above objective. Headers are: System, Objective set, Findings above objective, Rating, Link."""
+class ReliabilityFindingsTopSystemsTable(FindingsTopSystemsTableBase):
+    """Table of the top 10 systems with the most open reliability findings above objective. Headers are: System, Objective set, Findings above objective, Rating, Link."""
 
-    key = "SECURITY_FINDINGS_TOP_SYSTEMS_TABLE"
-    _url_path = "security"
+    key = "RELIABILITY_FINDINGS_TOP_SYSTEMS_TABLE"
+    _url_path = "reliability"
 
     @classmethod
     def _get_systems(cls, limit: int) -> list[dict]:
-        return security_ratings_portfolio_data.top_systems_by_findings_above_objective(
-            limit
+        return (
+            reliability_ratings_portfolio_data.top_systems_by_findings_above_objective(
+                limit
+            )
         )
