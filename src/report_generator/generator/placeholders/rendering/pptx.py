@@ -20,7 +20,6 @@ from typing import Union
 
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE_TYPE
-from pptx.oxml.ns import qn
 from pptx.oxml.xmlchemy import OxmlElement
 from pptx.presentation import Presentation
 
@@ -36,11 +35,6 @@ from .common import (
     get_font_properties,
     merge_runs_with_same_formatting,
 )
-
-_HYPERLINK_RELATIONSHIP_TYPE = (
-    "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"
-)
-
 
 @dataclass
 class Hyperlink:
@@ -342,13 +336,7 @@ def update_table(table: Table, value: list[list[Union[str, int, float]]]):
 
 def _apply_hyperlink(run: _Run, hyperlink: Hyperlink) -> None:
     run.text = hyperlink.text
-    relationship_id = run._r.part.relate_to(
-        hyperlink.url, _HYPERLINK_RELATIONSHIP_TYPE, is_external=True
-    )
-    run_properties = run._r.get_or_add_rPr()
-    hyperlink_element = OxmlElement("a:hlinkClick")
-    hyperlink_element.set(qn("r:id"), relationship_id)
-    run_properties.append(hyperlink_element)
+    run.hyperlink.address = hyperlink.url
 
 
 def replace_paragraph_with_text(
