@@ -55,7 +55,7 @@ class FindingsTopSystemsTableBase(TablePlaceholder):
         rating = entry.get("rating")
         objective_target = entry.get("objective_target")
         return [
-            system_name,
+            entry["displayName"],
             f"\u2265 {objective_target.title()}" if objective_target else "N/A",
             entry["findings_above_objective"],
             f"{star_rating_round(rating)}{print_star()}"

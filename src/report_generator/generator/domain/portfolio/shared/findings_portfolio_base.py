@@ -47,6 +47,16 @@ class FindingsRatingsPortfolioBase(RatedPortfolioMixin):
     _findings_api_method: str = ""
 
     @cached_property
+    def metadata(self):
+        return sigrid_api.get_portfolio_metadata()
+
+    def get_display_name(self, system_name: str) -> str:
+        md = utils.get_system_metadata(self.metadata, system_name)
+        if md is None:
+            return system_name
+        return md.get("displayName") or system_name
+
+    @cached_property
     @filter_data_on_portfolio_arguments(system_tag="systemName")
     def data(self):
         return sorted(
@@ -119,6 +129,7 @@ class FindingsRatingsPortfolioBase(RatedPortfolioMixin):
         return [
             {
                 "systemName": entry["systemName"],
+                "displayName": self.get_display_name(entry["systemName"]),
                 "findings_above_objective": entry["findings_above_objective"],
                 "rating": ratings_index.get(entry["systemName"]),
                 "objective_target": (

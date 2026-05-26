@@ -51,17 +51,17 @@ class TestReliabilityFindingsTopSystemsTable:
 
     def test_data_rows_are_in_order(self, mocker):
         systems = [
-            {"systemName": "alpha", "findings_above_objective": 10, "rating": 3.5},
-            {"systemName": "beta", "findings_above_objective": 5, "rating": 2.0},
+            {"systemName": "alpha", "displayName": "Alpha", "findings_above_objective": 10, "rating": 3.5},
+            {"systemName": "beta", "displayName": "Beta", "findings_above_objective": 5, "rating": 2.0},
         ]
         _mock_top_systems(mocker, systems)
         result = ReliabilityFindingsTopSystemsTable.value()
-        assert result[1][0] == "alpha"
-        assert result[2][0] == "beta"
+        assert result[1][0] == "Alpha"
+        assert result[2][0] == "Beta"
 
     def test_finding_count_in_row(self, mocker):
         systems = [
-            {"systemName": "alpha", "findings_above_objective": 10, "rating": 3.5},
+            {"systemName": "alpha", "displayName": "Alpha", "findings_above_objective": 10, "rating": 3.5},
         ]
         _mock_top_systems(mocker, systems)
         result = ReliabilityFindingsTopSystemsTable.value()
@@ -71,6 +71,7 @@ class TestReliabilityFindingsTopSystemsTable:
         systems = [
             {
                 "systemName": "alpha",
+                "displayName": "Alpha",
                 "findings_above_objective": 10,
                 "rating": 3.5,
                 "objective_target": None,
@@ -84,6 +85,7 @@ class TestReliabilityFindingsTopSystemsTable:
         systems = [
             {
                 "systemName": "my-system",
+                "displayName": "My System",
                 "findings_above_objective": 3,
                 "rating": 4.0,
                 "objective_target": None,
@@ -99,6 +101,7 @@ class TestReliabilityFindingsTopSystemsTable:
         systems = [
             {
                 "systemName": "alpha",
+                "displayName": "Alpha",
                 "findings_above_objective": 5,
                 "rating": None,
                 "objective_target": None,
@@ -112,6 +115,7 @@ class TestReliabilityFindingsTopSystemsTable:
         systems = [
             {
                 "systemName": "alpha",
+                "displayName": "Alpha",
                 "findings_above_objective": 5,
                 "rating": 3.0,
                 "objective_target": "HIGH",
@@ -125,6 +129,7 @@ class TestReliabilityFindingsTopSystemsTable:
         systems = [
             {
                 "systemName": "alpha",
+                "displayName": "Alpha",
                 "findings_above_objective": 5,
                 "rating": 3.0,
                 "objective_target": None,
