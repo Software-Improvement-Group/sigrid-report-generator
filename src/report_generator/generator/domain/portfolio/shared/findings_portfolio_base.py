@@ -91,19 +91,39 @@ class FindingsRatingsPortfolioBase(RatedPortfolioMixin):
         return result
 
     @cached_property
-    def findings_above_objective(self):
+    def _objective_index(self) -> dict[str, dict | None]:
         period = Period(*sigrid_api.get_period())
         objectives_systems = sigrid_api.get_objectives_evaluation(period)["systems"]
-        objective_index = _build_objective_index(
-            objectives_systems, self._objective_type
-        )
+        return _build_objective_index(objectives_systems, self._objective_type)
+
+    @cached_property
+    def findings_above_objective(self):
         return [
             {
                 "systemName": entry["systemName"],
                 "findings_above_objective": count_findings_above_objective(
                     entry["findings"],
-                    objective_index.get(entry["systemName"]),
+                    self._objective_index.get(entry["systemName"]),
                 ),
             }
             for entry in self._raw_findings
+        ]
+
+    def top_systems_by_findings_above_objective(self, limit: int) -> list[dict]:
+        ratings_index = {s["systemName"]: s.get("rating") for s in self.data}
+        ranked = sorted(
+            self.findings_above_objective,
+            key=lambda e: e["findings_above_objective"],
+            reverse=True,
+        )
+        return [
+            {
+                "systemName": entry["systemName"],
+                "findings_above_objective": entry["findings_above_objective"],
+                "rating": ratings_index.get(entry["systemName"]),
+                "objective_target": (
+                    self._objective_index.get(entry["systemName"]) or {}
+                ).get("target"),
+            }
+            for entry in ranked[:limit]
         ]

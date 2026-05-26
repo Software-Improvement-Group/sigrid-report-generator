@@ -14,10 +14,11 @@
 
 import inspect
 
-from . import refactoring_candidates
+from . import refactoring_candidates, security_findings
 
 _all_implementations = {
     **refactoring_candidates.__dict__,
+    **security_findings.__dict__,
 }
 
 _placeholders_map = {

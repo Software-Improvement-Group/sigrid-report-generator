@@ -108,6 +108,20 @@ class Npr5333FunctionalSuitabilityPortfolioData:
             result.append({"systemName": system_name, "findings": filtered})
         return result
 
+    def top_systems_by_finding_count(self, limit: int) -> list[dict]:
+        ranked = sorted(
+            self.findings,
+            key=lambda e: len(e["findings"]),
+            reverse=True,
+        )
+        return [
+            {
+                "systemName": entry["systemName"],
+                "finding_count": len(entry["findings"]),
+            }
+            for entry in ranked[:limit]
+        ]
+
 
 npr_5333_functional_suitability_portfolio_data = (
     Npr5333FunctionalSuitabilityPortfolioData()
