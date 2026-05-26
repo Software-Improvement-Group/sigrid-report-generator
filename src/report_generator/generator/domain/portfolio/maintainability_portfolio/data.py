@@ -113,6 +113,8 @@ class MaintainabilityPortfolioData(RatedPortfolioMixin):
 
     def get_closest_snapshot(self, system, snapshot_date, ignore_head_entry=False):
         s = self.get_system(system)
+        if s is None:
+            return None
         head_entry = MaintainabilityPortfolioData._get_head_entry(s)
         if not s["allRatings"]:
             return head_entry
