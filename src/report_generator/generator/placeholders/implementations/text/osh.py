@@ -20,17 +20,6 @@ from report_generator.generator.placeholders.formatting.formatters import (
     format_percentage_excluding_100_percent,
     star_rating_round,
 )
-from report_generator.generator.placeholders.implementations.misc.color_rating import (
-    AbstractUrgencyShapePlaceholder,
-)
-from report_generator.generator.placeholders.implementations.shared.urgency import (
-    UrgencyColors,
-    exploit_probability_colors,
-    exploit_probability_label,
-    library_age_colors,
-    library_age_label,
-    urgency_colors,
-)
 from report_generator.generator.utils.constants import OSHMetric
 
 from ...formatting import smart_remarks
@@ -240,47 +229,6 @@ def osh_no_risk():
     """Number of dependency occurrences with no OSH risk."""
     return osh_data.library_risk_levels["no_risk"]
 
-
-class OSHKnownVulnerabilitiesUrgency(AbstractUrgencyShapePlaceholder):
-    """Colors a shape red, yellow, or green based on the urgency of known vulnerabilities."""
-
-    key = "OSH_KNOWN_VULNERABILITIES_URGENCY"
-
-    @classmethod
-    def value(cls):
-        return "review"
-
-    @classmethod
-    def _get_colors(cls) -> UrgencyColors:
-        return urgency_colors(osh_data.vulnerability_distribution)
-
-
-class OSHAverageLibraryAgeUrgency(AbstractUrgencyShapePlaceholder):
-    """Colors a shape red, orange, yellow, or green based on the average library age."""
-
-    key = "OSH_AVERAGE_LIBRARY_AGE_URGENCY"
-
-    @classmethod
-    def value(cls):
-        return library_age_label(statistics.mean(osh_data.age_distribution))
-
-    @classmethod
-    def _get_colors(cls) -> UrgencyColors:
-        return library_age_colors(statistics.mean(osh_data.age_distribution))
-
-
-class OSHExploitProbabilityUrgency(AbstractUrgencyShapePlaceholder):
-    """Colors a shape red, orange, yellow, or green based on the probability of exploit."""
-
-    key = "OSH_PROBABILITY_OF_EXPLOIT_URGENCY"
-
-    @classmethod
-    def value(cls):
-        return exploit_probability_label(osh_data.exploit_probability)
-
-    @classmethod
-    def _get_colors(cls) -> UrgencyColors:
-        return exploit_probability_colors(osh_data.exploit_probability)
 
 
 @text_placeholder()

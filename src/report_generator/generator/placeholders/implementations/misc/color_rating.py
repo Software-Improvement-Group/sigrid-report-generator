@@ -24,10 +24,6 @@ from report_generator.generator.placeholders.implementations.base import (
     ParameterizedPlaceholder,
     Placeholder,
 )
-from report_generator.generator.placeholders.implementations.shared.urgency import (
-    UrgencyColors,
-    urgency_width,
-)
 from report_generator.generator.placeholders.rendering.common import (
     FontColor,
     FontProperties,
@@ -57,35 +53,6 @@ def _apply_colored_shape(
         else None
     )
     rendering.pptx.update_many_paragraphs(paragraphs, key, display_value, font)
-
-
-class AbstractUrgencyShapePlaceholder(Placeholder, ABC):
-    """Colors a shape and sets text color based on urgency, with a right-anchored width."""
-
-    @classmethod
-    @abstractmethod
-    def _get_colors(cls) -> UrgencyColors: ...
-
-    @classmethod
-    def resolve_pptx(cls, presentation: Presentation, key: str, value_cb: Callable):
-        shapes = rendering.pptx.find_shapes_with_text(presentation, key)
-        paragraphs = rendering.pptx.find_text_in_presentation(presentation, key)
-        if not shapes and not paragraphs:
-            return
-        colors = cls._get_colors()
-        display_value = value_cb()
-        _apply_colored_shape(
-            shapes,
-            paragraphs,
-            key,
-            shape_props=ShapeProperties(
-                color=colors.shape,
-                width_inches=urgency_width(display_value),
-                width_anchor_right=True,
-            ),
-            display_value=display_value,
-            text_color=colors.text,
-        )
 
 
 class AbstractColorRatingPlaceholder(ParameterizedPlaceholder, ABC):

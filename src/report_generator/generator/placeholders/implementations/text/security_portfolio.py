@@ -21,13 +21,6 @@ from report_generator.generator.domain import (
 from report_generator.generator.placeholders.formatting.formatters import (
     star_rating_round,
 )
-from report_generator.generator.placeholders.implementations.misc.color_rating import (
-    AbstractUrgencyShapePlaceholder,
-)
-from report_generator.generator.placeholders.implementations.shared.urgency import (
-    UrgencyColors,
-    urgency_colors,
-)
 
 from .base import text_placeholder
 
@@ -401,24 +394,3 @@ def security_portfolio_cvss_medium_raw():
 def security_portfolio_cvss_low_raw():
     """Number of security findings with CVSS low severity across the portfolio."""
     return f"{security_findings_portfolio_data.count_findings('LOW')}"
-
-
-class SecurityPortfolioCVSSUrgency(AbstractUrgencyShapePlaceholder):
-    """Colors a shape and sets text based on the urgency of security findings across the portfolio."""
-
-    key = "SECURITY_PORTFOLIO_CVSS_URGENCY"
-
-    @classmethod
-    def value(cls):
-        return "review"
-
-    @classmethod
-    def _get_colors(cls) -> UrgencyColors:
-        return urgency_colors(
-            {
-                "critical": security_findings_portfolio_data.count_findings("CRITICAL"),
-                "high": security_findings_portfolio_data.count_findings("HIGH"),
-                "medium": security_findings_portfolio_data.count_findings("MEDIUM"),
-                "low": security_findings_portfolio_data.count_findings("LOW"),
-            }
-        )

@@ -19,6 +19,7 @@ from . import (
     color_rating,
     moveable_marker,
     scatter_plot_chart,
+    urgency_shape,
 )
 
 _all_implementations = {
@@ -26,6 +27,7 @@ _all_implementations = {
     **color_rating.__dict__,
     **moveable_marker.__dict__,
     **scatter_plot_chart.__dict__,
+    **urgency_shape.__dict__,
 }
 
 _placeholders_map = {
