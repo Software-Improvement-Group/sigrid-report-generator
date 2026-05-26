@@ -153,3 +153,27 @@ class MaintainabilityPortfolioData(RatedPortfolioMixin):
         rating = end_snapshot["maintainability"]
         volume = end_snapshot.get("volumeInPersonMonths", 0)
         return rating, volume
+
+    def _build_rating_entry(self, system_name: str) -> dict | None:
+        md = utils.get_system_metadata(self.metadata, system_name)
+        if not is_system_active(md):
+            return None
+        snapshot = self.end_snapshot(system_name)
+        if snapshot is None:
+            return None
+        return {
+            "systemName": system_name,
+            "displayName": self.get_system_display_name(system_name),
+            "rating": snapshot["maintainability"],
+            "volume_py": round(snapshot.get("volumeInPersonMonths", 0) / 12.0, 1),
+        }
+    
+    @cached_property
+    def bottom_systems_by_maintainability_rating(self) -> list[dict]:
+        entries = [
+            entry
+            for system_name in self.system_names
+            if (entry := self._build_rating_entry(system_name)) is not None
+        ]
+        entries.sort(key=lambda e: e["rating"])
+        return entries
