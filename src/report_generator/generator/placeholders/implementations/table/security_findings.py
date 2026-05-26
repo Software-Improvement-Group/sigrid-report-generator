@@ -25,7 +25,5 @@ class SecurityFindingsTopSystemsTable(FindingsTopSystemsTableBase):
     _url_path = "security"
 
     @classmethod
-    def _get_systems(cls, limit: int) -> list[dict]:
-        return security_ratings_portfolio_data.top_systems_by_findings_above_objective(
-            limit
-        )
+    def _get_systems(cls) -> list[dict]:
+        return security_ratings_portfolio_data.top_systems_by_findings_above_objective

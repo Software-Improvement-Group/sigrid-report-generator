@@ -13,6 +13,7 @@
 #  limitations under the License.
 
 import pytest
+from unittest.mock import PropertyMock
 
 from report_generator.generator.context import sigrid_api
 from report_generator.generator.domain import maintainability_portfolio_data
@@ -33,6 +34,7 @@ def _mock_bottom_systems(mocker, systems):
     mocker.patch.object(
         type(maintainability_portfolio_data),
         "bottom_systems_by_maintainability_rating",
+        new_callable=PropertyMock,
         return_value=systems,
     )
 

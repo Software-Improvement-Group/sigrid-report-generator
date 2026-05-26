@@ -42,12 +42,12 @@ class FindingsTopSystemsTableBase(TablePlaceholder):
 
     @classmethod
     @abstractmethod
-    def _get_systems(cls, limit: int) -> list[dict]:
+    def _get_systems(cls) -> list[dict]:
         """Return top systems from the relevant domain data object."""
 
     @classmethod
     def value(cls) -> TableMatrix:
-        return cls._to_table_matrix(cls._get_systems(_TOP_N))
+        return cls._to_table_matrix(cls._get_systems()[:_TOP_N])
 
     @classmethod
     def _format_row(cls, entry: dict) -> list:

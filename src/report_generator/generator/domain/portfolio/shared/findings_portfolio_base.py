@@ -119,7 +119,8 @@ class FindingsRatingsPortfolioBase(RatedPortfolioMixin):
             for entry in self._raw_findings
         ]
 
-    def top_systems_by_findings_above_objective(self, limit: int) -> list[dict]:
+    @cached_property
+    def top_systems_by_findings_above_objective(self) -> list[dict]:
         ratings_index = {s["systemName"]: s.get("rating") for s in self.data}
         ranked = sorted(
             self.findings_above_objective,
@@ -136,5 +137,5 @@ class FindingsRatingsPortfolioBase(RatedPortfolioMixin):
                     self._objective_index.get(entry["systemName"]) or {}
                 ).get("target"),
             }
-            for entry in ranked[:limit]
+            for entry in ranked
         ]

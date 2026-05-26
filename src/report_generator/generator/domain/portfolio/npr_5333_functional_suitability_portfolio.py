@@ -108,7 +108,8 @@ class Npr5333FunctionalSuitabilityPortfolioData:
             result.append({"systemName": system_name, "findings": filtered})
         return result
 
-    def top_systems_by_finding_count(self, limit: int) -> list[dict]:
+    @cached_property
+    def top_systems_by_finding_count(self) -> list[dict]:
         ranked = sorted(
             self.findings,
             key=lambda e: len(e["findings"]),
@@ -119,7 +120,7 @@ class Npr5333FunctionalSuitabilityPortfolioData:
                 "systemName": entry["systemName"],
                 "finding_count": len(entry["findings"]),
             }
-            for entry in ranked[:limit]
+            for entry in ranked
         ]
 
 
