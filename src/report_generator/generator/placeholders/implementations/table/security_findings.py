@@ -19,7 +19,7 @@ from report_generator.generator.placeholders.implementations.table.findings_tabl
 
 
 class SecurityFindingsTopSystemsTable(FindingsTopSystemsTableBase):
-    """Table of the top 10 systems with the most open security findings above objective. Headers are: System, Objective set, Findings above objective, Rating, Link."""
+    """Table of the top 10 systems with the most open security findings above objective. Headers are: System, Objective set, Findings above objective, Rating, Sigrid Link."""
 
     key = "SECURITY_FINDINGS_TOP_SYSTEMS_TABLE"
     _url_path = "security"

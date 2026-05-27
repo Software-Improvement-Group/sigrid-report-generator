@@ -19,7 +19,7 @@ from report_generator.generator.placeholders.implementations.table.findings_tabl
 
 
 class ReliabilityFindingsTopSystemsTable(FindingsTopSystemsTableBase):
-    """Table of the top 10 systems with the most open reliability findings above objective. Headers are: System, Objective set, Findings above objective, Rating, Link."""
+    """Table of the top 10 systems with the most open reliability findings above objective. Headers are: System, Objective set, Findings above objective, Rating, Sigrid Link."""
 
     key = "RELIABILITY_FINDINGS_TOP_SYSTEMS_TABLE"
     _url_path = "reliability"
