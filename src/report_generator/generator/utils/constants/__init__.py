@@ -43,4 +43,5 @@ __all__ = [
     "MaintMetric",
     "MetricEnum",
     "OSHMetric",
+    "SEVERITY_ORDER",
 ]
