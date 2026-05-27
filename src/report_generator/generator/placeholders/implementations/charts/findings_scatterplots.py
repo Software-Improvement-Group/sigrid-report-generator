@@ -19,7 +19,6 @@ from pptx.chart.data import XyChartData
 from pptx.presentation import Presentation
 
 from report_generator.generator.domain import (
-    maintainability_portfolio_data,
     npr_5333_functional_suitability_portfolio_data,
     reliability_ratings_portfolio_data,
     security_ratings_portfolio_data,
@@ -73,9 +72,7 @@ def _collect_points(
         if rating is None:
             continue
         points.append((findings_by_name.get(system_name, 0), rating))
-        display_names.append(
-            maintainability_portfolio_data.get_system_display_name(system_name)
-        )
+        display_names.append(domain_data.get_display_name(system_name))
     return points, display_names
 
 
@@ -103,38 +100,30 @@ def _populate_functional_suitability_charts(
             point.data_label.text_frame.text = display_names[i]
 
 
+def _build_functional_suitability_chart_series(
+    entries: list[dict],
+) -> tuple[XyChartData, list[str]]:
+    chart_data = XyChartData()
+    series = chart_data.add_series("Functional Suitability")
+    for entry in entries:
+        series.add_data_point(entry["finding_count"], entry["test_code_ratio"])
+    return chart_data, [entry["display_name"] for entry in entries]
+
+
 def _build_functional_suitability_scatterplot_data() -> tuple[
     XyChartData, list[str], _FunctionalSuitabilityBounds
 ]:
-    findings_count_index = {
-        entry["systemName"]: len(entry["findings"])
-        for entry in npr_5333_functional_suitability_portfolio_data.findings
-    }
-    points, display_names = _collect_functional_suitability_points(findings_count_index)
-    chart_data = XyChartData()
-    series = chart_data.add_series("Functional Suitability")
-    for x, y in points:
-        series.add_data_point(x, y)
-    max_x = findings_x_axis_max(max(findings_count_index.values(), default=0))
-    max_y = _functional_suitability_y_axis_max(max((y for _, y in points), default=0.0))
+    entries = [
+        e
+        for e in npr_5333_functional_suitability_portfolio_data.top_systems_by_finding_count
+        if e["test_code_ratio"] is not None
+    ]
+    chart_data, display_names = _build_functional_suitability_chart_series(entries)
+    max_x = findings_x_axis_max(max((e["finding_count"] for e in entries), default=0))
+    max_y = _functional_suitability_y_axis_max(
+        max((e["test_code_ratio"] for e in entries), default=0.0)
+    )
     return chart_data, display_names, _FunctionalSuitabilityBounds(max_x, max_y)
-
-
-def _collect_functional_suitability_points(
-    findings_count_index: dict[str, int],
-) -> tuple[list, list[str]]:
-    points = []
-    display_names = []
-    for system_name in npr_5333_functional_suitability_portfolio_data.system_names:
-        snapshot = maintainability_portfolio_data.end_snapshot(system_name)
-        test_code_ratio = snapshot.get("testCodeRatio") if snapshot else None
-        if test_code_ratio is None:
-            continue
-        points.append((findings_count_index.get(system_name, 0), test_code_ratio))
-        display_names.append(
-            maintainability_portfolio_data.get_system_display_name(system_name)
-        )
-    return points, display_names
 
 
 def _resolve_scatterplot_pptx(

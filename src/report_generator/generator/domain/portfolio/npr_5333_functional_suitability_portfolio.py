@@ -19,6 +19,9 @@ from report_generator.generator.context import sigrid_api
 from report_generator.generator.context.portfolio_filters import (
     filter_data_on_portfolio_arguments,
 )
+from report_generator.generator.domain.portfolio.maintainability_portfolio import (
+    maintainability_portfolio_data,
+)
 
 _NPR5333_FUNCTIONAL_SUITABILITY_CWES: frozenset[str] = frozenset(
     [
@@ -54,7 +57,10 @@ def _fetch_findings(method_name: str, system_name: str) -> list:
     try:
         return getattr(sigrid_api, method_name)(system_name)
     except Exception:
-        logging.warning(f"Could not retrieve {method_name} for system '{system_name}'")
+        logging.warning(
+            f"Could not retrieve {method_name} for system '{system_name}'",
+            exc_info=True,
+        )
         return []
 
 
@@ -108,20 +114,22 @@ class Npr5333FunctionalSuitabilityPortfolioData:
             result.append({"systemName": system_name, "findings": filtered})
         return result
 
+    def _enrich_with_maintainability(self, entry: dict) -> dict:
+        system_name = entry["systemName"]
+        snapshot = maintainability_portfolio_data.end_snapshot(system_name)
+        return {
+            "systemName": system_name,
+            "display_name": maintainability_portfolio_data.get_system_display_name(
+                system_name
+            ),
+            "finding_count": len(entry["findings"]),
+            "test_code_ratio": snapshot.get("testCodeRatio") if snapshot else None,
+        }
+
     @cached_property
     def top_systems_by_finding_count(self) -> list[dict]:
-        ranked = sorted(
-            self.findings,
-            key=lambda e: len(e["findings"]),
-            reverse=True,
-        )
-        return [
-            {
-                "systemName": entry["systemName"],
-                "finding_count": len(entry["findings"]),
-            }
-            for entry in ranked
-        ]
+        ranked = sorted(self.findings, key=lambda e: len(e["findings"]), reverse=True)
+        return [self._enrich_with_maintainability(entry) for entry in ranked]
 
 
 npr_5333_functional_suitability_portfolio_data = (

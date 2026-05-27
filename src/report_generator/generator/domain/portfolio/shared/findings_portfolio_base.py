@@ -94,7 +94,8 @@ class FindingsRatingsPortfolioBase(RatedPortfolioMixin):
                 findings = getattr(sigrid_api, self._findings_api_method)(system_name)
             except Exception:
                 logging.warning(
-                    f"Could not retrieve findings for system '{system_name}'"
+                    f"Could not retrieve findings for system '{system_name}'",
+                    exc_info=True,
                 )
                 findings = []
             result.append({"systemName": system_name, "findings": findings})
