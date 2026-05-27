@@ -36,9 +36,11 @@ class FunctionalSuitabilityTopSystemsTable(TablePlaceholder):
 
     @classmethod
     def value(cls) -> TableMatrix:
-        systems = npr_5333_functional_suitability_portfolio_data.top_systems_by_finding_count[
-            :_TOP_N
-        ]
+        systems = (
+            npr_5333_functional_suitability_portfolio_data.top_systems_by_finding_count[
+                :_TOP_N
+            ]
+        )
         return [_HEADER] + [cls._format_row(entry) for entry in systems]
 
     @classmethod
