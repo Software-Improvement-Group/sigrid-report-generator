@@ -34,6 +34,10 @@ def is_system_active(metadata):
 
 
 class MaintainabilityPortfolioData(RatedPortfolioMixin):
+    @property
+    def customer(self) -> str:
+        return sigrid_api.get_customer()
+
     @cached_property
     def metadata(self):
         return sigrid_api.get_portfolio_metadata()

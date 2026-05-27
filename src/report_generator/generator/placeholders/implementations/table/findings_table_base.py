@@ -14,8 +14,11 @@
 
 from abc import abstractmethod
 
-from report_generator.generator.context import sigrid_api
+from report_generator.generator.domain.portfolio.shared.findings_portfolio_base import (
+    FindingsRatingsPortfolioBase,
+)
 from report_generator.generator.placeholders.formatting.formatters import (
+    build_sigrid_link,
     print_star,
     star_rating_round,
 )
@@ -42,12 +45,25 @@ class FindingsTopSystemsTableBase(TablePlaceholder):
 
     @classmethod
     @abstractmethod
+    def _get_domain_data(cls) -> FindingsRatingsPortfolioBase:
+        """Return the domain data object for the relevant capability."""
+
+    @classmethod
     def _get_systems(cls) -> list[dict]:
-        """Return top systems from the relevant domain data object."""
+        return cls._get_domain_data().top_systems_by_findings_above_objective
 
     @classmethod
     def value(cls) -> TableMatrix:
         return cls._to_table_matrix(cls._get_systems()[:_TOP_N])
+
+    @classmethod
+    def _format_link(cls, system_name: str) -> Hyperlink:
+        return Hyperlink(
+            "link",
+            build_sigrid_link(
+                cls._get_domain_data().customer, system_name, cls._url_path
+            ),
+        )
 
     @classmethod
     def _format_row(cls, entry: dict) -> list:
@@ -61,10 +77,7 @@ class FindingsTopSystemsTableBase(TablePlaceholder):
             f"{star_rating_round(rating)}{print_star()}"
             if rating is not None
             else "N/A",
-            Hyperlink(
-                "link",
-                f"https://sigrid-says.com/{sigrid_api._customer}/{system_name}/-/{cls._url_path}",
-            ),
+            cls._format_link(system_name),
         ]
 
     @classmethod

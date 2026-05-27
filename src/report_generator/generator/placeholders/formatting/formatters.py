@@ -124,3 +124,7 @@ def format_percentage_excluding_100_percent(percentage: float) -> str:
     if percentage > 0.99:
         return ">99%"
     return f"{percentage:.0%}"
+
+
+def build_sigrid_link(customer: str, system_name: str, path: str) -> str:
+    return f"https://sigrid-says.com/{customer}/{system_name}/-/{path}"

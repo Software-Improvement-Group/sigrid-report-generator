@@ -127,6 +127,12 @@ def get_period() -> tuple[str, str]:
     return _period
 
 
+def get_customer() -> str:
+    if _customer is None:
+        raise ValueError("Customer not set. Call sigrid_api.set_context() first.")
+    return _customer
+
+
 def _check_context() -> None:
     missing_values = []
 

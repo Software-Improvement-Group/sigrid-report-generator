@@ -171,9 +171,9 @@ class MaintainabilityData:
         except ValueError:
             # TODO: Temporary fix; this will be retrieved from an endpoint in the future.
             return (
-                sigrid_api._customer.capitalize()
-                if len(sigrid_api._customer) > 3
-                else sigrid_api._customer.upper()
+                sigrid_api.get_customer().capitalize()
+                if len(sigrid_api.get_customer()) > 3
+                else sigrid_api.get_customer().upper()
             )
 
     @cached_property

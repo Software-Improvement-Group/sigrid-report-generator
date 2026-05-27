@@ -77,6 +77,10 @@ def _merge_and_deduplicate(reliability: list, security: list) -> list:
 
 
 class Npr5333FunctionalSuitabilityPortfolioData:
+    @property
+    def customer(self) -> str:
+        return sigrid_api.get_customer()
+
     @cached_property
     @filter_data_on_portfolio_arguments(system_tag="systemName")
     def _reliability_ratings(self):

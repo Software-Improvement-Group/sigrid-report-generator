@@ -12,9 +12,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from report_generator.generator.context import sigrid_api
 from report_generator.generator.domain import maintainability_portfolio_data
 from report_generator.generator.placeholders.formatting.formatters import (
+    build_sigrid_link,
     print_star,
     star_rating_round,
 )
@@ -51,6 +51,10 @@ class MaintainabilityTopSystemsTable(TablePlaceholder):
             entry["volume_py"],
             Hyperlink(
                 "link",
-                f"https://sigrid-says.com/{sigrid_api._customer}/{system_name}/-/maintainability",
+                build_sigrid_link(
+                    maintainability_portfolio_data.customer,
+                    system_name,
+                    "maintainability",
+                ),
             ),
         ]

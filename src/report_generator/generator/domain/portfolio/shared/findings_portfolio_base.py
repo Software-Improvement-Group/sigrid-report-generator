@@ -46,6 +46,10 @@ class FindingsRatingsPortfolioBase(RatedPortfolioMixin):
     _portfolio_ratings_api_method: str = ""
     _findings_api_method: str = ""
 
+    @property
+    def customer(self) -> str:
+        return sigrid_api.get_customer()
+
     @cached_property
     def metadata(self):
         return sigrid_api.get_portfolio_metadata()

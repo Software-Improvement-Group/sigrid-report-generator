@@ -12,11 +12,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from report_generator.generator.context import sigrid_api
 from report_generator.generator.domain import (
     npr_5333_functional_suitability_portfolio_data,
 )
 from report_generator.generator.placeholders.formatting.formatters import (
+    build_sigrid_link,
     ratio_to_percentage,
 )
 from report_generator.generator.placeholders.implementations.table.base import (
@@ -36,24 +36,31 @@ class FunctionalSuitabilityTopSystemsTable(TablePlaceholder):
 
     @classmethod
     def value(cls) -> TableMatrix:
-        systems = (
-            npr_5333_functional_suitability_portfolio_data.top_systems_by_finding_count[
-                :_TOP_N
-            ]
-        )
+        systems = npr_5333_functional_suitability_portfolio_data.top_systems_with_maintainability[
+            :_TOP_N
+        ]
         return [_HEADER] + [cls._format_row(entry) for entry in systems]
+
+    @classmethod
+    def _format_link(cls, system_name: str) -> Hyperlink:
+        return Hyperlink(
+            "link",
+            build_sigrid_link(
+                npr_5333_functional_suitability_portfolio_data.customer,
+                system_name,
+                "overview",
+            ),
+        )
 
     @classmethod
     def _format_row(cls, entry: dict) -> list:
         system_name = entry["systemName"]
+        test_code_ratio = entry["test_code_ratio"]
         return [
             entry["display_name"],
-            ratio_to_percentage(entry["test_code_ratio"])
-            if entry["test_code_ratio"] is not None
+            ratio_to_percentage(test_code_ratio)
+            if test_code_ratio is not None
             else "N/A",
             entry["finding_count"],
-            Hyperlink(
-                "link",
-                f"https://sigrid-says.com/{sigrid_api._customer}/{system_name}/-/overview",
-            ),
+            cls._format_link(system_name),
         ]
