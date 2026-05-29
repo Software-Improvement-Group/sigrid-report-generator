@@ -19,6 +19,7 @@ from report_generator.generator.placeholders.formatting.smart_remarks import (
 
 from .base import text_placeholder
 
+
 @text_placeholder()
 def security_total_findings():
     return f"{len(security_data.findings)} security findings"

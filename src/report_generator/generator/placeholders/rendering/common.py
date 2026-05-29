@@ -126,12 +126,13 @@ def apply_font_properties(run: CommonRun, font_props: FontProperties):
         font.size = font_props.size
     if font_props.underline is not None:
         font.underline = font_props.underline
-    if font_props.color.rgb is not None:
-        font.color.rgb = font_props.color.rgb
-    if font_props.color.theme_color is not None:
-        font.color.theme_color = font_props.color.theme_color
-    if font_props.color.brightness is not None and run.font.color.type is not None:
-        font.color.brightness = font_props.color.brightness
+    if font_props.color is not None:
+        if font_props.color.rgb is not None:
+            font.color.rgb = font_props.color.rgb
+        if font_props.color.theme_color is not None:
+            font.color.theme_color = font_props.color.theme_color
+        if font_props.color.brightness is not None and run.font.color.type is not None:
+            font.color.brightness = font_props.color.brightness
 
 
 def combine_runs(base: CommonRun, suffix: CommonRun):
