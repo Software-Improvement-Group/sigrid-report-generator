@@ -19,9 +19,6 @@ from report_generator.generator.placeholders.formatting.smart_remarks import (
 
 from .base import text_placeholder
 
-from datetime import date
-
-
 @text_placeholder()
 def security_total_findings():
     return f"{len(security_data.findings)} security findings"
@@ -89,9 +86,3 @@ def security_cvss_medium_raw():
 def security_cvss_low_raw():
     """Number of security findings with CVSS low severity."""
     return f"{security_data.count_findings('LOW')}"
-
-
-@text_placeholder()
-def security_days_since_mythos_disclosure():
-    """Number of days elapsed since Anthropic's initial Mythos disclosure on April 7, 2026."""
-    return str((date.today() - date(2026, 4, 7)).days)
