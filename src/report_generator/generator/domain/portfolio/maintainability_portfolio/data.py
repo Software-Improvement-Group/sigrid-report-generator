@@ -160,7 +160,7 @@ class MaintainabilityPortfolioData(RatedPortfolioMixin):
 
     def _build_rating_entry(self, system_name: str) -> dict | None:
         md = utils.get_system_metadata(self.metadata, system_name)
-        if not is_system_active(md):
+        if md is None or not is_system_active(md):
             return None
         snapshot = self.end_snapshot(system_name)
         if snapshot is None:
