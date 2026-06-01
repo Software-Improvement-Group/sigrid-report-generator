@@ -56,7 +56,10 @@ _NPR5333_FUNCTIONAL_SUITABILITY_CWES: frozenset[str] = frozenset(
 def _fetch_findings(method_name: str, system_name: str) -> list:
     try:
         return getattr(sigrid_api, method_name)(system_name)
-    except Exception:
+    except (
+        sigrid_api.SigridAPIRequestFailedError,
+        sigrid_api.SigridAccessDeniedError,
+    ):
         logging.warning(
             f"Could not retrieve {method_name} for system '{system_name}'",
             exc_info=True,
