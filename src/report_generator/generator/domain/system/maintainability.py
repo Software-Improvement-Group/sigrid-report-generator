@@ -166,7 +166,11 @@ class MaintainabilityData:
 
     @cached_property
     def customer_name(self):
-        customer = self.data.get("customer")
+        try:
+            customer = self.data.get("customer")
+        except ValueError:
+            # self.data is unavailable when no system context is set (e.g. portfolio reports).
+            customer = None
         if customer is not None:
             return customer.capitalize()
         # TODO: Temporary fix; this will be retrieved from an endpoint in the future.
