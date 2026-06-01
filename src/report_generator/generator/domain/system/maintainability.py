@@ -166,15 +166,12 @@ class MaintainabilityData:
 
     @cached_property
     def customer_name(self):
-        try:
-            return self.data["customer"].capitalize()
-        except ValueError:
-            # TODO: Temporary fix; this will be retrieved from an endpoint in the future.
-            return (
-                config.get_customer().capitalize()
-                if len(config.get_customer()) > 3
-                else config.get_customer().upper()
-            )
+        customer = self.data.get("customer")
+        if customer is not None:
+            return customer.capitalize()
+        # TODO: Temporary fix; this will be retrieved from an endpoint in the future.
+        name = config.get_customer()
+        return name.capitalize() if len(name) > 3 else name.upper()
 
     @cached_property
     def start_snapshot(self):
