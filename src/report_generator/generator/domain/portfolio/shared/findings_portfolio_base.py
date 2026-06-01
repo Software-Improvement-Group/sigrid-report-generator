@@ -19,6 +19,10 @@ from report_generator.generator.context import config, sigrid_api
 from report_generator.generator.context.portfolio_filters import (
     filter_data_on_portfolio_arguments,
 )
+from report_generator.generator.context.sigrid_api import (
+    SigridAccessDeniedError,
+    SigridAPIRequestFailedError,
+)
 from report_generator.generator.domain.portfolio.shared import utils
 from report_generator.generator.domain.portfolio.shared.rated_mixin import (
     RatedPortfolioMixin,
@@ -96,10 +100,7 @@ class FindingsRatingsPortfolioBase(RatedPortfolioMixin):
         for system_name in self.system_names:
             try:
                 findings = getattr(sigrid_api, self._findings_api_method)(system_name)
-            except (
-                sigrid_api.SigridAPIRequestFailedError,
-                sigrid_api.SigridAccessDeniedError,
-            ):
+            except (SigridAPIRequestFailedError, SigridAccessDeniedError):
                 logging.warning(
                     f"Could not retrieve findings for system '{system_name}'",
                     exc_info=True,

@@ -15,6 +15,7 @@
 from unittest.mock import patch
 
 from report_generator.generator.context.portfolio_filters import reset_context
+from report_generator.generator.context.sigrid_api import SigridAPIRequestFailedError
 from report_generator.generator.domain.portfolio.reliability_portfolio import (
     ReliabilityRatingsPortfolioData,
     reliability_ratings_portfolio_data,
@@ -123,7 +124,7 @@ class TestReliabilityPortfolioData:
         mock_sigrid_api.get_portfolio_reliability_ratings.return_value = mock_data
         mock_sigrid_api.get_reliability_findings.side_effect = [
             findings_system1,
-            Exception("API error"),
+            SigridAPIRequestFailedError("get_reliability_findings"),
         ]
 
         for attr in ["data", "system_names", "_raw_findings"]:

@@ -19,6 +19,10 @@ from report_generator.generator.context import config, sigrid_api
 from report_generator.generator.context.portfolio_filters import (
     filter_data_on_portfolio_arguments,
 )
+from report_generator.generator.context.sigrid_api import (
+    SigridAccessDeniedError,
+    SigridAPIRequestFailedError,
+)
 from report_generator.generator.domain.portfolio.maintainability_portfolio import (
     maintainability_portfolio_data,
 )
@@ -56,10 +60,7 @@ _NPR5333_FUNCTIONAL_SUITABILITY_CWES: frozenset[str] = frozenset(
 def _fetch_findings(method_name: str, system_name: str) -> list:
     try:
         return getattr(sigrid_api, method_name)(system_name)
-    except (
-        sigrid_api.SigridAPIRequestFailedError,
-        sigrid_api.SigridAccessDeniedError,
-    ):
+    except (SigridAPIRequestFailedError, SigridAccessDeniedError):
         logging.warning(
             f"Could not retrieve {method_name} for system '{system_name}'",
             exc_info=True,
