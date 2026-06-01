@@ -139,7 +139,9 @@ class TestNpr5333Findings:
     def test_reliability_api_failure_falls_back_to_empty(self, mock_api):
         instance = Npr5333FunctionalSuitabilityPortfolioData()
         instance.__dict__["system_names"] = ["sys1"]
-        mock_api.get_reliability_findings.side_effect = SigridAPIRequestFailedError("get_reliability_findings")
+        mock_api.get_reliability_findings.side_effect = SigridAPIRequestFailedError(
+            "get_reliability_findings"
+        )
         mock_api.get_security_findings.return_value = [{"id": "s1", "cweId": "CWE-476"}]
 
         result = instance.findings
@@ -154,7 +156,9 @@ class TestNpr5333Findings:
         mock_api.get_reliability_findings.return_value = [
             {"id": "r1", "cweId": "CWE-682"}
         ]
-        mock_api.get_security_findings.side_effect = SigridAPIRequestFailedError("get_security_findings")
+        mock_api.get_security_findings.side_effect = SigridAPIRequestFailedError(
+            "get_security_findings"
+        )
 
         result = instance.findings
 
