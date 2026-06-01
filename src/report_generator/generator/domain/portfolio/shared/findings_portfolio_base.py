@@ -15,7 +15,7 @@
 import logging
 from functools import cached_property
 
-from report_generator.generator.context import sigrid_api
+from report_generator.generator.context import config, sigrid_api
 from report_generator.generator.context.portfolio_filters import (
     filter_data_on_portfolio_arguments,
 )
@@ -48,7 +48,7 @@ class FindingsRatingsPortfolioBase(RatedPortfolioMixin):
 
     @property
     def customer(self) -> str:
-        return sigrid_api.get_customer()
+        return config.get_customer()
 
     @cached_property
     def metadata(self):

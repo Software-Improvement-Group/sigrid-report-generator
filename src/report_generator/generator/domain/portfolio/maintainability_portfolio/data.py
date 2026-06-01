@@ -15,7 +15,7 @@
 from datetime import datetime
 from functools import cached_property
 
-from report_generator.generator.context import sigrid_api
+from report_generator.generator.context import config, sigrid_api
 from report_generator.generator.context.portfolio_filters import (
     filter_data_on_portfolio_arguments,
 )
@@ -36,7 +36,7 @@ def is_system_active(metadata):
 class MaintainabilityPortfolioData(RatedPortfolioMixin):
     @property
     def customer(self) -> str:
-        return sigrid_api.get_customer()
+        return config.get_customer()
 
     @cached_property
     def metadata(self):

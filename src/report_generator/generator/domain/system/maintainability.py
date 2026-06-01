@@ -15,7 +15,7 @@
 from datetime import datetime
 from functools import cached_property
 
-from report_generator.generator.context import sigrid_api
+from report_generator.generator.context import config, sigrid_api
 
 
 def _sort_and_aggregate_technology_data(tech_data):
@@ -171,9 +171,9 @@ class MaintainabilityData:
         except ValueError:
             # TODO: Temporary fix; this will be retrieved from an endpoint in the future.
             return (
-                sigrid_api.get_customer().capitalize()
-                if len(sigrid_api.get_customer()) > 3
-                else sigrid_api.get_customer().upper()
+                config.get_customer().capitalize()
+                if len(config.get_customer()) > 3
+                else config.get_customer().upper()
             )
 
     @cached_property

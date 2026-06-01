@@ -16,7 +16,7 @@ from unittest.mock import PropertyMock
 
 import pytest
 
-from report_generator.generator.context import sigrid_api
+from report_generator.generator.context import config
 from report_generator.generator.domain import maintainability_portfolio_data
 from report_generator.generator.placeholders.formatting import formatters
 from report_generator.generator.placeholders.implementations.table.maintainability_top_systems import (
@@ -27,7 +27,7 @@ from report_generator.generator.placeholders.rendering.pptx import Hyperlink
 
 @pytest.fixture(autouse=True)
 def set_customer(monkeypatch):
-    monkeypatch.setattr(sigrid_api, "_customer", "test-customer")
+    monkeypatch.setattr(config, "_customer", "test-customer")
     monkeypatch.setattr(formatters, "_USE_SIG_STERREN", False)
 
 

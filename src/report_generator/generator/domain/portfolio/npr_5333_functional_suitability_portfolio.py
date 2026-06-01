@@ -15,7 +15,7 @@
 import logging
 from functools import cached_property
 
-from report_generator.generator.context import sigrid_api
+from report_generator.generator.context import config, sigrid_api
 from report_generator.generator.context.portfolio_filters import (
     filter_data_on_portfolio_arguments,
 )
@@ -79,7 +79,7 @@ def _merge_and_deduplicate(reliability: list, security: list) -> list:
 class Npr5333FunctionalSuitabilityPortfolioData:
     @property
     def customer(self) -> str:
-        return sigrid_api.get_customer()
+        return config.get_customer()
 
     @cached_property
     @filter_data_on_portfolio_arguments(system_tag="systemName")
