@@ -20,11 +20,12 @@ from report_generator.generator.placeholders.implementations.base import (
     PlaceholderDocType,
 )
 from report_generator.generator.placeholders.rendering.pptx import (
+    Hyperlink,
     find_tables,
     update_table,
 )
 
-TableMatrix = list[list[Union[str, int, float]]]
+TableMatrix = list[list[Union[str, int, float, Hyperlink]]]
 
 
 class TablePlaceholder(Placeholder, ABC):

@@ -12,19 +12,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from report_generator.generator.domain.portfolio.shared.findings_portfolio_base import (
-    FindingsRatingsPortfolioBase,
-)
-
-
-class SecurityRatingsPortfolioData(FindingsRatingsPortfolioBase):
-    _objective_type = "SECURITY_MAX_SEVERITY"
-    _portfolio_ratings_api_method = "get_portfolio_security_ratings"
-    _findings_api_method = "get_security_findings"
-
-    @property
-    def security_findings(self):
-        return self._raw_findings
-
-
-security_ratings_portfolio_data = SecurityRatingsPortfolioData()
+SEVERITY_ORDER: dict[str, int] = {
+    "INFORMATION": 0,
+    "LOW": 1,
+    "MEDIUM": 2,
+    "HIGH": 3,
+    "CRITICAL": 4,
+}

@@ -12,19 +12,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from report_generator.generator.domain.portfolio.shared.findings_portfolio_base import (
-    FindingsRatingsPortfolioBase,
-)
+import math
 
 
-class SecurityRatingsPortfolioData(FindingsRatingsPortfolioBase):
-    _objective_type = "SECURITY_MAX_SEVERITY"
-    _portfolio_ratings_api_method = "get_portfolio_security_ratings"
-    _findings_api_method = "get_security_findings"
-
-    @property
-    def security_findings(self):
-        return self._raw_findings
-
-
-security_ratings_portfolio_data = SecurityRatingsPortfolioData()
+def findings_x_axis_max(value: int) -> int:
+    """Round up to the next half-order-of-magnitude step, with a minimum of 20."""
+    value = max(value, 15)
+    magnitude = 10 ** math.floor(math.log10(value))
+    step = magnitude // 2
+    return (value // step + 1) * step

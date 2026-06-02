@@ -17,14 +17,14 @@ from report_generator.generator.domain.portfolio.shared.findings_portfolio_base 
 )
 
 
-class SecurityRatingsPortfolioData(FindingsRatingsPortfolioBase):
-    _objective_type = "SECURITY_MAX_SEVERITY"
-    _portfolio_ratings_api_method = "get_portfolio_security_ratings"
-    _findings_api_method = "get_security_findings"
+class ReliabilityRatingsPortfolioData(FindingsRatingsPortfolioBase):
+    _objective_type = "RELIABILITY_MAX_SEVERITY"
+    _portfolio_ratings_api_method = "get_portfolio_reliability_ratings"
+    _findings_api_method = "get_reliability_findings"
 
     @property
-    def security_findings(self):
+    def reliability_findings(self):
         return self._raw_findings
 
 
-security_ratings_portfolio_data = SecurityRatingsPortfolioData()
+reliability_ratings_portfolio_data = ReliabilityRatingsPortfolioData()
