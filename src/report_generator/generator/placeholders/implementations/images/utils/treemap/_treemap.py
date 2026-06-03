@@ -156,7 +156,7 @@ def draw_subgroup(axes, subgroup, top, norm_y, cmap, rectprops, textprops, is_le
 
     if "_fill_" in subgroup.columns:
         colors = get_colormap(cmap, subgroup["_fill_"])
-        fill_is_numeric = np.issubdtype(subgroup.loc[:, "_fill_"].dtype, np.number)
+        fill_is_numeric = pd.api.types.is_numeric_dtype(subgroup.loc[:, "_fill_"].dtype)
         if fill_is_numeric:
             max_value = subgroup["_fill_"].max()
             min_value = subgroup["_fill_"].min()

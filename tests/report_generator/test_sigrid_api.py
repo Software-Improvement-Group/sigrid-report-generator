@@ -18,6 +18,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import requests
 
+import report_generator.generator.context.config as config
 import report_generator.generator.context.sigrid_api as sigrid_api
 
 
@@ -43,11 +44,11 @@ class TestSigridAPI:
 
         custom_base_url = "http://localhost:8080"
         sigrid_api.set_context(base_url=custom_base_url)
-        assert custom_base_url in sigrid_api._rest_url
+        assert custom_base_url in config._rest_url
 
         sigrid_api.set_context(customer="test-customer")
-        assert sigrid_api._customer == "test-customer"
-        assert custom_base_url in sigrid_api._rest_url, (
+        assert config._customer == "test-customer"
+        assert custom_base_url in config._rest_url, (
             "existing context (base_url) should be preserved"
         )
 
@@ -57,12 +58,12 @@ class TestSigridAPI:
         sigrid_api.reset_context()
 
         sigrid_api.set_context(customer="test-customer", system="test-system")
-        assert sigrid_api._customer == "test-customer"
-        assert sigrid_api._system == "test-system"
+        assert config._customer == "test-customer"
+        assert config._system == "test-system"
 
         sigrid_api.reset_context()
-        assert sigrid_api._customer is None
-        assert sigrid_api._system is None
+        assert config._customer is None
+        assert config._system is None
 
     def test_get_period_raises_exception_when_not_set(self):
         sigrid_api.reset_context()
@@ -84,9 +85,9 @@ class TestSigridAPI:
 
     def test_check_context_raises_error_when_bearer_token_missing(self):
         sigrid_api.reset_context()
-        sigrid_api._bearer_token = None
-        sigrid_api._customer = "test"
-        sigrid_api._rest_url = "http://test"
+        config._bearer_token = None
+        config._customer = "test"
+        config._rest_url = "http://test"
 
         with pytest.raises(ValueError) as excinfo:
             sigrid_api._check_context()
@@ -96,9 +97,9 @@ class TestSigridAPI:
 
     def test_check_context_raises_error_when_customer_missing(self):
         sigrid_api.reset_context()
-        sigrid_api._bearer_token = "test-token"
-        sigrid_api._customer = None
-        sigrid_api._rest_url = "http://test"
+        config._bearer_token = "test-token"
+        config._customer = None
+        config._rest_url = "http://test"
 
         with pytest.raises(ValueError) as excinfo:
             sigrid_api._check_context()
@@ -108,9 +109,9 @@ class TestSigridAPI:
 
     def test_check_context_raises_error_when_rest_url_missing(self):
         sigrid_api.reset_context()
-        sigrid_api._bearer_token = "test-token"
-        sigrid_api._customer = "test"
-        sigrid_api._rest_url = None
+        config._bearer_token = "test-token"
+        config._customer = "test"
+        config._rest_url = None
 
         with pytest.raises(ValueError) as excinfo:
             sigrid_api._check_context()
@@ -120,9 +121,9 @@ class TestSigridAPI:
 
     def test_check_context_passes_when_all_values_set(self):
         sigrid_api.reset_context()
-        sigrid_api._bearer_token = "test-token"
-        sigrid_api._customer = "test"
-        sigrid_api._rest_url = "http://test"
+        config._bearer_token = "test-token"
+        config._customer = "test"
+        config._rest_url = "http://test"
 
         # Should not raise
         sigrid_api._check_context()
@@ -148,9 +149,9 @@ class TestSigridAPI:
 
     def test_request_raises_sigrid_access_denied_on_403(self):
         sigrid_api.reset_context()
-        sigrid_api._bearer_token = "eyTesttoken12345678"
-        sigrid_api._customer = "my-customer"
-        sigrid_api._system = "my-system"
+        config._bearer_token = "eyTesttoken12345678"
+        config._customer = "my-customer"
+        config._system = "my-system"
 
         mock_response = MagicMock()
         mock_response.status_code = 403
@@ -168,9 +169,9 @@ class TestSigridAPI:
 
     def test_request_returns_none_and_logs_warning_on_204(self, caplog):
         sigrid_api.reset_context()
-        sigrid_api._bearer_token = "eyTesttoken12345678"
-        sigrid_api._customer = "my-customer"
-        sigrid_api._system = "my-system"
+        config._bearer_token = "eyTesttoken12345678"
+        config._customer = "my-customer"
+        config._system = "my-system"
 
         mock_response = MagicMock()
         mock_response.status_code = 204
@@ -190,9 +191,9 @@ class TestSigridAPI:
 
     def test_request_returns_none_on_non_403_http_error(self):
         sigrid_api.reset_context()
-        sigrid_api._bearer_token = "eyTesttoken12345678"
-        sigrid_api._customer = "my-customer"
-        sigrid_api._system = "my-system"
+        config._bearer_token = "eyTesttoken12345678"
+        config._customer = "my-customer"
+        config._system = "my-system"
 
         mock_response = MagicMock()
         mock_response.status_code = 500

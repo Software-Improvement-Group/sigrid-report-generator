@@ -45,6 +45,12 @@ class TestFormatter:
         assert formatters.format_diff(1.0, 1.2) == "+ 0.2"
         assert formatters.format_diff(1.2, 1.0) == "- 0.2"
 
+    def test_build_sigrid_link(self):
+        assert (
+            formatters.build_sigrid_link("acme", "my-system", "security")
+            == "https://sigrid-says.com/acme/my-system/-/security"
+        )
+
 
 class TestMaintainabilityPortfolioFormatting:
     """Test cases for maintainability portfolio text formatting with edge cases."""

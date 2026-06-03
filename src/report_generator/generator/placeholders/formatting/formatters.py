@@ -47,6 +47,12 @@ def calculate_stars(maintainability_rating: float) -> str:
     return ratings[star_rating - 1]
 
 
+def print_star() -> str:
+    if _USE_SIG_STERREN:
+        return "H"
+    return "★"
+
+
 def maintainability_round(rating) -> str:
     logging.warning(
         "maintainability_round is deprecated and will be removed, use star_rating_round instead"
@@ -118,3 +124,7 @@ def format_percentage_excluding_100_percent(percentage: float) -> str:
     if percentage > 0.99:
         return ">99%"
     return f"{percentage:.0%}"
+
+
+def build_sigrid_link(customer: str, system_name: str, path: str) -> str:
+    return f"https://sigrid-says.com/{customer}/{system_name}/-/{path}"

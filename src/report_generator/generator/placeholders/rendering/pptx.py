@@ -37,6 +37,13 @@ from .common import (
     merge_runs_with_same_formatting,
 )
 
+
+@dataclass
+class Hyperlink:
+    text: str
+    url: str
+
+
 NA_STAR_COLOR = RGBColor(0x91, 0x90, 0x92)
 ONE_STAR_COLOR = RGBColor(0xE0, 0x6C, 0x4F)
 TWO_STAR_COLOR = RGBColor(0xE8, 0x99, 0x36)
@@ -326,7 +333,7 @@ def remove_rows_from_table(table: Table, row_numbers: Iterable[int]):
         remove_row_from_table(table, row)
 
 
-def update_table(table: Table, value: list[list[Union[str, int, float]]]):
+def update_table(table: Table, value: list[list[Union[str, int, float, Hyperlink]]]):
     """
     Fills a PowerPoint table with provided values. Copies formatting from existing cells and applies it to all later cells in that column.
     """
@@ -350,14 +357,22 @@ def update_table(table: Table, value: list[list[Union[str, int, float]]]):
             )
 
 
+def _apply_hyperlink(run: _Run, hyperlink: Hyperlink) -> None:
+    run.text = hyperlink.text
+    run.hyperlink.address = hyperlink.url
+
+
 def replace_paragraph_with_text(
-    paragraph: _Paragraph, text: Union[str, int, float], font: FontProperties = None
+    paragraph: _Paragraph,
+    text: Union[str, int, float, Hyperlink],
+    font: FontProperties = None,
 ):
     paragraph.clear()
-
     run: _Run = paragraph.add_run()
-    run.text = "" if text is None else str(text)
-
+    if isinstance(text, Hyperlink):
+        _apply_hyperlink(run, text)
+    else:
+        run.text = "" if text is None else str(text)
     if font:
         apply_font_properties(run, font)
 

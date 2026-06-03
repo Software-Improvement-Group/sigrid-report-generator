@@ -15,7 +15,7 @@
 from datetime import datetime
 from functools import cached_property
 
-from report_generator.generator.context import sigrid_api
+from report_generator.generator.context import config, sigrid_api
 from report_generator.generator.context.portfolio_filters import (
     filter_data_on_portfolio_arguments,
 )
@@ -34,6 +34,10 @@ def is_system_active(metadata):
 
 
 class MaintainabilityPortfolioData(RatedPortfolioMixin):
+    @property
+    def customer(self) -> str:
+        return config.get_customer()
+
     @cached_property
     def metadata(self):
         return sigrid_api.get_portfolio_metadata()
@@ -113,6 +117,8 @@ class MaintainabilityPortfolioData(RatedPortfolioMixin):
 
     def get_closest_snapshot(self, system, snapshot_date, ignore_head_entry=False):
         s = self.get_system(system)
+        if s is None:
+            return None
         head_entry = MaintainabilityPortfolioData._get_head_entry(s)
         if not s["allRatings"]:
             return head_entry
@@ -151,3 +157,27 @@ class MaintainabilityPortfolioData(RatedPortfolioMixin):
         rating = end_snapshot["maintainability"]
         volume = end_snapshot.get("volumeInPersonMonths", 0)
         return rating, volume
+
+    def _build_rating_entry(self, system_name: str) -> dict | None:
+        md = utils.get_system_metadata(self.metadata, system_name)
+        if md is None or not is_system_active(md):
+            return None
+        snapshot = self.end_snapshot(system_name)
+        if snapshot is None:
+            return None
+        return {
+            "systemName": system_name,
+            "displayName": self.get_system_display_name(system_name),
+            "rating": snapshot["maintainability"],
+            "volume_py": round(snapshot.get("volumeInPersonMonths", 0) / 12.0, 1),
+        }
+
+    @cached_property
+    def bottom_systems_by_maintainability_rating(self) -> list[dict]:
+        entries = [
+            entry
+            for system_name in self.system_names
+            if (entry := self._build_rating_entry(system_name)) is not None
+        ]
+        entries.sort(key=lambda e: e["rating"])
+        return entries
