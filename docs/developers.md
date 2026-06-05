@@ -11,13 +11,16 @@ For the architecture of this project, see [architecture.md](architecture.md).
 
 - Go into the `report-generator` directory.
 - Create a virtual environment (required for development): `python3 -m venv .venv`
+  - A virtual environment is an isolated Python installation for this project. It keeps dependencies out of your global
+    Python environment. See the Python docs for details:
+    https://docs.python.org/3/library/venv.html#module-venv
 - Activate the virtual environment:
   - macOS/Linux: `source .venv/bin/activate`
   - Windows (PowerShell): `.venv\Scripts\Activate.ps1`
   - Windows (cmd): `.venv\Scripts\activate.bat`
 - Upgrade pip in the venv: `python -m pip install --upgrade pip`
-- Install your latest changes in the venv: `python -m pip install -e .` (re-do this any time you want to run the tool
-  using your latest changes)
+- Install your latest changes in the venv: `python -m pip install -e .`
+  - Editable installs pick up code changes automatically. Re-run this only if you change dependencies or entry points.
   Note: This will override the `report-generator` tool installed using the "for end-users" method.
 - If you plan to run tests or linting, install the extra dependencies in the same venv:
   `python -m pip install -e ".[test]"`
@@ -62,7 +65,7 @@ ruff format . # Add --check to not autofix
 ### Architecture linting
 
 This project uses [import-linter](https://import-linter.readthedocs.io/) to enforce the architecture rules defined in
-`sigrid.yaml`. Install it via `pip install -e ".[test]"`.
+`sigrid.yaml`. Install it via `python -m pip install -e ".[test]"`.
 
 **Check for violations:**
 ```bash
