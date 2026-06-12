@@ -153,7 +153,7 @@ class MaintainabilityData:
 
     @cached_property
     def system_pm(self):
-        return round(self.maintainability_rating["volumeInPersonMonths"], 1)
+        return round(self.data["volumeInPersonMonths"], 1)
 
     @cached_property
     def system_loc(self):
