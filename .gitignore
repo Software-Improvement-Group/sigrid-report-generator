@@ -17,3 +17,6 @@ generated_*.docx
 
 # Claude user config
 .claude/settings.local.json
+
+# OpenCode AI assistant folder
+.opencode/
