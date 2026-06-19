@@ -293,6 +293,7 @@ class AutofitText(mtext.Text):
         return min(fontsizes)
 
     def _calc_fontsize_from_height(self, height, n, linespacing, dpi):
+        linespacing = float(linespacing)
         h_pixels = height / (n * linespacing - linespacing + 1)
         return self._pixels2points(dpi, h_pixels)
 
