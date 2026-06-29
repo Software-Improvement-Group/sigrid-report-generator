@@ -65,3 +65,10 @@ def test_find_shapes_with_text_deduplicates_shared_shape():
     shapes = render.find_shapes_with_text(presentation, "SYSTEM_PY")
 
     assert len(shapes) == 1
+
+
+def test_search_text_is_matched_literally_not_as_regex():
+    # "42.0" must not match "4250": the dot is a literal, not a wildcard.
+    presentation = _presentation_with_paragraphs("value is 4250 today")
+
+    assert render.find_text_in_presentation(presentation, "42.0") == []

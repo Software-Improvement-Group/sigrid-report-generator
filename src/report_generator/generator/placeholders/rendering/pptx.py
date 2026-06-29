@@ -171,7 +171,7 @@ def find_text_in_table(shape, search_text):
     return [
         cell.text_frame.paragraphs[0]
         for cell in shape.table.iter_cells()
-        if re.match(rf".*\b{search_text}\b.*", cell.text)
+        if re.search(rf"\b{re.escape(search_text)}\b", cell.text)
     ]
 
 
@@ -181,7 +181,7 @@ def find_text_in_text_frame(shape, search_text):
     return [
         paragraph
         for paragraph in shape.text_frame.paragraphs
-        if re.match(rf".*\b{search_text}\b.*", paragraph.text)
+        if re.search(rf"\b{re.escape(search_text)}\b", paragraph.text)
     ]
 
 
