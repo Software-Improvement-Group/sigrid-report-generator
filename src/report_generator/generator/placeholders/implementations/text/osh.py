@@ -29,7 +29,10 @@ from .base import parameterized_text_placeholder, text_placeholder
 @text_placeholder()
 def osh_risk_summary():
     """One-sentence summary of main OSH findings."""
-    return smart_remarks.osh_remark(osh_data.raw_data)
+    return smart_remarks.osh_remark(
+        osh_data.medium_or_higher_vulnerabilities_count,
+        osh_data.legal_risk_count,
+    )
 
 
 @text_placeholder()

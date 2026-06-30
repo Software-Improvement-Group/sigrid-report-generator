@@ -236,24 +236,12 @@ def tech_variance_remark(sorted_tech_data, total_volume_pm):
     return f"The system is mainly built using {len(main_technologies)} different technologies: {', '.join(main_technologies)}"
 
 
-def osh_remark(libraries):
-    mentionable_vulnerability_count = 0
-    for vulnerability in libraries.get("vulnerabilities", []):
-        if (
-            (vulnerability["ratings"][0]["severity"] == "medium")
-            or (vulnerability["ratings"][0]["severity"] == "high")
-            or (vulnerability["ratings"][0]["severity"] == "high")
-        ):
-            mentionable_vulnerability_count += 1
-    mentionable_license_count = 0
-    for library in libraries.get("components", []):
-        if (
-            (library["properties"][0]["value"] == "CRITICAL")
-            or (library["properties"][0]["value"] == "HIGH")
-            or (library["properties"][0]["value"] == "MEDIUM")
-        ):
-            mentionable_license_count += 1
-    return f"This system has {mentionable_vulnerability_count} medium or higher risk vulnerable libraries and {mentionable_license_count} licenses with potential legal risks that should be investigated"
+def osh_remark(vulnerability_count: int, license_risk_count: int) -> str:
+    return (
+        f"This system has {vulnerability_count} medium or higher risk vulnerable "
+        f"libraries and {license_risk_count} licenses with potential legal risks "
+        f"that should be investigated"
+    )
 
 
 def osh_relative_rating(osh_rating):
