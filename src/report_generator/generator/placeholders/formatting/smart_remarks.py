@@ -239,7 +239,7 @@ def tech_variance_remark(sorted_tech_data, total_volume_pm):
 def osh_remark(vulnerability_count: int, license_risk_count: int) -> str:
     return (
         f"This system has {vulnerability_count} medium or higher risk vulnerable "
-        f"libraries and {license_risk_count} licenses with potential legal risks "
+        f"libraries and {license_risk_count} libraries with potential legal risks "
         f"that should be investigated"
     )
 
