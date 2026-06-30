@@ -37,8 +37,7 @@ def existed_at_end_date(system, end_date):
     end_dt = parse_date(end_date)
     dates = [r["maintainabilityDate"] for r in system.get("allRatings", [])]
     dates.append(system["maintainabilityDate"])  # head entry date
-    earliest = min(parse_date(d) for d in dates)
-    return earliest <= end_dt
+    return any(parse_date(d) <= end_dt for d in dates)
 
 
 class MaintainabilityPortfolioData(RatedPortfolioMixin):
