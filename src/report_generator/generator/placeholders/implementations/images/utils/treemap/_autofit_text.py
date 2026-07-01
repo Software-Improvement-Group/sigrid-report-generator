@@ -12,6 +12,11 @@ import matplotlib.transforms as trans
 from matplotlib.backends.backend_agg import get_hinting_flag
 from matplotlib.font_manager import findfont, get_font
 
+# matplotlib >= 3.11 defaults ``Text._linespacing`` to the string "normal";
+# older versions used the numeric multiplier 1.2. AutofitText needs a number to
+# compute per-line heights, so fall back to the historical default.
+_DEFAULT_LINESPACING = 1.2
+
 
 class AutofitText(mtext.Text):
     def __repr__(self):
@@ -141,7 +146,7 @@ class AutofitText(mtext.Text):
                     height_in_pixels,
                     width_in_pixels,
                     line_num,
-                    self._linespacing,
+                    self._numeric_linespacing(),
                     dpi,
                     self.get_fontproperties(),
                 )
@@ -291,6 +296,10 @@ class AutofitText(mtext.Text):
             adjusted_size = props.get_size_in_points() * width / w
             fontsizes.append(adjusted_size)
         return min(fontsizes)
+
+    def _numeric_linespacing(self):
+        ls = self._linespacing
+        return ls if isinstance(ls, (int, float)) else _DEFAULT_LINESPACING
 
     def _calc_fontsize_from_height(self, height, n, linespacing, dpi):
         linespacing = float(linespacing)
