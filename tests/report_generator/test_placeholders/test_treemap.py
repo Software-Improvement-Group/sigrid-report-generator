@@ -30,6 +30,7 @@ class TestAutofitText:
 
     def _draw(self, **kwargs):
         fig, ax = plt.subplots()
+        ax.axis("off")  # matches production; also avoids unrelated tick-draw machinery
         try:
             text = AutofitText((0.5, 0.5), 0.4, 0.2, text="Some System Name", **kwargs)
             ax.add_artist(text)
