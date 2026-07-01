@@ -17,12 +17,12 @@ from unittest.mock import MagicMock, patch
 import matplotlib.pyplot as plt
 import pytest
 
-plt.switch_backend("Agg")
 from report_generator.generator.placeholders.implementations.images.utils.treemap._autofit_text import (
     _DEFAULT_LINESPACING,
     AutofitText,
 )
 
+plt.switch_backend("Agg")
 
 class TestAutofitText:
     """Regression tests that exercise the real matplotlib draw path."""
