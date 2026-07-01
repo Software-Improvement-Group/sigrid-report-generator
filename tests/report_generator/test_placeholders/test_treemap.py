@@ -24,6 +24,7 @@ from report_generator.generator.placeholders.implementations.images.utils.treema
 
 plt.switch_backend("Agg")
 
+
 class TestAutofitText:
     """Regression tests that exercise the real matplotlib draw path."""
 
