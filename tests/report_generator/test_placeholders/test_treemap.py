@@ -14,12 +14,10 @@
 
 from unittest.mock import MagicMock, patch
 
-import matplotlib
+import matplotlib.pyplot as plt
 import pytest
 
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-
+plt.switch_backend("Agg")
 from report_generator.generator.placeholders.implementations.images.utils.treemap._autofit_text import (
     _DEFAULT_LINESPACING,
     AutofitText,

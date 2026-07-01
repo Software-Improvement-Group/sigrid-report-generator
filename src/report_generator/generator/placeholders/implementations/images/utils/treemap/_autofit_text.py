@@ -299,7 +299,10 @@ class AutofitText(mtext.Text):
 
     def _numeric_linespacing(self):
         ls = self._linespacing
-        return ls if isinstance(ls, (int, float)) else _DEFAULT_LINESPACING
+        try:
+            return float(ls)
+        except (TypeError, ValueError):
+            return _DEFAULT_LINESPACING
 
     def _calc_fontsize_from_height(self, height, n, linespacing, dpi):
         linespacing = float(linespacing)
