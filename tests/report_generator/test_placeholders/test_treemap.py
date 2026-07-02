@@ -14,6 +14,48 @@
 
 from unittest.mock import MagicMock, patch
 
+import matplotlib.pyplot as plt
+import pytest
+
+from report_generator.generator.placeholders.implementations.images.utils.treemap._autofit_text import (
+    _DEFAULT_LINESPACING,
+    AutofitText,
+)
+
+plt.switch_backend("Agg")
+
+
+class TestAutofitText:
+    """Regression tests that exercise the real matplotlib draw path."""
+
+    def _draw(self, **kwargs):
+        fig, ax = plt.subplots()
+        ax.axis("off")  # matches production; also avoids unrelated tick-draw machinery
+        try:
+            text = AutofitText((0.5, 0.5), 0.4, 0.2, text="Some System Name", **kwargs)
+            ax.add_artist(text)
+            fig.canvas.draw()
+        finally:
+            plt.close(fig)
+
+    def test_draw_with_reflow_succeeds(self):
+        """Reflow path must not choke on matplotlib's 'normal' linespacing default."""
+        # Would raise ValueError: could not convert string to float: 'normal'
+        # on matplotlib >= 3.11 before the fix.
+        self._draw(reflow=True, ha="center", va="center")
+
+    def test_draw_without_reflow_succeeds(self):
+        self._draw(ha="center", va="center")
+
+    def test_numeric_linespacing_defaults_when_non_numeric(self):
+        text = AutofitText((0, 0), 1, 1, text="x")
+        text._linespacing = "normal"
+        assert text._numeric_linespacing() == pytest.approx(_DEFAULT_LINESPACING)
+
+    def test_numeric_linespacing_preserves_explicit_value(self):
+        text = AutofitText((0, 0), 1, 1, text="x", linespacing=1.5)
+        assert text._numeric_linespacing() == pytest.approx(1.5)
+
 
 class TestTreemapImagePlaceholder:
     """Test cases for treemap image generation with empty data handling."""

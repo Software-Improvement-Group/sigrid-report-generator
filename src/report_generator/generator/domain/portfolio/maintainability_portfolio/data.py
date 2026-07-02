@@ -33,6 +33,13 @@ def is_system_active(metadata):
     return metadata["active"] and not metadata["isDevelopmentOnly"]
 
 
+def existed_at_end_date(system, end_date):
+    end_dt = parse_date(end_date)
+    dates = [r["maintainabilityDate"] for r in system.get("allRatings", [])]
+    dates.append(system["maintainabilityDate"])  # head entry date
+    return any(parse_date(d) <= end_dt for d in dates)
+
+
 class MaintainabilityPortfolioData(RatedPortfolioMixin):
     @property
     def customer(self) -> str:
@@ -50,9 +57,12 @@ class MaintainabilityPortfolioData(RatedPortfolioMixin):
     @filter_data_on_portfolio_arguments(data_tag="systems", system_tag="system")
     def data(self):
         data = sigrid_api.get_portfolio_maintainability()
+        end_date = self.period[1]
         filtered_data = dict(data)
         filtered_data["systems"] = [
-            system for system in data["systems"] if "maintainability" in system
+            system
+            for system in data["systems"]
+            if "maintainability" in system and existed_at_end_date(system, end_date)
         ]
         return filtered_data
 
