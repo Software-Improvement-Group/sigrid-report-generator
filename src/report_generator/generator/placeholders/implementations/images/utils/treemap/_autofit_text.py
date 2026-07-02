@@ -140,13 +140,15 @@ class AutofitText(mtext.Text):
             words = self._split_words(original_txt)
             fontsizes = []
 
+            numeric_linespacing = self._numeric_linespacing()
+
             for line_num in range(2, len(words) + 1):
                 adjusted_size_txt = self._get_wrapped_fontsize(
                     original_txt,
                     height_in_pixels,
                     width_in_pixels,
                     line_num,
-                    self._numeric_linespacing(),
+                    numeric_linespacing,
                     dpi,
                     self.get_fontproperties(),
                 )
