@@ -12,7 +12,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import base64
+import json
 import logging
+import time
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -20,6 +23,18 @@ import requests
 
 import report_generator.generator.context.config as config
 import report_generator.generator.context.sigrid_api as sigrid_api
+
+
+def _make_jwt(exp: int) -> str:
+    """Build a fake JWT (unsigned) with the given ``exp`` claim for testing."""
+
+    def _b64url(data: dict) -> str:
+        raw = json.dumps(data).encode()
+        return base64.urlsafe_b64encode(raw).rstrip(b"=").decode()
+
+    header = _b64url({"kid": "test-key", "alg": "RS256"})
+    payload = _b64url({"sub": "test-user", "customer": "acme", "exp": exp})
+    return f"{header}.{payload}.FAKE_SIGNATURE"
 
 
 class TestSigridAPI:
@@ -38,6 +53,27 @@ class TestSigridAPI:
             sigrid_api._test_sigrid_token("eyKskfiurkfshiuwhfibvcgi43hf2o3h893hg34")
         except ValueError:
             pytest.fail("This token was expected to be valid")
+
+    def test_expired_sigrid_token_is_invalid(self):
+        expired_token = _make_jwt(exp=int(time.time()) - 3600)
+        with pytest.raises(ValueError) as excinfo:
+            sigrid_api._test_sigrid_token(expired_token)
+        assert str(excinfo.value).startswith("Expired Sigrid token")
+
+    def test_unexpired_sigrid_token_is_valid(self):
+        unexpired_token = _make_jwt(exp=int(time.time()) + 3600)
+        try:
+            sigrid_api._test_sigrid_token(unexpired_token)
+        except ValueError:
+            pytest.fail("This token was expected to be valid")
+
+    def test_token_without_exp_claim_is_not_rejected_as_expired(self):
+        # Tokens that are not decodable JWTs (no exp claim) fall back to the
+        # format-only check and must remain valid.
+        try:
+            sigrid_api._test_sigrid_token("eyKskfiurkfshiuwhfibvcgi43hf2o3h893hg34")
+        except ValueError:
+            pytest.fail("A token without a decodable exp claim should be valid")
 
     def test_set_context_multiple_times_preserves_previous_values(self):
         sigrid_api.reset_context()

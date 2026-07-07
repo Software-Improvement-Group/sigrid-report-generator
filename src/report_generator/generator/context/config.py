@@ -12,6 +12,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import base64
+import json
+import time
 from typing import Optional
 
 DEFAULT_BASE_URL = "https://sigrid-says.com"
@@ -24,10 +27,35 @@ _period: Optional[tuple[str, str]] = None
 _rest_url: str = f"{DEFAULT_BASE_URL}/rest"
 
 
+def _token_expiry(token: str) -> Optional[int]:
+    """Return the JWT ``exp`` claim (seconds since epoch), or None if the token
+    cannot be decoded as a JWT with an integer ``exp`` claim."""
+    parts = token.split(".")
+    if len(parts) != 3:
+        return None
+
+    payload_segment = parts[1]
+    # Base64URL segments in a JWT are unpadded; restore padding before decoding.
+    padding = "=" * (-len(payload_segment) % 4)
+    try:
+        payload = json.loads(base64.urlsafe_b64decode(payload_segment + padding))
+    except ValueError:
+        return None
+
+    exp = payload.get("exp")
+    return exp if isinstance(exp, int) else None
+
+
 def _test_sigrid_token(token: str) -> None:
     if len(token) < 10 or token[0:2] != "ey":
         raise ValueError(
-            "Invalid Sigrid token. A token is always longer than 10 characters and starts with 'ey'. You can obtain a token from sigrid-says.com. Note that tokens are customer-specific."
+            "Invalid Sigrid token. A token is always longer than 10 characters and starts with 'ey'. You can obtain a token from sigrid-says.com."
+        )
+
+    expiry = _token_expiry(token)
+    if expiry is not None and expiry < time.time():
+        raise ValueError(
+            "Expired Sigrid token. This token's expiration date has passed. You can obtain a new token from sigrid-says.com."
         )
 
 
