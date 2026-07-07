@@ -82,7 +82,8 @@ def main():
 
     reference_path = _shared.REFERENCES_DIR / f"reference_{args.preset_id}.pptx"
     print(f"Generating {reference_path} ...")
-    with freeze_time(_shared.PERIOD[1]):
+    # Replay the same fixtures the test uses for the volatile OSH/Security endpoints.
+    with freeze_time(_shared.PERIOD[1]), _shared.pinned_volatile_endpoints():
         report_generator = ReportGenerator(str(template_path))
         report_generator.generate(str(reference_path))
 
