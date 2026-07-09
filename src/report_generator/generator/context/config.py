@@ -41,18 +41,13 @@ def _decode_jwt_segment(segment: str) -> dict:
     return json.loads(base64.urlsafe_b64decode(segment + padding))
 
 
-def _validate_jwt_structure(token: str) -> None:
-    """Verify an intact JWT when the token has the three-segment JWT shape.
+def _validate_jwt_structure(parts: list[str]) -> None:
+    """Verify an intact JWT from its three base64url segments.
 
     A character dropped while copying corrupts the base64url encoding or the JSON
-    of the header/payload, which this detects offline. Tokens that are not
-    three-segment JWTs are left for the server to validate; the signature can only
-    be verified server-side, so a corrupt signature is only caught at request time
+    of the header/payload, which this detects offline. The signature can only be
+    verified server-side, so a corrupt signature is only caught at request time
     (HTTP 401)."""
-    parts = token.split(".")
-    if len(parts) != 3:
-        return
-
     header, payload, signature = parts
     try:
         _decode_jwt_segment(header)
@@ -65,13 +60,9 @@ def _validate_jwt_structure(token: str) -> None:
         ) from e
 
 
-def _token_expiry(token: str) -> Optional[int]:
-    """Return the JWT ``exp`` claim (seconds since epoch), or None if the token
-    cannot be decoded as a JWT with an integer ``exp`` claim."""
-    parts = token.split(".")
-    if len(parts) != 3:
-        return None
-
+def _token_expiry(parts: list[str]) -> Optional[int]:
+    """Return the JWT ``exp`` claim (seconds since epoch), or None if the payload
+    segment cannot be decoded as JSON with an integer ``exp`` claim."""
     try:
         payload = _decode_jwt_segment(parts[1])
     except ValueError:
@@ -87,9 +78,15 @@ def _test_sigrid_token(token: str) -> None:
             "Invalid Sigrid token. A token is always longer than 10 characters and starts with 'ey'. You can obtain a token from sigrid-says.com."
         )
 
-    _validate_jwt_structure(token)
+    parts = token.split(".")
+    # Only three-segment tokens have the JWT shape we can inspect offline; leave
+    # anything else for the server to validate.
+    if len(parts) != 3:
+        return
 
-    expiry = _token_expiry(token)
+    _validate_jwt_structure(parts)
+
+    expiry = _token_expiry(parts)
     if expiry is not None and expiry < time.time():
         raise ValueError(
             "Expired Sigrid token. This token's expiration date has passed. You can obtain a new token from sigrid-says.com."
