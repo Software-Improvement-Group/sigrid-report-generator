@@ -27,6 +27,44 @@ _period: Optional[tuple[str, str]] = None
 _rest_url: str = f"{DEFAULT_BASE_URL}/rest"
 
 
+def _decode_jwt_segment(segment: str) -> dict:
+    """Decode one base64url-encoded JWT segment into its JSON object.
+
+    Raises ValueError if the segment is not intact base64url-encoded JSON. A
+    base64url segment length is never 1 modulo 4, so that indicates a dropped or
+    added character; ``urlsafe_b64decode`` and ``json.loads`` both raise
+    subclasses of ValueError on other corruption."""
+    if len(segment) % 4 == 1:
+        raise ValueError("Invalid base64url segment length.")
+    # Base64URL segments in a JWT are unpadded; restore padding before decoding.
+    padding = "=" * (-len(segment) % 4)
+    return json.loads(base64.urlsafe_b64decode(segment + padding))
+
+
+def _validate_jwt_structure(token: str) -> None:
+    """Verify an intact JWT when the token has the three-segment JWT shape.
+
+    A character dropped while copying corrupts the base64url encoding or the JSON
+    of the header/payload, which this detects offline. Tokens that are not
+    three-segment JWTs are left for the server to validate; the signature can only
+    be verified server-side, so a corrupt signature is only caught at request time
+    (HTTP 401)."""
+    parts = token.split(".")
+    if len(parts) != 3:
+        return
+
+    header, payload, signature = parts
+    try:
+        _decode_jwt_segment(header)
+        _decode_jwt_segment(payload)
+        if len(signature) % 4 == 1:
+            raise ValueError("Invalid base64url signature length.")
+    except ValueError as e:
+        raise ValueError(
+            "Malformed Sigrid token. The token appears corrupted (a character may have been dropped when copying). Copy the full token from sigrid-says.com."
+        ) from e
+
+
 def _token_expiry(token: str) -> Optional[int]:
     """Return the JWT ``exp`` claim (seconds since epoch), or None if the token
     cannot be decoded as a JWT with an integer ``exp`` claim."""
@@ -34,11 +72,8 @@ def _token_expiry(token: str) -> Optional[int]:
     if len(parts) != 3:
         return None
 
-    payload_segment = parts[1]
-    # Base64URL segments in a JWT are unpadded; restore padding before decoding.
-    padding = "=" * (-len(payload_segment) % 4)
     try:
-        payload = json.loads(base64.urlsafe_b64decode(payload_segment + padding))
+        payload = _decode_jwt_segment(parts[1])
     except ValueError:
         return None
 
@@ -51,6 +86,8 @@ def _test_sigrid_token(token: str) -> None:
         raise ValueError(
             "Invalid Sigrid token. A token is always longer than 10 characters and starts with 'ey'. You can obtain a token from sigrid-says.com."
         )
+
+    _validate_jwt_structure(token)
 
     expiry = _token_expiry(token)
     if expiry is not None and expiry < time.time():
