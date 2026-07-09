@@ -17,6 +17,8 @@ from collections import defaultdict
 from datetime import date
 from functools import cached_property
 
+from dateutil.parser import parse as parse_date
+
 from report_generator.generator.domain.external.epss import epss_data
 
 _RISK_LABEL = {0: "critical", 1: "high", 2: "medium", 3: "low", 4: "no_risk"}
@@ -80,7 +82,7 @@ def component_version_staleness_days(components: list[dict]) -> list[int]:
         )
         if next_release_date:
             try:
-                result.append((today - date.fromisoformat(next_release_date)).days)
+                result.append((today - parse_date(next_release_date).date()).days)
             except ValueError:
                 continue
     return result
@@ -119,6 +121,16 @@ class OSHMetricsBase(ABC):
     def legal_risk_count(self) -> int:
         """Number of dependencies with restrictive licenses (critical to medium)."""
         return sum(self.legal_risk_distribution[0:3])
+
+    @cached_property
+    def medium_or_higher_vulnerabilities_count(self) -> int:
+        """Number of vulnerabilities rated medium severity or higher."""
+        distribution = self.vulnerability_distribution
+        return (
+            distribution.get("critical", 0)
+            + distribution.get("high", 0)
+            + distribution.get("medium", 0)
+        )
 
     @cached_property
     def legal_risk_fraction(self) -> float:

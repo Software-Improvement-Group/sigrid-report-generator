@@ -24,6 +24,7 @@ from report_generator.generator.domain.portfolio.maintainability_delta_quality_p
     _AbstractMaintainabilityDeltaQualityPortfolioData,
 )
 from report_generator.generator.domain.portfolio.maintainability_portfolio.data import (
+    existed_at_end_date,
     is_system_active,
     parse_date,
 )
@@ -1493,12 +1494,21 @@ class TestMaintainabilityPortfolioData:
         """Test that systems without maintainability data are filtered out."""
         mock_api_response = {
             "systems": [
-                {"system": "system1", "maintainability": 4.0},
+                {
+                    "system": "system1",
+                    "maintainability": 4.0,
+                    "maintainabilityDate": "2024-02-01",
+                },
                 {"system": "system2"},  # No maintainability
-                {"system": "system3", "maintainability": 3.5},
+                {
+                    "system": "system3",
+                    "maintainability": 3.5,
+                    "maintainabilityDate": "2024-02-01",
+                },
             ]
         }
         mock_sigrid_api.get_portfolio_maintainability.return_value = mock_api_response
+        mock_sigrid_api.get_period.return_value = ("2024-01-01", "2024-12-31")
 
         # Clear cache and get fresh data
         if hasattr(maintainability_portfolio_data, "data"):
@@ -1513,15 +1523,64 @@ class TestMaintainabilityPortfolioData:
     @patch(
         "report_generator.generator.domain.portfolio.maintainability_portfolio.data.sigrid_api"
     )
+    def test_data_filters_systems_onboarded_after_end_date(self, mock_sigrid_api):
+        """Systems whose earliest data is after the end date are filtered out."""
+        mock_api_response = {
+            "systems": [
+                {
+                    "system": "system1",
+                    "maintainability": 4.0,
+                    "maintainabilityDate": "2024-12-31",
+                    "allRatings": [{"maintainabilityDate": "2024-02-01"}],
+                },
+                {
+                    "system": "system2",
+                    "maintainability": 3.5,
+                    "maintainabilityDate": "2024-06-01",
+                    "allRatings": [],
+                },
+                {
+                    "system": "system3",
+                    "maintainability": 3.0,
+                    "maintainabilityDate": "2025-03-01",
+                    "allRatings": [{"maintainabilityDate": "2025-02-01"}],
+                },
+            ]
+        }
+        mock_sigrid_api.get_portfolio_maintainability.return_value = mock_api_response
+        mock_sigrid_api.get_period.return_value = ("2024-01-01", "2024-12-31")
+
+        for attr in ["data", "system_names"]:
+            maintainability_portfolio_data.__dict__.pop(attr, None)
+
+        data = maintainability_portfolio_data.data
+        names = maintainability_portfolio_data.system_names
+
+        assert len(data["systems"]) == 2
+        assert names == ["system1", "system2"]
+        assert "system3" not in names
+
+    @patch(
+        "report_generator.generator.domain.portfolio.maintainability_portfolio.data.sigrid_api"
+    )
     def test_system_names_returns_filtered_system_list(self, mock_sigrid_api):
         """Test that system_names property returns list of system names."""
         mock_api_response = {
             "systems": [
-                {"system": "system1", "maintainability": 4.0},
-                {"system": "system2", "maintainability": 3.5},
+                {
+                    "system": "system1",
+                    "maintainability": 4.0,
+                    "maintainabilityDate": "2024-02-01",
+                },
+                {
+                    "system": "system2",
+                    "maintainability": 3.5,
+                    "maintainabilityDate": "2024-02-01",
+                },
             ]
         }
         mock_sigrid_api.get_portfolio_maintainability.return_value = mock_api_response
+        mock_sigrid_api.get_period.return_value = ("2024-01-01", "2024-12-31")
 
         # Clear cache
         for attr in ["data", "system_names"]:
@@ -1541,11 +1600,22 @@ class TestMaintainabilityPortfolioData:
         """Test that get_system returns data for specific system."""
         mock_api_response = {
             "systems": [
-                {"system": "system1", "maintainability": 4.0, "stars": 4},
-                {"system": "system2", "maintainability": 3.5, "stars": 3},
+                {
+                    "system": "system1",
+                    "maintainability": 4.0,
+                    "stars": 4,
+                    "maintainabilityDate": "2024-02-01",
+                },
+                {
+                    "system": "system2",
+                    "maintainability": 3.5,
+                    "stars": 3,
+                    "maintainabilityDate": "2024-02-01",
+                },
             ]
         }
         mock_sigrid_api.get_portfolio_maintainability.return_value = mock_api_response
+        mock_sigrid_api.get_period.return_value = ("2024-01-01", "2024-12-31")
 
         # Clear cache
         if hasattr(maintainability_portfolio_data, "data"):
@@ -1562,8 +1632,17 @@ class TestMaintainabilityPortfolioData:
     )
     def test_get_system_returns_none_for_unknown_system(self, mock_sigrid_api):
         """Test that get_system returns None for non-existent system."""
-        mock_api_response = {"systems": [{"system": "system1", "maintainability": 4.0}]}
+        mock_api_response = {
+            "systems": [
+                {
+                    "system": "system1",
+                    "maintainability": 4.0,
+                    "maintainabilityDate": "2024-02-01",
+                }
+            ]
+        }
         mock_sigrid_api.get_portfolio_maintainability.return_value = mock_api_response
+        mock_sigrid_api.get_period.return_value = ("2024-01-01", "2024-12-31")
 
         # Clear cache
         if hasattr(maintainability_portfolio_data, "data"):
@@ -1607,6 +1686,42 @@ class TestMaintainabilityPortfolioHelpers:
         metadata = {"active": True, "isDevelopmentOnly": True}
 
         assert is_system_active(metadata) is False
+
+    def test_existed_at_end_date_true_when_head_date_before_end(self):
+        """A head date before the end date (no allRatings) means the system existed."""
+        system = {"maintainabilityDate": "2024-06-01", "allRatings": []}
+
+        assert existed_at_end_date(system, "2024-12-31") is True
+
+    def test_existed_at_end_date_true_on_boundary(self):
+        """Earliest date exactly on the end date counts as existing."""
+        system = {"maintainabilityDate": "2024-12-31", "allRatings": []}
+
+        assert existed_at_end_date(system, "2024-12-31") is True
+
+    def test_existed_at_end_date_false_when_earliest_after_end(self):
+        """A system whose every date is after the end date did not exist yet."""
+        system = {
+            "maintainabilityDate": "2025-03-01",
+            "allRatings": [{"maintainabilityDate": "2025-02-01"}],
+        }
+
+        assert existed_at_end_date(system, "2024-12-31") is False
+
+    def test_existed_at_end_date_uses_earliest_of_allratings_and_head(self):
+        """An early allRatings date keeps the system even if the head date is later."""
+        system = {
+            "maintainabilityDate": "2025-03-01",
+            "allRatings": [{"maintainabilityDate": "2024-02-01"}],
+        }
+
+        assert existed_at_end_date(system, "2024-12-31") is True
+
+    def test_existed_at_end_date_empty_allratings_uses_head_only(self):
+        """With no allRatings, the head date alone decides existence."""
+        system = {"maintainabilityDate": "2025-01-01", "allRatings": []}
+
+        assert existed_at_end_date(system, "2024-12-31") is False
 
     def test_weighted_avg_calculates_correctly(self):
         """Test that _weighted_avg calculates weighted average correctly."""
