@@ -1,0 +1,134 @@
+[
+  {
+    "id": "fake-finding-0001",
+    "firstSeenAnalysisDate": "2026-01-15",
+    "lastSeenAnalysisDate": "2026-03-01",
+    "filePath": "src/db/Query.java",
+    "startLine": 11,
+    "endLine": 11,
+    "component": "core",
+    "type": "SQL Injection",
+    "cweId": "CWE-89",
+    "severity": "CRITICAL",
+    "impact": "CRITICAL",
+    "exploitability": "MEDIUM",
+    "severityScore": 9.1,
+    "status": "RAW",
+    "toolName": "FakeAnalyzer",
+    "weaknessIds": [
+      "CWE-89"
+    ],
+    "isManualFinding": false,
+    "isSeverityOverridden": false
+  },
+  {
+    "id": "fake-finding-0002",
+    "firstSeenAnalysisDate": "2026-01-15",
+    "lastSeenAnalysisDate": "2026-03-01",
+    "filePath": "src/web/Render.java",
+    "startLine": 12,
+    "endLine": 12,
+    "component": "web",
+    "type": "Cross-Site Scripting",
+    "cweId": "CWE-79",
+    "severity": "HIGH",
+    "impact": "HIGH",
+    "exploitability": "MEDIUM",
+    "severityScore": 7.4,
+    "status": "RAW",
+    "toolName": "FakeAnalyzer",
+    "weaknessIds": [
+      "CWE-79"
+    ],
+    "isManualFinding": false,
+    "isSeverityOverridden": false
+  },
+  {
+    "id": "fake-finding-0003",
+    "firstSeenAnalysisDate": "2026-01-15",
+    "lastSeenAnalysisDate": "2026-03-01",
+    "filePath": "src/core/Worker.java",
+    "startLine": 13,
+    "endLine": 13,
+    "component": "core",
+    "type": "Unchecked Exception",
+    "cweId": "CWE-391",
+    "severity": "MEDIUM",
+    "impact": "MEDIUM",
+    "exploitability": "MEDIUM",
+    "severityScore": 6.9,
+    "status": "RAW",
+    "toolName": "FakeAnalyzer",
+    "weaknessIds": [
+      "CWE-391"
+    ],
+    "isManualFinding": false,
+    "isSeverityOverridden": false
+  },
+  {
+    "id": "fake-finding-0004",
+    "firstSeenAnalysisDate": "2026-01-15",
+    "lastSeenAnalysisDate": "2026-03-01",
+    "filePath": "src/core/Cache.java",
+    "startLine": 14,
+    "endLine": 14,
+    "component": "core",
+    "type": "NULL Pointer Dereference",
+    "cweId": "CWE-476",
+    "severity": "MEDIUM",
+    "impact": "MEDIUM",
+    "exploitability": "MEDIUM",
+    "severityScore": 5.6,
+    "status": "RAW",
+    "toolName": "FakeAnalyzer",
+    "weaknessIds": [
+      "CWE-476"
+    ],
+    "isManualFinding": false,
+    "isSeverityOverridden": false
+  },
+  {
+    "id": "fake-finding-0005",
+    "firstSeenAnalysisDate": "2026-01-15",
+    "lastSeenAnalysisDate": "2026-03-01",
+    "filePath": "src/api/Error.java",
+    "startLine": 15,
+    "endLine": 15,
+    "component": "api",
+    "type": "Information Exposure",
+    "cweId": "CWE-200",
+    "severity": "LOW",
+    "impact": "LOW",
+    "exploitability": "MEDIUM",
+    "severityScore": 3.1,
+    "status": "RAW",
+    "toolName": "FakeAnalyzer",
+    "weaknessIds": [
+      "CWE-200"
+    ],
+    "isManualFinding": false,
+    "isSeverityOverridden": false
+  },
+  {
+    "id": "fake-finding-0006",
+    "firstSeenAnalysisDate": "2026-01-15",
+    "lastSeenAnalysisDate": "2026-03-01",
+    "filePath": "src/web/Session.java",
+    "startLine": 16,
+    "endLine": 16,
+    "component": "web",
+    "type": "Sensitive Cookie",
+    "cweId": "CWE-1004",
+    "severity": "INFORMATION",
+    "impact": "INFORMATION",
+    "exploitability": "MEDIUM",
+    "severityScore": 1.0,
+    "status": "RAW",
+    "toolName": "FakeAnalyzer",
+    "weaknessIds": [
+      "CWE-1004"
+    ],
+    "isManualFinding": false,
+    "isSeverityOverridden": false
+  }
+]

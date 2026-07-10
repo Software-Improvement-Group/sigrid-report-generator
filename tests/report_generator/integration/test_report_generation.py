@@ -37,7 +37,7 @@ def test_template_exists_for_each_preset(preset_id):
 @pytest.mark.integration
 @pytest.mark.parametrize("preset_id", PRESETS_TO_TEST)
 @freeze_time(_shared.PERIOD[1])
-def test_generate_preset(preset_id, tmp_path):
+def test_generate_preset(preset_id, tmp_path, monkeypatch):
     token = _shared.resolve_token()
     assert token, (
         "Sigrid API token not set in environment. Set SIGRID_REPORTGENERATORDEMO_TOKEN, SIGRID_TOKEN, or SIGRID_CI_TOKEN"
@@ -61,6 +61,10 @@ def test_generate_preset(preset_id, tmp_path):
         system=_shared.system_for_preset(preset_id),
         period=_shared.PERIOD,
     )
+
+    # OSH/Security ratings and findings endpoints return real-time data; replay
+    # deterministic fixtures so the golden-file comparison stays stable.
+    _shared.pin_volatile_endpoints(monkeypatch)
 
     report_generator = ReportGenerator(str(template_file))
     report_generator.generate(str(output_file))

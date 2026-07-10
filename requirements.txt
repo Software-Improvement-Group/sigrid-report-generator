@@ -2,7 +2,6 @@
 # Pinned versions for reproducible installs. setup.cfg uses >= minimums.
 # When updating dependencies, keep both files in sync.
 
-mistune==3.2.1
 pyyaml==6.0.3
 click==8.1.8
 pillow==12.2.0
@@ -11,6 +10,7 @@ python-pptx==1.0.2
 python-docx==1.2.0
 pygments==2.20.0
 requests==2.33.0
+pyjwt==2.13.0
 importlib-resources==6.5.2
 python-dateutil==2.9.0
 numpy==2.2.6

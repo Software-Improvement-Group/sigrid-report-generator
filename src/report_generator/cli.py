@@ -130,7 +130,10 @@ def run(
     _configure_logging(debug)
     if not template:
         _validate_system_requirement(system, layout)
-    _configure_api(customer, system, token, (start, end), api_url)
+    try:
+        _configure_api(customer, system, token, (start, end), api_url)
+    except ValueError as e:
+        raise click.ClickException(str(e)) from e
     _record_usage_statistics(layout, customer)
 
     try:
@@ -138,7 +141,10 @@ def run(
             ReportGenerator(template.name).generate(out_file)
         else:
             presets.run(layout, out_file)
-    except sigrid_api.SigridAccessDeniedError as e:
+    except (
+        sigrid_api.SigridAccessDeniedError,
+        sigrid_api.SigridTokenInvalidError,
+    ) as e:
         raise click.ClickException(str(e)) from e
 
     _notify_if_update_available()
