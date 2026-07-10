@@ -12,10 +12,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import base64
-import json
-import time
 from typing import Optional
+
+import jwt
 
 DEFAULT_BASE_URL = "https://sigrid-says.com"
 BASE_ANALYSIS_RESULTS_ENDPOINT = "analysis-results/api/v1"
@@ -27,70 +26,29 @@ _period: Optional[tuple[str, str]] = None
 _rest_url: str = f"{DEFAULT_BASE_URL}/rest"
 
 
-def _decode_jwt_segment(segment: str) -> dict:
-    """Decode one base64url-encoded JWT segment into its JSON object.
-
-    Raises ValueError if the segment is not intact base64url-encoded JSON. A
-    base64url segment length is never 1 modulo 4, so that indicates a dropped or
-    added character; ``urlsafe_b64decode`` and ``json.loads`` both raise
-    subclasses of ValueError on other corruption."""
-    if len(segment) % 4 == 1:
-        raise ValueError("Invalid base64url segment length.")
-    # Base64URL segments in a JWT are unpadded; restore padding before decoding.
-    padding = "=" * (-len(segment) % 4)
-    return json.loads(base64.urlsafe_b64decode(segment + padding))
-
-
-def _validate_jwt_structure(parts: list[str]) -> None:
-    """Verify an intact JWT from its three base64url segments.
-
-    A character dropped while copying corrupts the base64url encoding or the JSON
-    of the header/payload, which this detects offline. The signature can only be
-    verified server-side, so a corrupt signature is only caught at request time
-    (HTTP 401)."""
-    header, payload, signature = parts
-    try:
-        _decode_jwt_segment(header)
-        _decode_jwt_segment(payload)
-        if len(signature) % 4 == 1:
-            raise ValueError("Invalid base64url signature length.")
-    except ValueError as e:
-        raise ValueError(
-            "Malformed Sigrid token. The token appears corrupted (a character may have been dropped when copying). Copy the full token from sigrid-says.com."
-        ) from e
-
-
-def _token_expiry(parts: list[str]) -> Optional[int]:
-    """Return the JWT ``exp`` claim (seconds since epoch), or None if the payload
-    segment cannot be decoded as JSON with an integer ``exp`` claim."""
-    try:
-        payload = _decode_jwt_segment(parts[1])
-    except ValueError:
-        return None
-
-    exp = payload.get("exp")
-    return exp if isinstance(exp, int) else None
-
-
 def _test_sigrid_token(token: str) -> None:
     if len(token) < 10 or token[0:2] != "ey":
         raise ValueError(
             "Invalid Sigrid token. A token is always longer than 10 characters and starts with 'ey'. You can obtain a token from sigrid-says.com."
         )
 
-    parts = token.split(".")
     # Only three-segment tokens have the JWT shape we can inspect offline; leave
     # anything else for the server to validate.
-    if len(parts) != 3:
+    if token.count(".") != 2:
         return
 
-    _validate_jwt_structure(parts)
-
-    expiry = _token_expiry(parts)
-    if expiry is not None and expiry < time.time():
+    try:
+        jwt.decode(token, options={"verify_signature": False, "verify_exp": True})
+        # DO NOT use anything from the output here, this is purely for an additional
+        # offline validity check.
+    except jwt.ExpiredSignatureError as e:
         raise ValueError(
             "Expired Sigrid token. This token's expiration date has passed. You can obtain a new token from sigrid-says.com."
-        )
+        ) from e
+    except jwt.DecodeError as e:
+        raise ValueError(
+            "Malformed Sigrid token. The token appears corrupted (a character may have been dropped when copying). Copy the full token from sigrid-says.com."
+        ) from e
 
 
 def set_context(
