@@ -2,7 +2,6 @@
 # Pinned versions for reproducible installs. setup.cfg uses >= minimums.
 # When updating dependencies, keep both files in sync.
 
-mistune==3.2.1
 pyyaml==6.0.3
 click==8.1.8
 pillow==12.2.0
