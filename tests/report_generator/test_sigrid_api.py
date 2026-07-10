@@ -12,7 +12,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import base64
+import json
 import logging
+import time
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -20,6 +23,18 @@ import requests
 
 import report_generator.generator.context.config as config
 import report_generator.generator.context.sigrid_api as sigrid_api
+
+
+def _make_jwt(exp: int) -> str:
+    """Build a fake JWT (unsigned) with the given ``exp`` claim for testing."""
+
+    def _b64url(data: dict) -> str:
+        raw = json.dumps(data).encode()
+        return base64.urlsafe_b64encode(raw).rstrip(b"=").decode()
+
+    header = _b64url({"kid": "test-key", "alg": "RS256"})
+    payload = _b64url({"sub": "test-user", "customer": "acme", "exp": exp})
+    return f"{header}.{payload}.FAKE_SIGNATURE"
 
 
 class TestSigridAPI:
@@ -38,6 +53,27 @@ class TestSigridAPI:
             sigrid_api._test_sigrid_token("eyKskfiurkfshiuwhfibvcgi43hf2o3h893hg34")
         except ValueError:
             pytest.fail("This token was expected to be valid")
+
+    def test_expired_sigrid_token_is_invalid(self):
+        expired_token = _make_jwt(exp=int(time.time()) - 3600)
+        with pytest.raises(ValueError) as excinfo:
+            sigrid_api._test_sigrid_token(expired_token)
+        assert str(excinfo.value).startswith("Expired Sigrid token")
+
+    def test_unexpired_sigrid_token_is_valid(self):
+        unexpired_token = _make_jwt(exp=int(time.time()) + 3600)
+        try:
+            sigrid_api._test_sigrid_token(unexpired_token)
+        except ValueError:
+            pytest.fail("This token was expected to be valid")
+
+    def test_token_without_exp_claim_is_not_rejected_as_expired(self):
+        # Tokens that are not decodable JWTs (no exp claim) fall back to the
+        # format-only check and must remain valid.
+        try:
+            sigrid_api._test_sigrid_token("eyKskfiurkfshiuwhfibvcgi43hf2o3h893hg34")
+        except ValueError:
+            pytest.fail("A token without a decodable exp claim should be valid")
 
     def test_set_context_multiple_times_preserves_previous_values(self):
         sigrid_api.reset_context()
@@ -206,6 +242,76 @@ class TestSigridAPI:
                 "https://sigrid-says.com/rest/some-other-endpoint"
             )
             assert result is None
+
+        sigrid_api._request.cache_clear()
+        sigrid_api.reset_context()
+
+    def _patch_http_status(self, status_code):
+        """Return a mocked requests response that raises HTTPError with the given status."""
+        mock_response = MagicMock()
+        mock_response.status_code = status_code
+        mock_response.raise_for_status.side_effect = requests.HTTPError(
+            response=mock_response
+        )
+        return mock_response
+
+    def test_request_raises_token_invalid_on_401(self):
+        # A 401 means the token itself is rejected (mistyped, expired, or revoked).
+        sigrid_api.reset_context()
+        config._bearer_token = "eyTesttoken12345678"
+        config._customer = "my-customer"
+
+        with patch("requests.request", return_value=self._patch_http_status(401)):
+            sigrid_api._request.cache_clear()
+            with pytest.raises(sigrid_api.SigridTokenInvalidError):
+                sigrid_api._request("https://sigrid-says.com/rest/some-endpoint")
+
+        sigrid_api._request.cache_clear()
+        sigrid_api.reset_context()
+
+    def test_token_with_dropped_character_in_payload_is_rejected(self):
+        # A character dropped while copying corrupts the JWT payload; this is
+        # caught offline before any request is made.
+        header, payload, signature = _make_jwt(exp=int(time.time()) + 3600).split(".")
+        corrupted = f"{header}.{payload[:-1]}.{signature}"
+
+        with pytest.raises(ValueError) as excinfo:
+            sigrid_api._test_sigrid_token(corrupted)
+        assert "Malformed Sigrid token" in str(excinfo.value)
+
+    def test_intact_three_segment_jwt_passes_structure_check(self):
+        # Must not raise: an intact JWT passes the structural check.
+        sigrid_api._test_sigrid_token(_make_jwt(exp=int(time.time()) + 3600))
+
+    def test_optional_endpoint_403_is_downgraded_to_request_failure(self, caplog):
+        # An unlicensed feature (e.g. security or OSH) returns 403; it must not
+        # abort the whole report, only skip its own placeholder.
+        sigrid_api.reset_context()
+        config._bearer_token = "eyTesttoken12345678"
+        config._customer = "my-customer"
+        config._system = "my-system"
+
+        with patch("requests.request", return_value=self._patch_http_status(403)):
+            sigrid_api._request.cache_clear()
+            with caplog.at_level(logging.WARNING):
+                with pytest.raises(sigrid_api.SigridAPIRequestFailedError):
+                    sigrid_api.get_security_findings("my-system")
+            assert "get_security_findings" in caplog.text
+
+        sigrid_api._request.cache_clear()
+        sigrid_api.reset_context()
+
+    def test_critical_endpoint_403_raises_access_denied(self):
+        # A core endpoint (maintainability) returning 403 means the token cannot
+        # see this customer at all, which is fatal.
+        sigrid_api.reset_context()
+        config._bearer_token = "eyTesttoken12345678"
+        config._customer = "my-customer"
+
+        with patch("requests.request", return_value=self._patch_http_status(403)):
+            sigrid_api._request.cache_clear()
+            with pytest.raises(sigrid_api.SigridAccessDeniedError):
+                sigrid_api.get_portfolio_maintainability()
 
         sigrid_api._request.cache_clear()
         sigrid_api.reset_context()

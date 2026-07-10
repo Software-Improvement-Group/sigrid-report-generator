@@ -14,6 +14,8 @@
 
 from typing import Optional
 
+import jwt
+
 DEFAULT_BASE_URL = "https://sigrid-says.com"
 BASE_ANALYSIS_RESULTS_ENDPOINT = "analysis-results/api/v1"
 
@@ -27,8 +29,26 @@ _rest_url: str = f"{DEFAULT_BASE_URL}/rest"
 def _test_sigrid_token(token: str) -> None:
     if len(token) < 10 or token[0:2] != "ey":
         raise ValueError(
-            "Invalid Sigrid token. A token is always longer than 10 characters and starts with 'ey'. You can obtain a token from sigrid-says.com. Note that tokens are customer-specific."
+            "Invalid Sigrid token. A token is always longer than 10 characters and starts with 'ey'. You can obtain a token from sigrid-says.com."
         )
+
+    # Only three-segment tokens have the JWT shape we can inspect offline; leave
+    # anything else for the server to validate.
+    if token.count(".") != 2:
+        return
+
+    try:
+        jwt.decode(token, options={"verify_signature": False, "verify_exp": True})
+        # DO NOT use anything from the output here, this is purely for an additional
+        # offline validity check.
+    except jwt.ExpiredSignatureError as e:
+        raise ValueError(
+            "Expired Sigrid token. This token's expiration date has passed. You can obtain a new token from sigrid-says.com."
+        ) from e
+    except jwt.DecodeError as e:
+        raise ValueError(
+            "Malformed Sigrid token. The token appears corrupted (a character may have been dropped when copying). Copy the full token from sigrid-says.com."
+        ) from e
 
 
 def set_context(

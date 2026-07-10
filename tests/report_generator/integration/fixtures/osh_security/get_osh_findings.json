@@ -1,0 +1,913 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:fake0008-0000-0000-0000-000000000000",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-03-01T00:00:00Z",
+    "component": {
+      "type": "application",
+      "name": "integrationtest-kafka"
+    },
+    "supplier": {
+      "name": "reportgeneratordemo"
+    },
+    "properties": [
+      {
+        "name": "OSHModelVersion",
+        "value": "2024_OSH_SIG"
+      },
+      {
+        "name": "sigrid:ratings:system",
+        "value": "3.8"
+      },
+      {
+        "name": "sigrid:ratings:vulnerability",
+        "value": "3.0"
+      },
+      {
+        "name": "sigrid:ratings:licenses",
+        "value": "3.0"
+      },
+      {
+        "name": "sigrid:ratings:freshness",
+        "value": "3.3"
+      },
+      {
+        "name": "sigrid:ratings:management",
+        "value": "3.5"
+      },
+      {
+        "name": "sigrid:ratings:activity",
+        "value": "3.5"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/com.example/lib-8-0@1.0.0?package-id=fake0800",
+      "group": "com.example",
+      "name": "lib-8-0",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Apache-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:maven/com.example/lib-8-0@1.0.0",
+      "properties": [
+        {
+          "name": "sigrid:risk:vulnerability",
+          "value": "MEDIUM"
+        },
+        {
+          "name": "sigrid:risk:legal",
+          "value": "LOW"
+        },
+        {
+          "name": "sigrid:risk:freshness",
+          "value": "NONE"
+        },
+        {
+          "name": "sigrid:risk:stability",
+          "value": "UNKNOWN"
+        },
+        {
+          "name": "sigrid:risk:management",
+          "value": "CRITICAL"
+        },
+        {
+          "name": "sigrid:risk:activity",
+          "value": "HIGH"
+        },
+        {
+          "name": "sigrid:releaseDate",
+          "value": "2024-01-15T00:00:00Z"
+        },
+        {
+          "name": "sigrid:next:version",
+          "value": "1.0.1"
+        },
+        {
+          "name": "sigrid:next:releaseDate",
+          "value": "2024-01-01T00:00:00Z"
+        },
+        {
+          "name": "sigrid:latest:version",
+          "value": "2.0.0"
+        },
+        {
+          "name": "sigrid:latest:releaseDate",
+          "value": "2026-01-01T00:00:00Z"
+        },
+        {
+          "name": "sigrid:transitive",
+          "value": "DIRECT"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "build.gradle"
+          }
+        ]
+      }
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/com.example/lib-8-1@1.1.0?package-id=fake0801",
+      "group": "com.example",
+      "name": "lib-8-1",
+      "version": "1.1.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Apache-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:maven/com.example/lib-8-1@1.1.0",
+      "properties": [
+        {
+          "name": "sigrid:risk:vulnerability",
+          "value": "LOW"
+        },
+        {
+          "name": "sigrid:risk:legal",
+          "value": "NONE"
+        },
+        {
+          "name": "sigrid:risk:freshness",
+          "value": "UNKNOWN"
+        },
+        {
+          "name": "sigrid:risk:stability",
+          "value": "CRITICAL"
+        },
+        {
+          "name": "sigrid:risk:management",
+          "value": "HIGH"
+        },
+        {
+          "name": "sigrid:risk:activity",
+          "value": "MEDIUM"
+        },
+        {
+          "name": "sigrid:releaseDate",
+          "value": "2024-01-15T00:00:00Z"
+        },
+        {
+          "name": "sigrid:next:version",
+          "value": "1.1.1"
+        },
+        {
+          "name": "sigrid:next:releaseDate",
+          "value": "2024-02-01T00:00:00Z"
+        },
+        {
+          "name": "sigrid:latest:version",
+          "value": "2.0.0"
+        },
+        {
+          "name": "sigrid:latest:releaseDate",
+          "value": "2026-01-01T00:00:00Z"
+        },
+        {
+          "name": "sigrid:transitive",
+          "value": "TRANSITIVE"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "build.gradle"
+          }
+        ]
+      }
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/com.example/lib-8-2@1.2.0?package-id=fake0802",
+      "group": "com.example",
+      "name": "lib-8-2",
+      "version": "1.2.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Apache-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:maven/com.example/lib-8-2@1.2.0",
+      "properties": [
+        {
+          "name": "sigrid:risk:vulnerability",
+          "value": "NONE"
+        },
+        {
+          "name": "sigrid:risk:legal",
+          "value": "UNKNOWN"
+        },
+        {
+          "name": "sigrid:risk:freshness",
+          "value": "CRITICAL"
+        },
+        {
+          "name": "sigrid:risk:stability",
+          "value": "HIGH"
+        },
+        {
+          "name": "sigrid:risk:management",
+          "value": "MEDIUM"
+        },
+        {
+          "name": "sigrid:risk:activity",
+          "value": "LOW"
+        },
+        {
+          "name": "sigrid:releaseDate",
+          "value": "2024-01-15T00:00:00Z"
+        },
+        {
+          "name": "sigrid:next:version",
+          "value": "1.2.1"
+        },
+        {
+          "name": "sigrid:next:releaseDate",
+          "value": "2024-03-01T00:00:00Z"
+        },
+        {
+          "name": "sigrid:latest:version",
+          "value": "2.0.0"
+        },
+        {
+          "name": "sigrid:latest:releaseDate",
+          "value": "2026-01-01T00:00:00Z"
+        },
+        {
+          "name": "sigrid:transitive",
+          "value": "DIRECT"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "build.gradle"
+          }
+        ]
+      }
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/com.example/lib-8-3@1.3.0?package-id=fake0803",
+      "group": "com.example",
+      "name": "lib-8-3",
+      "version": "1.3.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Apache-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:maven/com.example/lib-8-3@1.3.0",
+      "properties": [
+        {
+          "name": "sigrid:risk:vulnerability",
+          "value": "UNKNOWN"
+        },
+        {
+          "name": "sigrid:risk:legal",
+          "value": "CRITICAL"
+        },
+        {
+          "name": "sigrid:risk:freshness",
+          "value": "HIGH"
+        },
+        {
+          "name": "sigrid:risk:stability",
+          "value": "MEDIUM"
+        },
+        {
+          "name": "sigrid:risk:management",
+          "value": "LOW"
+        },
+        {
+          "name": "sigrid:risk:activity",
+          "value": "NONE"
+        },
+        {
+          "name": "sigrid:releaseDate",
+          "value": "2024-01-15T00:00:00Z"
+        },
+        {
+          "name": "sigrid:next:version",
+          "value": "1.3.1"
+        },
+        {
+          "name": "sigrid:next:releaseDate",
+          "value": "2024-04-01T00:00:00Z"
+        },
+        {
+          "name": "sigrid:latest:version",
+          "value": "2.0.0"
+        },
+        {
+          "name": "sigrid:latest:releaseDate",
+          "value": "2026-01-01T00:00:00Z"
+        },
+        {
+          "name": "sigrid:transitive",
+          "value": "TRANSITIVE"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "build.gradle"
+          }
+        ]
+      }
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/com.example/lib-8-4@1.4.0?package-id=fake0804",
+      "group": "com.example",
+      "name": "lib-8-4",
+      "version": "1.4.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Apache-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:maven/com.example/lib-8-4@1.4.0",
+      "properties": [
+        {
+          "name": "sigrid:risk:vulnerability",
+          "value": "CRITICAL"
+        },
+        {
+          "name": "sigrid:risk:legal",
+          "value": "HIGH"
+        },
+        {
+          "name": "sigrid:risk:freshness",
+          "value": "MEDIUM"
+        },
+        {
+          "name": "sigrid:risk:stability",
+          "value": "LOW"
+        },
+        {
+          "name": "sigrid:risk:management",
+          "value": "NONE"
+        },
+        {
+          "name": "sigrid:risk:activity",
+          "value": "UNKNOWN"
+        },
+        {
+          "name": "sigrid:releaseDate",
+          "value": "2024-01-15T00:00:00Z"
+        },
+        {
+          "name": "sigrid:next:version",
+          "value": "1.4.1"
+        },
+        {
+          "name": "sigrid:next:releaseDate",
+          "value": "2024-05-01T00:00:00Z"
+        },
+        {
+          "name": "sigrid:latest:version",
+          "value": "2.0.0"
+        },
+        {
+          "name": "sigrid:latest:releaseDate",
+          "value": "2026-01-01T00:00:00Z"
+        },
+        {
+          "name": "sigrid:transitive",
+          "value": "DIRECT"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "build.gradle"
+          }
+        ]
+      }
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/com.example/lib-8-5@1.5.0?package-id=fake0805",
+      "group": "com.example",
+      "name": "lib-8-5",
+      "version": "1.5.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Apache-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:maven/com.example/lib-8-5@1.5.0",
+      "properties": [
+        {
+          "name": "sigrid:risk:vulnerability",
+          "value": "HIGH"
+        },
+        {
+          "name": "sigrid:risk:legal",
+          "value": "MEDIUM"
+        },
+        {
+          "name": "sigrid:risk:freshness",
+          "value": "LOW"
+        },
+        {
+          "name": "sigrid:risk:stability",
+          "value": "NONE"
+        },
+        {
+          "name": "sigrid:risk:management",
+          "value": "UNKNOWN"
+        },
+        {
+          "name": "sigrid:risk:activity",
+          "value": "CRITICAL"
+        },
+        {
+          "name": "sigrid:releaseDate",
+          "value": "2024-01-15T00:00:00Z"
+        },
+        {
+          "name": "sigrid:next:version",
+          "value": "1.5.1"
+        },
+        {
+          "name": "sigrid:next:releaseDate",
+          "value": "2024-06-01T00:00:00Z"
+        },
+        {
+          "name": "sigrid:latest:version",
+          "value": "2.0.0"
+        },
+        {
+          "name": "sigrid:latest:releaseDate",
+          "value": "2026-01-01T00:00:00Z"
+        },
+        {
+          "name": "sigrid:transitive",
+          "value": "TRANSITIVE"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "build.gradle"
+          }
+        ]
+      }
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/com.example/lib-8-6@1.6.0?package-id=fake0806",
+      "group": "com.example",
+      "name": "lib-8-6",
+      "version": "1.6.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Apache-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:maven/com.example/lib-8-6@1.6.0",
+      "properties": [
+        {
+          "name": "sigrid:risk:vulnerability",
+          "value": "MEDIUM"
+        },
+        {
+          "name": "sigrid:risk:legal",
+          "value": "LOW"
+        },
+        {
+          "name": "sigrid:risk:freshness",
+          "value": "NONE"
+        },
+        {
+          "name": "sigrid:risk:stability",
+          "value": "UNKNOWN"
+        },
+        {
+          "name": "sigrid:risk:management",
+          "value": "CRITICAL"
+        },
+        {
+          "name": "sigrid:risk:activity",
+          "value": "HIGH"
+        },
+        {
+          "name": "sigrid:releaseDate",
+          "value": "2024-01-15T00:00:00Z"
+        },
+        {
+          "name": "sigrid:next:version",
+          "value": "1.6.1"
+        },
+        {
+          "name": "sigrid:next:releaseDate",
+          "value": "2024-07-01T00:00:00Z"
+        },
+        {
+          "name": "sigrid:latest:version",
+          "value": "2.0.0"
+        },
+        {
+          "name": "sigrid:latest:releaseDate",
+          "value": "2026-01-01T00:00:00Z"
+        },
+        {
+          "name": "sigrid:transitive",
+          "value": "DIRECT"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "build.gradle"
+          }
+        ]
+      }
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/com.example/lib-8-7@1.7.0?package-id=fake0807",
+      "group": "com.example",
+      "name": "lib-8-7",
+      "version": "1.7.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Apache-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:maven/com.example/lib-8-7@1.7.0",
+      "properties": [
+        {
+          "name": "sigrid:risk:vulnerability",
+          "value": "LOW"
+        },
+        {
+          "name": "sigrid:risk:legal",
+          "value": "NONE"
+        },
+        {
+          "name": "sigrid:risk:freshness",
+          "value": "UNKNOWN"
+        },
+        {
+          "name": "sigrid:risk:stability",
+          "value": "CRITICAL"
+        },
+        {
+          "name": "sigrid:risk:management",
+          "value": "HIGH"
+        },
+        {
+          "name": "sigrid:risk:activity",
+          "value": "MEDIUM"
+        },
+        {
+          "name": "sigrid:releaseDate",
+          "value": "2024-01-15T00:00:00Z"
+        },
+        {
+          "name": "sigrid:next:version",
+          "value": "1.7.1"
+        },
+        {
+          "name": "sigrid:next:releaseDate",
+          "value": "2024-08-01T00:00:00Z"
+        },
+        {
+          "name": "sigrid:latest:version",
+          "value": "2.0.0"
+        },
+        {
+          "name": "sigrid:latest:releaseDate",
+          "value": "2026-01-01T00:00:00Z"
+        },
+        {
+          "name": "sigrid:transitive",
+          "value": "TRANSITIVE"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "build.gradle"
+          }
+        ]
+      }
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/com.example/lib-8-8@1.8.0?package-id=fake0808",
+      "group": "com.example",
+      "name": "lib-8-8",
+      "version": "1.8.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Apache-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:maven/com.example/lib-8-8@1.8.0",
+      "properties": [
+        {
+          "name": "sigrid:risk:vulnerability",
+          "value": "NONE"
+        },
+        {
+          "name": "sigrid:risk:legal",
+          "value": "UNKNOWN"
+        },
+        {
+          "name": "sigrid:risk:freshness",
+          "value": "CRITICAL"
+        },
+        {
+          "name": "sigrid:risk:stability",
+          "value": "HIGH"
+        },
+        {
+          "name": "sigrid:risk:management",
+          "value": "MEDIUM"
+        },
+        {
+          "name": "sigrid:risk:activity",
+          "value": "LOW"
+        },
+        {
+          "name": "sigrid:releaseDate",
+          "value": "2024-01-15T00:00:00Z"
+        },
+        {
+          "name": "sigrid:next:version",
+          "value": "1.8.1"
+        },
+        {
+          "name": "sigrid:next:releaseDate",
+          "value": "2024-09-01T00:00:00Z"
+        },
+        {
+          "name": "sigrid:latest:version",
+          "value": "2.0.0"
+        },
+        {
+          "name": "sigrid:latest:releaseDate",
+          "value": "2026-01-01T00:00:00Z"
+        },
+        {
+          "name": "sigrid:transitive",
+          "value": "DIRECT"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "build.gradle"
+          }
+        ]
+      }
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/com.example/lib-8-9@1.9.0?package-id=fake0809",
+      "group": "com.example",
+      "name": "lib-8-9",
+      "version": "1.9.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Apache-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:maven/com.example/lib-8-9@1.9.0",
+      "properties": [
+        {
+          "name": "sigrid:risk:vulnerability",
+          "value": "UNKNOWN"
+        },
+        {
+          "name": "sigrid:risk:legal",
+          "value": "CRITICAL"
+        },
+        {
+          "name": "sigrid:risk:freshness",
+          "value": "HIGH"
+        },
+        {
+          "name": "sigrid:risk:stability",
+          "value": "MEDIUM"
+        },
+        {
+          "name": "sigrid:risk:management",
+          "value": "LOW"
+        },
+        {
+          "name": "sigrid:risk:activity",
+          "value": "NONE"
+        },
+        {
+          "name": "sigrid:releaseDate",
+          "value": "2024-01-15T00:00:00Z"
+        },
+        {
+          "name": "sigrid:next:version",
+          "value": "1.9.1"
+        },
+        {
+          "name": "sigrid:next:releaseDate",
+          "value": "2024-10-01T00:00:00Z"
+        },
+        {
+          "name": "sigrid:latest:version",
+          "value": "2.0.0"
+        },
+        {
+          "name": "sigrid:latest:releaseDate",
+          "value": "2026-01-01T00:00:00Z"
+        },
+        {
+          "name": "sigrid:transitive",
+          "value": "TRANSITIVE"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "build.gradle"
+          }
+        ]
+      }
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/com.example/lib-8-10@1.10.0?package-id=fake0810",
+      "group": "com.example",
+      "name": "lib-8-10",
+      "version": "1.10.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Apache-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:maven/com.example/lib-8-10@1.10.0",
+      "properties": [
+        {
+          "name": "sigrid:risk:vulnerability",
+          "value": "CRITICAL"
+        },
+        {
+          "name": "sigrid:risk:legal",
+          "value": "HIGH"
+        },
+        {
+          "name": "sigrid:risk:freshness",
+          "value": "MEDIUM"
+        },
+        {
+          "name": "sigrid:risk:stability",
+          "value": "LOW"
+        },
+        {
+          "name": "sigrid:risk:management",
+          "value": "NONE"
+        },
+        {
+          "name": "sigrid:risk:activity",
+          "value": "UNKNOWN"
+        },
+        {
+          "name": "sigrid:releaseDate",
+          "value": "2024-01-15T00:00:00Z"
+        },
+        {
+          "name": "sigrid:next:version",
+          "value": "1.10.1"
+        },
+        {
+          "name": "sigrid:next:releaseDate",
+          "value": "2024-11-01T00:00:00Z"
+        },
+        {
+          "name": "sigrid:latest:version",
+          "value": "2.0.0"
+        },
+        {
+          "name": "sigrid:latest:releaseDate",
+          "value": "2026-01-01T00:00:00Z"
+        },
+        {
+          "name": "sigrid:transitive",
+          "value": "DIRECT"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "build.gradle"
+          }
+        ]
+      }
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/com.example/lib-8-11@1.11.0?package-id=fake0811",
+      "group": "com.example",
+      "name": "lib-8-11",
+      "version": "1.11.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Apache-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:maven/com.example/lib-8-11@1.11.0",
+      "properties": [
+        {
+          "name": "sigrid:risk:vulnerability",
+          "value": "HIGH"
+        },
+        {
+          "name": "sigrid:risk:legal",
+          "value": "MEDIUM"
+        },
+        {
+          "name": "sigrid:risk:freshness",
+          "value": "LOW"
+        },
+        {
+          "name": "sigrid:risk:stability",
+          "value": "NONE"
+        },
+        {
+          "name": "sigrid:risk:management",
+          "value": "UNKNOWN"
+        },
+        {
+          "name": "sigrid:risk:activity",
+          "value": "CRITICAL"
+        },
+        {
+          "name": "sigrid:releaseDate",
+          "value": "2024-01-15T00:00:00Z"
+        },
+        {
+          "name": "sigrid:next:version",
+          "value": "1.11.1"
+        },
+        {
+          "name": "sigrid:next:releaseDate",
+          "value": "2024-12-01T00:00:00Z"
+        },
+        {
+          "name": "sigrid:latest:version",
+          "value": "2.0.0"
+        },
+        {
+          "name": "sigrid:latest:releaseDate",
+          "value": "2026-01-01T00:00:00Z"
+        },
+        {
+          "name": "sigrid:transitive",
+          "value": "TRANSITIVE"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "build.gradle"
+          }
+        ]
+      }
+    }
+  ],
+  "vulnerabilities": []
+}

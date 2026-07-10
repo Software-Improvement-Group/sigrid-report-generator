@@ -1,0 +1,45 @@
+{
+  "id": "ow10-2025",
+  "name": "OWASP Top 10 (2025)",
+  "metadata": {
+    "key": "2026",
+    "modelVersion": "2026_security_sig"
+  },
+  "feature": "SECURITY",
+  "systemId": 10008,
+  "systemName": "integrationtest-kafka",
+  "adherenceScore": 0.5,
+  "rating": 2.5,
+  "categories": [
+    {
+      "id": "a10",
+      "name": "A10:2025 - Mishandling of Exceptional Conditions",
+      "adherenceScore": 0.75,
+      "maxSeverity": "CRITICAL"
+    },
+    {
+      "id": "a1",
+      "name": "A01:2025 - Broken Access Control",
+      "adherenceScore": 0.25,
+      "maxSeverity": "MEDIUM"
+    },
+    {
+      "id": "a2",
+      "name": "A02:2025 - Security Misconfiguration",
+      "adherenceScore": 0.5,
+      "maxSeverity": "HIGH"
+    },
+    {
+      "id": "a3",
+      "name": "A03:2025 - Software Supply Chain Failures",
+      "adherenceScore": 0.75,
+      "maxSeverity": "CRITICAL"
+    },
+    {
+      "id": "a4",
+      "name": "A04:2025 - Cryptographic Failures",
+      "adherenceScore": 0.25,
+      "maxSeverity": "MEDIUM"
+    }
+  ]
+}
