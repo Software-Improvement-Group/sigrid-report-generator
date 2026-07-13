@@ -29,6 +29,9 @@ from report_generator.generator.domain import (
 )
 from report_generator.generator.placeholders import rendering
 from report_generator.generator.placeholders.formatting import formatters
+from report_generator.generator.placeholders.formatting.technologies import (
+    get_technology_name,
+)
 from report_generator.generator.placeholders.implementations.images.base import (
     _AbstractParameterizedImagePlaceholder,
 )
@@ -129,11 +132,18 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
             return METADATA_DEPLOYMENT_MAPPING[metadata["deploymentType"]]
         return "Unset"
 
+    @staticmethod
+    def _process_main_technology_grouping(metadata):
+        if metadata["mainTechnology"]:
+            return get_technology_name(metadata["mainTechnology"])
+        return "Unset"
+
     grouping_processors: ClassVar[dict] = {
         "team": _process_team_grouping.__func__,
         "lifecycle": _process_lifecycle_grouping.__func__,
         "business_criticality": _process_business_criticality_grouping.__func__,
         "deployment": _process_deployment_grouping.__func__,
+        "main_technology": _process_main_technology_grouping.__func__,
     }
 
     allowed_parameters: ClassVar[list] = [x.upper() for x in grouping_processors.keys()]

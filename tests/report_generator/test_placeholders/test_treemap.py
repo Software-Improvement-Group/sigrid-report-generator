@@ -213,3 +213,53 @@ class TestTreemapImagePlaceholder:
         assert call_kwargs["cmap"] == fig_data["color_mapping"]
         # Axes should be turned off
         mock_ax.axis.assert_called_once_with("off")
+
+
+class TestMainTechnologyGrouping:
+    """Test cases for the 'main_technology' treemap grouping processor."""
+
+    def test_main_technology_available_as_parameter(self):
+        from report_generator.generator.placeholders.implementations.images.treemap_image import (
+            _AbstractPortfolioTreemapPlaceholder,
+        )
+
+        assert "main_technology" in (
+            _AbstractPortfolioTreemapPlaceholder.grouping_processors
+        )
+        assert (
+            "MAIN_TECHNOLOGY" in _AbstractPortfolioTreemapPlaceholder.allowed_parameters
+        )
+
+    @patch(
+        "report_generator.generator.placeholders.implementations.images.treemap_image.get_technology_name"
+    )
+    def test_grouping_returns_readable_technology_name(self, mock_get_name):
+        from report_generator.generator.placeholders.implementations.images.treemap_image import (
+            _AbstractPortfolioTreemapPlaceholder,
+        )
+
+        mock_get_name.return_value = "Java"
+        result = _AbstractPortfolioTreemapPlaceholder._process_main_technology_grouping(
+            {"mainTechnology": "java"}
+        )
+
+        assert result == "Java"
+        mock_get_name.assert_called_once_with("java")
+
+    def test_grouping_returns_unset_when_missing(self):
+        from report_generator.generator.placeholders.implementations.images.treemap_image import (
+            _AbstractPortfolioTreemapPlaceholder,
+        )
+
+        assert (
+            _AbstractPortfolioTreemapPlaceholder._process_main_technology_grouping(
+                {"mainTechnology": None}
+            )
+            == "Unset"
+        )
+        assert (
+            _AbstractPortfolioTreemapPlaceholder._process_main_technology_grouping(
+                {"mainTechnology": ""}
+            )
+            == "Unset"
+        )
