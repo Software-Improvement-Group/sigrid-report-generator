@@ -151,6 +151,13 @@ def portfolio_maint_average_delta():
 
 
 @text_placeholder()
+def portfolio_number_of_systems():
+    """The total number of active systems in the portfolio."""
+    stats = maintainability_portfolio_stats.statistics
+    return stats["maintainability"]["number-of-systems"]
+
+
+@text_placeholder()
 def portfolio_maint_above_market():
     """Percentage of systems scoring above market average (≥3.5 stars)."""
     distribution = maintainability_portfolio_data.rating_distribution_percentages
