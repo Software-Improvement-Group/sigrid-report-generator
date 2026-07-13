@@ -14,6 +14,8 @@
 
 from unittest.mock import patch
 
+import pytest
+
 from report_generator.generator.context.portfolio_filters import reset_context
 from report_generator.generator.domain.portfolio.security_dashboard_findings_portfolio import (
     SecurityDashboardFindingsPortfolioData,
@@ -25,6 +27,7 @@ from report_generator.generator.domain.portfolio.security_dashboard_resolution_t
 )
 from report_generator.generator.domain.portfolio.security_portfolio import (
     SecurityRatingsPortfolioData,
+    security_ratings_change_portfolio_data,
     security_ratings_portfolio_data,
 )
 from report_generator.generator.domain.shared.findings_severity import (
@@ -1173,6 +1176,84 @@ class TestSecurityPortfolioData:
         assert "system1" in names
         assert "system2" in names
         assert "system3" in names
+
+
+class TestSecurityRatingsChangePortfolioData:
+    """Test cases for SecurityRatingsChangePortfolioData (per-system rating delta)."""
+
+    def teardown_method(self):
+        reset_context()
+        for attr in ["_start_ratings", "_end_ratings", "differences"]:
+            security_ratings_change_portfolio_data.__dict__.pop(attr, None)
+
+    @staticmethod
+    def _ratings_by_end_date(mapping):
+        """Return a side_effect that serves ratings keyed by the requested end_date."""
+
+        def side_effect(end_date=None):
+            return mapping[end_date]
+
+        return side_effect
+
+    @patch("report_generator.generator.domain.portfolio.security_portfolio.sigrid_api")
+    def test_differences_computes_signed_deltas(self, mock_sigrid_api):
+        mock_sigrid_api.get_period.return_value = ("2025-01-01", "2025-12-31")
+        mock_sigrid_api.get_portfolio_security_ratings.side_effect = (
+            self._ratings_by_end_date(
+                {
+                    "2025-01-01": [
+                        {"systemName": "up", "rating": 2.0},
+                        {"systemName": "down", "rating": 4.0},
+                        {"systemName": "flat", "rating": 3.0},
+                    ],
+                    "2025-12-31": [
+                        {"systemName": "up", "rating": 3.5},
+                        {"systemName": "down", "rating": 2.5},
+                        {"systemName": "flat", "rating": 3.0},
+                    ],
+                }
+            )
+        )
+
+        differences = security_ratings_change_portfolio_data.differences
+
+        assert differences["up"] == pytest.approx(1.5)
+        assert differences["down"] == pytest.approx(-1.5)
+        assert differences["flat"] == pytest.approx(0.0)
+
+    @patch("report_generator.generator.domain.portfolio.security_portfolio.sigrid_api")
+    def test_difference_is_none_when_system_absent_at_start(self, mock_sigrid_api):
+        mock_sigrid_api.get_period.return_value = ("2025-01-01", "2025-12-31")
+        mock_sigrid_api.get_portfolio_security_ratings.side_effect = (
+            self._ratings_by_end_date(
+                {
+                    "2025-01-01": [{"systemName": "existing", "rating": 2.0}],
+                    "2025-12-31": [
+                        {"systemName": "existing", "rating": 2.5},
+                        {"systemName": "new", "rating": 4.0},
+                    ],
+                }
+            )
+        )
+
+        assert security_ratings_change_portfolio_data.get_difference(
+            "existing"
+        ) == pytest.approx(0.5)
+        assert security_ratings_change_portfolio_data.get_difference("new") is None
+
+    @patch("report_generator.generator.domain.portfolio.security_portfolio.sigrid_api")
+    def test_get_difference_returns_none_for_unknown_system(self, mock_sigrid_api):
+        mock_sigrid_api.get_period.return_value = ("2025-01-01", "2025-12-31")
+        mock_sigrid_api.get_portfolio_security_ratings.side_effect = (
+            self._ratings_by_end_date(
+                {
+                    "2025-01-01": [{"systemName": "known", "rating": 2.0}],
+                    "2025-12-31": [{"systemName": "known", "rating": 3.0}],
+                }
+            )
+        )
+
+        assert security_ratings_change_portfolio_data.get_difference("missing") is None
 
 
 class TestSecurityDashboardFindingsPortfolioData:

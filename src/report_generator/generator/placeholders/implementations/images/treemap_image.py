@@ -13,6 +13,7 @@
 #  limitations under the License.
 import logging
 from abc import ABC
+from dataclasses import dataclass
 from typing import Callable, ClassVar
 
 import matplotlib.pyplot as plt
@@ -25,6 +26,7 @@ from report_generator.generator.domain import (
     maintainability_delta_quality_new_code,
     maintainability_portfolio_data,
     osh_portfolio_data,
+    security_ratings_change_portfolio_data,
     security_ratings_portfolio_data,
 )
 from report_generator.generator.placeholders import rendering
@@ -315,6 +317,15 @@ class EndDatePortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder, A
         return cls.create_treemap_figure_data(treemap)
 
 
+@dataclass(frozen=True)
+class _PeriodChangeStyle:
+    """Colour ranges and label formatting for a period-change treemap."""
+
+    positive_color_range: list
+    negative_color_range: list
+    is_percentage: bool = False
+
+
 class PeriodPortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder, ABC):
     @staticmethod
     def _calculate_differences(portfolio, metric, system_names):
@@ -376,18 +387,14 @@ class PeriodPortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder, AB
         return "N/A"
 
     @classmethod
-    def create_period_portfolio_treemap(
-        cls,
-        grouping,
-        metric,
-        positive_color_range,
-        negative_color_range,
-        is_percentage=False,
-    ):
-        portfolio, treemap = cls.prepare_portfolio_and_treemap(grouping)
-        differences = cls._calculate_differences(
-            portfolio, metric, treemap["system_names"]
-        )
+    def _annotate_difference_labels(cls, treemap, differences, is_percentage):
+        for idx, system_name in enumerate(treemap["system_names"]):
+            treemap["display_names"][idx] = (
+                f"{treemap['display_names'][idx].strip()}\n{cls._get_and_format_difference(differences, system_name, is_percentage)}"
+            )
+
+    @classmethod
+    def _build_period_treemap(cls, treemap, differences, style):
         processed_vals = [x for x in differences.values() if x is not None]
         if len(processed_vals) == 0:
             return None
@@ -395,16 +402,31 @@ class PeriodPortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder, AB
             differences,
             min(processed_vals),
             max(processed_vals),
-            positive_color_range,
-            negative_color_range,
+            style.positive_color_range,
+            style.negative_color_range,
             treemap["system_names"],
         )
-        for system_name in treemap["system_names"]:
-            idx = treemap["system_names"].index(system_name)
-            treemap["display_names"][idx] = (
-                f"{treemap['display_names'][idx].strip()}\n{cls._get_and_format_difference(differences, system_name, is_percentage)}"
-            )
+        cls._annotate_difference_labels(treemap, differences, style.is_percentage)
         return cls.create_treemap_figure_data(treemap)
+
+    @classmethod
+    def create_period_portfolio_treemap(cls, grouping, metric, style):
+        portfolio, treemap = cls.prepare_portfolio_and_treemap(grouping)
+        differences = cls._calculate_differences(
+            portfolio, metric, treemap["system_names"]
+        )
+        return cls._build_period_treemap(treemap, differences, style)
+
+    @classmethod
+    def create_period_portfolio_treemap_from_differences(
+        cls, grouping, difference_provider, style
+    ):
+        _, treemap = cls.prepare_portfolio_and_treemap(grouping)
+        differences = {
+            system_name: difference_provider(system_name)
+            for system_name in treemap["system_names"]
+        }
+        return cls._build_period_treemap(treemap, differences, style)
 
 
 class MaintainabilityPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
@@ -443,8 +465,10 @@ class MaintainabilityChangePortfolioTreemapPlaceholder(
         return cls.create_period_portfolio_treemap(
             grouping=parameter.lower(),
             metric="maintainability",
-            positive_color_range=rendering.pptx.MAINTAINABILITY_POS_CHANGE_RANGE_COLORS,
-            negative_color_range=rendering.pptx.MAINTAINABILITY_NEG_CHANGE_RANGE_COLORS,
+            style=_PeriodChangeStyle(
+                rendering.pptx.MAINTAINABILITY_POS_CHANGE_RANGE_COLORS,
+                rendering.pptx.MAINTAINABILITY_NEG_CHANGE_RANGE_COLORS,
+            ),
         )
 
 
@@ -458,8 +482,10 @@ class VolumeChangePortfolioTreemapPlaceholder(PeriodPortfolioTreemapPlaceholder)
         return cls.create_period_portfolio_treemap(
             grouping=parameter.lower(),
             metric="volumeInPersonMonths",
-            positive_color_range=rendering.pptx.VOLUME_POS_CHANGE_RANGE_COLORS,
-            negative_color_range=rendering.pptx.VOLUME_NEG_CHANGE_RANGE_COLORS,
+            style=_PeriodChangeStyle(
+                rendering.pptx.VOLUME_POS_CHANGE_RANGE_COLORS,
+                rendering.pptx.VOLUME_NEG_CHANGE_RANGE_COLORS,
+            ),
         )
 
 
@@ -493,9 +519,11 @@ class TestCodeChangePortfolioTreemapPlaceholder(PeriodPortfolioTreemapPlaceholde
         return cls.create_period_portfolio_treemap(
             grouping=parameter.lower(),
             metric="testCodeRatio",
-            positive_color_range=rendering.pptx.MAINTAINABILITY_POS_CHANGE_RANGE_COLORS,
-            negative_color_range=rendering.pptx.MAINTAINABILITY_NEG_CHANGE_RANGE_COLORS,
-            is_percentage=True,
+            style=_PeriodChangeStyle(
+                rendering.pptx.MAINTAINABILITY_POS_CHANGE_RANGE_COLORS,
+                rendering.pptx.MAINTAINABILITY_NEG_CHANGE_RANGE_COLORS,
+                is_percentage=True,
+            ),
         )
 
 
@@ -518,6 +546,25 @@ class SecurityRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlacehol
             rating_func=f,
             rating_rounding_func=formatters.star_rating_round,
             determine_color_function=cls.determine_rating_color,
+        )
+
+
+class SecurityRatingsChangePortfolioTreemapPlaceholder(
+    PeriodPortfolioTreemapPlaceholder
+):
+    """Creates a portfolio treemap where the color is determined by the change in security rating of the individual systems during the specified period."""
+
+    key = "PORTFOLIO_PERIOD_SECURITY_RATINGS_CHANGE_GROUPED_BY_{parameter}"
+
+    @classmethod
+    def value(cls, parameter):
+        return cls.create_period_portfolio_treemap_from_differences(
+            grouping=parameter.lower(),
+            difference_provider=security_ratings_change_portfolio_data.get_difference,
+            style=_PeriodChangeStyle(
+                rendering.pptx.MAINTAINABILITY_POS_CHANGE_RANGE_COLORS,
+                rendering.pptx.MAINTAINABILITY_NEG_CHANGE_RANGE_COLORS,
+            ),
         )
 
 

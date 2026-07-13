@@ -12,6 +12,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from functools import cached_property
+
+from report_generator.generator.context import config, sigrid_api
+from report_generator.generator.context.portfolio_filters import (
+    filter_data_on_portfolio_arguments,
+)
 from report_generator.generator.domain.portfolio.shared.findings_portfolio_base import (
     FindingsRatingsPortfolioBase,
 )
@@ -28,3 +34,51 @@ class SecurityRatingsPortfolioData(FindingsRatingsPortfolioBase):
 
 
 security_ratings_portfolio_data = SecurityRatingsPortfolioData()
+
+
+class SecurityRatingsChangePortfolioData:
+    """Per-system change in security rating between the start and end of the reporting period.
+
+    The security ``model-ratings`` endpoint is point-in-time, so the delta is obtained by
+    requesting the ratings at both period boundaries (via the ``endDate`` parameter) and
+    subtracting.
+    """
+
+    @property
+    def customer(self) -> str:
+        return config.get_customer()
+
+    @cached_property
+    @filter_data_on_portfolio_arguments(system_tag="systemName")
+    def _start_ratings(self):
+        return sigrid_api.get_portfolio_security_ratings(
+            end_date=sigrid_api.get_period()[0]
+        )
+
+    @cached_property
+    @filter_data_on_portfolio_arguments(system_tag="systemName")
+    def _end_ratings(self):
+        return sigrid_api.get_portfolio_security_ratings(
+            end_date=sigrid_api.get_period()[1]
+        )
+
+    @staticmethod
+    def _delta(start_rating, end_rating) -> float | None:
+        if start_rating is None or end_rating is None:
+            return None
+        return end_rating - start_rating
+
+    @cached_property
+    def differences(self) -> dict[str, float | None]:
+        start = {s["systemName"]: s.get("rating") for s in self._start_ratings}
+        end = {s["systemName"]: s.get("rating") for s in self._end_ratings}
+        return {
+            name: self._delta(start.get(name), end_rating)
+            for name, end_rating in end.items()
+        }
+
+    def get_difference(self, system_name: str) -> float | None:
+        return self.differences.get(system_name)
+
+
+security_ratings_change_portfolio_data = SecurityRatingsChangePortfolioData()
