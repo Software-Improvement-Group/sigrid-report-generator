@@ -105,5 +105,83 @@ class SecurityRatingsChangePortfolioData:
             changed_systems, self._delta_and_volume
         )
 
+    @cached_property
+    def metadata(self):
+        return sigrid_api.get_portfolio_metadata()
+
+    def get_display_name(self, system_name: str) -> str:
+        md = utils.get_system_metadata(self.metadata, system_name)
+        if md is None:
+            return system_name
+        return md.get("displayName") or system_name
+
+    @cached_property
+    def _valid_differences(self) -> dict[str, float]:
+        return {
+            name: delta for name, delta in self.differences.items() if delta is not None
+        }
+
+    @cached_property
+    def _change_counts(self) -> dict[str, int]:
+        counts = {"increased": 0, "stable": 0, "decreased": 0}
+        for delta in self._valid_differences.values():
+            if delta > 0:
+                counts["increased"] += 1
+            elif delta < 0:
+                counts["decreased"] += 1
+            else:
+                counts["stable"] += 1
+        return counts
+
+    @cached_property
+    def change_distribution_percentages(self) -> dict[str, int]:
+        """Percentage of systems whose security rating increased, stayed stable, or decreased."""
+        counts = self._change_counts
+        total = sum(counts.values())
+        if total == 0:
+            return counts
+        return {key: round(100 * value / total) for key, value in counts.items()}
+
+    def _biggest_mover(self, selector, keep) -> tuple[str, float] | None:
+        candidates = {
+            name: delta
+            for name, delta in self._valid_differences.items()
+            if keep(delta)
+        }
+        if not candidates:
+            return None
+        system = selector(candidates, key=candidates.get)
+        return self.get_display_name(system), int(candidates[system] * 10) / 10
+
+    @cached_property
+    def biggest_increase(self) -> tuple[str, float] | None:
+        """Display name and rounded delta of the system with the largest security rating increase."""
+        return self._biggest_mover(max, lambda delta: delta > 0)
+
+    @cached_property
+    def biggest_decrease(self) -> tuple[str, float] | None:
+        """Display name and rounded delta of the system with the largest security rating decrease."""
+        return self._biggest_mover(min, lambda delta: delta < 0)
+
+    @staticmethod
+    def _rating_and_volume(system) -> tuple[float | None, float]:
+        return utils.get_rating_and_volume_from_system(
+            system, lambda s: s.get("rating"), "systemName"
+        )
+
+    @cached_property
+    def start_weighted_average(self) -> float:
+        """Volume-weighted average security rating at the start of the reporting period."""
+        return utils.calculate_weighted_average_rating(
+            self._start_ratings, self._rating_and_volume
+        )
+
+    @cached_property
+    def end_weighted_average(self) -> float:
+        """Volume-weighted average security rating at the end of the reporting period."""
+        return utils.calculate_weighted_average_rating(
+            self._end_ratings, self._rating_and_volume
+        )
+
 
 security_ratings_change_portfolio_data = SecurityRatingsChangePortfolioData()

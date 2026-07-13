@@ -401,3 +401,57 @@ def security_portfolio_cvss_medium_raw():
 def security_portfolio_cvss_low_raw():
     """Number of security findings with CVSS low severity across the portfolio."""
     return f"{security_findings_portfolio_data.count_findings('LOW')}"
+
+
+@text_placeholder()
+def portfolio_sec_increased():
+    """Percentage of systems that have seen an increase in security rating."""
+    return security_ratings_change_portfolio_data.change_distribution_percentages[
+        "increased"
+    ]
+
+
+@text_placeholder()
+def portfolio_sec_stable():
+    """Percentage of systems whose security rating has remained stable."""
+    return security_ratings_change_portfolio_data.change_distribution_percentages[
+        "stable"
+    ]
+
+
+@text_placeholder()
+def portfolio_sec_decreased():
+    """Percentage of systems that have seen a decrease in security rating."""
+    return security_ratings_change_portfolio_data.change_distribution_percentages[
+        "decreased"
+    ]
+
+
+@text_placeholder()
+def portfolio_sec_biggest_changes():
+    """Descriptive summary of the biggest security rating changes in the portfolio."""
+    res = []
+    increase = security_ratings_change_portfolio_data.biggest_increase
+    if increase:
+        res.append(
+            f"The largest increase in security rating was experienced by {increase[0]} ({increase[1]} stars)."
+        )
+    decrease = security_ratings_change_portfolio_data.biggest_decrease
+    if decrease:
+        res.append(
+            f"The largest decrease in security rating was experienced by {decrease[0]} ({decrease[1]} stars)."
+        )
+    return " ".join(res)
+
+
+@text_placeholder()
+def portfolio_period_sec_change_short_summary():
+    """The portfolio security rating change short summary over the reporting period."""
+    start_avg = (
+        int(security_ratings_change_portfolio_data.start_weighted_average * 10) / 10
+    )
+    end_avg = int(security_ratings_change_portfolio_data.end_weighted_average * 10) / 10
+    diff = int((end_avg - start_avg) * 10) / 10
+    if abs(diff) < 0.01:
+        return f"The portfolio remained stable ({end_avg}) during the measured period"
+    return f"The portfolio's security has {'increased' if start_avg < end_avg else 'decreased'} (with {diff} to {end_avg}) during the measured period"
