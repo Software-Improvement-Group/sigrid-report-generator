@@ -45,6 +45,15 @@ class TestFormatter:
         assert formatters.format_diff(1.0, 1.2) == "+ 0.2"
         assert formatters.format_diff(1.2, 1.0) == "- 0.2"
 
+    def test_format_signed_delta(self):
+        assert formatters.format_signed_delta(0.0) == "="
+        assert formatters.format_signed_delta(0.004) == "="
+        assert formatters.format_signed_delta(-0.004) == "="
+        assert formatters.format_signed_delta(0.01) == "+0.01"
+        assert formatters.format_signed_delta(-0.01) == "-0.01"
+        assert formatters.format_signed_delta(0.3) == "+0.30"
+        assert formatters.format_signed_delta(-1.234) == "-1.23"
+
     def test_build_sigrid_link(self):
         assert (
             formatters.build_sigrid_link("acme", "my-system", "security")

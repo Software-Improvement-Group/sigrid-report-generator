@@ -72,3 +72,12 @@ def test_search_text_is_matched_literally_not_as_regex():
     presentation = _presentation_with_paragraphs("value is 4250 today")
 
     assert render.find_text_in_presentation(presentation, "42.0") == []
+
+
+def test_determine_delta_color_maps_direction_to_color():
+    assert render.determine_delta_color(0.3) == render.FIVE_STAR_COLOR  # green
+    assert render.determine_delta_color(-0.3) == render.ONE_STAR_COLOR  # red
+    assert render.determine_delta_color(0.0) == render.SIG_BLUE_COLOR  # blue
+    # Sub-0.005 deltas round to 0.00 and count as unchanged.
+    assert render.determine_delta_color(0.004) == render.SIG_BLUE_COLOR
+    assert render.determine_delta_color(-0.004) == render.SIG_BLUE_COLOR

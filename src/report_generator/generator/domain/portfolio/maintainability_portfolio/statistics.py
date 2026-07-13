@@ -306,6 +306,12 @@ class MaintainabilityPortfolioStats:
         return statistics
 
     @cached_property
+    def average_delta(self) -> float:
+        """End-of-period minus start-of-period volume-weighted maintainability average."""
+        maint = self.statistics["maintainability"]
+        return maint["end-average"] - maint["start-average"]
+
+    @cached_property
     def test_code_ratio_distribution_percentages(self):
         """Calculate percentage of systems in each test code ratio category."""
         counts = {"low": 0, "medium": 0, "high": 0}

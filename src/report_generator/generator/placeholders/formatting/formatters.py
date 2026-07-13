@@ -87,6 +87,15 @@ def format_diff(old_rating: float, new_rating: float) -> str:
         return "="
 
 
+def format_signed_delta(delta: float) -> str:
+    rounded = round(delta, 2)
+    if rounded > 0:
+        return f"+{rounded:.2f}"
+    if rounded < 0:
+        return f"-{abs(rounded):.2f}"
+    return "="
+
+
 def from_json_name(json_name: str) -> str:
     """Convert a camelCase JSON field name to a human-readable label."""
     words = re.sub(r"([A-Z])", r" \1", json_name).strip()

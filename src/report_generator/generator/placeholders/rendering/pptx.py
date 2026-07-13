@@ -273,6 +273,15 @@ def determine_rating_color(rating):
         return FIVE_STAR_COLOR
 
 
+def determine_delta_color(delta):
+    rounded = round(delta, 2)
+    if rounded > 0:
+        return FIVE_STAR_COLOR  # green
+    if rounded < 0:
+        return ONE_STAR_COLOR  # red
+    return SIG_BLUE_COLOR  # blue (unchanged)
+
+
 def test_code_ratio_color(ratio):
     if ratio <= 0.01:
         return ONE_STAR_COLOR

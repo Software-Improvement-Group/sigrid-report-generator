@@ -22,7 +22,7 @@ from report_generator.generator.placeholders.formatting.formatters import (
     star_rating_round,
 )
 
-from .base import text_placeholder
+from .base import delta_text_placeholder, text_placeholder
 
 
 def _format_percentage(percentage):
@@ -142,6 +142,12 @@ def portfolio_period_maint_change_short_summary():
     if abs(diff) < 0.01:
         return f"The portfolio remained stable ({end_avg}) during the measured period"
     return f"The portfolio's maintainability has {'increased' if start_avg < end_avg else 'decreased'} (with {diff} to {end_avg}) during the measured period"
+
+
+@delta_text_placeholder()
+def portfolio_maint_average_delta():
+    """Signed change in the portfolio's weighted maintainability average over the period (e.g. +0.01, -0.01, =), colored green up / red down / blue unchanged."""
+    return maintainability_portfolio_stats.average_delta
 
 
 @text_placeholder()
