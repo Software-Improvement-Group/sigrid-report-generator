@@ -16,13 +16,14 @@ from report_generator.generator.domain import (
     security_dashboard_findings_portfolio_data,
     security_dashboard_resolution_times_portfolio_data,
     security_findings_portfolio_data,
+    security_ratings_change_portfolio_data,
     security_ratings_portfolio_data,
 )
 from report_generator.generator.placeholders.formatting.formatters import (
     star_rating_round,
 )
 
-from .base import text_placeholder
+from .base import delta_text_placeholder, text_placeholder
 
 
 @text_placeholder()
@@ -50,6 +51,12 @@ def portfolio_sec_below_market():
 def portfolio_sec_avg_rating():
     """Volume-weighted average security rating across all systems in the portfolio."""
     return star_rating_round(security_ratings_portfolio_data.weighted_average_rating)
+
+
+@delta_text_placeholder()
+def portfolio_sec_average_delta():
+    """Signed change in the portfolio's volume-weighted security average over the period (e.g. +0.01, -0.01, =), colored green up / red down / blue unchanged."""
+    return security_ratings_change_portfolio_data.average_delta
 
 
 @text_placeholder()

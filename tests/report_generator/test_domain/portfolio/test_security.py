@@ -1183,7 +1183,7 @@ class TestSecurityRatingsChangePortfolioData:
 
     def teardown_method(self):
         reset_context()
-        for attr in ["_start_ratings", "_end_ratings", "differences"]:
+        for attr in ["_start_ratings", "_end_ratings", "differences", "average_delta"]:
             security_ratings_change_portfolio_data.__dict__.pop(attr, None)
 
     @staticmethod
@@ -1254,6 +1254,120 @@ class TestSecurityRatingsChangePortfolioData:
         )
 
         assert security_ratings_change_portfolio_data.get_difference("missing") is None
+
+    @staticmethod
+    def _volumes(mapping):
+        """Return a portfolio-maintainability payload with the given per-system volumes."""
+        return {
+            "systems": [
+                {"system": name, "volumeInPersonMonths": volume}
+                for name, volume in mapping.items()
+            ]
+        }
+
+    @patch("report_generator.generator.domain.portfolio.shared.utils.sigrid_api")
+    @patch("report_generator.generator.domain.portfolio.security_portfolio.sigrid_api")
+    def test_average_delta_is_volume_weighted_mean_of_changes(
+        self, mock_sigrid_api, mock_utils_api
+    ):
+        mock_sigrid_api.get_period.return_value = ("2025-01-01", "2025-12-31")
+        mock_sigrid_api.get_portfolio_security_ratings.side_effect = (
+            self._ratings_by_end_date(
+                {
+                    "2025-01-01": [
+                        {"systemName": "up", "rating": 2.0},
+                        {"systemName": "down", "rating": 4.0},
+                    ],
+                    "2025-12-31": [
+                        {"systemName": "up", "rating": 3.0},
+                        {"systemName": "down", "rating": 3.5},
+                    ],
+                }
+            )
+        )
+        mock_utils_api.get_portfolio_maintainability.return_value = self._volumes(
+            {"up": 3.0, "down": 1.0}
+        )
+
+        # (+1.0 * 3 + -0.5 * 1) / (3 + 1) = 2.5 / 4 = 0.625
+        assert security_ratings_change_portfolio_data.average_delta == pytest.approx(
+            0.625
+        )
+
+    @patch("report_generator.generator.domain.portfolio.shared.utils.sigrid_api")
+    @patch("report_generator.generator.domain.portfolio.security_portfolio.sigrid_api")
+    def test_average_delta_excludes_systems_without_a_pair(
+        self, mock_sigrid_api, mock_utils_api
+    ):
+        mock_sigrid_api.get_period.return_value = ("2025-01-01", "2025-12-31")
+        mock_sigrid_api.get_portfolio_security_ratings.side_effect = (
+            self._ratings_by_end_date(
+                {
+                    "2025-01-01": [{"systemName": "existing", "rating": 2.0}],
+                    "2025-12-31": [
+                        {"systemName": "existing", "rating": 3.0},
+                        {"systemName": "new", "rating": 4.0},
+                    ],
+                }
+            )
+        )
+        mock_utils_api.get_portfolio_maintainability.return_value = self._volumes(
+            {"existing": 5.0, "new": 2.0}
+        )
+
+        # only "existing" has a start and end rating: delta = +1.0
+        assert security_ratings_change_portfolio_data.average_delta == pytest.approx(
+            1.0
+        )
+
+    @patch("report_generator.generator.domain.portfolio.shared.utils.sigrid_api")
+    @patch("report_generator.generator.domain.portfolio.security_portfolio.sigrid_api")
+    def test_average_delta_excludes_systems_without_a_volume(
+        self, mock_sigrid_api, mock_utils_api
+    ):
+        mock_sigrid_api.get_period.return_value = ("2025-01-01", "2025-12-31")
+        mock_sigrid_api.get_portfolio_security_ratings.side_effect = (
+            self._ratings_by_end_date(
+                {
+                    "2025-01-01": [
+                        {"systemName": "known", "rating": 2.0},
+                        {"systemName": "unsized", "rating": 4.0},
+                    ],
+                    "2025-12-31": [
+                        {"systemName": "known", "rating": 3.0},
+                        {"systemName": "unsized", "rating": 2.0},
+                    ],
+                }
+            )
+        )
+        # "unsized" has a rating change but no volume entry, so it is skipped.
+        mock_utils_api.get_portfolio_maintainability.return_value = self._volumes(
+            {"known": 4.0}
+        )
+
+        assert security_ratings_change_portfolio_data.average_delta == pytest.approx(
+            1.0
+        )
+
+    @patch("report_generator.generator.domain.portfolio.shared.utils.sigrid_api")
+    @patch("report_generator.generator.domain.portfolio.security_portfolio.sigrid_api")
+    def test_average_delta_defaults_to_zero_without_comparable_systems(
+        self, mock_sigrid_api, mock_utils_api
+    ):
+        mock_sigrid_api.get_period.return_value = ("2025-01-01", "2025-12-31")
+        mock_sigrid_api.get_portfolio_security_ratings.side_effect = (
+            self._ratings_by_end_date(
+                {
+                    "2025-01-01": [],
+                    "2025-12-31": [{"systemName": "new", "rating": 4.0}],
+                }
+            )
+        )
+        mock_utils_api.get_portfolio_maintainability.return_value = self._volumes(
+            {"new": 2.0}
+        )
+
+        assert security_ratings_change_portfolio_data.average_delta == 0.0
 
 
 class TestSecurityDashboardFindingsPortfolioData:

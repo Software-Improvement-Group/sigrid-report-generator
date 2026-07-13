@@ -18,6 +18,7 @@ from report_generator.generator.context import config, sigrid_api
 from report_generator.generator.context.portfolio_filters import (
     filter_data_on_portfolio_arguments,
 )
+from report_generator.generator.domain.portfolio.shared import utils
 from report_generator.generator.domain.portfolio.shared.findings_portfolio_base import (
     FindingsRatingsPortfolioBase,
 )
@@ -79,6 +80,30 @@ class SecurityRatingsChangePortfolioData:
 
     def get_difference(self, system_name: str) -> float | None:
         return self.differences.get(system_name)
+
+    @staticmethod
+    def _delta_and_volume(system) -> tuple[float | None, float]:
+        return utils.get_rating_and_volume_from_system(
+            system, lambda s: s.get("delta"), "systemName"
+        )
+
+    @cached_property
+    def average_delta(self) -> float:
+        """Portfolio-wide, volume-weighted average change in security rating over the period.
+
+        Each system's rating change is weighted by its volume in person-months, mirroring the
+        volume-weighted portfolio average rating. Systems that lack a rating at either period
+        boundary, or whose volume is unavailable, do not contribute. Returns 0.0 when no system
+        does.
+        """
+        changed_systems = [
+            {"systemName": name, "delta": delta}
+            for name, delta in self.differences.items()
+            if delta is not None
+        ]
+        return utils.calculate_weighted_average_rating(
+            changed_systems, self._delta_and_volume
+        )
 
 
 security_ratings_change_portfolio_data = SecurityRatingsChangePortfolioData()
