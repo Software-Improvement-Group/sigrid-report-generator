@@ -30,6 +30,8 @@ from pptx.table import Table, _Row
 from pptx.text.text import _Paragraph, _Run
 from pptx.util import Inches
 
+from report_generator.generator.utils.constants.sentiment import Sentiment
+
 from .common import (
     FontProperties,
     apply_font_properties,
@@ -273,21 +275,15 @@ def determine_rating_color(rating):
         return FIVE_STAR_COLOR
 
 
-def determine_delta_color(delta):
-    rounded = round(delta, 2)
-    if rounded > 0:
-        return FIVE_STAR_COLOR  # green
-    if rounded < 0:
-        return ONE_STAR_COLOR  # red
-    return SIG_BLUE_COLOR  # blue (unchanged)
+SENTIMENT_COLORS = {
+    Sentiment.NEGATIVE: ONE_STAR_COLOR,  # red
+    Sentiment.NEUTRAL: SIG_BLUE_COLOR,  # blue
+    Sentiment.POSITIVE: FIVE_STAR_COLOR,  # green
+}
 
 
-def determine_market_average_color(score):
-    if score < 2.5:
-        return ONE_STAR_COLOR  # red (below market average)
-    if score >= 3.5:
-        return FIVE_STAR_COLOR  # green (above market average)
-    return SIG_BLUE_COLOR  # blue (at market average)
+def sentiment_color(sentiment: Sentiment) -> RGBColor:
+    return SENTIMENT_COLORS[sentiment]
 
 
 def test_code_ratio_color(ratio):

@@ -110,7 +110,9 @@ def _render_colored_delta(
         return
     delta = delta_func()
     font = FontProperties(
-        color=FontColor(rgb=rendering.pptx.determine_delta_color(delta))
+        color=FontColor(
+            rgb=rendering.pptx.sentiment_color(formatters.delta_sentiment(delta))
+        )
     )
     text = formatters.format_signed_delta(delta)
     rendering.pptx.update_many_paragraphs(paragraphs, key, text, font)
@@ -155,7 +157,11 @@ def _render_colored_market_average(
         return
     score = score_func()
     font = FontProperties(
-        color=FontColor(rgb=rendering.pptx.determine_market_average_color(score))
+        color=FontColor(
+            rgb=rendering.pptx.sentiment_color(
+                formatters.market_average_sentiment(score)
+            )
+        )
     )
     text = formatters.format_market_average(score)
     rendering.pptx.update_many_paragraphs(paragraphs, key, text, font)

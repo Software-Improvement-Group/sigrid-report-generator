@@ -16,6 +16,7 @@ import logging
 import math
 import re
 
+from report_generator.generator.utils.constants.sentiment import Sentiment
 from report_generator.generator.utils.star_rating import calculate_star_rating_integer
 
 _USE_SIG_STERREN = False
@@ -87,11 +88,32 @@ def format_diff(old_rating: float, new_rating: float) -> str:
         return "="
 
 
+def sentiment_for_range(value: float, neutral_range: tuple[float, float]) -> Sentiment:
+    """Classify a value relative to a neutral range: negative below the range,
+    positive at/above its upper bound, neutral within the [low, high) band."""
+    low, high = neutral_range
+    if value < low:
+        return Sentiment.NEGATIVE
+    if value >= high:
+        return Sentiment.POSITIVE
+    return Sentiment.NEUTRAL
+
+
+def delta_sentiment(delta: float) -> Sentiment:
+    # Deltas round to 2 decimals; >= 0.01 is an increase, <= -0.01 a decrease.
+    return sentiment_for_range(round(delta, 2), (0, 0.01))
+
+
+def market_average_sentiment(score: float) -> Sentiment:
+    return sentiment_for_range(score, (2.5, 3.5))
+
+
 def format_signed_delta(delta: float) -> str:
     rounded = round(delta, 2)
-    if rounded > 0:
+    sentiment = delta_sentiment(delta)
+    if sentiment == Sentiment.POSITIVE:
         return f"+{rounded:.2f}"
-    if rounded < 0:
+    if sentiment == Sentiment.NEGATIVE:
         return f"-{abs(rounded):.2f}"
     return "="
 
@@ -99,11 +121,11 @@ def format_signed_delta(delta: float) -> str:
 def format_market_average(score: float) -> str:
     """Return whether a star rating is below, at, or above market average as
     'below' (< 2.5), 'average' (2.5 - 3.4) or 'above' (>= 3.5)."""
-    if score < 2.5:
-        return "below"
-    if score >= 3.5:
-        return "above"
-    return "average"
+    return {
+        Sentiment.NEGATIVE: "below",
+        Sentiment.NEUTRAL: "average",
+        Sentiment.POSITIVE: "above",
+    }[market_average_sentiment(score)]
 
 
 def from_json_name(json_name: str) -> str:

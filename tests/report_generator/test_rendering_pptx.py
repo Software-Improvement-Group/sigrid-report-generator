@@ -16,6 +16,7 @@ from pptx import Presentation
 from pptx.util import Inches
 
 from report_generator.generator.placeholders.rendering import pptx as render
+from report_generator.generator.utils.constants.sentiment import Sentiment
 
 
 def _presentation_with_paragraphs(*lines):
@@ -74,10 +75,7 @@ def test_search_text_is_matched_literally_not_as_regex():
     assert render.find_text_in_presentation(presentation, "42.0") == []
 
 
-def test_determine_delta_color_maps_direction_to_color():
-    assert render.determine_delta_color(0.3) == render.FIVE_STAR_COLOR  # green
-    assert render.determine_delta_color(-0.3) == render.ONE_STAR_COLOR  # red
-    assert render.determine_delta_color(0.0) == render.SIG_BLUE_COLOR  # blue
-    # Sub-0.005 deltas round to 0.00 and count as unchanged.
-    assert render.determine_delta_color(0.004) == render.SIG_BLUE_COLOR
-    assert render.determine_delta_color(-0.004) == render.SIG_BLUE_COLOR
+def test_sentiment_color_maps_sentiment_to_color():
+    assert render.sentiment_color(Sentiment.POSITIVE) == render.FIVE_STAR_COLOR  # green
+    assert render.sentiment_color(Sentiment.NEGATIVE) == render.ONE_STAR_COLOR  # red
+    assert render.sentiment_color(Sentiment.NEUTRAL) == render.SIG_BLUE_COLOR  # blue
