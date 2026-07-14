@@ -35,6 +35,9 @@ from report_generator.generator.domain.portfolio.npr_5333_functional_suitability
 )
 from report_generator.generator.domain.portfolio.objectives import objectives_data
 from report_generator.generator.domain.portfolio.osh_portfolio import osh_portfolio_data
+from report_generator.generator.domain.portfolio.portfolio_filter_info import (
+    portfolio_filter_info,
+)
 from report_generator.generator.domain.portfolio.progress_sigrid import (
     progress_sigrid_data,
 )
