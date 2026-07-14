@@ -81,29 +81,15 @@ class SecurityRatingsChangePortfolioData:
     def get_difference(self, system_name: str) -> float | None:
         return self.differences.get(system_name)
 
-    @staticmethod
-    def _delta_and_volume(system) -> tuple[float | None, float]:
-        return utils.get_rating_and_volume_from_system(
-            system, lambda s: s.get("delta"), "systemName"
-        )
-
     @cached_property
     def average_delta(self) -> float:
-        """Portfolio-wide, volume-weighted average change in security rating over the period.
+        """Portfolio-wide change in the volume-weighted average security rating over the period.
 
-        Each system's rating change is weighted by its volume in person-months, mirroring the
-        volume-weighted portfolio average rating. Systems that lack a rating at either period
-        boundary, or whose volume is unavailable, do not contribute. Returns 0.0 when no system
-        does.
+        Computed as the end-of-period volume-weighted average minus the start-of-period average,
+        mirroring ``MaintainabilityPortfolioStats.average_delta`` (a delta of averages, not an
+        average of per-system deltas). Returns 0.0 when no system contributes at either boundary.
         """
-        changed_systems = [
-            {"systemName": name, "delta": delta}
-            for name, delta in self.differences.items()
-            if delta is not None
-        ]
-        return utils.calculate_weighted_average_rating(
-            changed_systems, self._delta_and_volume
-        )
+        return self.end_weighted_average - self.start_weighted_average
 
     @cached_property
     def metadata(self):
@@ -151,7 +137,7 @@ class SecurityRatingsChangePortfolioData:
         if not candidates:
             return None
         system = selector(candidates, key=candidates.get)
-        return self.get_display_name(system), int(candidates[system] * 10) / 10
+        return self.get_display_name(system), round(candidates[system], 1)
 
     @cached_property
     def biggest_increase(self) -> tuple[str, float] | None:
