@@ -23,7 +23,11 @@ from report_generator.generator.placeholders.formatting.formatters import (
     star_rating_round,
 )
 
-from .base import delta_text_placeholder, text_placeholder
+from .base import (
+    delta_text_placeholder,
+    market_average_text_placeholder,
+    text_placeholder,
+)
 
 
 @text_placeholder()
@@ -51,6 +55,13 @@ def portfolio_sec_below_market():
 def portfolio_sec_avg_rating():
     """Volume-weighted average security rating across all systems in the portfolio."""
     return star_rating_round(security_ratings_portfolio_data.weighted_average_rating)
+
+
+@market_average_text_placeholder()
+def portfolio_sec_avg_market_average():
+    """Colored indication of whether the portfolio's volume-weighted average security rating is
+    below (red), at (blue) or above (green) market average."""
+    return security_ratings_portfolio_data.weighted_average_rating
 
 
 @delta_text_placeholder()

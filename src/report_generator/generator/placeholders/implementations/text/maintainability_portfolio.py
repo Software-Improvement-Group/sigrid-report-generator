@@ -22,7 +22,11 @@ from report_generator.generator.placeholders.formatting.formatters import (
     star_rating_round,
 )
 
-from .base import delta_text_placeholder, text_placeholder
+from .base import (
+    delta_text_placeholder,
+    market_average_text_placeholder,
+    text_placeholder,
+)
 
 
 def _format_percentage(percentage):
@@ -175,6 +179,13 @@ def portfolio_maint_market_average():
     """Percentage of systems scoring market average (2.5-3.5 stars)."""
     distribution = maintainability_portfolio_data.rating_distribution_percentages
     return distribution["market_average"]
+
+
+@market_average_text_placeholder()
+def portfolio_maint_avg_market_average():
+    """Colored indication of whether the portfolio's volume-weighted average maintainability
+    rating is below (red), at (blue) or above (green) market average."""
+    return maintainability_portfolio_data.weighted_average_rating
 
 
 @text_placeholder()

@@ -282,6 +282,14 @@ def determine_delta_color(delta):
     return SIG_BLUE_COLOR  # blue (unchanged)
 
 
+def determine_market_average_color(score):
+    if score < 2.5:
+        return ONE_STAR_COLOR  # red (below market average)
+    if score >= 3.5:
+        return FIVE_STAR_COLOR  # green (above market average)
+    return SIG_BLUE_COLOR  # blue (at market average)
+
+
 def test_code_ratio_color(ratio):
     if ratio <= 0.01:
         return ONE_STAR_COLOR

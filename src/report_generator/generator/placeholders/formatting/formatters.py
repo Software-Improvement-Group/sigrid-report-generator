@@ -96,6 +96,16 @@ def format_signed_delta(delta: float) -> str:
     return "="
 
 
+def format_market_average(score: float) -> str:
+    """Return whether a star rating is below, at, or above market average as
+    'below' (< 2.5), 'average' (2.5 - 3.4) or 'above' (>= 3.5)."""
+    if score < 2.5:
+        return "below"
+    if score >= 3.5:
+        return "above"
+    return "average"
+
+
 def from_json_name(json_name: str) -> str:
     """Convert a camelCase JSON field name to a human-readable label."""
     words = re.sub(r"([A-Z])", r" \1", json_name).strip()
