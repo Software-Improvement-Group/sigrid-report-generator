@@ -37,6 +37,116 @@ from report_generator.generator.domain.shared.findings_severity import (
 )
 
 
+class TestAcuteFindingsStatistics:
+    """Test the acute (CRITICAL + HIGH) findings statistics for security dashboard."""
+
+    def test_acute_statistics_sum_critical_and_high(self, mocker):
+        portfolio = SecurityDashboardFindingsPortfolioData()
+
+        mock_data = {
+            "systems": [
+                {
+                    "system": "system1",
+                    "findingRatio": [
+                        {
+                            "month": "2025-01-01",
+                            "severities": {
+                                "CRITICAL": {"resolved": 5, "existing": 10, "new": 2},
+                                "HIGH": {"resolved": 3, "existing": 8, "new": 1},
+                            },
+                        }
+                    ],
+                }
+            ]
+        }
+
+        mocker.patch.object(
+            type(portfolio),
+            "data",
+            new_callable=mocker.PropertyMock,
+            return_value=mock_data,
+        )
+        mocker.patch(
+            "report_generator.generator.context.sigrid_api.get_period",
+            return_value=("2025-01-01", "2025-12-31"),
+        )
+
+        stats = portfolio.acute_findings_statistics
+
+        # resolved: 5 + 3 = 8, added: 2 + 1 = 3, net_change: 3 - 8 = -5
+        assert stats == {"resolved": 8, "added": 3, "net_change": -5}
+
+
+class TestOpenAcuteFindingsByMonth:
+    """Test the per-month open acute (CRITICAL + HIGH) findings aggregation."""
+
+    def test_sums_critical_and_high_existing_across_systems_per_month(self, mocker):
+        portfolio = SecurityDashboardFindingsPortfolioData()
+
+        mock_data = {
+            "systems": [
+                {
+                    "system": "system1",
+                    "findingRatio": [
+                        {
+                            "month": "2025-01-01",
+                            "severities": {
+                                "CRITICAL": {"resolved": 5, "existing": 10, "new": 2},
+                                "HIGH": {"resolved": 3, "existing": 8, "new": 1},
+                            },
+                        },
+                        {
+                            "month": "2025-02-01",
+                            "severities": {
+                                "CRITICAL": {"resolved": 3, "existing": 9, "new": 1},
+                                "HIGH": {"resolved": 2, "existing": 7, "new": 0},
+                            },
+                        },
+                    ],
+                },
+                {
+                    "system": "system2",
+                    "findingRatio": [
+                        {
+                            "month": "2025-01-01",
+                            "severities": {
+                                "CRITICAL": {"resolved": 2, "existing": 5, "new": 4},
+                                "HIGH": {"resolved": 1, "existing": 3, "new": 2},
+                            },
+                        }
+                    ],
+                },
+            ]
+        }
+
+        mocker.patch.object(
+            type(portfolio),
+            "data",
+            new_callable=mocker.PropertyMock,
+            return_value=mock_data,
+        )
+
+        result = portfolio.open_acute_findings_by_month()
+
+        assert result["columns"] == ["Jan", "Feb"]
+        # Jan: (10 + 8) + (5 + 3) = 26, Feb: (9 + 7) = 16
+        assert result["open_acute"] == [26, 16]
+
+    def test_empty_systems_returns_empty_series(self, mocker):
+        portfolio = SecurityDashboardFindingsPortfolioData()
+
+        mocker.patch.object(
+            type(portfolio),
+            "data",
+            new_callable=mocker.PropertyMock,
+            return_value={"systems": []},
+        )
+
+        result = portfolio.open_acute_findings_by_month()
+
+        assert result == {"columns": [], "open_acute": []}
+
+
 class TestSecurityCriticalFindingsStatistics:
     """Test the critical findings statistics for security dashboard."""
 

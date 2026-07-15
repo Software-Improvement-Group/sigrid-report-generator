@@ -30,6 +30,15 @@ from .base import (
 )
 
 
+def _relative_change_phrase(net_change):
+    """Describe a net finding change as an increase, a decrease, or no change."""
+    if net_change > 0:
+        return "an increase"
+    if net_change < 0:
+        return "a decrease"
+    return "no change"
+
+
 @text_placeholder()
 def portfolio_sec_above_market():
     """Percentage of systems scoring above market average (≥3.5 stars) on security."""
@@ -104,13 +113,7 @@ def portfolio_sec_relative_critical():
             "net_change"
         ]
     )
-    return (
-        "an increase"
-        if net_change > 0
-        else "a decrease"
-        if net_change < 0
-        else "no change"
-    )
+    return _relative_change_phrase(net_change)
 
 
 @text_placeholder()
@@ -118,6 +121,39 @@ def portfolio_sec_critical_difference():
     """The absolute difference in critical security findings."""
     return abs(
         security_dashboard_findings_portfolio_data.critical_findings_statistics[
+            "net_change"
+        ]
+    )
+
+
+@text_placeholder()
+def portfolio_sec_acute_resolved():
+    """Number of acute (critical + high) security findings that have been resolved."""
+    return security_dashboard_findings_portfolio_data.acute_findings_statistics[
+        "resolved"
+    ]
+
+
+@text_placeholder()
+def portfolio_sec_acute_added():
+    """Number of acute (critical + high) security findings that have been added."""
+    return security_dashboard_findings_portfolio_data.acute_findings_statistics["added"]
+
+
+@text_placeholder()
+def portfolio_sec_relative_acute():
+    """Whether there was an increase or decrease in acute (critical + high) security findings."""
+    net_change = security_dashboard_findings_portfolio_data.acute_findings_statistics[
+        "net_change"
+    ]
+    return _relative_change_phrase(net_change)
+
+
+@text_placeholder()
+def portfolio_sec_acute_difference():
+    """The absolute difference in acute (critical + high) security findings."""
+    return abs(
+        security_dashboard_findings_portfolio_data.acute_findings_statistics[
             "net_change"
         ]
     )
@@ -143,13 +179,7 @@ def portfolio_sec_relative_high():
     net_change = security_dashboard_findings_portfolio_data.high_findings_statistics[
         "net_change"
     ]
-    return (
-        "an increase"
-        if net_change > 0
-        else "a decrease"
-        if net_change < 0
-        else "no change"
-    )
+    return _relative_change_phrase(net_change)
 
 
 @text_placeholder()
@@ -184,13 +214,7 @@ def portfolio_sec_relative_medium():
     net_change = security_dashboard_findings_portfolio_data.medium_findings_statistics[
         "net_change"
     ]
-    return (
-        "an increase"
-        if net_change > 0
-        else "a decrease"
-        if net_change < 0
-        else "no change"
-    )
+    return _relative_change_phrase(net_change)
 
 
 @text_placeholder()
@@ -223,13 +247,7 @@ def portfolio_sec_relative_low():
     net_change = security_dashboard_findings_portfolio_data.low_findings_statistics[
         "net_change"
     ]
-    return (
-        "an increase"
-        if net_change > 0
-        else "a decrease"
-        if net_change < 0
-        else "no change"
-    )
+    return _relative_change_phrase(net_change)
 
 
 @text_placeholder()
