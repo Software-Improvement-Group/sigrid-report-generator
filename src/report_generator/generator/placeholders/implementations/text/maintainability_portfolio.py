@@ -45,18 +45,74 @@ def _format_short_maintainability_statement(amount, number_of_systems, postfix):
     return f"About {amount} ({perc}) {'systems' if amount > 1 else 'system'} {'score' if amount > 1 else 'scores'} {postfix}"
 
 
+def _portfolio_period_start():
+    return datetime.strptime(maintainability_portfolio_data.period[0], "%Y-%m-%d")
+
+
+def _portfolio_period_end():
+    return datetime.strptime(maintainability_portfolio_data.period[1], "%Y-%m-%d")
+
+
 @text_placeholder()
 def portfolio_period_start_date():
     """The portfolio reporting period's start date (e.g. 1 January 2025)."""
-    d = datetime.strptime(maintainability_portfolio_data.period[0], "%Y-%m-%d")
+    d = _portfolio_period_start()
     return f"{d.day} {d.strftime('%B %Y')}"
+
+
+@text_placeholder()
+def portfolio_period_start_date_day():
+    """The day of the month of the portfolio reporting period's start date."""
+    return _portfolio_period_start().strftime("%d")
+
+
+@text_placeholder()
+def portfolio_period_start_date_month():
+    """The month of the portfolio reporting period's start date, abbreviated and uppercased."""
+    return _portfolio_period_start().strftime("%b").upper()
+
+
+@text_placeholder()
+def portfolio_period_start_date_month_full():
+    """The month of the portfolio reporting period's start date, full name."""
+    return _portfolio_period_start().strftime("%B")
+
+
+@text_placeholder()
+def portfolio_period_start_date_year():
+    """The year of the portfolio reporting period's start date."""
+    return _portfolio_period_start().strftime("%Y")
 
 
 @text_placeholder()
 def portfolio_period_end_date():
     """The portfolio reporting period's end date (e.g. 31 December 2025)."""
-    d = datetime.strptime(maintainability_portfolio_data.period[1], "%Y-%m-%d")
+    d = _portfolio_period_end()
     return f"{d.day} {d.strftime('%B %Y')}"
+
+
+@text_placeholder()
+def portfolio_period_end_date_day():
+    """The day of the month of the portfolio reporting period's end date."""
+    return _portfolio_period_end().strftime("%d")
+
+
+@text_placeholder()
+def portfolio_period_end_date_month():
+    """The month of the portfolio reporting period's end date, abbreviated and uppercased."""
+    return _portfolio_period_end().strftime("%b").upper()
+
+
+@text_placeholder()
+def portfolio_period_end_date_month_full():
+    """The month of the portfolio reporting period's end date, full name."""
+    return _portfolio_period_end().strftime("%B")
+
+
+@text_placeholder()
+def portfolio_period_end_date_year():
+    """The year of the portfolio reporting period's end date."""
+    return _portfolio_period_end().strftime("%Y")
 
 
 @text_placeholder()
