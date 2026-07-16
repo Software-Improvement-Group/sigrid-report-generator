@@ -1723,6 +1723,24 @@ class TestMaintainabilityPortfolioHelpers:
 
         assert existed_at_end_date(system, "2024-12-31") is False
 
+    def test_average_delta_returns_end_minus_start(self):
+        """average_delta is the end-of-period minus start-of-period weighted average."""
+        stats_obj = MaintainabilityPortfolioStats()
+        # Prime the cached_property so no API calls are needed.
+        stats_obj.__dict__["statistics"] = {
+            "maintainability": {"start-average": 3.2, "end-average": 3.5}
+        }
+
+        assert stats_obj.average_delta == pytest.approx(0.3)
+
+    def test_average_delta_negative_when_declined(self):
+        stats_obj = MaintainabilityPortfolioStats()
+        stats_obj.__dict__["statistics"] = {
+            "maintainability": {"start-average": 4.0, "end-average": 3.7}
+        }
+
+        assert stats_obj.average_delta == pytest.approx(-0.3)
+
     def test_weighted_avg_calculates_correctly(self):
         """Test that _weighted_avg calculates weighted average correctly."""
         values = [4.0, 3.0, 5.0]

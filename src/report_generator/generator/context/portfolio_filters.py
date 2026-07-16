@@ -133,6 +133,13 @@ def reset_context() -> None:
     _filter_state.update({k: None for k in FILTER_CONFIGURATION})
 
 
+def get_filter_values(filter_name: str) -> Optional[list[str]]:
+    if filter_name not in FILTER_CONFIGURATION:
+        allowed = ", ".join(sorted(FILTER_CONFIGURATION.keys()))
+        raise ValueError(f"Unknown filter: {filter_name}. Allowed: {allowed}")
+    return _filter_state[filter_name]
+
+
 def _build_help(filter_name: str, mapping: Optional[dict]) -> str:
     flag = f"--{filter_name.replace('_', '-')}"
     example_flag = flag

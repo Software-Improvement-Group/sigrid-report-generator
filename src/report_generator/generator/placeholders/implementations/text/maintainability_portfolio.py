@@ -22,7 +22,11 @@ from report_generator.generator.placeholders.formatting.formatters import (
     star_rating_round,
 )
 
-from .base import text_placeholder
+from .base import (
+    delta_text_placeholder,
+    market_average_text_placeholder,
+    text_placeholder,
+)
 
 
 def _format_percentage(percentage):
@@ -41,18 +45,74 @@ def _format_short_maintainability_statement(amount, number_of_systems, postfix):
     return f"About {amount} ({perc}) {'systems' if amount > 1 else 'system'} {'score' if amount > 1 else 'scores'} {postfix}"
 
 
+def _portfolio_period_start():
+    return datetime.strptime(maintainability_portfolio_data.period[0], "%Y-%m-%d")
+
+
+def _portfolio_period_end():
+    return datetime.strptime(maintainability_portfolio_data.period[1], "%Y-%m-%d")
+
+
 @text_placeholder()
 def portfolio_period_start_date():
     """The portfolio reporting period's start date (e.g. 1 January 2025)."""
-    d = datetime.strptime(maintainability_portfolio_data.period[0], "%Y-%m-%d")
+    d = _portfolio_period_start()
     return f"{d.day} {d.strftime('%B %Y')}"
+
+
+@text_placeholder()
+def portfolio_period_start_date_day():
+    """The day of the month of the portfolio reporting period's start date."""
+    return _portfolio_period_start().strftime("%d")
+
+
+@text_placeholder()
+def portfolio_period_start_date_month():
+    """The month of the portfolio reporting period's start date, abbreviated and uppercased."""
+    return _portfolio_period_start().strftime("%b").upper()
+
+
+@text_placeholder()
+def portfolio_period_start_date_month_full():
+    """The month of the portfolio reporting period's start date, full name."""
+    return _portfolio_period_start().strftime("%B")
+
+
+@text_placeholder()
+def portfolio_period_start_date_year():
+    """The year of the portfolio reporting period's start date."""
+    return _portfolio_period_start().strftime("%Y")
 
 
 @text_placeholder()
 def portfolio_period_end_date():
     """The portfolio reporting period's end date (e.g. 31 December 2025)."""
-    d = datetime.strptime(maintainability_portfolio_data.period[1], "%Y-%m-%d")
+    d = _portfolio_period_end()
     return f"{d.day} {d.strftime('%B %Y')}"
+
+
+@text_placeholder()
+def portfolio_period_end_date_day():
+    """The day of the month of the portfolio reporting period's end date."""
+    return _portfolio_period_end().strftime("%d")
+
+
+@text_placeholder()
+def portfolio_period_end_date_month():
+    """The month of the portfolio reporting period's end date, abbreviated and uppercased."""
+    return _portfolio_period_end().strftime("%b").upper()
+
+
+@text_placeholder()
+def portfolio_period_end_date_month_full():
+    """The month of the portfolio reporting period's end date, full name."""
+    return _portfolio_period_end().strftime("%B")
+
+
+@text_placeholder()
+def portfolio_period_end_date_year():
+    """The year of the portfolio reporting period's end date."""
+    return _portfolio_period_end().strftime("%Y")
 
 
 @text_placeholder()
@@ -144,6 +204,19 @@ def portfolio_period_maint_change_short_summary():
     return f"The portfolio's maintainability has {'increased' if start_avg < end_avg else 'decreased'} (with {diff} to {end_avg}) during the measured period"
 
 
+@delta_text_placeholder()
+def portfolio_maint_average_delta():
+    """Signed change in the portfolio's weighted maintainability average over the period (e.g. +0.01, -0.01, =), colored green up / red down / blue unchanged."""
+    return maintainability_portfolio_stats.average_delta
+
+
+@text_placeholder()
+def portfolio_number_of_systems():
+    """The total number of active systems in the portfolio."""
+    stats = maintainability_portfolio_stats.statistics
+    return stats["maintainability"]["number-of-systems"]
+
+
 @text_placeholder()
 def portfolio_maint_above_market():
     """Percentage of systems scoring above market average (≥3.5 stars)."""
@@ -162,6 +235,13 @@ def portfolio_maint_market_average():
     """Percentage of systems scoring market average (2.5-3.5 stars)."""
     distribution = maintainability_portfolio_data.rating_distribution_percentages
     return distribution["market_average"]
+
+
+@market_average_text_placeholder()
+def portfolio_maint_avg_market_average():
+    """Colored indication of whether the portfolio's volume-weighted average maintainability
+    rating is below (red), at (blue) or above (green) market average."""
+    return maintainability_portfolio_data.weighted_average_rating
 
 
 @text_placeholder()

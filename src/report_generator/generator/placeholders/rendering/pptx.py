@@ -30,6 +30,8 @@ from pptx.table import Table, _Row
 from pptx.text.text import _Paragraph, _Run
 from pptx.util import Inches
 
+from report_generator.generator.utils.constants.sentiment import Sentiment
+
 from .common import (
     FontProperties,
     apply_font_properties,
@@ -271,6 +273,17 @@ def determine_rating_color(rating):
         return FOUR_STAR_COLOR
     else:
         return FIVE_STAR_COLOR
+
+
+SENTIMENT_COLORS = {
+    Sentiment.NEGATIVE: ONE_STAR_COLOR,  # red
+    Sentiment.NEUTRAL: SIG_BLUE_COLOR,  # blue
+    Sentiment.POSITIVE: FIVE_STAR_COLOR,  # green
+}
+
+
+def sentiment_color(sentiment: Sentiment) -> RGBColor:
+    return SENTIMENT_COLORS[sentiment]
 
 
 def test_code_ratio_color(ratio):

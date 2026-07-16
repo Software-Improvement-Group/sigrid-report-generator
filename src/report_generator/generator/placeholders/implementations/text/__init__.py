@@ -17,6 +17,7 @@ import inspect
 from . import (
     architecture,
     architecture_portfolio,
+    filter_info,
     maintainability,
     maintainability_delta_quality,
     maintainability_portfolio,
@@ -33,6 +34,7 @@ from .base import parameterized_text_placeholder, text_placeholder
 _modules_to_scan = [
     architecture,
     architecture_portfolio,
+    filter_info,
     maintainability,
     maintainability_delta_quality,
     maintainability_portfolio,

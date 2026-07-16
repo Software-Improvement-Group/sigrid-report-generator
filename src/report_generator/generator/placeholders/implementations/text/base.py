@@ -19,6 +19,7 @@ from docx.document import Document
 from pptx.presentation import Presentation
 
 from report_generator.generator.placeholders import rendering
+from report_generator.generator.placeholders.formatting import formatters
 from report_generator.generator.placeholders.implementations.base import (
     MultiParameterList,
     ParameterizedPlaceholder,
@@ -26,6 +27,10 @@ from report_generator.generator.placeholders.implementations.base import (
     Placeholder,
     PlaceholderDocType,
     function_name_to_placeholder_key,
+)
+from report_generator.generator.placeholders.rendering.common import (
+    FontColor,
+    FontProperties,
 )
 
 
@@ -93,6 +98,103 @@ def text_placeholder(
                 return value_func()
 
         return TextPlaceholder
+
+    return decorator
+
+
+def _render_colored_delta(
+    presentation: Presentation, key: str, delta_func: Callable[[], float]
+) -> None:
+    paragraphs = rendering.pptx.find_text_in_presentation(presentation, key)
+    if not paragraphs:
+        return
+    delta = delta_func()
+    font = FontProperties(
+        color=FontColor(
+            rgb=rendering.pptx.sentiment_color(formatters.delta_sentiment(delta))
+        )
+    )
+    text = formatters.format_signed_delta(delta)
+    rendering.pptx.update_many_paragraphs(paragraphs, key, text, font)
+
+
+def delta_text_placeholder(
+    custom_key: Optional[str] = None,
+) -> Callable[[Callable[[], float]], type[Placeholder]]:
+    """Turn a function returning a numeric delta into a text placeholder that renders the signed
+    delta (e.g. +0.01, -0.01, =) colored green for an increase, red for a decrease and blue when
+    unchanged. Coloring is applied in PowerPoint; Word renders the value without color."""
+
+    def decorator(delta_func: Callable[[], float]) -> type[Placeholder]:
+        class DeltaTextPlaceholder(_AbstractTextPlaceholder):
+            __doc__ = delta_func.__doc__ if delta_func.__doc__ else None
+            key = (
+                custom_key
+                if custom_key
+                else function_name_to_placeholder_key(delta_func.__name__)
+            )
+
+            @classmethod
+            def value(cls) -> str:
+                return formatters.format_signed_delta(delta_func())
+
+            @classmethod
+            def resolve_pptx(
+                cls, presentation: Presentation, key: str, value_cb: Callable
+            ) -> None:
+                _render_colored_delta(presentation, key, delta_func)
+
+        return DeltaTextPlaceholder
+
+    return decorator
+
+
+def _render_colored_market_average(
+    presentation: Presentation, key: str, score_func: Callable[[], float]
+) -> None:
+    paragraphs = rendering.pptx.find_text_in_presentation(presentation, key)
+    if not paragraphs:
+        return
+    score = score_func()
+    font = FontProperties(
+        color=FontColor(
+            rgb=rendering.pptx.sentiment_color(
+                formatters.market_average_sentiment(score)
+            )
+        )
+    )
+    text = formatters.format_market_average(score)
+    rendering.pptx.update_many_paragraphs(paragraphs, key, text, font)
+
+
+def market_average_text_placeholder(
+    custom_key: Optional[str] = None,
+) -> Callable[[Callable[[], float]], type[Placeholder]]:
+    """Turn a function returning a star rating into a text placeholder that renders whether the
+    score is at market average: 'below' colored red (< 2.5), 'average' colored blue (2.5 - 3.4)
+    and 'above' colored green (>= 3.5). Coloring is applied in PowerPoint; Word renders the value
+    without color."""
+
+    def decorator(score_func: Callable[[], float]) -> type[Placeholder]:
+        class MarketAverageTextPlaceholder(_AbstractTextPlaceholder):
+            __doc__ = score_func.__doc__ if score_func.__doc__ else None
+            key = (
+                custom_key
+                if custom_key
+                else function_name_to_placeholder_key(score_func.__name__)
+            )
+
+            @classmethod
+            def value(cls) -> str:
+                return formatters.format_market_average(score_func())
+
+            @classmethod
+            def resolve_pptx(
+                cls, presentation: Presentation, key: str, value_cb: Callable
+            ) -> None:
+                _render_colored_market_average(presentation, key, score_func)
+
+        return MarketAverageTextPlaceholder
 
     return decorator
 
