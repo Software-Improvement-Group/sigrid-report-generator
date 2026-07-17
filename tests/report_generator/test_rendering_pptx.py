@@ -84,6 +84,19 @@ def test_delete_slides_with_placeholder_matches_chart_or_table_shape_name():
     assert "keep this one" in _slide_texts(presentation)
 
 
+def test_delete_slides_with_placeholder_matches_shape_name_nested_in_group():
+    presentation = Presentation()
+    slide = _add_slide_with_text(presentation, "no key in the text here")
+    group = slide.shapes.add_group_shape([slide.shapes[0]])
+    group.shapes[0].name = "SECURITY_CHART"
+    _add_slide_with_text(presentation, "keep this one")
+
+    render.delete_slides_with_placeholder(presentation, "SECURITY_CHART")
+
+    assert len(list(presentation.slides)) == 1
+    assert "keep this one" in _slide_texts(presentation)
+
+
 def test_delete_slides_with_placeholder_no_match_keeps_all_slides():
     presentation = Presentation()
     _add_slide_with_text(presentation, "slide one")

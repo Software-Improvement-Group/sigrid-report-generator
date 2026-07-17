@@ -110,11 +110,14 @@ def _request(url):
 def _extract_api_message(response) -> Optional[str]:
     """Return the ``message`` field from a JSON error body, if present. A 403 may carry
     a message such as "The requested endpoint needs at least one of the following
-    license(s): security", but the body can also be empty or non-JSON."""
-    try:
-        message = response.json().get("message")
-    except (ValueError, AttributeError):
+    license(s): security", but the body can also be missing, empty, or non-JSON."""
+    if response is None:
         return None
+    try:
+        body = response.json()
+    except ValueError:  # empty or non-JSON body
+        return None
+    message = body.get("message") if isinstance(body, dict) else None
     return message if isinstance(message, str) else None
 
 

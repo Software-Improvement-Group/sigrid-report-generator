@@ -306,12 +306,22 @@ def _slide_title(slide) -> str:
     return title_shape.text_frame.text.strip() or "<untitled>"
 
 
+def _iter_shapes_recursive(shapes):
+    for shape in shapes:
+        yield shape
+        if shape.shape_type == MSO_SHAPE_TYPE.GROUP:
+            yield from _iter_shapes_recursive(shape.shapes)
+
+
 def _slide_contains_key(slide, key: str) -> bool:
     # Text placeholders match on paragraph text; chart/table placeholders match on shape name
-    # (charts/tables are located by shape.name, see find_charts / find_tables).
+    # (charts/tables are located by shape.name, see find_charts / find_tables). Both paths
+    # descend into group shapes so a placeholder nested in a group is still detected.
     if find_text_in_slide(slide, key):
         return True
-    return any(shape.name.strip() == key for shape in slide.shapes)
+    return any(
+        shape.name.strip() == key for shape in _iter_shapes_recursive(slide.shapes)
+    )
 
 
 def delete_slides_with_placeholder(presentation: Presentation, key: str) -> None:
@@ -322,6 +332,8 @@ def delete_slides_with_placeholder(presentation: Presentation, key: str) -> None
     from the id list no longer appears in presentation.slides.
     """
     id_lst = presentation.slides.element  # <p:sldIdLst>
+    # presentation.slides iterates in <p:sldIdLst> order, so the i-th slide corresponds to the
+    # i-th <p:sldId>. Snapshot both to lists up front so removing from id_lst mid-loop is safe.
     for slide, sld_id in zip(list(presentation.slides), list(id_lst)):
         if _slide_contains_key(slide, key):
             id_lst.remove(sld_id)
