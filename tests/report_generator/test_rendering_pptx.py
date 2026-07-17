@@ -29,6 +29,70 @@ def _presentation_with_paragraphs(*lines):
     return presentation
 
 
+def _add_slide_with_text(presentation, text):
+    slide = presentation.slides.add_slide(presentation.slide_layouts[6])
+    textbox = slide.shapes.add_textbox(Inches(1), Inches(1), Inches(8), Inches(4))
+    textbox.text_frame.paragraphs[0].text = text
+    return slide
+
+
+def _slide_texts(presentation):
+    return [
+        shape.text_frame.text
+        for slide in presentation.slides
+        for shape in slide.shapes
+        if shape.has_text_frame
+    ]
+
+
+def test_delete_slides_with_placeholder_removes_only_matching_slide():
+    presentation = Presentation()
+    _add_slide_with_text(presentation, "keep this SYSTEM_PY slide")
+    _add_slide_with_text(presentation, "drop this SECURITY_RATING slide")
+    _add_slide_with_text(presentation, "keep this one too")
+
+    render.delete_slides_with_placeholder(presentation, "SECURITY_RATING")
+
+    remaining = _slide_texts(presentation)
+    assert len(list(presentation.slides)) == 2
+    assert "keep this SYSTEM_PY slide" in remaining
+    assert "keep this one too" in remaining
+    assert all("SECURITY_RATING" not in text for text in remaining)
+
+
+def test_delete_slides_with_placeholder_is_idempotent():
+    presentation = Presentation()
+    _add_slide_with_text(presentation, "drop this SECURITY_RATING slide")
+    _add_slide_with_text(presentation, "keep this one")
+
+    render.delete_slides_with_placeholder(presentation, "SECURITY_RATING")
+    render.delete_slides_with_placeholder(presentation, "SECURITY_RATING")
+
+    assert len(list(presentation.slides)) == 1
+
+
+def test_delete_slides_with_placeholder_matches_chart_or_table_shape_name():
+    presentation = Presentation()
+    slide = _add_slide_with_text(presentation, "no key in the text here")
+    slide.shapes[0].name = "SECURITY_CHART"
+    _add_slide_with_text(presentation, "keep this one")
+
+    render.delete_slides_with_placeholder(presentation, "SECURITY_CHART")
+
+    assert len(list(presentation.slides)) == 1
+    assert "keep this one" in _slide_texts(presentation)
+
+
+def test_delete_slides_with_placeholder_no_match_keeps_all_slides():
+    presentation = Presentation()
+    _add_slide_with_text(presentation, "slide one")
+    _add_slide_with_text(presentation, "slide two")
+
+    render.delete_slides_with_placeholder(presentation, "MISSING_KEY")
+
+    assert len(list(presentation.slides)) == 2
+
+
 def test_finds_placeholder_in_every_paragraph_of_same_text_frame():
     presentation = _presentation_with_paragraphs(
         "rebuild value of SYSTEM_PY person years",

@@ -286,6 +286,38 @@ def test_code_ratio_color(ratio):
         return FIVE_STAR_COLOR
 
 
+def _slide_title(slide) -> str:
+    title_shape = slide.shapes.title
+    if title_shape is None or not title_shape.has_text_frame:
+        return "<untitled>"
+    return title_shape.text_frame.text.strip() or "<untitled>"
+
+
+def _slide_contains_key(slide, key: str) -> bool:
+    # Text placeholders match on paragraph text; chart/table placeholders match on shape name
+    # (charts/tables are located by shape.name, see find_charts / find_tables).
+    if find_text_in_slide(slide, key):
+        return True
+    return any(shape.name.strip() == key for shape in slide.shapes)
+
+
+def delete_slides_with_placeholder(presentation: Presentation, key: str) -> None:
+    """Remove every slide that contains the given placeholder key.
+
+    Called when a placeholder fails to resolve: the slide is dropped so the report never shows
+    an unresolved template token. Idempotent across repeated failures — a slide already removed
+    from the id list no longer appears in presentation.slides.
+    """
+    id_lst = presentation.slides.element  # <p:sldIdLst>
+    for slide, sld_id in zip(list(presentation.slides), list(id_lst)):
+        if _slide_contains_key(slide, key):
+            id_lst.remove(sld_id)
+            logging.debug(
+                f"Deleted slide '{_slide_title(slide)}' containing placeholder '{key}' "
+                "because it failed to resolve"
+            )
+
+
 def find_charts(presentation: Presentation, key: str):
     """Find charts by shape name. This is the recommended way to locate charts in a presentation."""
     charts = [

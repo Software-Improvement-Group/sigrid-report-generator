@@ -40,7 +40,14 @@ class SigridAPIRequestFailedError(Exception):
 
 
 class SigridAccessDeniedError(Exception):
-    def __init__(self, url: str, customer: str, system: Optional[str]):
+    def __init__(
+        self,
+        url: str,
+        customer: str,
+        system: Optional[str],
+        api_message: Optional[str] = None,
+    ):
+        self.api_message = api_message
         system_part = f"/{system}" if system else ""
         sigrid_url = f"https://sigrid-says.com/{customer}{system_part}"
         message = "\n".join(
@@ -100,6 +107,17 @@ def _request(url):
     return response.json()
 
 
+def _extract_api_message(response) -> Optional[str]:
+    """Return the ``message`` field from a JSON error body, if present. A 403 may carry
+    a message such as "The requested endpoint needs at least one of the following
+    license(s): security", but the body can also be empty or non-JSON."""
+    try:
+        message = response.json().get("message")
+    except (ValueError, AttributeError):
+        return None
+    return message if isinstance(message, str) else None
+
+
 def _handle_http_error(error: requests.HTTPError, url: str):
     """Translate an HTTP error into the appropriate outcome: a fatal token error
     (401), a fatal access-denied error (403), or a logged failure that the caller
@@ -108,7 +126,12 @@ def _handle_http_error(error: requests.HTTPError, url: str):
     if status_code == 401:
         raise SigridTokenInvalidError() from None
     if status_code == 403:
-        raise SigridAccessDeniedError(url, config._customer, config._system) from None
+        raise SigridAccessDeniedError(
+            url,
+            config._customer,
+            config._system,
+            api_message=_extract_api_message(error.response),
+        ) from None
     logging.error(
         f"Failed to make request to Sigrid API endpoint {url}. Error: {error}"
     )
@@ -133,12 +156,13 @@ def _sigrid_api_request(with_system=False, critical=False):
         def wrapper(*args, **kwargs):
             try:
                 result = _call_with_system(func, with_system, args, kwargs)
-            except SigridAccessDeniedError:
+            except SigridAccessDeniedError as exc:
                 if critical:
                     raise
-                logging.warning(
+                detail = f" API message: {exc.api_message}" if exc.api_message else ""
+                logging.debug(
                     f"Access denied (403) for optional endpoint '{func.__name__}'; "
-                    f"skipping it (the feature may not be available for this customer)."
+                    f"skipping it (the feature may not be available for this customer).{detail}"
                 )
                 raise SigridAPIRequestFailedError(func.__name__) from None
 

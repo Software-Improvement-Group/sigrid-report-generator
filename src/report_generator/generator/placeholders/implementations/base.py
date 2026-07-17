@@ -24,6 +24,7 @@ from typing import Union
 
 from report_generator.generator.context.sigrid_api import SigridAPIRequestFailedError
 from report_generator.generator.domain.external.epss import EPSSScoreRetrievalError
+from report_generator.generator.placeholders import rendering
 from report_generator.generator.report import Report, ReportType
 
 Parameter = Union[str, int, Enum]
@@ -104,13 +105,20 @@ class Placeholder(ABC):
         try:
             getattr(cls, resolve_method_name)(report, key, value_fn)
         except SigridAPIRequestFailedError as e:
-            logging.info(f"Failed to resolve {key}: {e}")
+            logging.debug(f"Failed to resolve {key}: {e}")
+            cls._delete_slide_on_presentation_failure(report, key)
         except EPSSScoreRetrievalError as e:
-            logging.info(f"Failed to retrieve and/or parse EPSS scores: {e}")
+            logging.debug(f"Failed to retrieve and/or parse EPSS scores: {e}")
+            cls._delete_slide_on_presentation_failure(report, key)
         except (KeyError, AttributeError, ValueError) as e:
             logging.warning(
                 f"Failed to resolve {key}: Value not found ({type(e).__name__}: {e})"
             )
+
+    @classmethod
+    def _delete_slide_on_presentation_failure(cls, report: Report, key: str) -> None:
+        if report.type == ReportType.PRESENTATION:
+            rendering.pptx.delete_slides_with_placeholder(report.content, key)
 
     @classmethod
     def _determine_resolve_method(cls, report_type: ReportType):

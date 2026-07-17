@@ -293,7 +293,7 @@ class TestSigridAPI:
 
         with patch("requests.request", return_value=self._patch_http_status(403)):
             sigrid_api._request.cache_clear()
-            with caplog.at_level(logging.WARNING):
+            with caplog.at_level(logging.DEBUG):
                 with pytest.raises(sigrid_api.SigridAPIRequestFailedError):
                     sigrid_api.get_security_findings("my-system")
             assert "get_security_findings" in caplog.text
