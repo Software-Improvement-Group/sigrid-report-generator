@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 from report_generator.generator.placeholders.formatting import formatters
+from report_generator.generator.utils.constants.sentiment import Sentiment
 
 
 class TestFormatter:
@@ -44,6 +45,28 @@ class TestFormatter:
         assert formatters.format_diff(1.0, 1.0) == "="
         assert formatters.format_diff(1.0, 1.2) == "+ 0.2"
         assert formatters.format_diff(1.2, 1.0) == "- 0.2"
+
+    def test_format_signed_delta(self):
+        assert formatters.format_signed_delta(0.0) == "="
+        assert formatters.format_signed_delta(0.004) == "="
+        assert formatters.format_signed_delta(-0.004) == "="
+        assert formatters.format_signed_delta(0.01) == "+0.01"
+        assert formatters.format_signed_delta(-0.01) == "-0.01"
+        assert formatters.format_signed_delta(0.3) == "+0.30"
+        assert formatters.format_signed_delta(-1.234) == "-1.23"
+
+    def test_delta_sentiment(self):
+        assert formatters.delta_sentiment(0.3) == Sentiment.POSITIVE
+        assert formatters.delta_sentiment(-0.3) == Sentiment.NEGATIVE
+        assert formatters.delta_sentiment(0.0) == Sentiment.NEUTRAL
+        # Sub-0.005 deltas round to 0.00 and count as unchanged.
+        assert formatters.delta_sentiment(0.004) == Sentiment.NEUTRAL
+        assert formatters.delta_sentiment(-0.004) == Sentiment.NEUTRAL
+
+    def test_market_average_sentiment(self):
+        assert formatters.market_average_sentiment(2.4) == Sentiment.NEGATIVE
+        assert formatters.market_average_sentiment(3.0) == Sentiment.NEUTRAL
+        assert formatters.market_average_sentiment(3.5) == Sentiment.POSITIVE
 
     def test_build_sigrid_link(self):
         assert (

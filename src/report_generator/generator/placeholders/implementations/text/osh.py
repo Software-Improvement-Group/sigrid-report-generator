@@ -23,7 +23,11 @@ from report_generator.generator.placeholders.formatting.formatters import (
 from report_generator.generator.utils.constants import OSHMetric
 
 from ...formatting import smart_remarks
-from .base import parameterized_text_placeholder, text_placeholder
+from .base import (
+    market_average_text_placeholder,
+    parameterized_text_placeholder,
+    text_placeholder,
+)
 
 
 @text_placeholder()
@@ -135,6 +139,13 @@ def osh_management_summary():
 def osh_relative():
     """Relative rating remark for open-source health."""
     return smart_remarks.osh_relative_rating(osh_data.system_rating)
+
+
+@market_average_text_placeholder()
+def osh_market_average():
+    """Colored indication of whether the system's Open-Source Health Rating is below (red), at
+    (blue) or above (green) market average."""
+    return osh_data.system_rating
 
 
 @parameterized_text_placeholder(
