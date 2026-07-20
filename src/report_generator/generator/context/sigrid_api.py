@@ -275,8 +275,9 @@ def get_security_ratings(system):
 
 
 @_sigrid_api_request()
-def get_portfolio_security_ratings():
-    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/model-ratings/{config._customer}?feature=SECURITY"
+def get_portfolio_security_ratings(end_date=None):
+    argument = f"&endDate={end_date}" if end_date else ""
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/model-ratings/{config._customer}?feature=SECURITY{argument}"
     return _make_request(endpoint)
 
 

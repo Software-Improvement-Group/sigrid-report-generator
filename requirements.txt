@@ -3,8 +3,8 @@
 # When updating dependencies, keep both files in sync.
 
 pyyaml==6.0.3
-click==8.1.8
-pillow==12.2.0
+click==8.4.2
+pillow==12.3.0
 lxml==6.1.0
 python-pptx==1.0.2
 python-docx==1.2.0

@@ -17,7 +17,7 @@ from report_generator.generator.placeholders.formatting.formatters import (
     star_rating_round,
 )
 
-from .base import text_placeholder
+from .base import market_average_text_placeholder, text_placeholder
 
 
 @text_placeholder()
@@ -45,3 +45,10 @@ def portfolio_arch_below_market():
 def portfolio_arch_avg_rating():
     """Volume-weighted average architecture rating across all systems in the portfolio."""
     return star_rating_round(architecture_portfolio_data.weighted_average_rating)
+
+
+@market_average_text_placeholder()
+def portfolio_arch_avg_market_average():
+    """Colored indication of whether the portfolio's volume-weighted average architecture quality
+    rating is below (red), at (blue) or above (green) market average."""
+    return architecture_portfolio_data.weighted_average_rating
