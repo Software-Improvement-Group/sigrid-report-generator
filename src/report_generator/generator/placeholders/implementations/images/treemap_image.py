@@ -26,7 +26,6 @@ from report_generator.generator.domain import (
     maintainability_delta_quality_new_code,
     maintainability_portfolio_data,
     osh_portfolio_data,
-    security_ratings_change_portfolio_data,
     security_ratings_portfolio_data,
 )
 from report_generator.generator.placeholders import rendering
@@ -560,7 +559,7 @@ class SecurityRatingsChangePortfolioTreemapPlaceholder(
     def value(cls, parameter):
         return cls.create_period_portfolio_treemap_from_differences(
             grouping=parameter.lower(),
-            difference_provider=security_ratings_change_portfolio_data.get_difference,
+            difference_provider=security_ratings_portfolio_data.get_difference,
             style=_PeriodChangeStyle(
                 rendering.pptx.MAINTAINABILITY_POS_CHANGE_RANGE_COLORS,
                 rendering.pptx.MAINTAINABILITY_NEG_CHANGE_RANGE_COLORS,
@@ -587,6 +586,25 @@ class ArchitecturePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder
             rating_func=f,
             rating_rounding_func=formatters.star_rating_round,
             determine_color_function=cls.determine_rating_color,
+        )
+
+
+class ArchitectureRatingsChangePortfolioTreemapPlaceholder(
+    PeriodPortfolioTreemapPlaceholder
+):
+    """Creates a portfolio treemap where the color is determined by the change in architecture quality rating of the individual systems during the specified period."""
+
+    key = "PORTFOLIO_PERIOD_ARCHITECTURE_RATINGS_CHANGE_GROUPED_BY_{parameter}"
+
+    @classmethod
+    def value(cls, parameter):
+        return cls.create_period_portfolio_treemap_from_differences(
+            grouping=parameter.lower(),
+            difference_provider=architecture_portfolio_data.get_difference,
+            style=_PeriodChangeStyle(
+                rendering.pptx.MAINTAINABILITY_POS_CHANGE_RANGE_COLORS,
+                rendering.pptx.MAINTAINABILITY_NEG_CHANGE_RANGE_COLORS,
+            ),
         )
 
 

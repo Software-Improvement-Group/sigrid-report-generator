@@ -288,8 +288,9 @@ def get_reliability_ratings(system):
 
 
 @_sigrid_api_request()
-def get_portfolio_reliability_ratings():
-    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/model-ratings/{config._customer}?feature=RELIABILITY"
+def get_portfolio_reliability_ratings(end_date=None):
+    argument = f"&endDate={end_date}" if end_date else ""
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/model-ratings/{config._customer}?feature=RELIABILITY{argument}"
     return _make_request(endpoint)
 
 
@@ -300,10 +301,9 @@ def get_architecture_findings(system):
 
 
 @_sigrid_api_request()
-def get_portfolio_architecture_findings():
-    endpoint = (
-        f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/architecture-quality/{config._customer}"
-    )
+def get_portfolio_architecture_findings(end_date=None):
+    argument = f"?endDate={end_date}" if end_date else ""
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/architecture-quality/{config._customer}{argument}"
     return _make_request(endpoint)
 
 

@@ -16,25 +16,25 @@ import pytest
 from pptx import Presentation
 from pptx.util import Inches
 
-from report_generator.generator.domain.portfolio.security_portfolio import (
-    security_ratings_portfolio_data,
+from report_generator.generator.domain.portfolio.architecture_portfolio import (
+    architecture_portfolio_data,
 )
-from report_generator.generator.placeholders.implementations.text.security_portfolio import (
-    portfolio_sec_average_delta,
+from report_generator.generator.placeholders.implementations.text.architecture_portfolio import (
+    portfolio_arch_average_delta,
 )
 from report_generator.generator.placeholders.rendering import pptx as render
 
 
 @pytest.fixture
 def prime_average_delta():
-    """Prime the security change singleton's cached average_delta and clean it up afterwards."""
+    """Prime the architecture change singleton's cached average_delta and clean it up afterwards."""
 
     def _prime(average_delta):
-        security_ratings_portfolio_data.__dict__["average_delta"] = average_delta
+        architecture_portfolio_data.__dict__["average_delta"] = average_delta
 
     yield _prime
 
-    security_ratings_portfolio_data.__dict__.pop("average_delta", None)
+    architecture_portfolio_data.__dict__.pop("average_delta", None)
 
 
 def _presentation_with_text(text):
@@ -46,7 +46,7 @@ def _presentation_with_text(text):
 
 
 def _resolve(presentation):
-    placeholder = portfolio_sec_average_delta
+    placeholder = portfolio_arch_average_delta
     placeholder.resolve_pptx(presentation, placeholder.key, placeholder.value)
 
 
@@ -56,12 +56,12 @@ def _only_run(presentation):
 
 
 def test_key_is_derived_from_function_name():
-    assert portfolio_sec_average_delta.key == "PORTFOLIO_SEC_AVERAGE_DELTA"
+    assert portfolio_arch_average_delta.key == "PORTFOLIO_ARCH_AVERAGE_DELTA"
 
 
 def test_increase_renders_signed_value_in_green(prime_average_delta):
     prime_average_delta(0.30)
-    presentation = _presentation_with_text(portfolio_sec_average_delta.key)
+    presentation = _presentation_with_text(portfolio_arch_average_delta.key)
 
     _resolve(presentation)
 
@@ -72,7 +72,7 @@ def test_increase_renders_signed_value_in_green(prime_average_delta):
 
 def test_decrease_renders_signed_value_in_red(prime_average_delta):
     prime_average_delta(-0.01)
-    presentation = _presentation_with_text(portfolio_sec_average_delta.key)
+    presentation = _presentation_with_text(portfolio_arch_average_delta.key)
 
     _resolve(presentation)
 
@@ -83,7 +83,7 @@ def test_decrease_renders_signed_value_in_red(prime_average_delta):
 
 def test_unchanged_renders_equals_in_blue(prime_average_delta):
     prime_average_delta(0.0)
-    presentation = _presentation_with_text(portfolio_sec_average_delta.key)
+    presentation = _presentation_with_text(portfolio_arch_average_delta.key)
 
     _resolve(presentation)
 

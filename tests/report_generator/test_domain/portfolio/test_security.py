@@ -27,7 +27,6 @@ from report_generator.generator.domain.portfolio.security_dashboard_resolution_t
 )
 from report_generator.generator.domain.portfolio.security_portfolio import (
     SecurityRatingsPortfolioData,
-    security_ratings_change_portfolio_data,
     security_ratings_portfolio_data,
 )
 from report_generator.generator.domain.shared.findings_severity import (
@@ -1288,14 +1287,14 @@ class TestSecurityPortfolioData:
         assert "system3" in names
 
 
-class TestSecurityRatingsChangePortfolioData:
-    """Test cases for SecurityRatingsChangePortfolioData (per-system rating delta)."""
+class TestSecurityRatingsPortfolioDataChange:
+    """Test cases for the per-system rating delta on SecurityRatingsPortfolioData."""
 
     def teardown_method(self):
         reset_context()
         for attr in [
+            "data",
             "_start_ratings",
-            "_end_ratings",
             "differences",
             "average_delta",
             "metadata",
@@ -1307,7 +1306,7 @@ class TestSecurityRatingsChangePortfolioData:
             "start_weighted_average",
             "end_weighted_average",
         ]:
-            security_ratings_change_portfolio_data.__dict__.pop(attr, None)
+            security_ratings_portfolio_data.__dict__.pop(attr, None)
 
     @staticmethod
     def _ratings_by_end_date(mapping):
@@ -1318,7 +1317,9 @@ class TestSecurityRatingsChangePortfolioData:
 
         return side_effect
 
-    @patch("report_generator.generator.domain.portfolio.security_portfolio.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
+    )
     def test_differences_computes_signed_deltas(self, mock_sigrid_api):
         mock_sigrid_api.get_period.return_value = ("2025-01-01", "2025-12-31")
         mock_sigrid_api.get_portfolio_security_ratings.side_effect = (
@@ -1338,13 +1339,15 @@ class TestSecurityRatingsChangePortfolioData:
             )
         )
 
-        differences = security_ratings_change_portfolio_data.differences
+        differences = security_ratings_portfolio_data.differences
 
         assert differences["up"] == pytest.approx(1.5)
         assert differences["down"] == pytest.approx(-1.5)
         assert differences["flat"] == pytest.approx(0.0)
 
-    @patch("report_generator.generator.domain.portfolio.security_portfolio.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
+    )
     def test_difference_is_none_when_system_absent_at_start(self, mock_sigrid_api):
         mock_sigrid_api.get_period.return_value = ("2025-01-01", "2025-12-31")
         mock_sigrid_api.get_portfolio_security_ratings.side_effect = (
@@ -1359,12 +1362,14 @@ class TestSecurityRatingsChangePortfolioData:
             )
         )
 
-        assert security_ratings_change_portfolio_data.get_difference(
+        assert security_ratings_portfolio_data.get_difference(
             "existing"
         ) == pytest.approx(0.5)
-        assert security_ratings_change_portfolio_data.get_difference("new") is None
+        assert security_ratings_portfolio_data.get_difference("new") is None
 
-    @patch("report_generator.generator.domain.portfolio.security_portfolio.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
+    )
     def test_get_difference_returns_none_for_unknown_system(self, mock_sigrid_api):
         mock_sigrid_api.get_period.return_value = ("2025-01-01", "2025-12-31")
         mock_sigrid_api.get_portfolio_security_ratings.side_effect = (
@@ -1376,7 +1381,7 @@ class TestSecurityRatingsChangePortfolioData:
             )
         )
 
-        assert security_ratings_change_portfolio_data.get_difference("missing") is None
+        assert security_ratings_portfolio_data.get_difference("missing") is None
 
     @staticmethod
     def _volumes(mapping):
@@ -1389,7 +1394,9 @@ class TestSecurityRatingsChangePortfolioData:
         }
 
     @patch("report_generator.generator.domain.portfolio.shared.utils.sigrid_api")
-    @patch("report_generator.generator.domain.portfolio.security_portfolio.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
+    )
     def test_average_delta_is_difference_of_volume_weighted_averages(
         self, mock_sigrid_api, mock_utils_api
     ):
@@ -1414,12 +1421,12 @@ class TestSecurityRatingsChangePortfolioData:
 
         # start avg = (2*3 + 4*1) / 4 = 2.5; end avg = (3*3 + 3.5*1) / 4 = 3.125
         # delta of averages = 3.125 - 2.5 = 0.625
-        assert security_ratings_change_portfolio_data.average_delta == pytest.approx(
-            0.625
-        )
+        assert security_ratings_portfolio_data.average_delta == pytest.approx(0.625)
 
     @patch("report_generator.generator.domain.portfolio.shared.utils.sigrid_api")
-    @patch("report_generator.generator.domain.portfolio.security_portfolio.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
+    )
     def test_average_delta_reflects_systems_present_at_only_one_boundary(
         self, mock_sigrid_api, mock_utils_api
     ):
@@ -1441,12 +1448,12 @@ class TestSecurityRatingsChangePortfolioData:
 
         # As a delta of boundary averages, "new" contributes to the end average even though it
         # has no start rating: start avg = 2.0; end avg = (3*5 + 4*2) / 7 = 23/7; delta = 9/7.
-        assert security_ratings_change_portfolio_data.average_delta == pytest.approx(
-            9 / 7
-        )
+        assert security_ratings_portfolio_data.average_delta == pytest.approx(9 / 7)
 
     @patch("report_generator.generator.domain.portfolio.shared.utils.sigrid_api")
-    @patch("report_generator.generator.domain.portfolio.security_portfolio.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
+    )
     def test_average_delta_excludes_systems_without_a_volume(
         self, mock_sigrid_api, mock_utils_api
     ):
@@ -1471,12 +1478,12 @@ class TestSecurityRatingsChangePortfolioData:
         )
 
         # start avg = 2.0 ("known" only); end avg = 3.0; delta = 1.0
-        assert security_ratings_change_portfolio_data.average_delta == pytest.approx(
-            1.0
-        )
+        assert security_ratings_portfolio_data.average_delta == pytest.approx(1.0)
 
     @patch("report_generator.generator.domain.portfolio.shared.utils.sigrid_api")
-    @patch("report_generator.generator.domain.portfolio.security_portfolio.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
+    )
     def test_average_delta_defaults_to_zero_without_rated_systems(
         self, mock_sigrid_api, mock_utils_api
     ):
@@ -1492,9 +1499,11 @@ class TestSecurityRatingsChangePortfolioData:
         mock_utils_api.get_portfolio_maintainability.return_value = self._volumes({})
 
         # Both boundary averages default to 0.0, so their difference is 0.0.
-        assert security_ratings_change_portfolio_data.average_delta == 0.0
+        assert security_ratings_portfolio_data.average_delta == 0.0
 
-    @patch("report_generator.generator.domain.portfolio.security_portfolio.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
+    )
     def test_change_distribution_percentages_counts_each_direction(
         self, mock_sigrid_api
     ):
@@ -1518,14 +1527,14 @@ class TestSecurityRatingsChangePortfolioData:
             )
         )
 
-        distribution = (
-            security_ratings_change_portfolio_data.change_distribution_percentages
-        )
+        distribution = security_ratings_portfolio_data.change_distribution_percentages
 
         # 3 comparable systems: 1 up, 1 down, 1 stable -> 33% each
         assert distribution == {"increased": 33, "stable": 33, "decreased": 33}
 
-    @patch("report_generator.generator.domain.portfolio.security_portfolio.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
+    )
     def test_change_distribution_percentages_all_zero_without_valid_deltas(
         self, mock_sigrid_api
     ):
@@ -1539,16 +1548,15 @@ class TestSecurityRatingsChangePortfolioData:
             )
         )
 
-        assert (
-            security_ratings_change_portfolio_data.change_distribution_percentages
-            == {
-                "increased": 0,
-                "stable": 0,
-                "decreased": 0,
-            }
-        )
+        assert security_ratings_portfolio_data.change_distribution_percentages == {
+            "increased": 0,
+            "stable": 0,
+            "decreased": 0,
+        }
 
-    @patch("report_generator.generator.domain.portfolio.security_portfolio.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
+    )
     def test_biggest_increase_and_decrease_resolve_display_names(self, mock_sigrid_api):
         mock_sigrid_api.get_period.return_value = ("2025-01-01", "2025-12-31")
         mock_sigrid_api.get_portfolio_security_ratings.side_effect = (
@@ -1575,16 +1583,18 @@ class TestSecurityRatingsChangePortfolioData:
             {"systemName": "down", "displayName": "Down System"},
         ]
 
-        assert security_ratings_change_portfolio_data.biggest_increase == (
+        assert security_ratings_portfolio_data.biggest_increase == (
             "Up System",
             1.5,
         )
-        assert security_ratings_change_portfolio_data.biggest_decrease == (
+        assert security_ratings_portfolio_data.biggest_decrease == (
             "Down System",
             -2.0,
         )
 
-    @patch("report_generator.generator.domain.portfolio.security_portfolio.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
+    )
     def test_biggest_increase_is_none_without_a_positive_mover(self, mock_sigrid_api):
         mock_sigrid_api.get_period.return_value = ("2025-01-01", "2025-12-31")
         mock_sigrid_api.get_portfolio_security_ratings.side_effect = (
@@ -1605,13 +1615,15 @@ class TestSecurityRatingsChangePortfolioData:
             {"systemName": "down", "displayName": "Down System"},
         ]
 
-        assert security_ratings_change_portfolio_data.biggest_increase is None
-        assert security_ratings_change_portfolio_data.biggest_decrease == (
+        assert security_ratings_portfolio_data.biggest_increase is None
+        assert security_ratings_portfolio_data.biggest_decrease == (
             "Down System",
             -2.0,
         )
 
-    @patch("report_generator.generator.domain.portfolio.security_portfolio.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
+    )
     def test_biggest_mover_delta_is_rounded_not_truncated(self, mock_sigrid_api):
         mock_sigrid_api.get_period.return_value = ("2025-01-01", "2025-12-31")
         mock_sigrid_api.get_portfolio_security_ratings.side_effect = (
@@ -1634,11 +1646,13 @@ class TestSecurityRatingsChangePortfolioData:
         mock_sigrid_api.get_portfolio_metadata.return_value = []
 
         # Truncation would have yielded 0.3 / -0.3; rounding gives 0.4 / -0.4.
-        assert security_ratings_change_portfolio_data.biggest_increase == ("up", 0.4)
-        assert security_ratings_change_portfolio_data.biggest_decrease == ("down", -0.4)
+        assert security_ratings_portfolio_data.biggest_increase == ("up", 0.4)
+        assert security_ratings_portfolio_data.biggest_decrease == ("down", -0.4)
 
     @patch("report_generator.generator.domain.portfolio.shared.utils.sigrid_api")
-    @patch("report_generator.generator.domain.portfolio.security_portfolio.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
+    )
     def test_start_and_end_weighted_averages_are_volume_weighted(
         self, mock_sigrid_api, mock_utils_api
     ):
@@ -1662,13 +1676,11 @@ class TestSecurityRatingsChangePortfolioData:
         )
 
         # start: (2*3 + 4*1) / 4 = 2.5 ; end: (3*3 + 3.5*1) / 4 = 3.125
-        assert (
-            security_ratings_change_portfolio_data.start_weighted_average
-            == pytest.approx(2.5)
+        assert security_ratings_portfolio_data.start_weighted_average == pytest.approx(
+            2.5
         )
-        assert (
-            security_ratings_change_portfolio_data.end_weighted_average
-            == pytest.approx(3.125)
+        assert security_ratings_portfolio_data.end_weighted_average == pytest.approx(
+            3.125
         )
 
 
