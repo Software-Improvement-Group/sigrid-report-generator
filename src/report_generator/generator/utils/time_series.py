@@ -14,7 +14,6 @@
 
 import calendar
 from datetime import datetime
-from typing import Union
 
 
 def add_months(d, months):
@@ -39,7 +38,7 @@ def parse_iso_datetime(value: str) -> datetime:
     return parsed.replace(tzinfo=None) if parsed.tzinfo else parsed
 
 
-def parse_date(date: Union[str, datetime]) -> datetime:
+def parse_date(date: str | datetime) -> datetime:
     if isinstance(date, datetime):
         return date
     return datetime.strptime(date[0:10], "%Y-%m-%d")
@@ -48,7 +47,7 @@ def parse_date(date: Union[str, datetime]) -> datetime:
 class Period:
     """Represents a time period between the start date (inclusive) and end date (exclusive)."""
 
-    def __init__(self, start: Union[str, datetime], end: Union[str, datetime]):
+    def __init__(self, start: str | datetime, end: str | datetime):
         self.start = parse_date(start)
         self.end = parse_date(end)
 
@@ -62,7 +61,7 @@ class Period:
         return f"{self.start.strftime('%Y-%m-%d')} to {self.end.strftime('%Y-%m-%d')}"
 
     @staticmethod
-    def for_months(start: Union[str, datetime], end: Union[str, datetime]):
+    def for_months(start: str | datetime, end: str | datetime):
         period_start = parse_date(start).replace(day=1)
         period_end = parse_date(end)
         months = []

@@ -14,7 +14,6 @@
 
 import logging
 import re
-from typing import Union
 
 
 def find_text_in_document(document, search_text):
@@ -42,9 +41,7 @@ def update_many_paragraphs(paragraphs, placeholder_id, replacement_text):
         update_paragraph(paragraph, placeholder_id, replacement_text)
 
 
-def update_paragraph(
-    paragraph, placeholder_id, replacement_text: Union[str, int, float]
-):
+def update_paragraph(paragraph, placeholder_id, replacement_text: str | int | float):
     replacement_text = str(replacement_text)
 
     try:

@@ -15,7 +15,6 @@
 import logging
 from dataclasses import dataclass
 from enum import Enum
-from typing import Union
 
 from docx import Document
 from pptx import Presentation
@@ -35,7 +34,7 @@ class ReportType(Enum):
 
 @dataclass
 class Report:
-    content: Union[Document, Presentation]
+    content: Document | Presentation
     type: ReportType
 
     @classmethod
