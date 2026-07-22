@@ -17,7 +17,7 @@ from unittest.mock import MagicMock, patch
 import matplotlib.pyplot as plt
 import pytest
 
-from report_generator.generator.placeholders.implementations.images.utils.treemap._autofit_text import (
+from report_generator.generator.placeholders.implementations.images.treemaps.utils.treemap._autofit_text import (
     _DEFAULT_LINESPACING,
     AutofitText,
 )
@@ -61,14 +61,14 @@ class TestTreemapImagePlaceholder:
     """Test cases for treemap image generation with empty data handling."""
 
     @patch(
-        "report_generator.generator.placeholders.implementations.images.treemap_image.plt"
+        "report_generator.generator.placeholders.implementations.images.treemaps.treemap_base.plt"
     )
     @patch(
-        "report_generator.generator.placeholders.implementations.images.treemap_image.tr"
+        "report_generator.generator.placeholders.implementations.images.treemaps.treemap_base.tr"
     )
     def test_draw_image_with_empty_dataframe_returns_none(self, mock_treemap, mock_plt):
         """Test that draw_image returns None when dataframe is empty."""
-        from report_generator.generator.placeholders.implementations.images.treemap_image import (
+        from report_generator.generator.placeholders.implementations.images.treemaps.treemap_base import (
             _AbstractPortfolioTreemapPlaceholder,
         )
 
@@ -94,16 +94,16 @@ class TestTreemapImagePlaceholder:
         mock_treemap.treemap.assert_not_called()
 
     @patch(
-        "report_generator.generator.placeholders.implementations.images.treemap_image.plt"
+        "report_generator.generator.placeholders.implementations.images.treemaps.treemap_base.plt"
     )
     @patch(
-        "report_generator.generator.placeholders.implementations.images.treemap_image.tr"
+        "report_generator.generator.placeholders.implementations.images.treemaps.treemap_base.tr"
     )
     def test_draw_image_with_empty_color_mapping_creates_default(
         self, mock_treemap, mock_plt
     ):
         """Test that draw_image creates default color mapping when empty."""
-        from report_generator.generator.placeholders.implementations.images.treemap_image import (
+        from report_generator.generator.placeholders.implementations.images.treemaps.treemap_base import (
             _AbstractPortfolioTreemapPlaceholder,
         )
 
@@ -132,16 +132,16 @@ class TestTreemapImagePlaceholder:
         assert "system2" in call_kwargs["cmap"]
 
     @patch(
-        "report_generator.generator.placeholders.implementations.images.treemap_image.plt"
+        "report_generator.generator.placeholders.implementations.images.treemaps.treemap_base.plt"
     )
     @patch(
-        "report_generator.generator.placeholders.implementations.images.treemap_image.tr"
+        "report_generator.generator.placeholders.implementations.images.treemaps.treemap_base.tr"
     )
     def test_draw_image_with_invalid_dimensions_returns_none(
         self, mock_treemap, mock_plt
     ):
         """Test that draw_image returns None with invalid dimensions."""
-        from report_generator.generator.placeholders.implementations.images.treemap_image import (
+        from report_generator.generator.placeholders.implementations.images.treemaps.treemap_base import (
             _AbstractPortfolioTreemapPlaceholder,
         )
 
@@ -166,11 +166,11 @@ class TestTreemapImagePlaceholder:
         assert result is None
 
     @patch(
-        "report_generator.generator.placeholders.implementations.images.treemap_image.plt"
+        "report_generator.generator.placeholders.implementations.images.treemaps.treemap_base.plt"
     )
     def test_draw_image_with_none_fig_data_returns_none(self, mock_plt):
         """Test that draw_image returns None when fig_data is None."""
-        from report_generator.generator.placeholders.implementations.images.treemap_image import (
+        from report_generator.generator.placeholders.implementations.images.treemaps.treemap_base import (
             _AbstractPortfolioTreemapPlaceholder,
         )
 
@@ -178,14 +178,14 @@ class TestTreemapImagePlaceholder:
         assert result is None
 
     @patch(
-        "report_generator.generator.placeholders.implementations.images.treemap_image.plt"
+        "report_generator.generator.placeholders.implementations.images.treemaps.treemap_base.plt"
     )
     @patch(
-        "report_generator.generator.placeholders.implementations.images.treemap_image.tr"
+        "report_generator.generator.placeholders.implementations.images.treemaps.treemap_base.tr"
     )
     def test_draw_image_with_valid_data_creates_treemap(self, mock_treemap, mock_plt):
         """Test that draw_image creates treemap with valid data and color mapping."""
-        from report_generator.generator.placeholders.implementations.images.treemap_image import (
+        from report_generator.generator.placeholders.implementations.images.treemaps.treemap_base import (
             _AbstractPortfolioTreemapPlaceholder,
         )
 
@@ -219,7 +219,7 @@ class TestMainTechnologyGrouping:
     """Test cases for the 'main_technology' treemap grouping processor."""
 
     def test_main_technology_available_as_parameter(self):
-        from report_generator.generator.placeholders.implementations.images.treemap_image import (
+        from report_generator.generator.placeholders.implementations.images.treemaps.treemap_base import (
             _AbstractPortfolioTreemapPlaceholder,
         )
 
@@ -231,10 +231,10 @@ class TestMainTechnologyGrouping:
         )
 
     @patch(
-        "report_generator.generator.placeholders.implementations.images.treemap_image.get_technology_name"
+        "report_generator.generator.placeholders.implementations.images.treemaps.treemap_base.get_technology_name"
     )
     def test_grouping_returns_readable_technology_name(self, mock_get_name):
-        from report_generator.generator.placeholders.implementations.images.treemap_image import (
+        from report_generator.generator.placeholders.implementations.images.treemaps.treemap_base import (
             _AbstractPortfolioTreemapPlaceholder,
         )
 
@@ -247,7 +247,7 @@ class TestMainTechnologyGrouping:
         mock_get_name.assert_called_once_with("java")
 
     def test_grouping_returns_unset_when_missing(self):
-        from report_generator.generator.placeholders.implementations.images.treemap_image import (
+        from report_generator.generator.placeholders.implementations.images.treemaps.treemap_base import (
             _AbstractPortfolioTreemapPlaceholder,
         )
 
