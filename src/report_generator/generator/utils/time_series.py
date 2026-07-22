@@ -12,10 +12,31 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import calendar
 from datetime import datetime
 from typing import Union
 
-from dateutil.relativedelta import relativedelta
+
+def add_months(d, months):
+    """Shift a date/datetime by a whole number of months.
+
+    The day is clamped to the length of the target month (e.g. Jan 31 + 1 month -> Feb 28/29).
+    """
+    month_index = d.month - 1 + months
+    year = d.year + month_index // 12
+    month = month_index % 12 + 1
+    day = min(d.day, calendar.monthrange(year, month)[1])
+    return d.replace(year=year, month=month, day=day)
+
+
+def parse_iso_datetime(value: str) -> datetime:
+    """Parse an ISO-8601 string (including a trailing 'Z') to a naive datetime.
+
+    tzinfo is stripped so results can be subtracted from a naive ``datetime.now()``;
+    returning a tz-aware value would raise ``TypeError`` on live 'Z'-bearing API data.
+    """
+    parsed = datetime.fromisoformat(value)
+    return parsed.replace(tzinfo=None) if parsed.tzinfo else parsed
 
 
 def parse_date(date: Union[str, datetime]) -> datetime:
@@ -46,7 +67,7 @@ class Period:
         period_end = parse_date(end)
         months = []
         while period_start < period_end:
-            period = Period(period_start, period_start + relativedelta(months=1))
+            period = Period(period_start, add_months(period_start, 1))
             period_start = period.end
             months.append(period)
         return months
@@ -54,5 +75,5 @@ class Period:
     @staticmethod
     def for_last_year_months():
         today = datetime.now()
-        last_year = today + relativedelta(months=-12)
+        last_year = add_months(today, -12)
         return Period.for_months(last_year, today)[-12:]

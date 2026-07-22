@@ -17,9 +17,8 @@ from collections import defaultdict
 from datetime import date
 from functools import cached_property
 
-from dateutil.parser import parse as parse_date
-
 from report_generator.generator.domain.external.epss import epss_data
+from report_generator.generator.utils.time_series import parse_iso_datetime
 
 _RISK_LABEL = {0: "critical", 1: "high", 2: "medium", 3: "low", 4: "no_risk"}
 _RISK_PROPERTY_NAMES = [
@@ -82,7 +81,9 @@ def component_version_staleness_days(components: list[dict]) -> list[int]:
         )
         if next_release_date:
             try:
-                result.append((today - parse_date(next_release_date).date()).days)
+                result.append(
+                    (today - parse_iso_datetime(next_release_date).date()).days
+                )
             except ValueError:
                 continue
     return result
