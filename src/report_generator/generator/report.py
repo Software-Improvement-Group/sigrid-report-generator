@@ -17,7 +17,9 @@ from dataclasses import dataclass
 from enum import Enum
 
 from docx import Document
+from docx.document import Document as DocumentObject
 from pptx import Presentation
+from pptx.presentation import Presentation as PresentationObject
 
 
 class ReportType(Enum):
@@ -34,7 +36,7 @@ class ReportType(Enum):
 
 @dataclass
 class Report:
-    content: Document | Presentation
+    content: DocumentObject | PresentationObject
     type: ReportType
 
     @classmethod
