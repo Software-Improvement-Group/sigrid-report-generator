@@ -1,10 +1,6 @@
 # Originally sourced from https://github.com/chenyulue/matplotlib-extra
 # Copyright (c) 2022, Chenyu Lue
 # Licensed under the MIT License (see LICENSES/MIT-matplotlib-extra.txt)
-#
-# Modifications from the original:
-# - Replaced deprecated cm.get_cmap() with matplotlib.colormaps (Matplotlib 3.9+)
-# - Fixed pandas Copy-on-Write violations (pandas 2.0+)
 
 import itertools
 
@@ -336,7 +332,7 @@ def squarify_subgroups(
             )
         else:
             sub_pad = subgroup_pads.get(level, pad)
-            pad_left, pad_right, pad_top, pad_bottom = get_surrounding_pad(sub_pad)
+            pad_left, pad_right, pad_top, pad_bottom = parse_pad(sub_pad)
             subgroup = data[level].copy()
             parent_idx = set(idx[:-1] for idx in subgroup.index)
             for parent in parent_idx:
@@ -360,9 +356,6 @@ def squarify_subgroups(
             data[level] = subgroup
 
     return data
-
-
-get_surrounding_pad = parse_pad
 
 
 def squarify_data(df, x, y, dx, dy, split):

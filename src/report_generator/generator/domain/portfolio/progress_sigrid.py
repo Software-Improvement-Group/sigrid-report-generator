@@ -31,7 +31,6 @@ class ProgressStatus(Enum):
 class _StatusCounts(NamedTuple):
     at_start: float
     at_end: float
-    known_total: float
 
 
 class ProgressSigridData:
@@ -103,7 +102,6 @@ class ProgressSigridData:
         return _StatusCounts(
             at_start=at_start * 100.0 / known if known > 0 else 0,
             at_end=at_end * 100.0 / known if known > 0 else 0,
-            known_total=known,
         )
 
     @staticmethod

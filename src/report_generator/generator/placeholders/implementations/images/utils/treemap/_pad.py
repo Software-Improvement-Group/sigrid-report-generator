@@ -1,3 +1,8 @@
+# Originally sourced from https://github.com/chenyulue/matplotlib-extra
+# Copyright (c) 2022, Chenyu Lue
+# Licensed under the MIT License (see LICENSES/MIT-matplotlib-extra.txt)
+
+
 def parse_pad(pad):
     if isinstance(pad, (int, float)):
         return pad, pad, pad, pad
