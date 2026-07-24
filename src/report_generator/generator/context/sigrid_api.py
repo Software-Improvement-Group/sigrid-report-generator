@@ -14,7 +14,6 @@
 
 import logging
 from functools import cache, wraps
-from typing import Optional
 
 import requests
 
@@ -44,8 +43,8 @@ class SigridAccessDeniedError(Exception):
         self,
         url: str,
         customer: str,
-        system: Optional[str],
-        api_message: Optional[str] = None,
+        system: str | None,
+        api_message: str | None = None,
     ):
         self.api_message = api_message
         system_part = f"/{system}" if system else ""
@@ -107,7 +106,7 @@ def _request(url):
     return response.json()
 
 
-def _extract_api_message(response) -> Optional[str]:
+def _extract_api_message(response) -> str | None:
     """Return the ``message`` field from a JSON error body, if present. A 403 may carry
     a message such as "The requested endpoint needs at least one of the following
     license(s): security", but the body can also be missing, empty, or non-JSON."""
@@ -351,8 +350,8 @@ def get_maintainability_delta_quality(system, delta_type="NEW_AND_CHANGED_CODE")
 def get_maintainability_refactoring_candidates(
     system,
     system_property: MaintMetric,
-    technology: Optional[str] = None,
-    count: Optional[int] = None,
+    technology: str | None = None,
+    count: int | None = None,
 ):
     property_name = system_property.to_json_name()
 

@@ -15,7 +15,6 @@
 import logging
 from datetime import datetime
 from functools import cached_property, lru_cache
-from typing import Union
 
 from report_generator.generator.context import sigrid_api
 from report_generator.generator.domain.shared.osh_base import (
@@ -32,7 +31,7 @@ class _SystemMetric(MetricEnum):
     SYSTEM = "SYSTEM"
 
 
-OSHMetricOrSystem = Union[OSHMetric, _SystemMetric]
+OSHMetricOrSystem = OSHMetric | _SystemMetric
 
 
 class OSHData(OSHMetricsBase):

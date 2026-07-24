@@ -204,7 +204,7 @@ class SecurityDashboardFindingsPortfolioData:
             "existing"
         ]
         high = self._aggregate_findings_for_severity("HIGH", columns)["existing"]
-        open_acute = [c + h for c, h in zip(critical, high)]
+        open_acute = [c + h for c, h in zip(critical, high, strict=True)]
         return {"columns": columns, "open_acute": open_acute}
 
     def chart_findings_by_severity(self, severity):

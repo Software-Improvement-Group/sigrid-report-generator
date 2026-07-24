@@ -16,7 +16,6 @@ import logging
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Union
 
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE_TYPE
@@ -334,7 +333,7 @@ def delete_slides_with_placeholder(presentation: Presentation, key: str) -> None
     id_lst = presentation.slides.element  # <p:sldIdLst>
     # presentation.slides iterates in <p:sldIdLst> order, so the i-th slide corresponds to the
     # i-th <p:sldId>. Snapshot both to lists up front so removing from id_lst mid-loop is safe.
-    for slide, sld_id in zip(list(presentation.slides), list(id_lst)):
+    for slide, sld_id in zip(list(presentation.slides), list(id_lst), strict=True):
         if _slide_contains_key(slide, key):
             id_lst.remove(sld_id)
             logging.debug(
@@ -392,7 +391,7 @@ def remove_rows_from_table(table: Table, row_numbers: Iterable[int]):
         remove_row_from_table(table, row)
 
 
-def update_table(table: Table, value: list[list[Union[str, int, float, Hyperlink]]]):
+def update_table(table: Table, value: list[list[str | int | float | Hyperlink]]):
     """
     Fills a PowerPoint table with provided values. Copies formatting from existing cells and applies it to all later cells in that column.
     """
@@ -423,7 +422,7 @@ def _apply_hyperlink(run: _Run, hyperlink: Hyperlink) -> None:
 
 def replace_paragraph_with_text(
     paragraph: _Paragraph,
-    text: Union[str, int, float, Hyperlink],
+    text: str | int | float | Hyperlink,
     font: FontProperties = None,
 ):
     paragraph.clear()
