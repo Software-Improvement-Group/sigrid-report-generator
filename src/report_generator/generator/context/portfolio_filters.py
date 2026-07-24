@@ -12,8 +12,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from collections.abc import Callable
 from functools import wraps
-from typing import Callable, NamedTuple, Optional
+from typing import NamedTuple
 
 import click
 
@@ -30,16 +31,16 @@ from report_generator.generator.utils.constants.metadata import (
 
 
 class FilterSpec(NamedTuple):
-    value_mapping: Optional[
-        dict
-    ]  # Allowed values mapping (key → display label); None means free-form input
-    field_label: Optional[
-        str
-    ]  # Human-readable field name used in validation error messages
+    value_mapping: (
+        dict | None
+    )  # Allowed values mapping (key → display label); None means free-form input
+    field_label: (
+        str | None
+    )  # Human-readable field name used in validation error messages
     metadata_key: str  # Key in the portfolio metadata JSON to match against
-    transform: Optional[
-        Callable
-    ]  # Normalisation applied to the metadata value before comparison
+    transform: (
+        Callable | None
+    )  # Normalisation applied to the metadata value before comparison
 
 
 FILTER_CONFIGURATION: dict[str, FilterSpec] = {
@@ -85,7 +86,7 @@ FILTER_CONFIGURATION: dict[str, FilterSpec] = {
     "supplier": FilterSpec(None, None, "supplierNames", None),
 }
 
-_filter_state: dict[str, Optional[list[str]]] = {
+_filter_state: dict[str, list[str] | None] = {
     name: None for name in FILTER_CONFIGURATION
 }
 
@@ -102,7 +103,7 @@ def process_values(values, mapping, field):
     return processed_values
 
 
-def _process_and_set_filter(filter_name: str, value: Optional[list[str]]) -> None:
+def _process_and_set_filter(filter_name: str, value: list[str] | None) -> None:
     if not value:
         return
 
@@ -118,7 +119,7 @@ def _process_and_set_filter(filter_name: str, value: Optional[list[str]]) -> Non
     _filter_state[filter_name] = processed_value
 
 
-def set_context(**filters: Optional[list[str]]) -> None:
+def set_context(**filters: list[str] | None) -> None:
     unknown = filters.keys() - FILTER_CONFIGURATION.keys()
     if unknown:
         allowed = ", ".join(sorted(FILTER_CONFIGURATION.keys()))
@@ -133,7 +134,14 @@ def reset_context() -> None:
     _filter_state.update({k: None for k in FILTER_CONFIGURATION})
 
 
-def _build_help(filter_name: str, mapping: Optional[dict]) -> str:
+def get_filter_values(filter_name: str) -> list[str] | None:
+    if filter_name not in FILTER_CONFIGURATION:
+        allowed = ", ".join(sorted(FILTER_CONFIGURATION.keys()))
+        raise ValueError(f"Unknown filter: {filter_name}. Allowed: {allowed}")
+    return _filter_state[filter_name]
+
+
+def _build_help(filter_name: str, mapping: dict | None) -> str:
     flag = f"--{filter_name.replace('_', '-')}"
     example_flag = flag
     base = f"[filter] {filter_name.replace('_', ' ').title()} filter, as displayed in Sigrid (multiple values need separate {flag} flags, ie.: {example_flag} aap {example_flag} noot)"
@@ -273,7 +281,7 @@ def _without_data_tag(data, portfolio_metadata, system_tag):
 
 
 def _check_filter_match(
-    filter_value: Optional[list[str]], actual_value, transform
+    filter_value: list[str] | None, actual_value, transform
 ) -> bool:
     """Check if actual value matches filter criteria."""
     if not filter_value:

@@ -11,13 +11,27 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+import base64
+import json
 import os
+import time
 from importlib.metadata import version
 from unittest.mock import MagicMock, patch
 
 from click.testing import CliRunner
 
 from report_generator.cli import run as run_cli
+
+
+def _make_expired_jwt() -> str:
+    """Build a syntactically valid but expired JWT for token-validation tests."""
+
+    def _b64url(data: dict) -> str:
+        return base64.urlsafe_b64encode(json.dumps(data).encode()).rstrip(b"=").decode()
+
+    header = _b64url({"kid": "test-key", "alg": "RS256"})
+    payload = _b64url({"sub": "test-user", "exp": int(time.time()) - 3600})
+    return f"{header}.{payload}.FAKE_SIGNATURE"
 
 
 class TestCLIVersion:
@@ -489,3 +503,47 @@ class TestCLIParameters:
         )
 
         assert result.exit_code in [0, 1]  # 1 if no systems match
+
+
+class TestCLITokenErrors:
+    """Token-validation failures must exit cleanly, printing only the message."""
+
+    def test_expired_token_exits_cleanly_without_traceback(self):
+        os.environ["SIGRID_REPORT_GENERATOR_RECORD_USAGE"] = "0"
+        runner = CliRunner()
+        result = runner.invoke(
+            run_cli,
+            [
+                "--customer",
+                "test-customer",
+                "--token",
+                _make_expired_jwt(),
+                "--layout",
+                "portfolio-overview",
+            ],
+        )
+
+        assert result.exit_code != 0
+        assert "Expired Sigrid token" in result.output
+        # Clean exit: the ValueError is converted to a ClickException, so no raw
+        # ValueError (with its traceback) surfaces.
+        assert not isinstance(result.exception, ValueError)
+
+    def test_invalid_token_exits_cleanly_without_traceback(self):
+        os.environ["SIGRID_REPORT_GENERATOR_RECORD_USAGE"] = "0"
+        runner = CliRunner()
+        result = runner.invoke(
+            run_cli,
+            [
+                "--customer",
+                "test-customer",
+                "--token",
+                "not-a-valid-token",
+                "--layout",
+                "portfolio-overview",
+            ],
+        )
+
+        assert result.exit_code != 0
+        assert "Invalid Sigrid token" in result.output
+        assert not isinstance(result.exception, ValueError)

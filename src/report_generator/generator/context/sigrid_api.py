@@ -14,7 +14,6 @@
 
 import logging
 from functools import cache, wraps
-from typing import Optional
 
 import requests
 
@@ -40,7 +39,7 @@ class SigridAPIRequestFailedError(Exception):
 
 
 class SigridAccessDeniedError(Exception):
-    def __init__(self, url: str, customer: str, system: Optional[str]):
+    def __init__(self, url: str, customer: str, system: str | None):
         system_part = f"/{system}" if system else ""
         sigrid_url = f"https://sigrid-says.com/{customer}{system_part}"
         message = "\n".join(
@@ -50,6 +49,24 @@ class SigridAccessDeniedError(Exception):
                 f"  - System used   : '{system or '(none)'}'",
                 f"  - Verify the names are correct: {sigrid_url}",
                 "  - Tokens are customer-specific, so ensure your token has access to this customer.",
+            ]
+        )
+        super().__init__(message)
+
+
+class SigridTokenInvalidError(Exception):
+    """Raised when the Sigrid API rejects the token itself (HTTP 401).
+
+    Unlike an access-denied error, this means the token is not accepted at all:
+    it is malformed, expired, or has been revoked. No request will succeed, so
+    report generation cannot continue."""
+
+    def __init__(self):
+        message = "\n".join(
+            [
+                "Invalid Sigrid token (401 Unauthorized).",
+                "  - The token was rejected. It may be mistyped, expired, or revoked.",
+                "  - Obtain a new token from sigrid-says.com.",
             ]
         )
         super().__init__(message)
@@ -65,50 +82,64 @@ def _request(url):
     try:
         response = requests.request("GET", url, headers=headers)
         response.raise_for_status()
-        if response.status_code == 204:
-            logging.warning(
-                f"No data returned for {url} (HTTP 204). "
-                f"The system may not exist or may not have been analysed yet."
-            )
-            return None
-        return response.json()
     except requests.HTTPError as e:
-        if e.response.status_code == 403:
-            raise SigridAccessDeniedError(
-                url, config._customer, config._system
-            ) from None
-        logging.error(
-            f"Failed to make request to Sigrid API endpoint {url}. Error: {e}"
-        )
-        return None
+        return _handle_http_error(e, url)
     except requests.RequestException as e:
         logging.error(
             f"Failed to make request to Sigrid API endpoint {url}. Error: {e}"
         )
         return None
 
+    if response.status_code == 204:
+        logging.warning(
+            f"No data returned for {url} (HTTP 204). "
+            f"The system may not exist or may not have been analysed yet."
+        )
+        return None
+    return response.json()
 
-def _sigrid_api_request(with_system=False):
+
+def _handle_http_error(error: requests.HTTPError, url: str):
+    """Translate an HTTP error into the appropriate outcome: a fatal token error
+    (401), a fatal access-denied error (403), or a logged failure that the caller
+    turns into a skipped request (any other status)."""
+    status_code = error.response.status_code
+    if status_code == 401:
+        raise SigridTokenInvalidError() from None
+    if status_code == 403:
+        raise SigridAccessDeniedError(url, config._customer, config._system) from None
+    logging.error(
+        f"Failed to make request to Sigrid API endpoint {url}. Error: {error}"
+    )
+    return None
+
+
+def _sigrid_api_request(with_system=False, critical=False):
     """
     Decorator to create functions that call Sigrid API requests, optionally with a system parameter.
     If with_system is set to True, the decorator will first look for the system parameter passed to the function when called.
     If the system parameter is not provided in the function call, it will use the global system value set by set_context.
+
+    When critical is False (the default), the endpoint is optional (e.g. security or open source
+    health, which not every customer is licensed for): an access-denied response (HTTP 403) is logged
+    and downgraded to a regular request failure so the placeholder is skipped and the rest of the
+    report is still produced. When critical is True, a 403 aborts report generation, because a core
+    endpoint such as maintainability that returns 403 means the token cannot see this customer at all.
     """
 
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            if with_system:
-                system = (
-                    args[0] if args else kwargs.pop("system", None) or config._system
+            try:
+                result = _call_with_system(func, with_system, args, kwargs)
+            except SigridAccessDeniedError:
+                if critical:
+                    raise
+                logging.warning(
+                    f"Access denied (403) for optional endpoint '{func.__name__}'; "
+                    f"skipping it (the feature may not be available for this customer)."
                 )
-                if system is None:
-                    raise ValueError(
-                        "System not provided and global _system is not set."
-                    )
-                result = func(system, *args[1:], **kwargs)
-            else:
-                result = func(*args, **kwargs)
+                raise SigridAPIRequestFailedError(func.__name__) from None
 
             if result is None:
                 raise SigridAPIRequestFailedError(func.__name__)
@@ -120,19 +151,29 @@ def _sigrid_api_request(with_system=False):
     return decorator
 
 
+def _call_with_system(func, with_system, args, kwargs):
+    if not with_system:
+        return func(*args, **kwargs)
+
+    system = args[0] if args else kwargs.pop("system", None) or config._system
+    if system is None:
+        raise ValueError("System not provided and global _system is not set.")
+    return func(system, *args[1:], **kwargs)
+
+
 def _make_request(endpoint):
     _check_context()
     url = f"{config._rest_url}/{endpoint}"
     return _request(url)
 
 
-@_sigrid_api_request()
+@_sigrid_api_request(critical=True)
 def get_portfolio_metadata(hide_deactivated: bool = True):
     endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/system-metadata/{config._customer}?hideDeactivatedSystems={str(hide_deactivated).lower()}"
     return _make_request(endpoint)
 
 
-@_sigrid_api_request()
+@_sigrid_api_request(critical=True)
 def get_portfolio_maintainability():
     endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/maintainability/{config._customer}"
     return _make_request(endpoint)
@@ -146,7 +187,7 @@ def get_objectives_evaluation(period: Period):
     return _make_request(endpoint)
 
 
-@_sigrid_api_request(with_system=True)
+@_sigrid_api_request(with_system=True, critical=True)
 def get_maintainability_ratings(system, include_tech_stats: bool = True):
     endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/maintainability/{config._customer}/{system}?technologyStats={str(include_tech_stats).lower()}"
     return _make_request(endpoint)
@@ -164,7 +205,7 @@ def get_capabilities(system):
     return _make_request(endpoint)
 
 
-@_sigrid_api_request(with_system=True)
+@_sigrid_api_request(with_system=True, critical=True)
 def get_system_metadata(system):
     endpoint = (
         f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/system-metadata/{config._customer}/{system}"
@@ -233,8 +274,9 @@ def get_security_ratings(system):
 
 
 @_sigrid_api_request()
-def get_portfolio_security_ratings():
-    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/model-ratings/{config._customer}?feature=SECURITY"
+def get_portfolio_security_ratings(end_date=None):
+    argument = f"&endDate={end_date}" if end_date else ""
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/model-ratings/{config._customer}?feature=SECURITY{argument}"
     return _make_request(endpoint)
 
 
@@ -281,8 +323,8 @@ def get_maintainability_delta_quality(system, delta_type="NEW_AND_CHANGED_CODE")
 def get_maintainability_refactoring_candidates(
     system,
     system_property: MaintMetric,
-    technology: Optional[str] = None,
-    count: Optional[int] = None,
+    technology: str | None = None,
+    count: int | None = None,
 ):
     property_name = system_property.to_json_name()
 

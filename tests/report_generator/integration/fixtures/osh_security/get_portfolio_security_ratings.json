@@ -1,0 +1,542 @@
+[
+  {
+    "id": "ow10-2025",
+    "name": "OWASP Top 10 (2025)",
+    "metadata": {
+      "key": "2026",
+      "modelVersion": "2026_security_sig"
+    },
+    "feature": "SECURITY",
+    "systemId": 10000,
+    "systemName": "integrationtest-zuul",
+    "adherenceScore": 0.3,
+    "rating": 1.5,
+    "categories": [
+      {
+        "id": "a10",
+        "name": "A10:2025 - Mishandling of Exceptional Conditions",
+        "adherenceScore": 0.25,
+        "maxSeverity": "MEDIUM"
+      },
+      {
+        "id": "a1",
+        "name": "A01:2025 - Broken Access Control",
+        "adherenceScore": 0.5,
+        "maxSeverity": "HIGH"
+      },
+      {
+        "id": "a2",
+        "name": "A02:2025 - Security Misconfiguration",
+        "adherenceScore": 0.75,
+        "maxSeverity": "CRITICAL"
+      },
+      {
+        "id": "a3",
+        "name": "A03:2025 - Software Supply Chain Failures",
+        "adherenceScore": 0.25,
+        "maxSeverity": "MEDIUM"
+      },
+      {
+        "id": "a4",
+        "name": "A04:2025 - Cryptographic Failures",
+        "adherenceScore": 0.5,
+        "maxSeverity": "HIGH"
+      }
+    ]
+  },
+  {
+    "id": "ow10-2025",
+    "name": "OWASP Top 10 (2025)",
+    "metadata": {
+      "key": "2026",
+      "modelVersion": "2026_security_sig"
+    },
+    "feature": "SECURITY",
+    "systemId": 10001,
+    "systemName": "integrationtest-facebookyoga",
+    "adherenceScore": 0.4,
+    "rating": 2.1,
+    "categories": [
+      {
+        "id": "a10",
+        "name": "A10:2025 - Mishandling of Exceptional Conditions",
+        "adherenceScore": 0.5,
+        "maxSeverity": "HIGH"
+      },
+      {
+        "id": "a1",
+        "name": "A01:2025 - Broken Access Control",
+        "adherenceScore": 0.75,
+        "maxSeverity": "CRITICAL"
+      },
+      {
+        "id": "a2",
+        "name": "A02:2025 - Security Misconfiguration",
+        "adherenceScore": 0.25,
+        "maxSeverity": "MEDIUM"
+      },
+      {
+        "id": "a3",
+        "name": "A03:2025 - Software Supply Chain Failures",
+        "adherenceScore": 0.5,
+        "maxSeverity": "HIGH"
+      },
+      {
+        "id": "a4",
+        "name": "A04:2025 - Cryptographic Failures",
+        "adherenceScore": 0.75,
+        "maxSeverity": "CRITICAL"
+      }
+    ]
+  },
+  {
+    "id": "ow10-2025",
+    "name": "OWASP Top 10 (2025)",
+    "metadata": {
+      "key": "2026",
+      "modelVersion": "2026_security_sig"
+    },
+    "feature": "SECURITY",
+    "systemId": 10002,
+    "systemName": "integrationtest-jruby",
+    "adherenceScore": 0.5,
+    "rating": 2.7,
+    "categories": [
+      {
+        "id": "a10",
+        "name": "A10:2025 - Mishandling of Exceptional Conditions",
+        "adherenceScore": 0.75,
+        "maxSeverity": "CRITICAL"
+      },
+      {
+        "id": "a1",
+        "name": "A01:2025 - Broken Access Control",
+        "adherenceScore": 0.25,
+        "maxSeverity": "MEDIUM"
+      },
+      {
+        "id": "a2",
+        "name": "A02:2025 - Security Misconfiguration",
+        "adherenceScore": 0.5,
+        "maxSeverity": "HIGH"
+      },
+      {
+        "id": "a3",
+        "name": "A03:2025 - Software Supply Chain Failures",
+        "adherenceScore": 0.75,
+        "maxSeverity": "CRITICAL"
+      },
+      {
+        "id": "a4",
+        "name": "A04:2025 - Cryptographic Failures",
+        "adherenceScore": 0.25,
+        "maxSeverity": "MEDIUM"
+      }
+    ]
+  },
+  {
+    "id": "ow10-2025",
+    "name": "OWASP Top 10 (2025)",
+    "metadata": {
+      "key": "2026",
+      "modelVersion": "2026_security_sig"
+    },
+    "feature": "SECURITY",
+    "systemId": 10003,
+    "systemName": "integrationtest-webpack",
+    "adherenceScore": 0.6,
+    "rating": 3.3,
+    "categories": [
+      {
+        "id": "a10",
+        "name": "A10:2025 - Mishandling of Exceptional Conditions",
+        "adherenceScore": 0.25,
+        "maxSeverity": "MEDIUM"
+      },
+      {
+        "id": "a1",
+        "name": "A01:2025 - Broken Access Control",
+        "adherenceScore": 0.5,
+        "maxSeverity": "HIGH"
+      },
+      {
+        "id": "a2",
+        "name": "A02:2025 - Security Misconfiguration",
+        "adherenceScore": 0.75,
+        "maxSeverity": "CRITICAL"
+      },
+      {
+        "id": "a3",
+        "name": "A03:2025 - Software Supply Chain Failures",
+        "adherenceScore": 0.25,
+        "maxSeverity": "MEDIUM"
+      },
+      {
+        "id": "a4",
+        "name": "A04:2025 - Cryptographic Failures",
+        "adherenceScore": 0.5,
+        "maxSeverity": "HIGH"
+      }
+    ]
+  },
+  {
+    "id": "ow10-2025",
+    "name": "OWASP Top 10 (2025)",
+    "metadata": {
+      "key": "2026",
+      "modelVersion": "2026_security_sig"
+    },
+    "feature": "SECURITY",
+    "systemId": 10004,
+    "systemName": "integrationtest-git",
+    "adherenceScore": 0.7,
+    "rating": 3.9,
+    "categories": [
+      {
+        "id": "a10",
+        "name": "A10:2025 - Mishandling of Exceptional Conditions",
+        "adherenceScore": 0.5,
+        "maxSeverity": "HIGH"
+      },
+      {
+        "id": "a1",
+        "name": "A01:2025 - Broken Access Control",
+        "adherenceScore": 0.75,
+        "maxSeverity": "CRITICAL"
+      },
+      {
+        "id": "a2",
+        "name": "A02:2025 - Security Misconfiguration",
+        "adherenceScore": 0.25,
+        "maxSeverity": "MEDIUM"
+      },
+      {
+        "id": "a3",
+        "name": "A03:2025 - Software Supply Chain Failures",
+        "adherenceScore": 0.5,
+        "maxSeverity": "HIGH"
+      },
+      {
+        "id": "a4",
+        "name": "A04:2025 - Cryptographic Failures",
+        "adherenceScore": 0.75,
+        "maxSeverity": "CRITICAL"
+      }
+    ]
+  },
+  {
+    "id": "ow10-2025",
+    "name": "OWASP Top 10 (2025)",
+    "metadata": {
+      "key": "2026",
+      "modelVersion": "2026_security_sig"
+    },
+    "feature": "SECURITY",
+    "systemId": 10005,
+    "systemName": "integrationtest-bazel",
+    "adherenceScore": 0.8,
+    "rating": 4.5,
+    "categories": [
+      {
+        "id": "a10",
+        "name": "A10:2025 - Mishandling of Exceptional Conditions",
+        "adherenceScore": 0.75,
+        "maxSeverity": "CRITICAL"
+      },
+      {
+        "id": "a1",
+        "name": "A01:2025 - Broken Access Control",
+        "adherenceScore": 0.25,
+        "maxSeverity": "MEDIUM"
+      },
+      {
+        "id": "a2",
+        "name": "A02:2025 - Security Misconfiguration",
+        "adherenceScore": 0.5,
+        "maxSeverity": "HIGH"
+      },
+      {
+        "id": "a3",
+        "name": "A03:2025 - Software Supply Chain Failures",
+        "adherenceScore": 0.75,
+        "maxSeverity": "CRITICAL"
+      },
+      {
+        "id": "a4",
+        "name": "A04:2025 - Cryptographic Failures",
+        "adherenceScore": 0.25,
+        "maxSeverity": "MEDIUM"
+      }
+    ]
+  },
+  {
+    "id": "ow10-2025",
+    "name": "OWASP Top 10 (2025)",
+    "metadata": {
+      "key": "2026",
+      "modelVersion": "2026_security_sig"
+    },
+    "feature": "SECURITY",
+    "systemId": 10006,
+    "systemName": "integrationtest-electron",
+    "adherenceScore": 0.3,
+    "rating": 1.5,
+    "categories": [
+      {
+        "id": "a10",
+        "name": "A10:2025 - Mishandling of Exceptional Conditions",
+        "adherenceScore": 0.25,
+        "maxSeverity": "MEDIUM"
+      },
+      {
+        "id": "a1",
+        "name": "A01:2025 - Broken Access Control",
+        "adherenceScore": 0.5,
+        "maxSeverity": "HIGH"
+      },
+      {
+        "id": "a2",
+        "name": "A02:2025 - Security Misconfiguration",
+        "adherenceScore": 0.75,
+        "maxSeverity": "CRITICAL"
+      },
+      {
+        "id": "a3",
+        "name": "A03:2025 - Software Supply Chain Failures",
+        "adherenceScore": 0.25,
+        "maxSeverity": "MEDIUM"
+      },
+      {
+        "id": "a4",
+        "name": "A04:2025 - Cryptographic Failures",
+        "adherenceScore": 0.5,
+        "maxSeverity": "HIGH"
+      }
+    ]
+  },
+  {
+    "id": "ow10-2025",
+    "name": "OWASP Top 10 (2025)",
+    "metadata": {
+      "key": "2026",
+      "modelVersion": "2026_security_sig"
+    },
+    "feature": "SECURITY",
+    "systemId": 10007,
+    "systemName": "integrationtest-druid",
+    "adherenceScore": 0.4,
+    "rating": 2.1,
+    "categories": [
+      {
+        "id": "a10",
+        "name": "A10:2025 - Mishandling of Exceptional Conditions",
+        "adherenceScore": 0.5,
+        "maxSeverity": "HIGH"
+      },
+      {
+        "id": "a1",
+        "name": "A01:2025 - Broken Access Control",
+        "adherenceScore": 0.75,
+        "maxSeverity": "CRITICAL"
+      },
+      {
+        "id": "a2",
+        "name": "A02:2025 - Security Misconfiguration",
+        "adherenceScore": 0.25,
+        "maxSeverity": "MEDIUM"
+      },
+      {
+        "id": "a3",
+        "name": "A03:2025 - Software Supply Chain Failures",
+        "adherenceScore": 0.5,
+        "maxSeverity": "HIGH"
+      },
+      {
+        "id": "a4",
+        "name": "A04:2025 - Cryptographic Failures",
+        "adherenceScore": 0.75,
+        "maxSeverity": "CRITICAL"
+      }
+    ]
+  },
+  {
+    "id": "ow10-2025",
+    "name": "OWASP Top 10 (2025)",
+    "metadata": {
+      "key": "2026",
+      "modelVersion": "2026_security_sig"
+    },
+    "feature": "SECURITY",
+    "systemId": 10008,
+    "systemName": "integrationtest-kafka",
+    "adherenceScore": 0.5,
+    "rating": 2.7,
+    "categories": [
+      {
+        "id": "a10",
+        "name": "A10:2025 - Mishandling of Exceptional Conditions",
+        "adherenceScore": 0.75,
+        "maxSeverity": "CRITICAL"
+      },
+      {
+        "id": "a1",
+        "name": "A01:2025 - Broken Access Control",
+        "adherenceScore": 0.25,
+        "maxSeverity": "MEDIUM"
+      },
+      {
+        "id": "a2",
+        "name": "A02:2025 - Security Misconfiguration",
+        "adherenceScore": 0.5,
+        "maxSeverity": "HIGH"
+      },
+      {
+        "id": "a3",
+        "name": "A03:2025 - Software Supply Chain Failures",
+        "adherenceScore": 0.75,
+        "maxSeverity": "CRITICAL"
+      },
+      {
+        "id": "a4",
+        "name": "A04:2025 - Cryptographic Failures",
+        "adherenceScore": 0.25,
+        "maxSeverity": "MEDIUM"
+      }
+    ]
+  },
+  {
+    "id": "ow10-2025",
+    "name": "OWASP Top 10 (2025)",
+    "metadata": {
+      "key": "2026",
+      "modelVersion": "2026_security_sig"
+    },
+    "feature": "SECURITY",
+    "systemId": 10009,
+    "systemName": "integrationtest-airflow",
+    "adherenceScore": 0.6,
+    "rating": 3.3,
+    "categories": [
+      {
+        "id": "a10",
+        "name": "A10:2025 - Mishandling of Exceptional Conditions",
+        "adherenceScore": 0.25,
+        "maxSeverity": "MEDIUM"
+      },
+      {
+        "id": "a1",
+        "name": "A01:2025 - Broken Access Control",
+        "adherenceScore": 0.5,
+        "maxSeverity": "HIGH"
+      },
+      {
+        "id": "a2",
+        "name": "A02:2025 - Security Misconfiguration",
+        "adherenceScore": 0.75,
+        "maxSeverity": "CRITICAL"
+      },
+      {
+        "id": "a3",
+        "name": "A03:2025 - Software Supply Chain Failures",
+        "adherenceScore": 0.25,
+        "maxSeverity": "MEDIUM"
+      },
+      {
+        "id": "a4",
+        "name": "A04:2025 - Cryptographic Failures",
+        "adherenceScore": 0.5,
+        "maxSeverity": "HIGH"
+      }
+    ]
+  },
+  {
+    "id": "ow10-2025",
+    "name": "OWASP Top 10 (2025)",
+    "metadata": {
+      "key": "2026",
+      "modelVersion": "2026_security_sig"
+    },
+    "feature": "SECURITY",
+    "systemId": 10010,
+    "systemName": "integrationtest-vscode",
+    "adherenceScore": 0.7,
+    "rating": 3.9,
+    "categories": [
+      {
+        "id": "a10",
+        "name": "A10:2025 - Mishandling of Exceptional Conditions",
+        "adherenceScore": 0.5,
+        "maxSeverity": "HIGH"
+      },
+      {
+        "id": "a1",
+        "name": "A01:2025 - Broken Access Control",
+        "adherenceScore": 0.75,
+        "maxSeverity": "CRITICAL"
+      },
+      {
+        "id": "a2",
+        "name": "A02:2025 - Security Misconfiguration",
+        "adherenceScore": 0.25,
+        "maxSeverity": "MEDIUM"
+      },
+      {
+        "id": "a3",
+        "name": "A03:2025 - Software Supply Chain Failures",
+        "adherenceScore": 0.5,
+        "maxSeverity": "HIGH"
+      },
+      {
+        "id": "a4",
+        "name": "A04:2025 - Cryptographic Failures",
+        "adherenceScore": 0.75,
+        "maxSeverity": "CRITICAL"
+      }
+    ]
+  },
+  {
+    "id": "ow10-2025",
+    "name": "OWASP Top 10 (2025)",
+    "metadata": {
+      "key": "2026",
+      "modelVersion": "2026_security_sig"
+    },
+    "feature": "SECURITY",
+    "systemId": 10011,
+    "systemName": "integrationtest-elasticsearch",
+    "adherenceScore": 0.8,
+    "rating": 4.5,
+    "categories": [
+      {
+        "id": "a10",
+        "name": "A10:2025 - Mishandling of Exceptional Conditions",
+        "adherenceScore": 0.75,
+        "maxSeverity": "CRITICAL"
+      },
+      {
+        "id": "a1",
+        "name": "A01:2025 - Broken Access Control",
+        "adherenceScore": 0.25,
+        "maxSeverity": "MEDIUM"
+      },
+      {
+        "id": "a2",
+        "name": "A02:2025 - Security Misconfiguration",
+        "adherenceScore": 0.5,
+        "maxSeverity": "HIGH"
+      },
+      {
+        "id": "a3",
+        "name": "A03:2025 - Software Supply Chain Failures",
+        "adherenceScore": 0.75,
+        "maxSeverity": "CRITICAL"
+      },
+      {
+        "id": "a4",
+        "name": "A04:2025 - Cryptographic Failures",
+        "adherenceScore": 0.25,
+        "maxSeverity": "MEDIUM"
+      }
+    ]
+  }
+]

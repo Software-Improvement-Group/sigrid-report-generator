@@ -28,6 +28,7 @@ from report_generator.generator.context.portfolio_filters import (
     reset_context,
     set_context,
 )
+from report_generator.generator.utils.constants.filters import FILTER_LABELS
 
 
 @pytest.fixture
@@ -408,3 +409,7 @@ class TestFilterConsistency:
         assert set(portfolio_filters._filter_state.keys()) == set(
             FILTER_CONFIGURATION.keys()
         )
+
+    def test_filter_labels_match_configuration(self):
+        """FILTER_LABELS must define a label for every filter, so filter_info never KeyErrors."""
+        assert set(FILTER_LABELS.keys()) == set(FILTER_CONFIGURATION.keys())

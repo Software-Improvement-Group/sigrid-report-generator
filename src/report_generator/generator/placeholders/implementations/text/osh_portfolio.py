@@ -23,7 +23,11 @@ from report_generator.generator.placeholders.formatting.formatters import (
 from report_generator.generator.utils.constants import OSHMetric
 
 from ...formatting import smart_remarks
-from .base import parameterized_text_placeholder, text_placeholder
+from .base import (
+    market_average_text_placeholder,
+    parameterized_text_placeholder,
+    text_placeholder,
+)
 
 
 @text_placeholder()
@@ -160,6 +164,13 @@ def portfolio_osh_below_market():
 def portfolio_osh_avg_rating():
     """Volume-weighted average OSH rating across all systems in the portfolio."""
     return star_rating_round(osh_portfolio_data.weighted_average_rating)
+
+
+@market_average_text_placeholder()
+def portfolio_osh_avg_market_average():
+    """Colored indication of whether the portfolio's volume-weighted average open-source health
+    rating is below (red), at (blue) or above (green) market average."""
+    return osh_portfolio_data.weighted_average_rating
 
 
 @text_placeholder()

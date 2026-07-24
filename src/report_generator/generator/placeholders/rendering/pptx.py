@@ -16,7 +16,6 @@ import logging
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Union
 
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE_TYPE
@@ -29,6 +28,8 @@ from pptx.table import Table, _Row
 # noinspection PyProtectedMember
 from pptx.text.text import _Paragraph, _Run
 from pptx.util import Inches
+
+from report_generator.generator.utils.constants.sentiment import Sentiment
 
 from .common import (
     FontProperties,
@@ -126,23 +127,28 @@ def update_paragraph(
         apply_font_properties(run_with_placeholder, font)
 
 
+def _shapes_for_paragraphs(paragraphs):
+    # A paragraph is typically in a TextGroup which is in a Shape, so we call getparent() twice.
+    # Multiple matching paragraphs can share a shape, so de-duplicate while preserving order.
+    shapes = []
+    for paragraph in paragraphs:
+        # noinspection PyProtectedMember
+        shape = paragraph._parent._parent
+        if shape not in shapes:
+            shapes.append(shape)
+    return shapes
+
+
 def find_shapes_with_text(presentation, search_text):
     shapes = []
     for slide in presentation.slides:
-        paragraphs = find_text_in_slide(slide, search_text)
-        # A paragraph is typically in a TextGroup which is in a Shape, so we call getparent() twice
-        # noinspection PyProtectedMember
-        shapes += [paragraph._parent._parent for paragraph in paragraphs]
+        shapes += _shapes_for_paragraphs(find_text_in_slide(slide, search_text))
     logging.debug(f"Finds for {search_text}: {len(shapes)} shapes")
     return shapes
 
 
 def find_shapes_with_text_in_slide(slide, search_text):
-    shapes = []
-    paragraphs = find_text_in_slide(slide, search_text)
-    # A paragraph is typically in a TextGroup which is in a Shape, so we call getparent() twice
-    shapes += [paragraph._parent._parent for paragraph in paragraphs]
-    return shapes
+    return _shapes_for_paragraphs(find_text_in_slide(slide, search_text))
 
 
 def find_text_in_presentation(presentation, search_text):
@@ -156,49 +162,46 @@ def find_text_in_presentation(presentation, search_text):
 def find_text_in_slide(slide, search_text):
     paragraphs = []
     for shape in slide.shapes:
-        result = find_text_in_shape(shape, search_text)
-        if result:
-            paragraphs.append(result)
+        paragraphs.extend(find_text_in_shape(shape, search_text))
     return paragraphs
 
 
 def find_text_in_table(shape, search_text):
-    if shape.has_table:
-        for cell in shape.table.iter_cells():
-            if re.match(rf".*\b{search_text}\b.*", cell.text):
-                return cell.text_frame.paragraphs[0]
-    return None
+    if not shape.has_table:
+        return []
+    return [
+        cell.text_frame.paragraphs[0]
+        for cell in shape.table.iter_cells()
+        if re.search(rf"\b{re.escape(search_text)}\b", cell.text)
+    ]
 
 
 def find_text_in_text_frame(shape, search_text):
-    if shape.has_text_frame:
-        for paragraph in shape.text_frame.paragraphs:
-            if re.match(rf".*\b{search_text}\b.*", paragraph.text):
-                return paragraph
-    return None
+    if not shape.has_text_frame:
+        return []
+    return [
+        paragraph
+        for paragraph in shape.text_frame.paragraphs
+        if re.search(rf"\b{re.escape(search_text)}\b", paragraph.text)
+    ]
 
 
 def find_text_in_group(shape, search_text):
-    if shape.shape_type == MSO_SHAPE_TYPE.GROUP:
-        for s in shape.shapes:
-            result = find_text_in_shape(s, search_text)
-            if result:
-                return result
-    return None
+    if shape.shape_type != MSO_SHAPE_TYPE.GROUP:
+        return []
+    paragraphs = []
+    for s in shape.shapes:
+        paragraphs.extend(find_text_in_shape(s, search_text))
+    return paragraphs
 
 
 def find_text_in_shape(shape, search_text):
     if "GraphicFrame" in type(shape).__name__:
-        result = find_text_in_table(shape, search_text)
-        if result:
-            return result
-        return None
+        return find_text_in_table(shape, search_text)
 
-    result = find_text_in_text_frame(shape, search_text)
-    if result:
-        return result
-
-    return find_text_in_group(shape, search_text)
+    return find_text_in_text_frame(shape, search_text) + find_text_in_group(
+        shape, search_text
+    )
 
 
 def add_content_paragraph(text_frame, markers, content, paragraph=None):
@@ -271,6 +274,17 @@ def determine_rating_color(rating):
         return FIVE_STAR_COLOR
 
 
+SENTIMENT_COLORS = {
+    Sentiment.NEGATIVE: ONE_STAR_COLOR,  # red
+    Sentiment.NEUTRAL: SIG_BLUE_COLOR,  # blue
+    Sentiment.POSITIVE: FIVE_STAR_COLOR,  # green
+}
+
+
+def sentiment_color(sentiment: Sentiment) -> RGBColor:
+    return SENTIMENT_COLORS[sentiment]
+
+
 def test_code_ratio_color(ratio):
     if ratio <= 0.01:
         return ONE_STAR_COLOR
@@ -333,7 +347,7 @@ def remove_rows_from_table(table: Table, row_numbers: Iterable[int]):
         remove_row_from_table(table, row)
 
 
-def update_table(table: Table, value: list[list[Union[str, int, float, Hyperlink]]]):
+def update_table(table: Table, value: list[list[str | int | float | Hyperlink]]):
     """
     Fills a PowerPoint table with provided values. Copies formatting from existing cells and applies it to all later cells in that column.
     """
@@ -364,7 +378,7 @@ def _apply_hyperlink(run: _Run, hyperlink: Hyperlink) -> None:
 
 def replace_paragraph_with_text(
     paragraph: _Paragraph,
-    text: Union[str, int, float, Hyperlink],
+    text: str | int | float | Hyperlink,
     font: FontProperties = None,
 ):
     paragraph.clear()
