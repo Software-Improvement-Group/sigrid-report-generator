@@ -54,7 +54,6 @@ from report_generator.generator.domain.portfolio.security_findings_portfolio imp
     security_findings_portfolio_data,
 )
 from report_generator.generator.domain.portfolio.security_portfolio import (
-    security_ratings_change_portfolio_data,
     security_ratings_portfolio_data,
 )
 from report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio import (
