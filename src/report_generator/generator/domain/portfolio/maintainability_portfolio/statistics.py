@@ -13,7 +13,6 @@
 #  limitations under the License.
 
 from functools import cached_property
-from typing import Optional
 
 from report_generator.generator.domain.portfolio.maintainability_portfolio import (
     maintainability_portfolio_data,
@@ -219,7 +218,11 @@ def _calculate_averages(
 
 def _weighted_avg(values, weights):
     tw = sum(weights)
-    return (sum(v * w for v, w in zip(values, weights)) / tw) if tw else 0.000001
+    return (
+        (sum(v * w for v, w in zip(values, weights, strict=True)) / tw)
+        if tw
+        else 0.000001
+    )
 
 
 class MaintainabilityPortfolioStats:
@@ -245,8 +248,8 @@ class MaintainabilityPortfolioStats:
         statistics = _initialize_statistics()
         period_start = parse_date(maintainability_portfolio_data.period[0])
 
-        best_inc: tuple[Optional[str], float] = (None, float("-inf"))
-        best_dec: tuple[Optional[str], float] = (None, float("inf"))
+        best_inc: tuple[str | None, float] = (None, float("-inf"))
+        best_dec: tuple[str | None, float] = (None, float("inf"))
         start_maintainability_ratings, end_maintainability_ratings = [], []
         start_volumes, end_volumes = [], []
 

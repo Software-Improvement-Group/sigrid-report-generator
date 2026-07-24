@@ -13,7 +13,6 @@
 #  limitations under the License.
 
 from functools import cached_property
-from typing import Optional
 
 from report_generator.generator.domain.portfolio.shared import utils
 
@@ -22,10 +21,10 @@ class RatedPortfolioMixin:
     def _rated_systems(self):
         raise NotImplementedError
 
-    def _extract_rating(self, item) -> Optional[float]:
+    def _extract_rating(self, item) -> float | None:
         raise NotImplementedError
 
-    def _get_rating_and_volume(self, item) -> tuple[Optional[float], float]:
+    def _get_rating_and_volume(self, item) -> tuple[float | None, float]:
         raise NotImplementedError
 
     @cached_property

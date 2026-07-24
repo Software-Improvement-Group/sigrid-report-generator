@@ -12,8 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
 
 from pptx.chart.data import CategoryChartData
 from pptx.presentation import Presentation

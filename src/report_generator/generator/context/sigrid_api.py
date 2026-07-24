@@ -14,7 +14,6 @@
 
 import logging
 from functools import cache, wraps
-from typing import Optional
 
 import requests
 
@@ -40,7 +39,7 @@ class SigridAPIRequestFailedError(Exception):
 
 
 class SigridAccessDeniedError(Exception):
-    def __init__(self, url: str, customer: str, system: Optional[str]):
+    def __init__(self, url: str, customer: str, system: str | None):
         system_part = f"/{system}" if system else ""
         sigrid_url = f"https://sigrid-says.com/{customer}{system_part}"
         message = "\n".join(
@@ -324,8 +323,8 @@ def get_maintainability_delta_quality(system, delta_type="NEW_AND_CHANGED_CODE")
 def get_maintainability_refactoring_candidates(
     system,
     system_property: MaintMetric,
-    technology: Optional[str] = None,
-    count: Optional[int] = None,
+    technology: str | None = None,
+    count: int | None = None,
 ):
     property_name = system_property.to_json_name()
 

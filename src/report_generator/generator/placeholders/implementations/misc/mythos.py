@@ -12,8 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from collections.abc import Callable
 from datetime import date
-from typing import Callable
 
 from pptx.presentation import Presentation
 from pptx.util import Pt

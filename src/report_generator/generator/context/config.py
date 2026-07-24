@@ -12,17 +12,16 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from typing import Optional
 
 import jwt
 
 DEFAULT_BASE_URL = "https://sigrid-says.com"
 BASE_ANALYSIS_RESULTS_ENDPOINT = "analysis-results/api/v1"
 
-_bearer_token: Optional[str] = None
-_customer: Optional[str] = None
-_system: Optional[str] = None
-_period: Optional[tuple[str, str]] = None
+_bearer_token: str | None = None
+_customer: str | None = None
+_system: str | None = None
+_period: tuple[str, str] | None = None
 _rest_url: str = f"{DEFAULT_BASE_URL}/rest"
 
 
@@ -52,11 +51,11 @@ def _test_sigrid_token(token: str) -> None:
 
 
 def set_context(
-    bearer_token: Optional[str] = None,
-    customer: Optional[str] = None,
-    system: Optional[str] = None,
-    period: Optional[tuple[str, str]] = None,
-    base_url: Optional[str] = None,
+    bearer_token: str | None = None,
+    customer: str | None = None,
+    system: str | None = None,
+    period: tuple[str, str] | None = None,
+    base_url: str | None = None,
 ) -> None:
     """Set the context values. Only updates provided values. None values will be ignored (use reset_context instead)."""
     global _bearer_token, _customer, _system, _period, _rest_url
