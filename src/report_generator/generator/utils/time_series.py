@@ -13,7 +13,7 @@
 #  limitations under the License.
 
 import calendar
-from datetime import datetime
+from datetime import UTC, datetime
 
 
 def add_months(d, months):
@@ -29,13 +29,17 @@ def add_months(d, months):
 
 
 def parse_iso_datetime(value: str) -> datetime:
-    """Parse an ISO-8601 string (including a trailing 'Z') to a naive datetime.
+    """Parse an ISO-8601 string (including a trailing 'Z') to a naive UTC datetime.
 
-    tzinfo is stripped so results can be subtracted from a naive ``datetime.now()``;
-    returning a tz-aware value would raise ``TypeError`` on live 'Z'-bearing API data.
+    Offset-bearing inputs are converted to UTC before tzinfo is stripped, so the
+    naive result still represents the correct instant. tzinfo is stripped so results
+    can be subtracted from a naive ``datetime.now()``; returning a tz-aware value
+    would raise ``TypeError`` on live 'Z'-bearing API data.
     """
     parsed = datetime.fromisoformat(value)
-    return parsed.replace(tzinfo=None) if parsed.tzinfo else parsed
+    if parsed.tzinfo:
+        return parsed.astimezone(UTC).replace(tzinfo=None)
+    return parsed
 
 
 def parse_date(date: str | datetime) -> datetime:

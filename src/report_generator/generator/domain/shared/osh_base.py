@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import logging
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from datetime import date
@@ -69,24 +70,27 @@ def _find_cyclonedx_property_value(properties: list[dict], key: str) -> str | No
     return None
 
 
+def _staleness_days(component: dict, today: date) -> int | None:
+    """Days between ``today`` and a component's next release date, or None if absent/unparseable."""
+    properties = component.get("properties")
+    if not properties:
+        return None
+    next_release_date = _find_cyclonedx_property_value(
+        properties, "sigrid:next:releaseDate"
+    )
+    if not next_release_date:
+        return None
+    try:
+        return (today - parse_iso_datetime(next_release_date).date()).days
+    except ValueError:
+        logging.debug("Skipping non-ISO-8601 next release date: %r", next_release_date)
+        return None
+
+
 def component_version_staleness_days(components: list[dict]) -> list[int]:
-    result = []
     today = date.today()
-    for component in components:
-        properties = component.get("properties")
-        if not properties:
-            continue
-        next_release_date = _find_cyclonedx_property_value(
-            properties, "sigrid:next:releaseDate"
-        )
-        if next_release_date:
-            try:
-                result.append(
-                    (today - parse_iso_datetime(next_release_date).date()).days
-                )
-            except ValueError:
-                continue
-    return result
+    days = (_staleness_days(component, today) for component in components)
+    return [d for d in days if d is not None]
 
 
 class OSHMetricsBase(ABC):

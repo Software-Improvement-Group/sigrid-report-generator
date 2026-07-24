@@ -57,7 +57,9 @@ class TestParseIsoDatetime:
         assert result.tzinfo is None
 
     def test_parses_offset_as_naive(self):
+        # +02:00 is converted to UTC (22:00 the previous day) before tzinfo is stripped.
         result = parse_iso_datetime("2024-01-15T00:00:00+02:00")
+        assert result == datetime(2024, 1, 14, 22, 0, 0)
         assert result.tzinfo is None
 
 
