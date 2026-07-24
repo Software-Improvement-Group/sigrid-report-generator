@@ -22,13 +22,43 @@ from report_generator.generator.domain.portfolio.shared import utils
 from report_generator.generator.domain.portfolio.shared.rated_mixin import (
     RatedPortfolioMixin,
 )
+from report_generator.generator.domain.portfolio.shared.ratings_change_base import (
+    RatingsChangePortfolioBase,
+)
 
 
-class ArchitecturePortfolioData(RatedPortfolioMixin):
+class ArchitecturePortfolioData(RatedPortfolioMixin, RatingsChangePortfolioBase):
+    """Portfolio architecture-quality ratings, both as-of the end of the reporting period
+    (current state) and the per-system change over the period.
+
+    The architecture-quality endpoint is point-in-time, so the change is obtained by also
+    requesting the ratings at the start of the period (via the ``endDate`` parameter) and
+    subtracting from the end-of-period ratings (``data``).
+    """
+
+    _system_tag = "system"
+
     @cached_property
     @filter_data_on_portfolio_arguments(system_tag="system")
     def data(self):
-        return sigrid_api.get_portfolio_architecture_findings()
+        return sigrid_api.get_portfolio_architecture_findings(
+            end_date=sigrid_api.get_period()[1]
+        )
+
+    @cached_property
+    @filter_data_on_portfolio_arguments(system_tag="system")
+    def _start_ratings(self):
+        return sigrid_api.get_portfolio_architecture_findings(
+            end_date=sigrid_api.get_period()[0]
+        )
+
+    @property
+    def _end_ratings(self):
+        return self.data
+
+    @cached_property
+    def metadata(self):
+        return sigrid_api.get_portfolio_metadata()
 
     @cached_property
     def period(self):
