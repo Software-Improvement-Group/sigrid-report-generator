@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from typing import Callable
+from collections.abc import Callable
 
 from importlib_resources import files
 
@@ -65,8 +65,17 @@ def generate_portfolio_baseline_report(output_path: str) -> None:
     _generate_report("portfolio-baseline-report.pptx", output_path)
 
 
+def generate_npr_5333_overview(output_path: str) -> None:
+    _generate_report("npr-5333-overview.pptx", output_path)
+
+
+def generate_system_summary_whitelabel(output_path: str) -> None:
+    _generate_report("system-summary-whitelabel.pptx", output_path)
+
+
 _preset_reports: dict[str, Callable[[str], None]] = {
     "system-summary": generate_system_summary,
+    "system-summary-whitelabel": generate_system_summary_whitelabel,
     "debug": generate_debug_docx,
     "itdd-technical-debt": generate_itdd_system_technical_debt_report,
     "modernization": generate_modernization_report,
@@ -76,10 +85,12 @@ _preset_reports: dict[str, Callable[[str], None]] = {
     "portfolio-overview": generate_portfolio_overview,
     "hygiene-report": generate_hygiene_report,
     "portfolio-baseline-report": generate_portfolio_baseline_report,
+    "npr-5333-overview": generate_npr_5333_overview,
 }
 
 SYSTEM_LEVEL_PRESETS = {
     "system-summary",
+    "system-summary-whitelabel",
     "debug",
     "itdd-technical-debt",
     "refactoring-candidates",

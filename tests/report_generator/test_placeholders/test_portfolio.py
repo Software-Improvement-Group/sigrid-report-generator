@@ -252,6 +252,45 @@ class TestPortfolioPlaceholders:
             == 0
         )
 
+    def test_portfolio_security_acute_findings_placeholders(self, mocker):
+        """Acute placeholders combine critical + high and describe the net change."""
+        from report_generator.generator.placeholders.implementations.text.security_portfolio import (
+            portfolio_sec_acute_added,
+            portfolio_sec_acute_difference,
+            portfolio_sec_acute_resolved,
+            portfolio_sec_relative_acute,
+        )
+
+        mocker.patch.object(
+            type(security_dashboard_findings_portfolio_data),
+            "acute_findings_statistics",
+            new_callable=mocker.PropertyMock,
+            return_value={"resolved": 8, "added": 3, "net_change": -5},
+        )
+
+        assert portfolio_sec_acute_resolved.value() == 8
+        assert portfolio_sec_acute_added.value() == 3
+        assert portfolio_sec_acute_difference.value() == 5
+        assert portfolio_sec_relative_acute.value() == "a decrease"
+
+    def test_portfolio_security_relative_acute_increase_and_no_change(self, mocker):
+        """relative_acute reports an increase for positive net change and no change for zero."""
+        from report_generator.generator.placeholders.implementations.text.security_portfolio import (
+            portfolio_sec_relative_acute,
+        )
+
+        stats_property = mocker.patch.object(
+            type(security_dashboard_findings_portfolio_data),
+            "acute_findings_statistics",
+            new_callable=mocker.PropertyMock,
+        )
+
+        stats_property.return_value = {"resolved": 2, "added": 9, "net_change": 7}
+        assert portfolio_sec_relative_acute.value() == "an increase"
+
+        stats_property.return_value = {"resolved": 4, "added": 4, "net_change": 0}
+        assert portfolio_sec_relative_acute.value() == "no change"
+
     def test_portfolio_security_all_severities_together(self, mocker):
         """Test all severity findings placeholders work together correctly."""
         mock_critical = {"resolved": 5, "added": 3, "net_change": -2}

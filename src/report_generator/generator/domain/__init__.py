@@ -30,10 +30,19 @@ from report_generator.generator.domain.portfolio.maintainability_portfolio impor
     maintainability_portfolio_data,
 )
 from report_generator.generator.domain.portfolio.modernization import modernization_data
+from report_generator.generator.domain.portfolio.npr_5333_functional_suitability_portfolio import (
+    npr_5333_functional_suitability_portfolio_data,
+)
 from report_generator.generator.domain.portfolio.objectives import objectives_data
 from report_generator.generator.domain.portfolio.osh_portfolio import osh_portfolio_data
+from report_generator.generator.domain.portfolio.portfolio_filter_info import (
+    portfolio_filter_info,
+)
 from report_generator.generator.domain.portfolio.progress_sigrid import (
     progress_sigrid_data,
+)
+from report_generator.generator.domain.portfolio.reliability_portfolio import (
+    reliability_ratings_portfolio_data,
 )
 from report_generator.generator.domain.portfolio.security_dashboard_findings_portfolio import (
     security_dashboard_findings_portfolio_data,
@@ -45,6 +54,7 @@ from report_generator.generator.domain.portfolio.security_findings_portfolio imp
     security_findings_portfolio_data,
 )
 from report_generator.generator.domain.portfolio.security_portfolio import (
+    security_ratings_change_portfolio_data,
     security_ratings_portfolio_data,
 )
 from report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio import (

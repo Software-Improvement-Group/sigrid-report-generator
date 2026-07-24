@@ -53,7 +53,7 @@ def compare_slide_count(current_prs, reference_prs):
 def compare_slides(current_prs, reference_prs):
     differences = []
     for i, (current_slide, reference_slide) in enumerate(
-        zip(current_prs.slides, reference_prs.slides)
+        zip(current_prs.slides, reference_prs.slides, strict=False)
     ):
         differences += compare_shape_count(current_slide, reference_slide, i)
         differences += compare_shapes_text(current_slide, reference_slide, i)
@@ -75,7 +75,7 @@ def compare_shape_count(current_slide, reference_slide, slide_index):
 def compare_shapes_text(current_slide, reference_slide, slide_index):
     differences = []
     for j, (current_shape, reference_shape) in enumerate(
-        zip(current_slide.shapes, reference_slide.shapes)
+        zip(current_slide.shapes, reference_slide.shapes, strict=False)
     ):
         if current_shape.has_text_frame and reference_shape.has_text_frame:
             if current_shape.text != reference_shape.text:
@@ -92,7 +92,7 @@ def compare_shapes_text(current_slide, reference_slide, slide_index):
 def compare_tables(current_slide, reference_slide, slide_index):
     differences = []
     for j, (current_shape, reference_shape) in enumerate(
-        zip(current_slide.shapes, reference_slide.shapes)
+        zip(current_slide.shapes, reference_slide.shapes, strict=False)
     ):
         if current_shape.has_table and reference_shape.has_table:
             current_table, reference_table = current_shape.table, reference_shape.table
@@ -114,10 +114,10 @@ def compare_tables(current_slide, reference_slide, slide_index):
 def compare_table_cells(current_table, reference_table, slide_index, table_index):
     differences = []
     for row_idx, (current_row, reference_row) in enumerate(
-        zip(current_table.rows, reference_table.rows)
+        zip(current_table.rows, reference_table.rows, strict=False)
     ):
         for col_idx, (current_cell, reference_cell) in enumerate(
-            zip(current_row.cells, reference_row.cells)
+            zip(current_row.cells, reference_row.cells, strict=False)
         ):
             if current_cell.text != reference_cell.text:
                 differences.append(
@@ -133,7 +133,7 @@ def compare_table_cells(current_table, reference_table, slide_index, table_index
 def compare_charts(current_slide, reference_slide, slide_index):
     differences = []
     for j, (current_shape, reference_shape) in enumerate(
-        zip(current_slide.shapes, reference_slide.shapes)
+        zip(current_slide.shapes, reference_slide.shapes, strict=False)
     ):
         if current_shape.has_chart and reference_shape.has_chart:
             differences += compare_chart(
@@ -163,7 +163,9 @@ def compare_chart_series(current_chart, reference_chart, slide_index, shape_inde
         differences.append(f"    reference: {len(reference_series)}")
         differences.append(f"    current:   {len(current_series)}")
         return differences
-    for k, (current_s, reference_s) in enumerate(zip(current_series, reference_series)):
+    for k, (current_s, reference_s) in enumerate(
+        zip(current_series, reference_series, strict=False)
+    ):
         differences += compare_series(
             current_s, reference_s, slide_index, shape_index, k
         )

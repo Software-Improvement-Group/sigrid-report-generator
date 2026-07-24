@@ -166,6 +166,40 @@ class TestSecurityDashboardChartPlaceholders:
         # Should call replace_data on the chart
         mock_chart.replace_data.assert_called_once_with(mock_chart_data)
 
+    @patch(
+        "report_generator.generator.placeholders.implementations.charts.security_findings.security_dashboard_findings_portfolio_data"
+    )
+    def test_open_acute_trend_placeholder_value(self, mock_data):
+        """Test SecurityDashboardOpenAcuteTrendChartPlaceholder.value builds a single-series line chart."""
+        from report_generator.generator.placeholders.implementations.charts.security_findings import (
+            SecurityDashboardOpenAcuteTrendChartPlaceholder,
+        )
+
+        mock_data.open_acute_findings_by_month.return_value = {
+            "columns": ["Jan", "Feb"],
+            "open_acute": [26, 16],
+        }
+
+        result = SecurityDashboardOpenAcuteTrendChartPlaceholder.value()
+
+        assert [c.label for c in result.categories] == ["Jan", "Feb"]
+        assert len(result._series) == 1
+        series = result._series[0]
+        assert series.name == "Open acute findings"
+        assert list(series.values) == [26, 16]
+        mock_data.open_acute_findings_by_month.assert_called_once_with()
+
+    def test_open_acute_trend_placeholder_key(self):
+        """Test SecurityDashboardOpenAcuteTrendChartPlaceholder has correct key."""
+        from report_generator.generator.placeholders.implementations.charts.security_findings import (
+            SecurityDashboardOpenAcuteTrendChartPlaceholder,
+        )
+
+        assert (
+            SecurityDashboardOpenAcuteTrendChartPlaceholder.key
+            == "PORTFOLIO_SECURITY_OPEN_ACUTE"
+        )
+
     def test_security_dashboard_critical_findings_placeholder_key(self):
         """Test SecurityDashboardCriticalFindingsChartPlaceholder has correct key."""
         from report_generator.generator.placeholders.implementations.charts.security_findings import (

@@ -62,6 +62,26 @@ Placeholders are the view layer — they format, they do not fetch or transform:
 Heuristic: if `value()` exceeds ~10 lines, manipulates dict keys from API responses, or calls multiple domain
 methods to assemble an intermediate value, domain logic has leaked in.
 
+## Type hierarchy must match directory
+
+Each typed directory (`text/`, `table/`, `charts/`, `images/`) defines a type boundary — every class in that directory
+must be a subtype of the directory's base class (Liskov-consistent). This applies transitively: intermediate abstractions
+must also extend the directory base, not just leaf classes.
+
+Flag:
+
+- A class in a typed directory whose inheritance chain does not trace back to that directory's base class. For example, a
+  class in `text/` that directly extends `Placeholder` or `ParameterizedPlaceholder` instead of the text-specific base.
+- A mixin or secondary base class defined inside a typed directory. Shared behaviour within a directory should use
+  utility functions (composition), not mixins that introduce a parallel inheritance axis.
+- Imports from another typed directory's internal modules (e.g. `table/` importing a base from `charts/`). Cross-type
+  reuse belongs in `formatting/` (pure value transforms, no document-model awareness) or `rendering/` (document-model
+  mechanics, no domain awareness).
+- A class that only needs the root `Placeholder` interface living in a typed directory. It belongs in `misc/`.
+
+Intermediate abstractions and their concrete subclasses must be co-located in the same module (same file or sub-package
+within the directory).
+
 ## Error handling
 
 `_call_resolve_method` in `base.py` already catches failures (`SigridAPIRequestFailedError`, `KeyError`,

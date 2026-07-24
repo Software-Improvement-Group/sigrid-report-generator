@@ -17,6 +17,9 @@ from report_generator.generator.utils.constants import (
     MaintMetric,
     MetricEnum,
 )
+from report_generator.generator.utils.constants.urgency_thresholds import (
+    MEDIUM_RISK_THRESHOLD,
+)
 
 MAINT_BEST_METRIC_TEXT = {
     MaintMetric.VOLUME: "The system is small and therefore easier to maintain.",
@@ -233,24 +236,12 @@ def tech_variance_remark(sorted_tech_data, total_volume_pm):
     return f"The system is mainly built using {len(main_technologies)} different technologies: {', '.join(main_technologies)}"
 
 
-def osh_remark(libraries):
-    mentionable_vulnerability_count = 0
-    for vulnerability in libraries.get("vulnerabilities", []):
-        if (
-            (vulnerability["ratings"][0]["severity"] == "medium")
-            or (vulnerability["ratings"][0]["severity"] == "high")
-            or (vulnerability["ratings"][0]["severity"] == "high")
-        ):
-            mentionable_vulnerability_count += 1
-    mentionable_license_count = 0
-    for library in libraries.get("components", []):
-        if (
-            (library["properties"][0]["value"] == "CRITICAL")
-            or (library["properties"][0]["value"] == "HIGH")
-            or (library["properties"][0]["value"] == "MEDIUM")
-        ):
-            mentionable_license_count += 1
-    return f"This system has {mentionable_vulnerability_count} medium or higher risk vulnerable libraries and {mentionable_license_count} licenses with potential legal risks that should be investigated"
+def osh_remark(vulnerability_count: int, license_risk_count: int) -> str:
+    return (
+        f"This system has {vulnerability_count} medium or higher risk vulnerable "
+        f"libraries and {license_risk_count} libraries with potential legal risks "
+        f"that should be investigated"
+    )
 
 
 def osh_relative_rating(osh_rating):
@@ -260,3 +251,13 @@ def osh_relative_rating(osh_rating):
         return "market average"
     else:
         return "above market average"
+
+
+def urgency_explanation(distr: dict) -> str:
+    if distr["critical"] > 0:
+        return "The presence of critical risks can pose severe exploitation risk, and should be reviewed."
+    if distr["high"] > 0 or distr["medium"] > MEDIUM_RISK_THRESHOLD:
+        return "The codebase contains potentially urgent risks that should be reviewed."
+    if distr["medium"] > 0:
+        return "Medium-risk vulnerabilities were detected. An in-depth review is recommended."
+    return "Only low-risk findings were detected. An in-depth review is still recommended to ensure control."

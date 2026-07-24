@@ -14,6 +14,11 @@ from matplotlib.font_manager import findfont, get_font
 
 from ._pad import parse_pad
 
+# matplotlib >= 3.11 defaults ``Text._linespacing`` to the string "normal";
+# older versions used the numeric multiplier 1.2. AutofitText needs a number to
+# compute per-line heights, so fall back to the historical default.
+_DEFAULT_LINESPACING = 1.2
+
 
 class AutofitText(mtext.Text):
     def __repr__(self):
@@ -144,13 +149,14 @@ class AutofitText(mtext.Text):
 
     def _apply_reflow(self, current_fontsize, width_px, height_px, dpi):
         words = self._split_words(self._origin_text)
+        numeric_linespacing = self._numeric_linespacing()
         fontsizes = [
             self._get_wrapped_fontsize(
                 self._origin_text,
                 height_px,
                 width_px,
                 n,
-                self._linespacing,
+                numeric_linespacing,
                 dpi,
                 self.get_fontproperties(),
             )
@@ -300,7 +306,15 @@ class AutofitText(mtext.Text):
             fontsizes.append(adjusted_size)
         return min(fontsizes)
 
+    def _numeric_linespacing(self):
+        ls = self._linespacing
+        try:
+            return float(ls)
+        except (TypeError, ValueError):
+            return _DEFAULT_LINESPACING
+
     def _calc_fontsize_from_height(self, height, n, linespacing, dpi):
+        linespacing = float(linespacing)
         h_pixels = height / (n * linespacing - linespacing + 1)
         return self._pixels2points(dpi, h_pixels)
 

@@ -24,7 +24,11 @@ from report_generator.generator.utils.constants import (
 )
 
 from ...formatting import smart_remarks
-from .base import parameterized_text_placeholder, text_placeholder
+from .base import (
+    market_average_text_placeholder,
+    parameterized_text_placeholder,
+    text_placeholder,
+)
 
 
 @text_placeholder()
@@ -75,6 +79,13 @@ def arch_at_below():
     return smart_remarks.relative_to_market_average(
         architecture_data.ratings["architecture"]
     )
+
+
+@market_average_text_placeholder()
+def arch_market_average():
+    """Colored indication of whether the system's Architecture Quality Rating is below (red), at
+    (blue) or above (green) market average."""
+    return architecture_data.ratings["architecture"]
 
 
 @text_placeholder()

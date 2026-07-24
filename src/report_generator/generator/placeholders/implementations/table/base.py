@@ -13,18 +13,18 @@
 #  limitations under the License.
 
 from abc import ABC
-from typing import Union
 
 from report_generator.generator.placeholders.implementations.base import (
     Placeholder,
     PlaceholderDocType,
 )
 from report_generator.generator.placeholders.rendering.pptx import (
+    Hyperlink,
     find_tables,
     update_table,
 )
 
-TableMatrix = list[list[Union[str, int, float]]]
+TableMatrix = list[list[str | int | float | Hyperlink]]
 
 
 class TablePlaceholder(Placeholder, ABC):

@@ -15,7 +15,7 @@
 from datetime import datetime
 from functools import cached_property
 
-from report_generator.generator.context import sigrid_api
+from report_generator.generator.context import config, sigrid_api
 
 
 def _sort_and_aggregate_technology_data(tech_data):
@@ -153,7 +153,7 @@ class MaintainabilityData:
 
     @cached_property
     def system_pm(self):
-        return round(self.maintainability_rating["volumeInPersonMonths"], 1)
+        return round(self.data["volumeInPersonMonths"], 1)
 
     @cached_property
     def system_loc(self):
@@ -167,14 +167,15 @@ class MaintainabilityData:
     @cached_property
     def customer_name(self):
         try:
-            return self.data["customer"].capitalize()
+            customer = self.data.get("customer")
         except ValueError:
-            # TODO: Temporary fix; this will be retrieved from an endpoint in the future.
-            return (
-                sigrid_api._customer.capitalize()
-                if len(sigrid_api._customer) > 3
-                else sigrid_api._customer.upper()
-            )
+            # self.data is unavailable when no system context is set (e.g. portfolio reports).
+            customer = None
+        if customer is not None:
+            return customer.capitalize()
+        # TODO: Temporary fix; this will be retrieved from an endpoint in the future.
+        name = config.get_customer()
+        return name.capitalize() if len(name) > 3 else name.upper()
 
     @cached_property
     def start_snapshot(self):

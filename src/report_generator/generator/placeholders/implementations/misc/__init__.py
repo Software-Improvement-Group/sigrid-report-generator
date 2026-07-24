@@ -18,14 +18,18 @@ from . import (
     category_chart,
     color_rating,
     moveable_marker,
+    mythos,
     scatter_plot_chart,
+    urgency_shape,
 )
 
 _all_implementations = {
     **category_chart.__dict__,
-    **moveable_marker.__dict__,
     **color_rating.__dict__,
+    **mythos.__dict__,
+    **moveable_marker.__dict__,
     **scatter_plot_chart.__dict__,
+    **urgency_shape.__dict__,
 }
 
 _placeholders_map = {

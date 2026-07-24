@@ -12,8 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from collections.abc import Iterable
-from typing import Callable, Optional
+from collections.abc import Callable, Iterable
 
 from report_generator.generator.context import sigrid_api
 
@@ -58,7 +57,7 @@ def _calculate_percentages(counts, total):
     }
 
 
-def is_month_in_period(month: Optional[str], period: tuple[str, str]) -> bool:
+def is_month_in_period(month: str | None, period: tuple[str, str]) -> bool:
     if not month:
         return False
     period_start, period_end = period
@@ -85,9 +84,9 @@ def get_volume(system_name: str) -> float:
 
 def get_rating_and_volume_from_system(
     system: dict,
-    rating_extractor: Callable[[dict], Optional[float]],
+    rating_extractor: Callable[[dict], float | None],
     system_name_key: str = "systemName",
-) -> tuple[Optional[float], float]:
+) -> tuple[float | None, float]:
     rating = rating_extractor(system)
     system_name = system.get(system_name_key)
 
@@ -104,7 +103,7 @@ def get_rating_and_volume_from_system(
 
 def calculate_weighted_average_rating(
     data_source: Iterable,
-    get_rating_and_volume_func: Callable[[any], tuple[Optional[float], float]],
+    get_rating_and_volume_func: Callable[[any], tuple[float | None, float]],
 ) -> float:
     total_weighted_rating = 0
     total_volume = 0
@@ -124,7 +123,7 @@ def calculate_weighted_average_rating(
 
 
 def get_rating_distribution_percentages(
-    data_source: Iterable, rating_extractor: Callable[[any], Optional[float]]
+    data_source: Iterable, rating_extractor: Callable[[any], float | None]
 ) -> dict[str, int]:
     counts = {"above_market": 0, "market_average": 0, "below_market": 0}
     total = 0

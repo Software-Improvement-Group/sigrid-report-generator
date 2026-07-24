@@ -17,6 +17,7 @@ import inspect
 from . import (
     architecture,
     architecture_portfolio,
+    filter_info,
     maintainability,
     maintainability_delta_quality,
     maintainability_portfolio,
@@ -33,6 +34,7 @@ from .base import parameterized_text_placeholder, text_placeholder
 _modules_to_scan = [
     architecture,
     architecture_portfolio,
+    filter_info,
     maintainability,
     maintainability_delta_quality,
     maintainability_portfolio,
@@ -50,7 +52,7 @@ for module in _modules_to_scan:
     module_placeholders = {
         name: obj
         for name, obj in inspect.getmembers(module, inspect.isclass)
-        if hasattr(obj, "__placeholder__")
+        if hasattr(obj, "__placeholder__") and not inspect.isabstract(obj)
     }
     _placeholders_map.update(module_placeholders)
 

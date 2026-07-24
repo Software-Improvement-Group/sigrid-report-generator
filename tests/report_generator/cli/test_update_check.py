@@ -13,7 +13,7 @@
 #  limitations under the License.
 
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from freezegun import freeze_time
@@ -55,9 +55,7 @@ class TestShouldCheck:
         (tmp_path / "update_check.json").write_text(
             json.dumps(
                 {
-                    "last_checked": (
-                        datetime.now(timezone.utc) - timedelta(days=1)
-                    ).isoformat(),
+                    "last_checked": (datetime.now(UTC) - timedelta(days=1)).isoformat(),
                     "latest_version": "1.5.0",
                 }
             )
@@ -69,9 +67,7 @@ class TestShouldCheck:
         (tmp_path / "update_check.json").write_text(
             json.dumps(
                 {
-                    "last_checked": (
-                        datetime.now(timezone.utc) - timedelta(days=8)
-                    ).isoformat(),
+                    "last_checked": (datetime.now(UTC) - timedelta(days=8)).isoformat(),
                     "latest_version": "1.5.0",
                 }
             )
@@ -160,9 +156,7 @@ class TestCheckForUpdate:
         (tmp_path / "update_check.json").write_text(
             json.dumps(
                 {
-                    "last_checked": (
-                        datetime.now(timezone.utc) - timedelta(days=1)
-                    ).isoformat(),
+                    "last_checked": (datetime.now(UTC) - timedelta(days=1)).isoformat(),
                     "latest_version": "2.0.0",
                 }
             )

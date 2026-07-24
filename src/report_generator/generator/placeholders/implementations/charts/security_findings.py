@@ -12,8 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
 
 from pptx.chart.data import CategoryChartData
 from pptx.presentation import Presentation
@@ -158,6 +158,31 @@ class SecurityDashboardMediumFindingsChartPlaceholder(Placeholder):
     @classmethod
     def value(cls):
         return _create_security_findings_chart_data("MEDIUM")
+
+    @staticmethod
+    def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
+        _populate_chart(presentation, value_cb, key)
+
+
+def _create_open_acute_trend_chart_data() -> CategoryChartData:
+    data = security_dashboard_findings_portfolio_data.open_acute_findings_by_month()
+
+    chart_data = CategoryChartData()
+    chart_data.categories = data["columns"]
+    chart_data.add_series("Open acute findings", data["open_acute"])
+
+    return chart_data
+
+
+class SecurityDashboardOpenAcuteTrendChartPlaceholder(Placeholder):
+    """PowerPoint line chart showing the number of open acute (Critical + High) security findings per month across the portfolio."""
+
+    key = "PORTFOLIO_SECURITY_OPEN_ACUTE"
+    __doc_type__ = PlaceholderDocType.CHART
+
+    @classmethod
+    def value(cls):
+        return _create_open_acute_trend_chart_data()
 
     @staticmethod
     def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
