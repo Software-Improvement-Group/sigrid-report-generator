@@ -68,6 +68,47 @@ def star_rating_round(rating) -> str:
     return "N/A" if rating < 0.1 else str(math.floor(rating * 10) / 10)
 
 
+def biggest_changes_summary(change_data, rating_label: str) -> str:
+    """Sentence describing the systems with the largest rating increase and decrease.
+
+    ``change_data`` is a ``RatingsChangePortfolioBase`` (its ``biggest_increase`` /
+    ``biggest_decrease`` each yield a ``(display_name, delta)`` pair or ``None``). ``rating_label``
+    names the rating in the sentence, e.g. ``"security rating"``.
+    """
+    parts = []
+    increase = change_data.biggest_increase
+    if increase:
+        parts.append(
+            f"The largest increase in {rating_label} was experienced by {increase[0]} ({increase[1]} stars)."
+        )
+    decrease = change_data.biggest_decrease
+    if decrease:
+        parts.append(
+            f"The largest decrease in {rating_label} was experienced by {decrease[0]} ({decrease[1]} stars)."
+        )
+    return " ".join(parts)
+
+
+def change_short_summary(change_data, capability: str) -> str:
+    """Short sentence describing the portfolio's weighted-average rating change over the period.
+
+    ``change_data`` is a ``RatingsChangePortfolioBase``. ``capability`` names the capability in the
+    sentence, e.g. ``"security"`` or ``"architecture quality"``. The one-decimal truncation is
+    intentional — it mirrors how Sigrid displays star ratings — so the shown averages go through
+    ``star_rating_round``; the signed delta keeps its own truncation.
+    """
+    start_avg = int(change_data.start_weighted_average * 10) / 10
+    end_avg = int(change_data.end_weighted_average * 10) / 10
+    diff = int((end_avg - start_avg) * 10) / 10
+    end_display = star_rating_round(change_data.end_weighted_average)
+    if abs(diff) < 0.01:
+        return (
+            f"The portfolio remained stable ({end_display}) during the measured period"
+        )
+    direction = "increased" if start_avg < end_avg else "decreased"
+    return f"The portfolio's {capability} has {direction} (with {diff} to {end_display}) during the measured period"
+
+
 def ratio_to_percentage(ratio) -> str:
     if isinstance(ratio, str):
         ratio = float(ratio)

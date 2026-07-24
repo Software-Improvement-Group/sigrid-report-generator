@@ -12,12 +12,13 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from abc import ABC, abstractmethod
 from functools import cached_property
 
 from report_generator.generator.domain.portfolio.shared import utils
 
 
-class RatingsChangePortfolioBase:
+class RatingsChangePortfolioBase(ABC):
     """Per-system change in a portfolio rating between the start and end of the reporting period.
 
     The model-ratings endpoints are point-in-time, so the delta is obtained by requesting the
@@ -31,20 +32,20 @@ class RatingsChangePortfolioBase:
 
     _system_tag: str
 
-    def _extract_rating(self, system) -> float | None:
-        raise NotImplementedError
+    @abstractmethod
+    def _extract_rating(self, system) -> float | None: ...
 
     @property
-    def _start_ratings(self):
-        raise NotImplementedError
+    @abstractmethod
+    def _start_ratings(self): ...
 
     @property
-    def _end_ratings(self):
-        raise NotImplementedError
+    @abstractmethod
+    def _end_ratings(self): ...
 
     @property
-    def metadata(self):
-        raise NotImplementedError
+    @abstractmethod
+    def metadata(self): ...
 
     @staticmethod
     def _delta(start_rating, end_rating) -> float | None:
