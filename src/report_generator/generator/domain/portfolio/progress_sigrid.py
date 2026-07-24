@@ -14,6 +14,7 @@
 
 from enum import Enum
 from functools import cached_property
+from typing import NamedTuple
 
 import numpy as np
 
@@ -25,6 +26,11 @@ class ProgressStatus(Enum):
     MET_AT_START = "MET_AT_START"
     MET_AT_END = "MET_AT_END"
     UNKNOWN = "UNKNOWN"
+
+
+class _StatusCounts(NamedTuple):
+    at_start: float
+    at_end: float
 
 
 class ProgressSigridData:
@@ -80,56 +86,36 @@ class ProgressSigridData:
             )
         return row
 
-    def get_portfolio_percentage(self, evaluations, capability):
-        with_status_at_start = 0
-        with_status_at_end = 0
-        with_status_unknown = 0
-        total = 0
-
+    def _count_statuses(self, evaluations, capability) -> _StatusCounts:
+        at_start = at_end = unknown = total = 0
         for system in evaluations:
-            for objective_evaluation in system["objectives"]:
-                if capability is None or objective_evaluation["feature"] == capability:
-                    if self.determine_system_status(
-                        objective_evaluation, ProgressStatus.MET_AT_START
-                    ):
-                        with_status_at_start += 1
-                    if self.determine_system_status(
-                        objective_evaluation, ProgressStatus.MET_AT_END
-                    ):
-                        with_status_at_end += 1
-                    if self.determine_system_status(
-                        objective_evaluation, ProgressStatus.UNKNOWN
-                    ):
-                        with_status_unknown += 1
+            for obj in system["objectives"]:
+                if capability is None or obj["feature"] == capability:
+                    if self.determine_system_status(obj, ProgressStatus.MET_AT_START):
+                        at_start += 1
+                    if self.determine_system_status(obj, ProgressStatus.MET_AT_END):
+                        at_end += 1
+                    if self.determine_system_status(obj, ProgressStatus.UNKNOWN):
+                        unknown += 1
                     total += 1
-
-        with_status_at_start = (
-            with_status_at_start * 100.0 / (total - with_status_unknown)
-            if (total - with_status_unknown) > 0
-            else 0
-        )
-        with_status_at_end = (
-            with_status_at_end * 100.0 / (total - with_status_unknown)
-            if (total - with_status_unknown) > 0
-            else 0
+        known = total - unknown
+        return _StatusCounts(
+            at_start=at_start * 100.0 / known if known > 0 else 0,
+            at_end=at_end * 100.0 / known if known > 0 else 0,
         )
 
-        if with_status_at_end >= with_status_at_start:
-            improved = np.round(with_status_at_end - with_status_at_start, 0)
-            return [
-                [np.round(with_status_at_start, 0)],
-                [improved],
-                [0.0],
-                [100.0 - with_status_at_start - improved],
-            ]
+    @staticmethod
+    def _build_stacked_result(counts: _StatusCounts) -> list:
+        start, end = counts.at_start, counts.at_end
+        if end >= start:
+            improved = np.round(end - start, 0)
+            return [[np.round(start, 0)], [improved], [0.0], [100.0 - start - improved]]
         else:
-            worsened = np.round(with_status_at_start - with_status_at_end, 0)
-            return [
-                [np.round(with_status_at_end, 0)],
-                [0.0],
-                [worsened],
-                [100.0 - with_status_at_end - worsened],
-            ]
+            worsened = np.round(start - end, 0)
+            return [[np.round(end, 0)], [0.0], [worsened], [100.0 - end - worsened]]
+
+    def get_portfolio_percentage(self, evaluations, capability):
+        return self._build_stacked_result(self._count_statuses(evaluations, capability))
 
     @staticmethod
     def determine_system_status(objective_evaluation, status):

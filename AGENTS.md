@@ -2,6 +2,11 @@
 
 This file provides guidance to AI agents when working with code in this repository.
 
+## Sigrid
+
+customer name = sig
+system name = report-generator
+
 ## Code Principles
 
 Write maintainable code: single responsibility, small focused functions, clear naming, avoid duplication, simple control
