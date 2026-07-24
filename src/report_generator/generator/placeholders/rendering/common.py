@@ -12,7 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 from dataclasses import dataclass
-from typing import Optional, Union
 
 from docx.enum.dml import MSO_THEME_COLOR as MSO_THEME_COLOR_DOCX
 from docx.shared import RGBColor as DocxRGBColor
@@ -33,27 +32,27 @@ from pptx.text.text import (
     _Run as _PptxRun,
 )
 
-CommonParagraph = Union[_PptxParagraph, DocxParagraph]
-CommonRun = Union[_PptxRun, DocxRun]
-CommonFont = Union[PptxFont, DocxFont]
-MSO_THEME_COLOR_COMMON = Union[MSO_THEME_COLOR_PPTX, MSO_THEME_COLOR_DOCX]
-CommonRGBColor = Union[PptxRGBColor, DocxRGBColor]
+CommonParagraph = _PptxParagraph | DocxParagraph
+CommonRun = _PptxRun | DocxRun
+CommonFont = PptxFont | DocxFont
+MSO_THEME_COLOR_COMMON = MSO_THEME_COLOR_PPTX | MSO_THEME_COLOR_DOCX
+CommonRGBColor = PptxRGBColor | DocxRGBColor
 
 
 @dataclass
 class FontColor:
-    rgb: Optional[CommonRGBColor] = None
-    theme_color: Optional[MSO_THEME_COLOR_COMMON] = None
-    brightness: Optional[float] = None
+    rgb: CommonRGBColor | None = None
+    theme_color: MSO_THEME_COLOR_COMMON | None = None
+    brightness: float | None = None
 
 
 @dataclass
 class FontProperties:
-    bold: Optional[bool] = None
-    italic: Optional[bool] = None
-    name: Optional[str] = None
-    size: Optional[int] = None
-    underline: Optional[bool] = None
+    bold: bool | None = None
+    italic: bool | None = None
+    name: str | None = None
+    size: int | None = None
+    underline: bool | None = None
     color: FontColor = None
 
 
@@ -79,7 +78,7 @@ def has_same_formatting(run_a: CommonRun, run_b: CommonRun) -> bool:
     return get_font_properties(run_a) == get_font_properties(run_b)
 
 
-def get_font_properties(run: CommonRun) -> Optional[FontProperties]:
+def get_font_properties(run: CommonRun) -> FontProperties | None:
     font = run.font
 
     if not font:

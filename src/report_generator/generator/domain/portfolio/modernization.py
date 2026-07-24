@@ -16,7 +16,7 @@ import logging
 from dataclasses import dataclass
 from enum import Enum
 from functools import cached_property
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from report_generator.generator.context import sigrid_api
 from report_generator.generator.context.portfolio_filters import (
@@ -140,7 +140,7 @@ class ModernizationData:
 
     def to_modernization_candidate(
         self, system, metadata
-    ) -> Optional[ModernizationCandidate]:
+    ) -> ModernizationCandidate | None:
         volume_in_py = system["volumeInPersonMonths"] / 12.0
 
         try:

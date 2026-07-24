@@ -13,14 +13,13 @@
 #  limitations under the License.
 
 import logging
-from typing import Optional
 
 import requests
 import yaml
 
 TECHNOLOGY_DATA_URL = "https://raw.githubusercontent.com/Software-Improvement-Group/sigridci/main/resources/technologies.yaml"
 _has_attempted_load = False
-_technology_cache: Optional[dict[str, dict[str, str]]] = None
+_technology_cache: dict[str, dict[str, str]] | None = None
 
 
 def _fetch_technologies_yaml() -> list:

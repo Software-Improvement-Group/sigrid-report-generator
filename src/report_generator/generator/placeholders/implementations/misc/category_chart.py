@@ -14,7 +14,7 @@
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Callable
+from collections.abc import Callable
 
 from pptx.chart.data import CategoryChartData
 from pptx.presentation import Presentation
@@ -47,7 +47,7 @@ def _build_chart_data(values: dict) -> CategoryChartData:
             chart_data.add_series(values["axisLabel"], y)
     # Case 2: Exact match between names and series -> map 1:1
     elif len(series_names) == len(series):
-        for name, y in zip(series_names, series):
+        for name, y in zip(series_names, series, strict=True):
             chart_data.add_series(name, y)
     else:
         raise ValueError(

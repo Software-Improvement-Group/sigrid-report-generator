@@ -13,7 +13,7 @@
 #  limitations under the License.
 
 from abc import ABC
-from typing import Callable, Optional, Union
+from collections.abc import Callable
 
 from docx.document import Document
 from pptx.presentation import Presentation
@@ -82,7 +82,7 @@ class _AbstractTextPlaceholder(Placeholder, ABC):
 
 
 def text_placeholder(
-    custom_key: Optional[str] = None,
+    custom_key: str | None = None,
 ) -> Callable[[Callable[[], str]], type[Placeholder]]:
     def decorator(value_func: Callable[[], str]) -> type[Placeholder]:
         class TextPlaceholder(_AbstractTextPlaceholder):
@@ -119,7 +119,7 @@ def _render_colored_delta(
 
 
 def delta_text_placeholder(
-    custom_key: Optional[str] = None,
+    custom_key: str | None = None,
 ) -> Callable[[Callable[[], float]], type[Placeholder]]:
     """Turn a function returning a numeric delta into a text placeholder that renders the signed
     delta (e.g. +0.01, -0.01, =) colored green for an increase, red for a decrease and blue when
@@ -168,7 +168,7 @@ def _render_colored_market_average(
 
 
 def market_average_text_placeholder(
-    custom_key: Optional[str] = None,
+    custom_key: str | None = None,
 ) -> Callable[[Callable[[], float]], type[Placeholder]]:
     """Turn a function returning a star rating into a text placeholder that renders whether the
     score is at market average: 'below' colored red (< 2.5), 'average' colored blue (2.5 - 3.4)
@@ -200,7 +200,7 @@ def market_average_text_placeholder(
 
 
 def parameterized_text_placeholder(
-    custom_key: str, parameters: Union[ParameterList, MultiParameterList]
+    custom_key: str, parameters: ParameterList | MultiParameterList
 ) -> Callable:
     def decorator(value_func) -> type[ParameterizedPlaceholder]:
         class ParameterizedTextPlaceholder(

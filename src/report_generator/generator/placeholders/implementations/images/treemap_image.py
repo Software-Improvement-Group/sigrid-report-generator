@@ -13,8 +13,9 @@
 #  limitations under the License.
 import logging
 from abc import ABC
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, ClassVar
+from typing import ClassVar
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -206,7 +207,7 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
         portfolio_volume = sum(treemap["volumes"])
 
         volume_per_root = dict.fromkeys(root_names, 0)
-        for volume, root in zip(treemap["volumes"], treemap["root_names"]):
+        for volume, root in zip(treemap["volumes"], treemap["root_names"], strict=True):
             volume_per_root[root] += volume
 
         # Keep only entries where the team has at least 1% of total volume
