@@ -252,3 +252,97 @@ class TestArchitecturePortfolioDataChange:
             "Down System",
             -2.0,
         )
+
+
+def _arch_ratings_with_properties(mapping):
+    """Build an architecture-quality payload with per-system property ratings."""
+    return [
+        {"system": name, "ratings": {"systemProperties": properties}}
+        for name, properties in mapping.items()
+    ]
+
+
+class TestArchitecturePortfolioDataPropertyRatings:
+    """Test cases for per-metric (systemProperties) ratings and deltas."""
+
+    def teardown_method(self):
+        reset_context()
+        for attr in ["data", "_start_ratings", "metadata"]:
+            architecture_portfolio_data.__dict__.pop(attr, None)
+
+    @patch(
+        "report_generator.generator.domain.portfolio.architecture_portfolio.sigrid_api"
+    )
+    def test_get_property_rating_returns_metric_value(self, mock_sigrid_api):
+        mock_sigrid_api.get_portfolio_architecture_findings.return_value = (
+            _arch_ratings_with_properties({"system1": {"componentCoupling": 5.08685}})
+        )
+
+        rating = architecture_portfolio_data.get_property_rating(
+            "system1", "componentCoupling"
+        )
+
+        assert rating == pytest.approx(5.08685)
+
+    @patch(
+        "report_generator.generator.domain.portfolio.architecture_portfolio.sigrid_api"
+    )
+    def test_get_property_rating_returns_none_for_unknown_system(self, mock_sigrid_api):
+        mock_sigrid_api.get_portfolio_architecture_findings.return_value = (
+            _arch_ratings_with_properties({"system1": {"componentCoupling": 5.0}})
+        )
+
+        assert (
+            architecture_portfolio_data.get_property_rating(
+                "missing", "componentCoupling"
+            )
+            is None
+        )
+
+    @patch(
+        "report_generator.generator.domain.portfolio.architecture_portfolio.sigrid_api"
+    )
+    def test_get_property_difference_computes_signed_delta(self, mock_sigrid_api):
+        mock_sigrid_api.get_period.return_value = ("2025-01-01", "2025-12-31")
+        mock_sigrid_api.get_portfolio_architecture_findings.side_effect = (
+            TestArchitecturePortfolioDataChange._ratings_by_end_date(
+                {
+                    "2025-01-01": _arch_ratings_with_properties(
+                        {"system1": {"componentCoupling": 2.0}}
+                    ),
+                    "2025-12-31": _arch_ratings_with_properties(
+                        {"system1": {"componentCoupling": 3.5}}
+                    ),
+                }
+            )
+        )
+
+        difference = architecture_portfolio_data.get_property_difference(
+            "system1", "componentCoupling"
+        )
+
+        assert difference == pytest.approx(1.5)
+
+    @patch(
+        "report_generator.generator.domain.portfolio.architecture_portfolio.sigrid_api"
+    )
+    def test_get_property_difference_is_none_when_system_absent_at_start(
+        self, mock_sigrid_api
+    ):
+        mock_sigrid_api.get_period.return_value = ("2025-01-01", "2025-12-31")
+        mock_sigrid_api.get_portfolio_architecture_findings.side_effect = (
+            TestArchitecturePortfolioDataChange._ratings_by_end_date(
+                {
+                    "2025-01-01": _arch_ratings_with_properties({}),
+                    "2025-12-31": _arch_ratings_with_properties(
+                        {"system1": {"componentCoupling": 3.5}}
+                    ),
+                }
+            )
+        )
+
+        difference = architecture_portfolio_data.get_property_difference(
+            "system1", "componentCoupling"
+        )
+
+        assert difference is None

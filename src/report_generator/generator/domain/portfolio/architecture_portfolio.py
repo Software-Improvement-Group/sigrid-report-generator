@@ -84,5 +84,22 @@ class ArchitecturePortfolioData(RatedPortfolioMixin, RatingsChangePortfolioBase)
             system, self._extract_rating, "system"
         )
 
+    @staticmethod
+    def _extract_property_rating(system, metric_key):
+        if system is None:
+            return None
+        return system.get("ratings", {}).get("systemProperties", {}).get(metric_key)
+
+    def get_property_rating(self, system_name, metric_key):
+        return self._extract_property_rating(self.get_system(system_name), metric_key)
+
+    def get_property_difference(self, system_name, metric_key):
+        start = utils.get_system_helper(system_name, self._start_ratings, "system")
+        end = utils.get_system_helper(system_name, self._end_ratings, "system")
+        return self._delta(
+            self._extract_property_rating(start, metric_key),
+            self._extract_property_rating(end, metric_key),
+        )
+
 
 architecture_portfolio_data = ArchitecturePortfolioData()

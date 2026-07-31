@@ -142,7 +142,10 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
         "main_technology": _process_main_technology_grouping.__func__,
     }
 
-    allowed_parameters: ClassVar[list] = [x.upper() for x in grouping_processors.keys()]
+    GROUPING_PARAMETERS: ClassVar[list] = [
+        x.upper() for x in grouping_processors.keys()
+    ]
+    allowed_parameters: ClassVar[list] = GROUPING_PARAMETERS
 
     @classmethod
     def _create_blank_portfolio_and_treemap(cls, grouping) -> tuple[dict, dict]:

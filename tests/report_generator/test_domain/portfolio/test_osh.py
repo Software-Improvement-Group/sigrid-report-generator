@@ -153,6 +153,39 @@ class TestOSHPortfolioData:
         assert "system2" in names
         assert "system3" in names
 
+    @patch("report_generator.generator.domain.portfolio.osh_portfolio.sigrid_api")
+    def test_get_property_rating_returns_metric_value(self, mock_sigrid_api):
+        mock_sigrid_api.get_portfolio_osh_findings.return_value = {
+            "systems": [
+                {
+                    "systemName": "system1",
+                    "sbom": {
+                        "metadata": {
+                            "properties": [
+                                {"name": "sigrid:ratings:vulnerability", "value": "3.2"}
+                            ]
+                        }
+                    },
+                }
+            ]
+        }
+        osh_portfolio_data.__dict__.pop("raw_data", None)
+
+        rating = osh_portfolio_data.get_property_rating("system1", "vulnerability")
+
+        assert rating == pytest.approx(3.2)
+
+    @patch("report_generator.generator.domain.portfolio.osh_portfolio.sigrid_api")
+    def test_get_property_rating_returns_none_for_unknown_system(self, mock_sigrid_api):
+        mock_sigrid_api.get_portfolio_osh_findings.return_value = {
+            "systems": [{"systemName": "system1", "sbom": {}}]
+        }
+        osh_portfolio_data.__dict__.pop("raw_data", None)
+
+        assert (
+            osh_portfolio_data.get_property_rating("missing", "vulnerability") is None
+        )
+
 
 class _StubOSHMetrics:
     """Stub implementations of OSHMetricsBase abstract methods for testing."""

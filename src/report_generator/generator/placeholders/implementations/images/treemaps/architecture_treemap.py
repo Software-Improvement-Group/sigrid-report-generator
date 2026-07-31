@@ -17,11 +17,15 @@ from report_generator.generator.domain import (
 )
 from report_generator.generator.placeholders import rendering
 from report_generator.generator.placeholders.formatting import formatters
+from report_generator.generator.placeholders.implementations.base import (
+    MultiParameterList,
+)
 from report_generator.generator.placeholders.implementations.images.treemaps.treemap_base import (
     EndDatePortfolioTreemapPlaceholder,
     PeriodPortfolioTreemapPlaceholder,
     _PeriodChangeStyle,
 )
+from report_generator.generator.utils.constants import ArchMetric
 
 
 class ArchitecturePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
@@ -58,6 +62,61 @@ class ArchitectureRatingsChangePortfolioTreemapPlaceholder(
         return cls.create_period_portfolio_treemap_from_differences(
             grouping=parameter.lower(),
             difference_provider=architecture_portfolio_data.get_difference,
+            style=_PeriodChangeStyle(
+                rendering.pptx.RATING_POS_CHANGE_RANGE_COLORS,
+                rendering.pptx.RATING_NEG_CHANGE_RANGE_COLORS,
+            ),
+        )
+
+
+class ArchitectureMetricPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
+    """Creates a portfolio treemap where the color is determined by the rating of a
+    single architecture metric (e.g. component coupling) of the individual systems."""
+
+    key = "PORTFOLIO_PERIOD_ARCH_{parameter}_GROUPED_BY_{parameter}"
+    allowed_parameters = MultiParameterList(
+        ArchMetric, EndDatePortfolioTreemapPlaceholder.GROUPING_PARAMETERS
+    )
+
+    @classmethod
+    def value(cls, metric, grouping):
+        metric_key = metric.to_json_name()
+
+        def f(t):
+            return architecture_portfolio_data.get_property_rating(t, metric_key)
+
+        return cls.create_end_date_portfolio_treemap(
+            grouping=grouping.lower(),
+            rating_func=f,
+            rating_rounding_func=formatters.star_rating_round,
+            determine_color_function=cls.determine_rating_color,
+        )
+
+
+class ArchitectureMetricChangePortfolioTreemapPlaceholder(
+    PeriodPortfolioTreemapPlaceholder
+):
+    """Creates a portfolio treemap where the color is determined by the change in the
+    rating of a single architecture metric (e.g. component coupling) of the
+    individual systems during the specified period."""
+
+    key = "PORTFOLIO_PERIOD_ARCH_{parameter}_RATINGS_CHANGE_GROUPED_BY_{parameter}"
+    allowed_parameters = MultiParameterList(
+        ArchMetric, PeriodPortfolioTreemapPlaceholder.GROUPING_PARAMETERS
+    )
+
+    @classmethod
+    def value(cls, metric, grouping):
+        metric_key = metric.to_json_name()
+
+        def difference_provider(system_name):
+            return architecture_portfolio_data.get_property_difference(
+                system_name, metric_key
+            )
+
+        return cls.create_period_portfolio_treemap_from_differences(
+            grouping=grouping.lower(),
+            difference_provider=difference_provider,
             style=_PeriodChangeStyle(
                 rendering.pptx.RATING_POS_CHANGE_RANGE_COLORS,
                 rendering.pptx.RATING_NEG_CHANGE_RANGE_COLORS,

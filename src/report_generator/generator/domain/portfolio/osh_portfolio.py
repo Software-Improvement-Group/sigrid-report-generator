@@ -289,6 +289,10 @@ class OSHRatingsPortfolioData(RatedPortfolioMixin, OSHMetricsBase):
                     pass
         return None
 
+    def get_property_rating(self, system_name, metric_key):
+        system = self.get_system(system_name)
+        return self._extract_osh_rating(system, metric_key) if system else None
+
     def _rated_systems(self):
         return self.raw_data.get("systems", [])
 

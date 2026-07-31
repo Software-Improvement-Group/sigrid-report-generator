@@ -14,11 +14,15 @@
 
 from report_generator.generator.placeholders import rendering
 from report_generator.generator.placeholders.formatting import formatters
+from report_generator.generator.placeholders.implementations.base import (
+    MultiParameterList,
+)
 from report_generator.generator.placeholders.implementations.images.treemaps.treemap_base import (
     EndDatePortfolioTreemapPlaceholder,
     PeriodPortfolioTreemapPlaceholder,
     _PeriodChangeStyle,
 )
+from report_generator.generator.utils.constants import MaintMetric
 
 
 class MaintainabilityPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
@@ -57,6 +61,57 @@ class MaintainabilityChangePortfolioTreemapPlaceholder(
         return cls.create_period_portfolio_treemap(
             grouping=parameter.lower(),
             metric="maintainability",
+            style=_PeriodChangeStyle(
+                rendering.pptx.RATING_POS_CHANGE_RANGE_COLORS,
+                rendering.pptx.RATING_NEG_CHANGE_RANGE_COLORS,
+            ),
+        )
+
+
+class MaintainabilityMetricPortfolioTreemapPlaceholder(
+    EndDatePortfolioTreemapPlaceholder
+):
+    """Creates a portfolio treemap where the color is determined by the rating of a
+    single maintainability metric (e.g. duplication) of the individual systems."""
+
+    key = "PORTFOLIO_PERIOD_MAINT_{parameter}_GROUPED_BY_{parameter}"
+    allowed_parameters = MultiParameterList(
+        MaintMetric, EndDatePortfolioTreemapPlaceholder.GROUPING_PARAMETERS
+    )
+
+    @classmethod
+    def value(cls, metric, grouping):
+        portfolio = cls.create_portfolio()
+        metric_key = metric.to_json_name()
+
+        def f(t):
+            return portfolio.get(t, {}).get("end_date_data", {}).get(metric_key)
+
+        return cls.create_end_date_portfolio_treemap(
+            grouping=grouping.lower(),
+            rating_func=f,
+            rating_rounding_func=formatters.star_rating_round,
+            determine_color_function=cls.determine_rating_color,
+        )
+
+
+class MaintainabilityMetricChangePortfolioTreemapPlaceholder(
+    PeriodPortfolioTreemapPlaceholder
+):
+    """Creates a portfolio treemap where the color is determined by the change in the
+    rating of a single maintainability metric (e.g. duplication) of the individual
+    systems during the specified period."""
+
+    key = "PORTFOLIO_PERIOD_MAINT_{parameter}_CHANGE_GROUPED_BY_{parameter}"
+    allowed_parameters = MultiParameterList(
+        MaintMetric, PeriodPortfolioTreemapPlaceholder.GROUPING_PARAMETERS
+    )
+
+    @classmethod
+    def value(cls, metric, grouping):
+        return cls.create_period_portfolio_treemap(
+            grouping=grouping.lower(),
+            metric=metric.to_json_name(),
             style=_PeriodChangeStyle(
                 rendering.pptx.RATING_POS_CHANGE_RANGE_COLORS,
                 rendering.pptx.RATING_NEG_CHANGE_RANGE_COLORS,
