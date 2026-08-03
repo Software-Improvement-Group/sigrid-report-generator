@@ -22,6 +22,7 @@ from pptx import Presentation
 from report_generator.generator.placeholders.implementations import placeholders
 from report_generator.generator.placeholders.implementations.base import (
     PARAMETER_TOKEN_PATTERN,
+    MultiParameterList,
     PlaceholderDocType,
 )
 from report_generator.generator.report import Report, ReportType
@@ -97,11 +98,20 @@ class TestPlaceholders:
                 with patch.object(placeholder_cls, "value", return_value=dummy_value):
                     # Handle parameterized placeholders
                     if placeholder_cls.is_parameterized():
-                        # Collect expected keys for all parameters
-                        for param in placeholder_cls.allowed_parameters:
-                            key = PARAMETER_TOKEN_PATTERN.sub(
-                                str(param), placeholder_cls.key, count=1
-                            )
+                        # Collect expected keys for all parameters. MultiParameterList
+                        # expands to the cartesian product, substituting one token per
+                        # parameter; a plain list substitutes its single token.
+                        allowed = placeholder_cls.allowed_parameters
+                        if isinstance(allowed, MultiParameterList):
+                            param_tuples = allowed.product()
+                        else:
+                            param_tuples = ((param,) for param in allowed)
+                        for param_tuple in param_tuples:
+                            key = placeholder_cls.key
+                            for param in param_tuple:
+                                key = PARAMETER_TOKEN_PATTERN.sub(
+                                    str(param), key, count=1
+                                )
                             expected_log_entries.add(key)
 
                         # Resolve once per report type; ParameterizedPlaceholder.resolve

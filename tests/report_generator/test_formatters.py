@@ -45,6 +45,23 @@ class TestFormatter:
         assert formatters.format_diff(1.0, 1.2) == "+ 0.2"
         assert formatters.format_diff(1.2, 1.0) == "- 0.2"
 
+    def test_normalize_percentages(self):
+        # Values already summing to 100 are unchanged.
+        assert formatters.normalize_percentages([25.0, 25.0, 50.0]) == [
+            25.0,
+            25.0,
+            50.0,
+        ]
+
+    def test_normalize_percentages_rescales_to_100(self):
+        result = formatters.normalize_percentages([70.0, 17.0, 6.0, 10.0])
+        assert abs(sum(result) - 100.0) < 1e-9
+        # Proportions are preserved.
+        assert abs(result[0] / result[1] - 70.0 / 17.0) < 1e-9
+
+    def test_normalize_percentages_all_zero(self):
+        assert formatters.normalize_percentages([0.0, 0.0, 0.0]) == [0.0, 0.0, 0.0]
+
     def test_build_sigrid_link(self):
         assert (
             formatters.build_sigrid_link("acme", "my-system", "security")
