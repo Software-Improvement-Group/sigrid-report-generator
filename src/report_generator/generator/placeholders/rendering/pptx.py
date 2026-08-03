@@ -16,7 +16,6 @@ import logging
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Union
 
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE_TYPE
@@ -29,6 +28,8 @@ from pptx.table import Table, _Row
 # noinspection PyProtectedMember
 from pptx.text.text import _Paragraph, _Run
 from pptx.util import Inches
+
+from report_generator.generator.utils.constants.sentiment import Sentiment
 
 from .common import (
     FontProperties,
@@ -54,8 +55,8 @@ FIVE_STAR_COLOR = RGBColor(0x3C, 0x88, 0x42)
 SIG_BLUE_COLOR = RGBColor(0x24, 0x35, 0x49)
 SIG_GREY_COLOR = RGBColor(0xDF, 0xE2, 0xE7)
 
-MAINTAINABILITY_POS_CHANGE_RANGE_COLORS = [RGBColor(0xD9, 0xEE, 0xDD), FIVE_STAR_COLOR]
-MAINTAINABILITY_NEG_CHANGE_RANGE_COLORS = [RGBColor(0xF3, 0xDD, 0xD7), ONE_STAR_COLOR]
+RATING_POS_CHANGE_RANGE_COLORS = [RGBColor(0xD9, 0xEE, 0xDD), FIVE_STAR_COLOR]
+RATING_NEG_CHANGE_RANGE_COLORS = [RGBColor(0xF3, 0xDD, 0xD7), ONE_STAR_COLOR]
 
 VOLUME_POS_CHANGE_RANGE_COLORS = [
     RGBColor(0xEB, 0xF3, 0xF5),
@@ -273,6 +274,17 @@ def determine_rating_color(rating):
         return FIVE_STAR_COLOR
 
 
+SENTIMENT_COLORS = {
+    Sentiment.NEGATIVE: ONE_STAR_COLOR,  # red
+    Sentiment.NEUTRAL: SIG_BLUE_COLOR,  # blue
+    Sentiment.POSITIVE: FIVE_STAR_COLOR,  # green
+}
+
+
+def sentiment_color(sentiment: Sentiment) -> RGBColor:
+    return SENTIMENT_COLORS[sentiment]
+
+
 def test_code_ratio_color(ratio):
     if ratio <= 0.01:
         return ONE_STAR_COLOR
@@ -335,7 +347,7 @@ def remove_rows_from_table(table: Table, row_numbers: Iterable[int]):
         remove_row_from_table(table, row)
 
 
-def update_table(table: Table, value: list[list[Union[str, int, float, Hyperlink]]]):
+def update_table(table: Table, value: list[list[str | int | float | Hyperlink]]):
     """
     Fills a PowerPoint table with provided values. Copies formatting from existing cells and applies it to all later cells in that column.
     """
@@ -366,7 +378,7 @@ def _apply_hyperlink(run: _Run, hyperlink: Hyperlink) -> None:
 
 def replace_paragraph_with_text(
     paragraph: _Paragraph,
-    text: Union[str, int, float, Hyperlink],
+    text: str | int | float | Hyperlink,
     font: FontProperties = None,
 ):
     paragraph.clear()

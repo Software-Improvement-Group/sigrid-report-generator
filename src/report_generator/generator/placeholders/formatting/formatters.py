@@ -16,6 +16,7 @@ import logging
 import math
 import re
 
+from report_generator.generator.utils.constants.sentiment import Sentiment
 from report_generator.generator.utils.star_rating import calculate_star_rating_integer
 
 _USE_SIG_STERREN = False
@@ -79,6 +80,47 @@ def normalize_percentages(values: list[float]) -> list[float]:
     return [value / total * 100 for value in values]
 
 
+def biggest_changes_summary(change_data, rating_label: str) -> str:
+    """Sentence describing the systems with the largest rating increase and decrease.
+
+    ``change_data`` is a ``RatingsChangePortfolioBase`` (its ``biggest_increase`` /
+    ``biggest_decrease`` each yield a ``(display_name, delta)`` pair or ``None``). ``rating_label``
+    names the rating in the sentence, e.g. ``"security rating"``.
+    """
+    parts = []
+    increase = change_data.biggest_increase
+    if increase:
+        parts.append(
+            f"The largest increase in {rating_label} was experienced by {increase[0]} ({increase[1]} stars)."
+        )
+    decrease = change_data.biggest_decrease
+    if decrease:
+        parts.append(
+            f"The largest decrease in {rating_label} was experienced by {decrease[0]} ({decrease[1]} stars)."
+        )
+    return " ".join(parts)
+
+
+def change_short_summary(change_data, capability: str) -> str:
+    """Short sentence describing the portfolio's weighted-average rating change over the period.
+
+    ``change_data`` is a ``RatingsChangePortfolioBase``. ``capability`` names the capability in the
+    sentence, e.g. ``"security"`` or ``"architecture quality"``. The one-decimal truncation is
+    intentional — it mirrors how Sigrid displays star ratings — so the shown averages go through
+    ``star_rating_round``; the signed delta keeps its own truncation.
+    """
+    start_avg = int(change_data.start_weighted_average * 10) / 10
+    end_avg = int(change_data.end_weighted_average * 10) / 10
+    diff = int((end_avg - start_avg) * 10) / 10
+    end_display = star_rating_round(change_data.end_weighted_average)
+    if abs(diff) < 0.01:
+        return (
+            f"The portfolio remained stable ({end_display}) during the measured period"
+        )
+    direction = "increased" if start_avg < end_avg else "decreased"
+    return f"The portfolio's {capability} has {direction} (with {diff} to {end_display}) during the measured period"
+
+
 def ratio_to_percentage(ratio) -> str:
     if isinstance(ratio, str):
         ratio = float(ratio)
@@ -97,6 +139,46 @@ def format_diff(old_rating: float, new_rating: float) -> str:
         return f"- {abs(diff):.1f}"
     else:
         return "="
+
+
+def sentiment_for_range(value: float, neutral_range: tuple[float, float]) -> Sentiment:
+    """Classify a value relative to a neutral range: negative below the range,
+    positive at/above its upper bound, neutral within the [low, high) band."""
+    low, high = neutral_range
+    if value < low:
+        return Sentiment.NEGATIVE
+    if value >= high:
+        return Sentiment.POSITIVE
+    return Sentiment.NEUTRAL
+
+
+def delta_sentiment(delta: float) -> Sentiment:
+    # Deltas round to 2 decimals; >= 0.01 is an increase, <= -0.01 a decrease.
+    return sentiment_for_range(round(delta, 2), (0, 0.01))
+
+
+def market_average_sentiment(score: float) -> Sentiment:
+    return sentiment_for_range(score, (2.5, 3.5))
+
+
+def format_signed_delta(delta: float) -> str:
+    rounded = round(delta, 2)
+    sentiment = delta_sentiment(delta)
+    if sentiment == Sentiment.POSITIVE:
+        return f"+{rounded:.2f}"
+    if sentiment == Sentiment.NEGATIVE:
+        return f"-{abs(rounded):.2f}"
+    return "="
+
+
+def format_market_average(score: float) -> str:
+    """Return whether a star rating is below, at, or above market average as
+    'below' (< 2.5), 'average' (2.5 - 3.4) or 'above' (>= 3.5)."""
+    return {
+        Sentiment.NEGATIVE: "below",
+        Sentiment.NEUTRAL: "average",
+        Sentiment.POSITIVE: "above",
+    }[market_average_sentiment(score)]
 
 
 def from_json_name(json_name: str) -> str:

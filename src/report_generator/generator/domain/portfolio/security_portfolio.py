@@ -15,9 +15,22 @@
 from report_generator.generator.domain.portfolio.shared.findings_portfolio_base import (
     FindingsRatingsPortfolioBase,
 )
+from report_generator.generator.domain.portfolio.shared.ratings_change_base import (
+    RatingsChangePortfolioBase,
+)
 
 
-class SecurityRatingsPortfolioData(FindingsRatingsPortfolioBase):
+class SecurityRatingsPortfolioData(
+    FindingsRatingsPortfolioBase, RatingsChangePortfolioBase
+):
+    """Portfolio security ratings, both as-of the end of the reporting period (current state)
+    and the per-system change over the period.
+
+    The security ``model-ratings`` endpoint is point-in-time, so the change is obtained by also
+    requesting the ratings at the start of the period (via the ``endDate`` parameter) and
+    subtracting from the end-of-period ratings (``data``).
+    """
+
     _objective_type = "SECURITY_MAX_SEVERITY"
     _portfolio_ratings_api_method = "get_portfolio_security_ratings"
     _findings_api_method = "get_security_findings"

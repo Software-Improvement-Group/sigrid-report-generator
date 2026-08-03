@@ -14,7 +14,6 @@
 
 import logging
 from functools import cache, wraps
-from typing import Optional
 
 import requests
 
@@ -40,7 +39,7 @@ class SigridAPIRequestFailedError(Exception):
 
 
 class SigridAccessDeniedError(Exception):
-    def __init__(self, url: str, customer: str, system: Optional[str]):
+    def __init__(self, url: str, customer: str, system: str | None):
         system_part = f"/{system}" if system else ""
         sigrid_url = f"https://sigrid-says.com/{customer}{system_part}"
         message = "\n".join(
@@ -275,8 +274,9 @@ def get_security_ratings(system):
 
 
 @_sigrid_api_request()
-def get_portfolio_security_ratings():
-    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/model-ratings/{config._customer}?feature=SECURITY"
+def get_portfolio_security_ratings(end_date=None):
+    argument = f"&endDate={end_date}" if end_date else ""
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/model-ratings/{config._customer}?feature=SECURITY{argument}"
     return _make_request(endpoint)
 
 
@@ -287,8 +287,9 @@ def get_reliability_ratings(system):
 
 
 @_sigrid_api_request()
-def get_portfolio_reliability_ratings():
-    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/model-ratings/{config._customer}?feature=RELIABILITY"
+def get_portfolio_reliability_ratings(end_date=None):
+    argument = f"&endDate={end_date}" if end_date else ""
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/model-ratings/{config._customer}?feature=RELIABILITY{argument}"
     return _make_request(endpoint)
 
 
@@ -299,10 +300,9 @@ def get_architecture_findings(system):
 
 
 @_sigrid_api_request()
-def get_portfolio_architecture_findings():
-    endpoint = (
-        f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/architecture-quality/{config._customer}"
-    )
+def get_portfolio_architecture_findings(end_date=None):
+    argument = f"?endDate={end_date}" if end_date else ""
+    endpoint = f"{BASE_ANALYSIS_RESULTS_ENDPOINT}/architecture-quality/{config._customer}{argument}"
     return _make_request(endpoint)
 
 
@@ -323,8 +323,8 @@ def get_maintainability_delta_quality(system, delta_type="NEW_AND_CHANGED_CODE")
 def get_maintainability_refactoring_candidates(
     system,
     system_property: MaintMetric,
-    technology: Optional[str] = None,
-    count: Optional[int] = None,
+    technology: str | None = None,
+    count: int | None = None,
 ):
     property_name = system_property.to_json_name()
 

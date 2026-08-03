@@ -15,9 +15,8 @@
 from datetime import datetime
 from functools import cached_property
 
-from dateutil import parser
-
 from report_generator.generator.context import sigrid_api
+from report_generator.generator.utils.time_series import parse_iso_datetime
 
 
 class SigridHygienePortfolioData:
@@ -86,7 +85,8 @@ class SigridHygienePortfolioData:
             if system_architecture["system"] in active_systems:
                 if "snapshotDate" in system_architecture:
                     freshness = (
-                        time_now - parser.isoparse(system_architecture["snapshotDate"])
+                        time_now
+                        - parse_iso_datetime(system_architecture["snapshotDate"])
                     ).days
                     dict_freshness_days[system_architecture["system"]] = freshness
 
@@ -123,7 +123,7 @@ class SigridHygienePortfolioData:
         time_now = datetime.now()
 
         list_freshness_days = [
-            (time_now - parser.isoparse(user["lastLoginAt"])).days
+            (time_now - parse_iso_datetime(user["lastLoginAt"])).days
             for user in users
             if user["lastLoginAt"] is not None and user["role"] == role
         ]

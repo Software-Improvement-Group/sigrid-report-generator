@@ -13,26 +13,25 @@
 #  limitations under the License.
 import logging
 from abc import ABC
-from typing import Callable, ClassVar
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import ClassVar
 
 import matplotlib.pyplot as plt
 import pandas as pd
 
 from report_generator.generator.domain import (
-    architecture_portfolio_data,
-    maintainability_delta_quality_changed_code,
-    maintainability_delta_quality_new_and_changed_code,
-    maintainability_delta_quality_new_code,
     maintainability_portfolio_data,
-    osh_portfolio_data,
-    security_ratings_portfolio_data,
 )
 from report_generator.generator.placeholders import rendering
 from report_generator.generator.placeholders.formatting import formatters
+from report_generator.generator.placeholders.formatting.technologies import (
+    get_technology_name,
+)
 from report_generator.generator.placeholders.implementations.images.base import (
     _AbstractParameterizedImagePlaceholder,
 )
-from report_generator.generator.placeholders.implementations.images.utils import (
+from report_generator.generator.placeholders.implementations.images.treemaps.utils import (
     treemap as tr,
 )
 from report_generator.generator.utils.constants.metadata import (
@@ -129,11 +128,18 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
             return METADATA_DEPLOYMENT_MAPPING[metadata["deploymentType"]]
         return "Unset"
 
+    @staticmethod
+    def _process_main_technology_grouping(metadata):
+        if metadata["mainTechnology"]:
+            return get_technology_name(metadata["mainTechnology"])
+        return "Unset"
+
     grouping_processors: ClassVar[dict] = {
         "team": _process_team_grouping.__func__,
         "lifecycle": _process_lifecycle_grouping.__func__,
         "business_criticality": _process_business_criticality_grouping.__func__,
         "deployment": _process_deployment_grouping.__func__,
+        "main_technology": _process_main_technology_grouping.__func__,
     }
 
     allowed_parameters: ClassVar[list] = [x.upper() for x in grouping_processors.keys()]
@@ -194,7 +200,7 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
         portfolio_volume = sum(treemap["volumes"])
 
         volume_per_root = dict.fromkeys(root_names, 0)
-        for volume, root in zip(treemap["volumes"], treemap["root_names"]):
+        for volume, root in zip(treemap["volumes"], treemap["root_names"], strict=True):
             volume_per_root[root] += volume
 
         # Keep only entries where the team has at least 1% of total volume
@@ -305,6 +311,15 @@ class EndDatePortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder, A
         return cls.create_treemap_figure_data(treemap)
 
 
+@dataclass(frozen=True)
+class _PeriodChangeStyle:
+    """Colour ranges and label formatting for a period-change treemap."""
+
+    positive_color_range: list
+    negative_color_range: list
+    is_percentage: bool = False
+
+
 class PeriodPortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder, ABC):
     @staticmethod
     def _calculate_differences(portfolio, metric, system_names):
@@ -366,18 +381,14 @@ class PeriodPortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder, AB
         return "N/A"
 
     @classmethod
-    def create_period_portfolio_treemap(
-        cls,
-        grouping,
-        metric,
-        positive_color_range,
-        negative_color_range,
-        is_percentage=False,
-    ):
-        portfolio, treemap = cls.prepare_portfolio_and_treemap(grouping)
-        differences = cls._calculate_differences(
-            portfolio, metric, treemap["system_names"]
-        )
+    def _annotate_difference_labels(cls, treemap, differences, is_percentage):
+        for idx, system_name in enumerate(treemap["system_names"]):
+            treemap["display_names"][idx] = (
+                f"{treemap['display_names'][idx].strip()}\n{cls._get_and_format_difference(differences, system_name, is_percentage)}"
+            )
+
+    @classmethod
+    def _build_period_treemap(cls, treemap, differences, style):
         processed_vals = [x for x in differences.values() if x is not None]
         if len(processed_vals) == 0:
             return None
@@ -385,259 +396,28 @@ class PeriodPortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder, AB
             differences,
             min(processed_vals),
             max(processed_vals),
-            positive_color_range,
-            negative_color_range,
+            style.positive_color_range,
+            style.negative_color_range,
             treemap["system_names"],
         )
-        for system_name in treemap["system_names"]:
-            idx = treemap["system_names"].index(system_name)
-            treemap["display_names"][idx] = (
-                f"{treemap['display_names'][idx].strip()}\n{cls._get_and_format_difference(differences, system_name, is_percentage)}"
-            )
+        cls._annotate_difference_labels(treemap, differences, style.is_percentage)
         return cls.create_treemap_figure_data(treemap)
 
-
-class MaintainabilityPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
-    """Creates a portfolio treemap where the color is determined by the maintainability rating of the individual systems."""
-
-    key = "PORTFOLIO_PERIOD_MAINTAINABILITY_GROUPED_BY_{parameter}"
+    @classmethod
+    def create_period_portfolio_treemap(cls, grouping, metric, style):
+        portfolio, treemap = cls.prepare_portfolio_and_treemap(grouping)
+        differences = cls._calculate_differences(
+            portfolio, metric, treemap["system_names"]
+        )
+        return cls._build_period_treemap(treemap, differences, style)
 
     @classmethod
-    def value(cls, parameter):
-        portfolio = cls.create_portfolio()
-
-        def f(t):
-            return (
-                portfolio.get(t, {})
-                .get("end_date_data", {})
-                .get("maintainability", None)
-            )
-
-        return cls.create_end_date_portfolio_treemap(
-            grouping=parameter.lower(),
-            rating_func=f,
-            rating_rounding_func=formatters.star_rating_round,
-            determine_color_function=cls.determine_rating_color,
-        )
-
-
-class MaintainabilityChangePortfolioTreemapPlaceholder(
-    PeriodPortfolioTreemapPlaceholder
-):
-    """Creates a portfolio treemap where the color is determined by the change in maintainability rating of the individual systems during the specified period."""
-
-    key = "PORTFOLIO_PERIOD_MAINTAINABILITY_CHANGE_GROUPED_BY_{parameter}"
-
-    @classmethod
-    def value(cls, parameter):
-        return cls.create_period_portfolio_treemap(
-            grouping=parameter.lower(),
-            metric="maintainability",
-            positive_color_range=rendering.pptx.MAINTAINABILITY_POS_CHANGE_RANGE_COLORS,
-            negative_color_range=rendering.pptx.MAINTAINABILITY_NEG_CHANGE_RANGE_COLORS,
-        )
-
-
-class VolumeChangePortfolioTreemapPlaceholder(PeriodPortfolioTreemapPlaceholder):
-    """Creates a portfolio treemap where the color is determined by the change in volume change (effort) of the individual systems during the specified period."""
-
-    key = "PORTFOLIO_PERIOD_VOLUME_CHANGE_GROUPED_BY_{parameter}"
-
-    @classmethod
-    def value(cls, parameter):
-        return cls.create_period_portfolio_treemap(
-            grouping=parameter.lower(),
-            metric="volumeInPersonMonths",
-            positive_color_range=rendering.pptx.VOLUME_POS_CHANGE_RANGE_COLORS,
-            negative_color_range=rendering.pptx.VOLUME_NEG_CHANGE_RANGE_COLORS,
-        )
-
-
-class TestCodePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
-    """Creates a portfolio treemap where the color is determined by the test-to-production code ratio of the individual systems."""
-
-    key = "PORTFOLIO_PERIOD_TEST_CODE_GROUPED_BY_{parameter}"
-
-    @classmethod
-    def value(cls, parameter):
-        portfolio = cls.create_portfolio()
-
-        def f(t):
-            return portfolio[t]["end_date_data"]["testCodeRatio"]
-
-        return cls.create_end_date_portfolio_treemap(
-            grouping=parameter.lower(),
-            rating_func=f,
-            rating_rounding_func=formatters.ratio_to_percentage,
-            determine_color_function=cls.test_code_ratio_color,
-        )
-
-
-class TestCodeChangePortfolioTreemapPlaceholder(PeriodPortfolioTreemapPlaceholder):
-    """Creates a portfolio treemap where the color is determined by the change in test code volume change (%) of the individual systems during the specified period."""
-
-    key = "PORTFOLIO_PERIOD_TEST_CODE_CHANGE_GROUPED_BY_{parameter}"
-
-    @classmethod
-    def value(cls, parameter):
-        return cls.create_period_portfolio_treemap(
-            grouping=parameter.lower(),
-            metric="testCodeRatio",
-            positive_color_range=rendering.pptx.MAINTAINABILITY_POS_CHANGE_RANGE_COLORS,
-            negative_color_range=rendering.pptx.MAINTAINABILITY_NEG_CHANGE_RANGE_COLORS,
-            is_percentage=True,
-        )
-
-
-class SecurityRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
-    """Creates a portfolio treemap where the color is determined by the security rating of the individual systems."""
-
-    key = "PORTFOLIO_PERIOD_SECURITY_RATINGS_GROUPED_BY_{parameter}"
-
-    @classmethod
-    def value(cls, parameter):
-        def f(t):
-            return (
-                security_ratings_portfolio_data.get_system(t)["rating"]
-                if security_ratings_portfolio_data.get_system(t)
-                else 0
-            )
-
-        return cls.create_end_date_portfolio_treemap(
-            grouping=parameter.lower(),
-            rating_func=f,
-            rating_rounding_func=formatters.star_rating_round,
-            determine_color_function=cls.determine_rating_color,
-        )
-
-
-class ArchitecturePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
-    """Creates a portfolio treemap where the color is determined by the architecture quality rating of the individual systems."""
-
-    key = "PORTFOLIO_PERIOD_ARCHITECTURE_GROUPED_BY_{parameter}"
-
-    @classmethod
-    def value(cls, parameter):
-        def f(t):
-            return (
-                architecture_portfolio_data.get_system(t)["ratings"]["architecture"]
-                if architecture_portfolio_data.get_system(t)
-                else 0
-            )
-
-        return cls.create_end_date_portfolio_treemap(
-            grouping=parameter.lower(),
-            rating_func=f,
-            rating_rounding_func=formatters.star_rating_round,
-            determine_color_function=cls.determine_rating_color,
-        )
-
-
-class MaintainabilityDeltaQualityNewCodePortfolioTreemapPlaceholder(
-    EndDatePortfolioTreemapPlaceholder
-):
-    """Creates a portfolio treemap where the color is determined by the delta quality of maintainability rating (new code) of the individual systems."""
-
-    key = (
-        "PORTFOLIO_PERIOD_MAINTAINABILITY_DELTA_QUALITY_NEW_CODE_GROUPED_BY_{parameter}"
-    )
-
-    @classmethod
-    def value(cls, parameter):
-        def f(t):
-            return (
-                maintainability_delta_quality_new_code.data[t]["filesRatingAtEnd"]
-                if maintainability_delta_quality_new_code.data[t]
-                and maintainability_delta_quality_new_code.data[t]["filesRatingAtEnd"]
-                else 0
-            )
-
-        return cls.create_end_date_portfolio_treemap(
-            grouping=parameter.lower(),
-            rating_func=f,
-            rating_rounding_func=formatters.star_rating_round,
-            determine_color_function=cls.determine_rating_color,
-        )
-
-
-class MaintainabilityDeltaQualityChangedCodePortfolioTreemapPlaceholder(
-    EndDatePortfolioTreemapPlaceholder
-):
-    """Creates a portfolio treemap where the color is determined by the delta quality of maintainability rating (changed code) of the individual systems."""
-
-    key = "PORTFOLIO_PERIOD_MAINTAINABILITY_DELTA_QUALITY_CHANGED_CODE_GROUPED_BY_{parameter}"
-
-    @classmethod
-    def value(cls, parameter):
-        def f(t):
-            return (
-                maintainability_delta_quality_changed_code.data[t]["filesRatingAtEnd"]
-                if maintainability_delta_quality_changed_code.data[t]
-                and maintainability_delta_quality_changed_code.data[t][
-                    "filesRatingAtEnd"
-                ]
-                else 0
-            )
-
-        return cls.create_end_date_portfolio_treemap(
-            grouping=parameter.lower(),
-            rating_func=f,
-            rating_rounding_func=formatters.star_rating_round,
-            determine_color_function=cls.determine_rating_color,
-        )
-
-
-class MaintainabilityDeltaQualityNewAndChangedCodePortfolioTreemapPlaceholder(
-    EndDatePortfolioTreemapPlaceholder
-):
-    """Creates a portfolio treemap where the color is determined by the delta quality of maintainability rating (new and changed code) of the individual systems."""
-
-    key = "PORTFOLIO_PERIOD_MAINTAINABILITY_DELTA_QUALITY_NEW_AND_CHANGED_CODE_GROUPED_BY_{parameter}"
-
-    @classmethod
-    def value(cls, parameter):
-        def f(t):
-            return (
-                maintainability_delta_quality_new_and_changed_code.data[t][
-                    "filesRatingAtEnd"
-                ]
-                if maintainability_delta_quality_new_and_changed_code.data[t]
-                and maintainability_delta_quality_new_and_changed_code.data[t][
-                    "filesRatingAtEnd"
-                ]
-                else 0
-            )
-
-        return cls.create_end_date_portfolio_treemap(
-            grouping=parameter.lower(),
-            rating_func=f,
-            rating_rounding_func=formatters.star_rating_round,
-            determine_color_function=cls.determine_rating_color,
-        )
-
-
-class OSHRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
-    """Creates a portfolio treemap where the color is determined by the open-source health rating of the individual systems."""
-
-    key = "PORTFOLIO_PERIOD_OSH_RATINGS_GROUPED_BY_{parameter}"
-
-    @classmethod
-    def value(cls, parameter):
-        def rating_function(system_name):
-            system = osh_portfolio_data.find_system(system_name)
-            props = system.get("sbom", {}).get("metadata", {}).get("properties", [])
-            return next(
-                (
-                    float(p["value"])
-                    for p in props
-                    if p["name"] == "sigrid:ratings:system"
-                ),
-                0.0,
-            )
-
-        return cls.create_end_date_portfolio_treemap(
-            grouping=parameter.lower(),
-            rating_func=rating_function,
-            rating_rounding_func=formatters.star_rating_round,
-            determine_color_function=cls.determine_rating_color,
-        )
+    def create_period_portfolio_treemap_from_differences(
+        cls, grouping, difference_provider, style
+    ):
+        _, treemap = cls.prepare_portfolio_and_treemap(grouping)
+        differences = {
+            system_name: difference_provider(system_name)
+            for system_name in treemap["system_names"]
+        }
+        return cls._build_period_treemap(treemap, differences, style)

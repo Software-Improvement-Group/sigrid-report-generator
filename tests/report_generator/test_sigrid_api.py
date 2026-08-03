@@ -315,3 +315,38 @@ class TestSigridAPI:
 
         sigrid_api._request.cache_clear()
         sigrid_api.reset_context()
+
+    def test_portfolio_security_ratings_appends_end_date(self):
+        config._customer = "my-customer"
+        with patch.object(sigrid_api, "_make_request", return_value=[]) as m:
+            sigrid_api.get_portfolio_security_ratings(end_date="2025-12-31")
+        endpoint = m.call_args.args[0]
+        assert "model-ratings/my-customer?feature=SECURITY" in endpoint
+        assert "&endDate=2025-12-31" in endpoint
+        sigrid_api.reset_context()
+
+    def test_portfolio_security_ratings_omits_end_date_when_absent(self):
+        config._customer = "my-customer"
+        with patch.object(sigrid_api, "_make_request", return_value=[]) as m:
+            sigrid_api.get_portfolio_security_ratings()
+        endpoint = m.call_args.args[0]
+        assert endpoint.endswith("model-ratings/my-customer?feature=SECURITY")
+        assert "endDate" not in endpoint
+        sigrid_api.reset_context()
+
+    def test_portfolio_architecture_findings_appends_end_date(self):
+        config._customer = "my-customer"
+        with patch.object(sigrid_api, "_make_request", return_value=[]) as m:
+            sigrid_api.get_portfolio_architecture_findings(end_date="2025-12-31")
+        endpoint = m.call_args.args[0]
+        assert endpoint.endswith("architecture-quality/my-customer?endDate=2025-12-31")
+        sigrid_api.reset_context()
+
+    def test_portfolio_architecture_findings_omits_end_date_when_absent(self):
+        config._customer = "my-customer"
+        with patch.object(sigrid_api, "_make_request", return_value=[]) as m:
+            sigrid_api.get_portfolio_architecture_findings()
+        endpoint = m.call_args.args[0]
+        assert endpoint.endswith("architecture-quality/my-customer")
+        assert "endDate" not in endpoint
+        sigrid_api.reset_context()

@@ -23,6 +23,7 @@ from report_generator.generator.placeholders.formatting.formatters import (
     star_rating_round,
 )
 from report_generator.generator.placeholders.implementations.text.base import (
+    market_average_text_placeholder,
     parameterized_text_placeholder,
     text_placeholder,
 )
@@ -84,6 +85,13 @@ def maint_indication():
         "maint_indication is deprecated and will be removed, use maint_relative_cost instead"
     )
     return maint_relative_cost.value()
+
+
+@market_average_text_placeholder()
+def maint_market_average():
+    """Colored indication of whether the system's Maintainability Rating is below (red), at
+    (blue) or above (green) market average."""
+    return maintainability_data.maintainability_rating
 
 
 @text_placeholder()

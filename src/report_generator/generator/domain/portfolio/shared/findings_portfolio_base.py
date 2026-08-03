@@ -49,6 +49,7 @@ class FindingsRatingsPortfolioBase(RatedPortfolioMixin):
     _objective_type: str = ""
     _portfolio_ratings_api_method: str = ""
     _findings_api_method: str = ""
+    _system_tag: str = "systemName"
 
     @property
     def customer(self) -> str:
@@ -64,13 +65,25 @@ class FindingsRatingsPortfolioBase(RatedPortfolioMixin):
             return system_name
         return md.get("displayName") or system_name
 
+    def _fetch_ratings(self, end_date):
+        return sorted(
+            getattr(sigrid_api, self._portfolio_ratings_api_method)(end_date=end_date),
+            key=lambda s: s["systemName"],
+        )
+
     @cached_property
     @filter_data_on_portfolio_arguments(system_tag="systemName")
     def data(self):
-        return sorted(
-            getattr(sigrid_api, self._portfolio_ratings_api_method)(),
-            key=lambda s: s["systemName"],
-        )
+        return self._fetch_ratings(sigrid_api.get_period()[1])
+
+    @cached_property
+    @filter_data_on_portfolio_arguments(system_tag="systemName")
+    def _start_ratings(self):
+        return self._fetch_ratings(sigrid_api.get_period()[0])
+
+    @property
+    def _end_ratings(self):
+        return self.data
 
     @cached_property
     def period(self):

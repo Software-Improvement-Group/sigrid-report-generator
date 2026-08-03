@@ -13,7 +13,8 @@
 #  limitations under the License.
 
 from abc import ABC
-from typing import Callable, ClassVar
+from collections.abc import Callable
+from typing import ClassVar
 
 from pptx.presentation import Presentation
 
