@@ -16,9 +16,8 @@ import configparser
 import importlib.metadata
 import json
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Optional
 
 import platformdirs
 import requests
@@ -33,7 +32,7 @@ _CHECK_INTERVAL_DAYS = 7
 _REQUEST_TIMEOUT_SECONDS = 3
 
 
-def check_for_update() -> Optional[str]:
+def check_for_update() -> str | None:
     if os.environ.get("SIGRID_REPORT_GENERATOR_NO_UPDATE_CHECK") == "1":
         return None
 
@@ -53,7 +52,7 @@ def check_for_update() -> Optional[str]:
     return None
 
 
-def _should_check() -> tuple[bool, Optional[str]]:
+def _should_check() -> tuple[bool, str | None]:
     cache = _read_cache()
     if cache is None:
         return True, None
@@ -71,13 +70,13 @@ def _should_check() -> tuple[bool, Optional[str]]:
     if last_checked.tzinfo is None:
         # Naive datetime cannot be safely compared to aware UTC now; treat as cache miss.
         return True, None
-    age_days = (datetime.now(timezone.utc) - last_checked).days
+    age_days = (datetime.now(UTC) - last_checked).days
     if age_days < _CHECK_INTERVAL_DAYS:
         return False, cache.get("latest_version")
     return True, None
 
 
-def _read_cache() -> Optional[dict]:
+def _read_cache() -> dict | None:
     if not _CACHE_FILE.exists():
         return None
     try:
@@ -112,7 +111,7 @@ def _write_cache(latest_version: str) -> None:
     _CACHE_FILE.write_text(
         json.dumps(
             {
-                "last_checked": datetime.now(timezone.utc).isoformat(),
+                "last_checked": datetime.now(UTC).isoformat(),
                 "latest_version": latest_version,
             }
         )

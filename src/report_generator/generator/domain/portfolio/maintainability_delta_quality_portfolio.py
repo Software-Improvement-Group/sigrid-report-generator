@@ -15,7 +15,6 @@
 import logging
 from abc import ABC, abstractmethod
 from functools import cached_property
-from typing import Optional
 
 from report_generator.generator.context import sigrid_api
 from report_generator.generator.domain.portfolio.maintainability_portfolio import (
@@ -93,8 +92,8 @@ class _AbstractMaintainabilityDeltaQualityPortfolioData(ABC):
                 - 'lowest_system': Tuple of (system_name, rating) or None
                 - 'highest_system': Tuple of (system_name, rating) or None
         """
-        lowest_system: tuple[Optional[str], float] = (None, float("inf"))
-        highest_system: tuple[Optional[str], float] = (None, float("-inf"))
+        lowest_system: tuple[str | None, float] = (None, float("inf"))
+        highest_system: tuple[str | None, float] = (None, float("-inf"))
         stats = {"total_rating": 0, "count": 0}
 
         for system_name in self.system_names:

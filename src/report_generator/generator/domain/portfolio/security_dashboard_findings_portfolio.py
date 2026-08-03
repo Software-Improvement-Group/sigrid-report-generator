@@ -123,6 +123,22 @@ class SecurityDashboardFindingsPortfolioData:
         return self._all_findings_statistics["HIGH"]
 
     @cached_property
+    def acute_findings_statistics(self):
+        """
+        Calculate combined statistics for acute (CRITICAL + HIGH) security findings across the portfolio.
+
+        Returns:
+            dict: Statistics including total resolved, added, and net change in acute findings.
+        """
+        critical = self._all_findings_statistics["CRITICAL"]
+        high = self._all_findings_statistics["HIGH"]
+        return {
+            "resolved": critical["resolved"] + high["resolved"],
+            "added": critical["added"] + high["added"],
+            "net_change": critical["net_change"] + high["net_change"],
+        }
+
+    @cached_property
     def medium_findings_statistics(self):
         """
         Calculate statistics for medium severity security findings across the portfolio.
@@ -176,6 +192,20 @@ class SecurityDashboardFindingsPortfolioData:
                 findings["resolved"][month_idx] += severities.get("resolved", 0)
 
         return findings
+
+    def open_acute_findings_by_month(self):
+        """Per-month count of open (existing) acute findings (CRITICAL + HIGH) across the portfolio.
+
+        Returns:
+            dict: 'columns' (month labels) and 'open_acute' (existing CRITICAL + HIGH per month).
+        """
+        columns = self.unique_months
+        critical = self._aggregate_findings_for_severity("CRITICAL", columns)[
+            "existing"
+        ]
+        high = self._aggregate_findings_for_severity("HIGH", columns)["existing"]
+        open_acute = [c + h for c, h in zip(critical, high, strict=True)]
+        return {"columns": columns, "open_acute": open_acute}
 
     def chart_findings_by_severity(self, severity):
         """

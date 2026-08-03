@@ -15,7 +15,6 @@
 #  limitations under the License.
 
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
 
@@ -87,7 +86,7 @@ class Document:
 
 
 def placeholders_to_table(
-    placeholders, skip_columns: Optional[set[str]] = None
+    placeholders, skip_columns: set[str] | None = None
 ) -> pd.DataFrame:
     data = [
         get_placeholder_row_data(placeholder, skip_columns)
@@ -99,7 +98,7 @@ def placeholders_to_table(
     return df
 
 
-def get_placeholder_doc(placeholder_class: Placeholder) -> Optional[str]:
+def get_placeholder_doc(placeholder_class: Placeholder) -> str | None:
     doc = placeholder_class.__doc__
     if doc and placeholder_class is not Placeholder:
         return doc
@@ -114,7 +113,7 @@ def get_placeholder_doc(placeholder_class: Placeholder) -> Optional[str]:
 
 
 def get_placeholder_row_data(
-    placeholder: Placeholder, skip_columns: Optional[set[str]] = None
+    placeholder: Placeholder, skip_columns: set[str] | None = None
 ) -> dict:
     if skip_columns is None:
         skip_columns = []

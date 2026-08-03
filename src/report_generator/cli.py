@@ -15,18 +15,17 @@
 import logging
 import os
 from datetime import date
-from typing import Optional
 
 import click
 import requests
-from dateutil.relativedelta import relativedelta
 
 from report_generator import ReportGenerator, presets
 from report_generator.generator import generator_arguments
 from report_generator.generator.context import sigrid_api
+from report_generator.generator.utils.time_series import add_months
 from report_generator.update_check import check_for_update
 
-DEFAULT_START_DATE = (date.today() + relativedelta(months=-1)).strftime("%Y-%m-%d")
+DEFAULT_START_DATE = add_months(date.today(), -1).strftime("%Y-%m-%d")
 DEFAULT_END_DATE = date.today().strftime("%Y-%m-%d")
 MATOMO_URL = os.environ.get("MATOMO_URL", "https://sigrid-says.com/usage")
 
@@ -35,7 +34,7 @@ def _normalize_name(ctx, param, value):
     return value.lower() if value else value
 
 
-def _validate_system_requirement(system: Optional[str], layout: Optional[str]) -> None:
+def _validate_system_requirement(system: str | None, layout: str | None) -> None:
     system_required = layout in presets.SYSTEM_LEVEL_PRESETS
     system_provided = system is not None
 
@@ -155,7 +154,7 @@ def _configure_api(
     system: str,
     token: str,
     period: tuple[str, str],
-    api_url: Optional[str],
+    api_url: str | None,
 ):
     sigrid_api.set_context(
         bearer_token=token,

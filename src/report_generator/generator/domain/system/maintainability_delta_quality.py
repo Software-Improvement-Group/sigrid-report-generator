@@ -14,7 +14,6 @@
 
 from enum import Enum
 from functools import cached_property
-from typing import Optional
 
 from report_generator.generator.context import sigrid_api
 from report_generator.generator.utils.constants.metrics import DeltaType, MaintMetric
@@ -110,19 +109,19 @@ class MaintainabilityDeltaQualitySystemData:
     def metrics(self) -> list[MaintMetric]:
         return DELTA_QUALITY_METRICS
 
-    def _risk_profile(self, metric: MaintMetric, column: DeltaColumn) -> Optional[dict]:
+    def _risk_profile(self, metric: MaintMetric, column: DeltaColumn) -> dict | None:
         metric_data = self.data.get(metric.to_json_name())
         if not metric_data:
             return None
         return metric_data.get(column.profile_field)
 
-    def rating(self, metric: MaintMetric, column: DeltaColumn) -> Optional[float]:
+    def rating(self, metric: MaintMetric, column: DeltaColumn) -> float | None:
         profile = self._risk_profile(metric, column)
         return profile.get("rating") if profile else None
 
     def risk_buckets(
         self, metric: MaintMetric, column: DeltaColumn
-    ) -> Optional[list[float]]:
+    ) -> list[float] | None:
         """The [low, moderate, high, very-high] risk percentages, or None if absent."""
         profile = self._risk_profile(metric, column)
         if not profile:
@@ -130,7 +129,7 @@ class MaintainabilityDeltaQualitySystemData:
         return [profile.get(field, 0.0) for field in _RISK_BUCKET_FIELDS]
 
     @cached_property
-    def summary_rating(self) -> Optional[float]:
+    def summary_rating(self) -> float | None:
         return self.data.get(_SUMMARY_RATING_FIELD[self._delta_type])
 
 
