@@ -73,8 +73,8 @@ def generate_system_summary_whitelabel(output_path: str) -> None:
     _generate_report("system-summary-whitelabel.pptx", output_path)
 
 
-def generate_delta_quality_report(output_path: str) -> None:
-    _generate_report("delta-quality.pptx", output_path)
+def generate_system_monitoring_report(output_path: str) -> None:
+    _generate_report("system-monitoring-report.pptx", output_path)
 
 
 _preset_reports: dict[str, Callable[[str], None]] = {
@@ -90,7 +90,7 @@ _preset_reports: dict[str, Callable[[str], None]] = {
     "hygiene-report": generate_hygiene_report,
     "portfolio-baseline-report": generate_portfolio_baseline_report,
     "npr-5333-overview": generate_npr_5333_overview,
-    "delta-quality": generate_delta_quality_report,
+    "system-monitoring-report": generate_system_monitoring_report,
 }
 
 SYSTEM_LEVEL_PRESETS = {
@@ -100,7 +100,7 @@ SYSTEM_LEVEL_PRESETS = {
     "itdd-technical-debt",
     "refactoring-candidates",
     "system-maintainability-one-pager",
-    "delta-quality",
+    "system-monitoring-report",
 }
 
 ids = set(_preset_reports.keys())
