@@ -52,6 +52,10 @@ _DUPLICATION_SERIES_LABELS = ["Non-redundant", "Redundant"]
 # Risk distributions are normalized to sum to 100, so bars span the full axis.
 _AXIS_MAX = 100
 _EMPTY_RISK_BUCKETS = [0.0, 0.0, 0.0, 0.0]
+# The delta-quality API returns full-precision doubles that jitter in their least
+# significant bits between calls; rounding keeps the chart values stable (and is far
+# finer than anything visible on a bar) so golden-file comparisons stay deterministic.
+_CHART_VALUE_DECIMALS = 6
 
 
 def _series_labels(metric: MaintMetric) -> list[str]:
@@ -72,8 +76,10 @@ def _column_series_values(
     if metric == MaintMetric.DUPLICATION:
         non_redundant = normalized[0]
         redundant = sum(normalized[1:])
-        return [non_redundant, redundant]
-    return normalized
+        values = [non_redundant, redundant]
+    else:
+        values = normalized
+    return [round(value, _CHART_VALUE_DECIMALS) for value in values]
 
 
 def _build_delta_chart_data(

@@ -51,7 +51,8 @@ class TestColumnSeriesValues:
     def test_four_bucket_metric_normalizes_to_100(self):
         result = _column_series_values(MaintMetric.UNIT_SIZE, [70.0, 17.0, 6.0, 10.0])
         assert len(result) == 4
-        assert abs(sum(result) - 100.0) < 1e-9
+        # Values are rounded to 6 decimals, so the sum can drift a rounding step from 100.
+        assert abs(sum(result) - 100.0) < 1e-4
 
 
 class _StubSystemData:
