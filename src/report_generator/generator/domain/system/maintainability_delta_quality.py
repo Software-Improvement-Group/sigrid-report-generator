@@ -35,34 +35,36 @@ _RISK_BUCKET_FIELDS = ("lowRisk", "moderateRisk", "highRisk", "veryHighRisk")
 
 
 class DeltaColumn(Enum):
-    """A comparison column on a delta-quality slide.
+    """Identifies one comparison column on a delta-quality slide.
 
-    Each column maps to one risk-profile object in the delta-quality API response.
-    ``token`` is the identifier used in template placeholder keys, ``label`` is the
-    chart category label, and ``profile_field`` is the API field the column reads.
+    Purely a data concern: the member identifies the column (its value doubles as the
+    identifier used in template placeholder keys) and ``profile_field`` names the API
+    risk-profile object the column reads. User-facing labels are a presentation concern
+    and live in the placeholder layer.
     """
 
-    TOTAL_BEFORE = ("TOTAL_BEFORE", "Total code (Before)", "systemRiskProfileAtStart")
-    NEW_AFTER = ("NEW_AFTER", "New code (After)", "filesRiskProfileAtEnd")
-    CHANGED_BEFORE = (
-        "CHANGED_BEFORE",
-        "Changed code (Before)",
-        "filesRiskProfileAtStart",
-    )
-    CHANGED_AFTER = ("CHANGED_AFTER", "Changed code (After)", "filesRiskProfileAtEnd")
-    DELETED_BEFORE = (
-        "DELETED_BEFORE",
-        "Deleted code (Before)",
-        "filesRiskProfileAtStart",
-    )
+    TOTAL_BEFORE = "TOTAL_BEFORE"
+    NEW_AFTER = "NEW_AFTER"
+    CHANGED_BEFORE = "CHANGED_BEFORE"
+    CHANGED_AFTER = "CHANGED_AFTER"
+    DELETED_BEFORE = "DELETED_BEFORE"
 
-    def __init__(self, token: str, label: str, profile_field: str):
-        self.token = token
-        self.label = label
-        self.profile_field = profile_field
+    @property
+    def profile_field(self) -> str:
+        return _PROFILE_FIELD_BY_COLUMN[self]
 
     def __str__(self) -> str:
-        return self.token
+        return self.value
+
+
+# Which risk-profile object in the API response each column reads.
+_PROFILE_FIELD_BY_COLUMN = {
+    DeltaColumn.TOTAL_BEFORE: "systemRiskProfileAtStart",
+    DeltaColumn.NEW_AFTER: "filesRiskProfileAtEnd",
+    DeltaColumn.CHANGED_BEFORE: "filesRiskProfileAtStart",
+    DeltaColumn.CHANGED_AFTER: "filesRiskProfileAtEnd",
+    DeltaColumn.DELETED_BEFORE: "filesRiskProfileAtStart",
+}
 
 
 # The ordered comparison columns shown for each delta type, matching Sigrid's slides.

@@ -21,6 +21,9 @@ from report_generator.generator.domain import (
     DELTA_QUALITY_METRICS,
     maintainability_delta_quality_system_by_type,
 )
+from report_generator.generator.domain.system.maintainability_delta_quality import (
+    DeltaColumn,
+)
 from report_generator.generator.placeholders import rendering
 from report_generator.generator.placeholders.formatting.formatters import (
     normalize_percentages,
@@ -31,6 +34,15 @@ from report_generator.generator.placeholders.implementations.base import (
     PlaceholderDocType,
 )
 from report_generator.generator.utils.constants.metrics import DeltaType, MaintMetric
+
+# User-facing chart category label for each comparison column (presentation concern).
+_COLUMN_LABELS = {
+    DeltaColumn.TOTAL_BEFORE: "Total code (Before)",
+    DeltaColumn.NEW_AFTER: "New code (After)",
+    DeltaColumn.CHANGED_BEFORE: "Changed code (Before)",
+    DeltaColumn.CHANGED_AFTER: "Changed code (After)",
+    DeltaColumn.DELETED_BEFORE: "Deleted code (Before)",
+}
 
 # Series labels for the four-bucket metrics, in stacking order (best risk to worst).
 _RISK_SERIES_LABELS = ["Low risk", "Medium risk", "High risk", "Very high risk"]
@@ -48,7 +60,9 @@ def _series_labels(metric: MaintMetric) -> list[str]:
     return _RISK_SERIES_LABELS
 
 
-def _column_series_values(metric: MaintMetric, risk_buckets: list[float]) -> list[str]:
+def _column_series_values(
+    metric: MaintMetric, risk_buckets: list[float]
+) -> list[float]:
     """Turn a column's [low, moderate, high, very-high] buckets into series values.
 
     For duplication the four buckets collapse to non-redundant (low risk) and redundant
@@ -76,7 +90,7 @@ def _build_delta_chart_data(
     ]
 
     chart_data = CategoryChartData()
-    chart_data.categories = [column.label for column in columns]
+    chart_data.categories = [_COLUMN_LABELS[column] for column in columns]
     for series_index, label in enumerate(_series_labels(metric)):
         chart_data.add_series(
             label, [column_values[series_index] for column_values in values_per_column]
