@@ -12,6 +12,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import copy
+from dataclasses import dataclass, field
+from datetime import datetime
 from functools import cached_property
 
 from report_generator.generator.domain.portfolio.maintainability_portfolio import (
@@ -21,6 +24,61 @@ from report_generator.generator.domain.portfolio.maintainability_portfolio.data 
     parse_date,
 )
 from report_generator.generator.utils.star_rating import calculate_star_rating_integer
+
+_INITIAL_STATISTICS = {
+    "maintainability": {
+        "1-star": 0,
+        "2-star": 0,
+        "3-star": 0,
+        "4-star": 0,
+        "5-star": 0,
+        "number-of-systems": 0,
+    },
+    "maintainability-change": {
+        "systems-increased": 0,
+        "systems-stable": 0,
+        "systems-decreased": 0,
+        "biggest-increase": {},
+        "biggest-decrease": {},
+    },
+    "volume-change": {
+        "total-start": 0,
+        "total-end": 0,
+        "biggest-change-system": None,
+        "biggest-change-amount": 0,
+    },
+    "test-code-ratio-change": {
+        "total-start": 0,
+        "total-end": 0,
+        "systems-increased": 0,
+        "systems-stable": 0,
+        "systems-decreased": 0,
+        "biggest-increase": {},
+        "biggest-decrease": {},
+    },
+}
+
+
+@dataclass
+class SystemPeriod:
+    """A system's start/end snapshots and dates within the reporting period."""
+
+    system_name: str
+    start_snapshot: dict
+    end_snapshot: dict
+    start_date: datetime
+    end_date: datetime
+    period_start: datetime
+
+
+@dataclass
+class AverageAccumulators:
+    """Running lists used to compute volume-weighted maintainability averages."""
+
+    start_maintainability_ratings: list = field(default_factory=list)
+    end_maintainability_ratings: list = field(default_factory=list)
+    start_volumes: list = field(default_factory=list)
+    end_volumes: list = field(default_factory=list)
 
 
 def _categorize_test_code_ratio(ratio):
@@ -34,38 +92,7 @@ def _categorize_test_code_ratio(ratio):
 
 
 def _initialize_statistics():
-    return {
-        "maintainability": {
-            "1-star": 0,
-            "2-star": 0,
-            "3-star": 0,
-            "4-star": 0,
-            "5-star": 0,
-            "number-of-systems": 0,
-        },
-        "maintainability-change": {
-            "systems-increased": 0,
-            "systems-stable": 0,
-            "systems-decreased": 0,
-            "biggest-increase": {},
-            "biggest-decrease": {},
-        },
-        "volume-change": {
-            "total-start": 0,
-            "total-end": 0,
-            "biggest-change-system": None,
-            "biggest-change-amount": 0,
-        },
-        "test-code-ratio-change": {
-            "total-start": 0,
-            "total-end": 0,
-            "systems-increased": 0,
-            "systems-stable": 0,
-            "systems-decreased": 0,
-            "biggest-increase": {},
-            "biggest-decrease": {},
-        },
-    }
+    return copy.deepcopy(_INITIAL_STATISTICS)
 
 
 def _update_star_statistics(statistics, end_snapshot):
@@ -74,54 +101,46 @@ def _update_star_statistics(statistics, end_snapshot):
     statistics["maintainability"]["number-of-systems"] += 1
 
 
-def _update_best_changes(
-    system_name,
-    start_snapshot,
-    end_snapshot,
-    start_date,
-    end_date,
-    period_start,
-    best_inc,
-    best_dec,
-):
+def _update_best_changes(period, best_inc, best_dec):
     diff = 0
-    if start_date != end_date and start_date >= period_start:
-        diff = end_snapshot["maintainability"] - start_snapshot["maintainability"]
+    if (
+        period.start_date != period.end_date
+        and period.start_date >= period.period_start
+    ):
+        diff = (
+            period.end_snapshot["maintainability"]
+            - period.start_snapshot["maintainability"]
+        )
         if diff > best_inc[1]:
-            best_inc = (system_name, diff)
+            best_inc = (period.system_name, diff)
         if diff < best_dec[1]:
-            best_dec = (system_name, diff)
+            best_dec = (period.system_name, diff)
     return best_inc, best_dec, diff
 
 
-def _collect_averages_data(
-    start_snapshot,
-    end_snapshot,
-    start_date,
-    period_start,
-    start_maintainability_ratings,
-    end_maintainability_ratings,
-    start_volumes,
-    end_volumes,
-):
-    if start_date < period_start:
-        start_maintainability_ratings.append(start_snapshot["maintainability"])
-        start_volumes.append(start_snapshot["volumeInPersonMonths"])
-    end_maintainability_ratings.append(end_snapshot["maintainability"])
-    end_volumes.append(end_snapshot["volumeInPersonMonths"])
+def _collect_averages_data(period, accumulators):
+    if period.start_date < period.period_start:
+        accumulators.start_maintainability_ratings.append(
+            period.start_snapshot["maintainability"]
+        )
+        accumulators.start_volumes.append(period.start_snapshot["volumeInPersonMonths"])
+    accumulators.end_maintainability_ratings.append(
+        period.end_snapshot["maintainability"]
+    )
+    accumulators.end_volumes.append(period.end_snapshot["volumeInPersonMonths"])
 
 
-def _update_volume_change(statistics, system_name, start_snapshot, end_snapshot):
+def _update_volume_change(statistics, period):
     """Track volume changes across the portfolio."""
-    start_volume = start_snapshot.get("volumeInPersonMonths", 0)
-    end_volume = end_snapshot.get("volumeInPersonMonths", 0)
+    start_volume = period.start_snapshot.get("volumeInPersonMonths", 0)
+    end_volume = period.end_snapshot.get("volumeInPersonMonths", 0)
 
     statistics["volume-change"]["total-start"] += start_volume
     statistics["volume-change"]["total-end"] += end_volume
 
     volume_change = end_volume - start_volume
     if abs(volume_change) > abs(statistics["volume-change"]["biggest-change-amount"]):
-        statistics["volume-change"]["biggest-change-system"] = system_name
+        statistics["volume-change"]["biggest-change-system"] = period.system_name
         statistics["volume-change"]["biggest-change-amount"] = volume_change
 
 
@@ -162,21 +181,21 @@ def _update_biggest_changes(statistics, system_name, diff):
             }
 
 
-def _update_test_code_ratio_change(
-    statistics, system_name, start_snapshot, end_snapshot, start_date, end_date
-):
+def _update_test_code_ratio_change(statistics, period):
     """Track test code ratio changes across the portfolio."""
-    start_ratio, end_ratio = _get_test_code_ratios(start_snapshot, end_snapshot)
+    start_ratio, end_ratio = _get_test_code_ratios(
+        period.start_snapshot, period.end_snapshot
+    )
 
     if start_ratio is None or end_ratio is None:
         return
 
     _accumulate_test_code_totals(statistics, start_ratio, end_ratio)
 
-    if start_date != end_date:
+    if period.start_date != period.end_date:
         diff = end_ratio - start_ratio
         _track_test_code_change_direction(statistics, diff)
-        _update_biggest_changes(statistics, system_name, diff)
+        _update_biggest_changes(statistics, period.system_name, diff)
 
 
 def _finalize_change_statistics(statistics, best_inc, best_dec):
@@ -199,18 +218,12 @@ def _update_change_count(statistics, diff):
         statistics["maintainability-change"]["systems-stable"] += 1
 
 
-def _calculate_averages(
-    statistics,
-    start_maintainability_ratings,
-    end_maintainability_ratings,
-    start_volumes,
-    end_volumes,
-):
+def _calculate_averages(statistics, accumulators):
     statistics["maintainability"]["start-average"] = _weighted_avg(
-        start_maintainability_ratings, start_volumes
+        accumulators.start_maintainability_ratings, accumulators.start_volumes
     )
     statistics["maintainability"]["end-average"] = _weighted_avg(
-        end_maintainability_ratings, end_volumes
+        accumulators.end_maintainability_ratings, accumulators.end_volumes
     )
 
 
@@ -248,55 +261,29 @@ class MaintainabilityPortfolioStats:
 
         best_inc: tuple[str | None, float] = (None, float("-inf"))
         best_dec: tuple[str | None, float] = (None, float("inf"))
-        start_maintainability_ratings, end_maintainability_ratings = [], []
-        start_volumes, end_volumes = [], []
+        accumulators = AverageAccumulators()
 
         for system_name in maintainability_portfolio_data.system_names:
             start_snapshot = maintainability_portfolio_data.start_snapshot(system_name)
             end_snapshot = maintainability_portfolio_data.end_snapshot(system_name)
-            start_date = parse_date(start_snapshot["maintainabilityDate"])
-            end_date = parse_date(end_snapshot["maintainabilityDate"])
+            period = SystemPeriod(
+                system_name=system_name,
+                start_snapshot=start_snapshot,
+                end_snapshot=end_snapshot,
+                start_date=parse_date(start_snapshot["maintainabilityDate"]),
+                end_date=parse_date(end_snapshot["maintainabilityDate"]),
+                period_start=period_start,
+            )
 
             _update_star_statistics(statistics, end_snapshot)
-            best_inc, best_dec, diff = _update_best_changes(
-                system_name,
-                start_snapshot,
-                end_snapshot,
-                start_date,
-                end_date,
-                period_start,
-                best_inc,
-                best_dec,
-            )
+            best_inc, best_dec, diff = _update_best_changes(period, best_inc, best_dec)
             _update_change_count(statistics, diff)
-            _update_volume_change(statistics, system_name, start_snapshot, end_snapshot)
-            _update_test_code_ratio_change(
-                statistics,
-                system_name,
-                start_snapshot,
-                end_snapshot,
-                start_date,
-                end_date,
-            )
-            _collect_averages_data(
-                start_snapshot,
-                end_snapshot,
-                start_date,
-                period_start,
-                start_maintainability_ratings,
-                end_maintainability_ratings,
-                start_volumes,
-                end_volumes,
-            )
+            _update_volume_change(statistics, period)
+            _update_test_code_ratio_change(statistics, period)
+            _collect_averages_data(period, accumulators)
 
         _finalize_change_statistics(statistics, best_inc, best_dec)
-        _calculate_averages(
-            statistics,
-            start_maintainability_ratings,
-            end_maintainability_ratings,
-            start_volumes,
-            end_volumes,
-        )
+        _calculate_averages(statistics, accumulators)
 
         return statistics
 
