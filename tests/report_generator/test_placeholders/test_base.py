@@ -18,10 +18,13 @@ from unittest.mock import MagicMock, patch
 
 from docx import Document
 from pptx import Presentation
+from pptx.util import Inches
 
+from report_generator.generator.context.sigrid_api import SigridAPIRequestFailedError
 from report_generator.generator.placeholders.implementations import placeholders
 from report_generator.generator.placeholders.implementations.base import (
     PARAMETER_TOKEN_PATTERN,
+    Placeholder,
     PlaceholderDocType,
 )
 from report_generator.generator.report import Report, ReportType
@@ -144,3 +147,74 @@ class TestPlaceholders:
         assert not missing_logs, (
             f"Missing 'Finds for' logs for {len(missing_logs)} placeholders: {missing_logs[:10]}"
         )
+
+
+def _presentation_with_slide_texts(*texts):
+    presentation = Presentation()
+    for text in texts:
+        slide = presentation.slides.add_slide(presentation.slide_layouts[6])
+        textbox = slide.shapes.add_textbox(Inches(1), Inches(1), Inches(8), Inches(4))
+        textbox.text_frame.paragraphs[0].text = text
+    return presentation
+
+
+def _make_placeholder(exception):
+    class _FailingPlaceholder(Placeholder):
+        key = "FAILING_KEY"
+
+        @classmethod
+        def value(cls):
+            return "value"
+
+        @staticmethod
+        def resolve_pptx(report, key, value_cb):
+            raise exception
+
+        @staticmethod
+        def resolve_docx(report, key, value_cb):
+            raise exception
+
+    return _FailingPlaceholder
+
+
+class TestSlideDeletionOnFailure:
+    def _resolve(self, report, exception):
+        placeholder = _make_placeholder(exception)
+        placeholder._call_resolve_method(
+            "resolve_pptx"
+            if report.type == ReportType.PRESENTATION
+            else "resolve_docx",
+            report,
+            "FAILING_KEY",
+            placeholder.value,
+        )
+
+    def test_api_failure_deletes_slide_in_presentation(self):
+        presentation = _presentation_with_slide_texts(
+            "slide with FAILING_KEY on it", "keep this slide"
+        )
+        report = Report(presentation, ReportType.PRESENTATION)
+
+        self._resolve(report, SigridAPIRequestFailedError("endpoint"))
+
+        assert len(list(presentation.slides)) == 1
+
+    def test_value_error_does_not_delete_slide(self):
+        presentation = _presentation_with_slide_texts(
+            "slide with FAILING_KEY on it", "keep this slide"
+        )
+        report = Report(presentation, ReportType.PRESENTATION)
+
+        self._resolve(report, ValueError("boom"))
+
+        assert len(list(presentation.slides)) == 2
+
+    def test_document_report_is_untouched_on_api_failure(self):
+        document = Document()
+        document.add_paragraph("paragraph with FAILING_KEY on it")
+        report = Report(document, ReportType.DOCUMENT)
+
+        # Should not raise and should not attempt any slide deletion.
+        self._resolve(report, SigridAPIRequestFailedError("endpoint"))
+
+        assert len(document.paragraphs) == 1
