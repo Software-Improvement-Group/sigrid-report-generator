@@ -28,6 +28,18 @@ from report_generator.generator.domain.portfolio.security_portfolio import (
 )
 
 
+def _mock_all_active_metadata(mocker, portfolio, system_names):
+    mocker.patch.object(
+        type(portfolio),
+        "metadata",
+        new_callable=mocker.PropertyMock,
+        return_value=[
+            {"systemName": name, "active": True, "isDevelopmentOnly": False}
+            for name in system_names
+        ],
+    )
+
+
 class TestRatingDistributionPercentages:
     def test_osh_rating_distribution_calculation(self, mocker):
         """Test get_rating_distribution_percentages calculates percentages correctly for OSH."""
@@ -47,6 +59,9 @@ class TestRatingDistributionPercentages:
             "raw_data",
             new_callable=mocker.PropertyMock,
             return_value=mock_data,
+        )
+        _mock_all_active_metadata(
+            mocker, portfolio, ["system1", "system2", "system3", "system4"]
         )
 
         distribution = portfolio.rating_distribution_percentages
@@ -86,6 +101,7 @@ class TestRatingDistributionPercentages:
             new_callable=mocker.PropertyMock,
             return_value=mock_data,
         )
+        _mock_all_active_metadata(mocker, portfolio, ["system1", "system2", "system3"])
 
         distribution = portfolio.rating_distribution_percentages
         assert distribution["above_market"] == pytest.approx(100.0)
@@ -108,6 +124,9 @@ class TestRatingDistributionPercentages:
             "data",
             new_callable=mocker.PropertyMock,
             return_value=mock_data,
+        )
+        _mock_all_active_metadata(
+            mocker, portfolio, ["system1", "system2", "system3", "system4"]
         )
 
         distribution = portfolio.rating_distribution_percentages
@@ -135,6 +154,7 @@ class TestRatingDistributionPercentages:
             new_callable=mocker.PropertyMock,
             return_value=mock_data,
         )
+        _mock_all_active_metadata(mocker, portfolio, ["system1", "system2"])
 
         distribution = portfolio.rating_distribution_percentages
         assert distribution["above_market"] == pytest.approx(50.0)
@@ -171,6 +191,7 @@ class TestWeightedAverageRatings:
             new_callable=mocker.PropertyMock,
             return_value=mock_data,
         )
+        _mock_all_active_metadata(mocker, portfolio, ["system1", "system2", "system3"])
 
         # Mock utils.get_volume to return volume data
         def mock_get_volume(system_name):
@@ -204,6 +225,7 @@ class TestWeightedAverageRatings:
             new_callable=mocker.PropertyMock,
             return_value=mock_data,
         )
+        _mock_all_active_metadata(mocker, portfolio, ["system1", "system2"])
 
         # Mock utils._get_volume to return volume data
         def mock_get_volume(system_name):
@@ -262,6 +284,7 @@ class TestWeightedAverageRatings:
             new_callable=mocker.PropertyMock,
             return_value=mock_raw_data,
         )
+        _mock_all_active_metadata(mocker, portfolio, ["system1", "system2"])
 
         # Mock utils._get_volume to return volume data
         def mock_get_volume(system_name):
@@ -333,6 +356,7 @@ class TestWeightedAverageRatings:
             new_callable=mocker.PropertyMock,
             return_value=mock_data,
         )
+        _mock_all_active_metadata(mocker, portfolio, ["system1", "system2"])
 
         # Mock utils._get_volume to return volume data
         def mock_get_volume(system_name):

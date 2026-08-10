@@ -25,7 +25,6 @@ from report_generator.generator.domain.portfolio.maintainability_delta_quality_p
 )
 from report_generator.generator.domain.portfolio.maintainability_portfolio.data import (
     existed_at_end_date,
-    is_system_active,
     parse_date,
 )
 from report_generator.generator.domain.portfolio.maintainability_portfolio.statistics import (
@@ -34,6 +33,9 @@ from report_generator.generator.domain.portfolio.maintainability_portfolio.stati
     _initialize_statistics,
     _update_star_statistics,
     _weighted_avg,
+)
+from report_generator.generator.domain.portfolio.shared.utils import (
+    is_system_active,
 )
 
 

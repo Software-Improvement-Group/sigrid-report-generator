@@ -18,7 +18,6 @@ from report_generator.generator.domain.portfolio.maintainability_portfolio impor
     maintainability_portfolio_data,
 )
 from report_generator.generator.domain.portfolio.maintainability_portfolio.data import (
-    is_system_active,
     parse_date,
 )
 from report_generator.generator.domain.portfolio.shared import utils
@@ -257,7 +256,7 @@ class MaintainabilityPortfolioStats:
             md = utils.get_system_metadata(
                 maintainability_portfolio_data.metadata, system_name
             )
-            if not is_system_active(md):
+            if not utils.is_system_active(md):
                 continue
 
             start_snapshot = maintainability_portfolio_data.start_snapshot(system_name)
@@ -324,7 +323,7 @@ class MaintainabilityPortfolioStats:
             md = utils.get_system_metadata(
                 maintainability_portfolio_data.metadata, system_name
             )
-            if not is_system_active(md):
+            if not utils.is_system_active(md):
                 continue
 
             end_snapshot = maintainability_portfolio_data.end_snapshot(system_name)

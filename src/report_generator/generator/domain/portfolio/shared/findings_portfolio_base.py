@@ -97,7 +97,13 @@ class FindingsRatingsPortfolioBase(RatedPortfolioMixin):
         return utils.system_names_helper(self.data, "systemName")
 
     def _rated_systems(self):
-        return self.data
+        return [
+            system
+            for system in self.data
+            if utils.is_system_active(
+                utils.get_system_metadata(self.metadata, system.get("systemName"))
+            )
+        ]
 
     def _extract_rating(self, system):
         return system.get("rating")
