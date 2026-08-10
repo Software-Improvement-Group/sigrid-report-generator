@@ -27,7 +27,13 @@ _DEFAULT_ACTIVE_METADATA = [
 
 
 @pytest.fixture(autouse=True)
-def _default_active_portfolio_metadata():
+def _default_active_portfolio_metadata(request):
+    """Integration tests hit (or replay pinned fixtures of) the real Sigrid API and must
+    see real portfolio metadata, so this default is skipped for them."""
+    if request.node.get_closest_marker("integration"):
+        yield
+        return
+
     with patch.object(
         portfolio_filters.sigrid_api,
         "get_portfolio_metadata",
