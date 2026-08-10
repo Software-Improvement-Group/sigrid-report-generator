@@ -178,15 +178,16 @@ def _make_filter_wrapper(func):
     return wrapper
 
 
-def _raise_no_systems_found_error():
-    """Raise an error when no systems match the specified filters."""
-    filter_desc = [
+def _describe_active_filters() -> list[str]:
+    return [
         f"--{name.replace('_', '-')}: {', '.join(values)}"
         for name, values in _filter_state.items()
         if values
     ]
 
-    error_msg = (
+
+def _no_systems_match_filters_message(filter_desc: list[str]) -> str:
+    return (
         f"No systems match the specified filters.\n"
         f"Filters applied:\n{chr(10).join(filter_desc)}\n\n"
         f"Please verify:\n"
@@ -194,6 +195,19 @@ def _raise_no_systems_found_error():
         f"  2. At least one active system exists with these filter criteria\n"
         f"  3. The systems are not marked as development-only"
     )
+
+
+def _raise_no_systems_found_error():
+    """Raise an error when no systems match the specified filters."""
+    filter_desc = _describe_active_filters()
+
+    if filter_desc:
+        error_msg = _no_systems_match_filters_message(filter_desc)
+    else:
+        error_msg = (
+            "No active systems found in the portfolio.\n"
+            "All systems are either inactive or marked as development-only."
+        )
     raise click.ClickException(error_msg)
 
 
@@ -228,10 +242,6 @@ def filter_data_on_portfolio_arguments(data_tag=None, system_tag=None):
                 raise PlaceholderArgumentError(func.__name__)
 
             data = func(*args, **kwargs)
-
-            if not _are_filters_set():
-                return data
-
             pmd = sigrid_api.get_portfolio_metadata()
 
             if data_tag:
@@ -294,11 +304,15 @@ def _check_filter_match(
     return actual_value in clean_filters
 
 
+def _is_system_active(metadata: dict) -> bool:
+    return metadata["active"] and not metadata["isDevelopmentOnly"]
+
+
 def _include(system_name, portfolio_metadata):
     md = _find_system_metadata(
         system_name=system_name, portfolio_metadata=portfolio_metadata
     )
-    if md is None:
+    if md is None or not _is_system_active(md):
         return False
 
     for filter_name, spec in FILTER_CONFIGURATION.items():
@@ -308,10 +322,6 @@ def _include(system_name, portfolio_metadata):
             return False
 
     return True
-
-
-def _are_filters_set() -> bool:
-    return any(v is not None for v in _filter_state.values())
 
 
 def _find_system_metadata(system_name, portfolio_metadata):

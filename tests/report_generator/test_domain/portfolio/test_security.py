@@ -1753,11 +1753,15 @@ class TestSecurityDashboardFindingsPortfolioData:
         assert "system2" in names
         assert "system3" in names
 
+    @patch("report_generator.generator.context.portfolio_filters.sigrid_api")
     @patch(
         "report_generator.generator.domain.portfolio.security_dashboard_findings_portfolio.sigrid_api"
     )
-    def test_excluded_systems_are_filtered_from_data(self, mock_sigrid_api):
-        """Test that systems absent from metadata are excluded from data."""
+    def test_excluded_systems_are_filtered_from_data(
+        self, mock_sigrid_api, mock_filters_sigrid_api
+    ):
+        """Test that systems absent from (or inactive in) portfolio metadata are excluded
+        from data by the `filter_data_on_portfolio_arguments` decorator."""
         mock_data = {
             "systems": [
                 {"system": "active_system", "findingRatio": []},
@@ -1767,8 +1771,8 @@ class TestSecurityDashboardFindingsPortfolioData:
         mock_sigrid_api.get_portfolio_security_dashboard_findings.return_value = (
             mock_data
         )
-        mock_sigrid_api.get_portfolio_metadata.return_value = [
-            {"systemName": "active_system"},
+        mock_filters_sigrid_api.get_portfolio_metadata.return_value = [
+            {"systemName": "active_system", "active": True, "isDevelopmentOnly": False},
         ]
 
         security_dashboard_findings_portfolio_data.__dict__.pop("data", None)
@@ -1851,11 +1855,15 @@ class TestSecurityDashboardResolutionTimesPortfolioData:
         assert "system2" in names
         assert "system3" in names
 
+    @patch("report_generator.generator.context.portfolio_filters.sigrid_api")
     @patch(
         "report_generator.generator.domain.portfolio.security_dashboard_resolution_times_portfolio.sigrid_api"
     )
-    def test_excluded_systems_are_filtered_from_data(self, mock_sigrid_api):
-        """Test that systems absent from metadata are excluded from data."""
+    def test_excluded_systems_are_filtered_from_data(
+        self, mock_sigrid_api, mock_filters_sigrid_api
+    ):
+        """Test that systems absent from (or inactive in) portfolio metadata are excluded
+        from data by the `filter_data_on_portfolio_arguments` decorator."""
         mock_data = {
             "systems": [
                 {"system": "active_system", "resolutionTimes": []},
@@ -1865,8 +1873,8 @@ class TestSecurityDashboardResolutionTimesPortfolioData:
         mock_sigrid_api.get_portfolio_security_resolution_time_findings.return_value = (
             mock_data
         )
-        mock_sigrid_api.get_portfolio_metadata.return_value = [
-            {"systemName": "active_system"},
+        mock_filters_sigrid_api.get_portfolio_metadata.return_value = [
+            {"systemName": "active_system", "active": True, "isDevelopmentOnly": False},
         ]
 
         security_dashboard_resolution_times_portfolio_data.__dict__.pop("data", None)
