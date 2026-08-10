@@ -105,7 +105,7 @@ class Placeholder(ABC):
             getattr(cls, resolve_method_name)(report, key, value_fn)
         except SigridAPIRequestFailedError as e:
             logging.debug(f"Failed to resolve {key}: {e}")
-            cls._delete_slide_on_presentation_failure(report, key)
+            cls._delete_slide_on_presentation_failure(report, key, reason=e.api_message)
         except EPSSScoreRetrievalError as e:
             logging.debug(f"Failed to retrieve and/or parse EPSS scores: {e}")
             cls._delete_slide_on_presentation_failure(report, key)
@@ -115,9 +115,13 @@ class Placeholder(ABC):
             )
 
     @classmethod
-    def _delete_slide_on_presentation_failure(cls, report: Report, key: str) -> None:
+    def _delete_slide_on_presentation_failure(
+        cls, report: Report, key: str, reason: str | None = None
+    ) -> None:
         if report.type == ReportType.PRESENTATION:
-            rendering.pptx.delete_slides_with_placeholder(report.content, key)
+            rendering.pptx.delete_slides_with_placeholder(
+                report.content, key, reason=reason
+            )
 
     @classmethod
     def _determine_resolve_method(cls, report_type: ReportType):

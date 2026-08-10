@@ -323,22 +323,26 @@ def _slide_contains_key(slide, key: str) -> bool:
     )
 
 
-def delete_slides_with_placeholder(presentation: Presentation, key: str) -> None:
+def delete_slides_with_placeholder(
+    presentation: Presentation, key: str, reason: str | None = None
+) -> None:
     """Remove every slide that contains the given placeholder key.
 
     Called when a placeholder fails to resolve: the slide is dropped so the report never shows
     an unresolved template token. Idempotent across repeated failures — a slide already removed
-    from the id list no longer appears in presentation.slides.
+    from the id list no longer appears in presentation.slides. `reason`, when given, is the
+    message the Sigrid API returned with the failing request (e.g. a missing-license notice).
     """
     id_lst = presentation.slides.element  # <p:sldIdLst>
+    detail = f" ({reason})" if reason else ""
     # presentation.slides iterates in <p:sldIdLst> order, so the i-th slide corresponds to the
     # i-th <p:sldId>. Snapshot both to lists up front so removing from id_lst mid-loop is safe.
     for slide, sld_id in zip(list(presentation.slides), list(id_lst), strict=True):
         if _slide_contains_key(slide, key):
             id_lst.remove(sld_id)
-            logging.debug(
-                f"Deleted slide '{_slide_title(slide)}' containing placeholder '{key}' "
-                "because it failed to resolve"
+            logging.info(
+                f"Skipped slide '{_slide_title(slide)}' containing placeholder '{key}' "
+                f"because it failed to resolve{detail}"
             )
 
 

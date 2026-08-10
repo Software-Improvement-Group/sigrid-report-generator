@@ -32,8 +32,9 @@ from report_generator.generator.utils.time_series import Period
 
 
 class SigridAPIRequestFailedError(Exception):
-    def __init__(self, function_name, message="API request failed"):
+    def __init__(self, function_name, message="API request failed", api_message=None):
         self.function_name = function_name
+        self.api_message = api_message
         self.message = f"{message} in function '{function_name}'"
         super().__init__(self.message)
 
@@ -166,7 +167,9 @@ def _sigrid_api_request(with_system=False, critical=False):
                     f"Access denied (403) for optional endpoint '{func.__name__}'; "
                     f"skipping it (the feature may not be available for this customer).{detail}"
                 )
-                raise SigridAPIRequestFailedError(func.__name__) from None
+                raise SigridAPIRequestFailedError(
+                    func.__name__, api_message=exc.api_message
+                ) from None
 
             if result is None:
                 raise SigridAPIRequestFailedError(func.__name__)
