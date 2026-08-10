@@ -20,7 +20,6 @@ from report_generator.generator.domain.portfolio.maintainability_portfolio impor
 from report_generator.generator.domain.portfolio.maintainability_portfolio.data import (
     parse_date,
 )
-from report_generator.generator.domain.portfolio.shared import utils
 from report_generator.generator.utils.star_rating import calculate_star_rating_integer
 
 
@@ -253,12 +252,6 @@ class MaintainabilityPortfolioStats:
         start_volumes, end_volumes = [], []
 
         for system_name in maintainability_portfolio_data.system_names:
-            md = utils.get_system_metadata(
-                maintainability_portfolio_data.metadata, system_name
-            )
-            if not utils.is_system_active(md):
-                continue
-
             start_snapshot = maintainability_portfolio_data.start_snapshot(system_name)
             end_snapshot = maintainability_portfolio_data.end_snapshot(system_name)
             start_date = parse_date(start_snapshot["maintainabilityDate"])
@@ -320,12 +313,6 @@ class MaintainabilityPortfolioStats:
         total = 0
 
         for system_name in maintainability_portfolio_data.system_names:
-            md = utils.get_system_metadata(
-                maintainability_portfolio_data.metadata, system_name
-            )
-            if not utils.is_system_active(md):
-                continue
-
             end_snapshot = maintainability_portfolio_data.end_snapshot(system_name)
             test_code_ratio = end_snapshot.get("testCodeRatio")
 

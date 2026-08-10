@@ -148,26 +148,16 @@ class MaintainabilityPortfolioData(RatedPortfolioMixin):
         return self.system_names
 
     def _extract_rating(self, system_name):
-        md = utils.get_system_metadata(self.metadata, system_name)
-        if not utils.is_system_active(md):
-            return None
         end_snapshot = self.end_snapshot(system_name)
         return end_snapshot["maintainability"]
 
     def _get_rating_and_volume(self, system_name):
-        md = utils.get_system_metadata(self.metadata, system_name)
-        if not utils.is_system_active(md):
-            return None, 0
-
         end_snapshot = self.end_snapshot(system_name)
         rating = end_snapshot["maintainability"]
         volume = end_snapshot.get("volumeInPersonMonths", 0)
         return rating, volume
 
     def _build_rating_entry(self, system_name: str) -> dict | None:
-        md = utils.get_system_metadata(self.metadata, system_name)
-        if md is None or not utils.is_system_active(md):
-            return None
         snapshot = self.end_snapshot(system_name)
         if snapshot is None:
             return None

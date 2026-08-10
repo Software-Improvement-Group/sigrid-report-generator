@@ -49,10 +49,6 @@ class OSHRatingsPortfolioData(RatedPortfolioMixin, OSHMetricsBase):
         return sigrid_api.get_portfolio_osh_findings()
 
     @cached_property
-    def metadata(self):
-        return sigrid_api.get_portfolio_metadata()
-
-    @cached_property
     def dependencies_count(self) -> int:
         """Total number of dependencies across all systems."""
         total = 0
@@ -294,13 +290,7 @@ class OSHRatingsPortfolioData(RatedPortfolioMixin, OSHMetricsBase):
         return None
 
     def _rated_systems(self):
-        return [
-            system
-            for system in self.raw_data.get("systems", [])
-            if utils.is_system_active(
-                utils.get_system_metadata(self.metadata, system.get("systemName"))
-            )
-        ]
+        return self.raw_data.get("systems", [])
 
     def _extract_rating(self, system):
         return self._extract_osh_rating(system, "system")

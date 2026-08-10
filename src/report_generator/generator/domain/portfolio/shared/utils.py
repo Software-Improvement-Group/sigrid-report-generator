@@ -35,12 +35,6 @@ def get_system_metadata(portfolio_metadata, system):
     return None
 
 
-def is_system_active(metadata) -> bool:
-    if metadata is None:
-        return False
-    return metadata["active"] and not metadata["isDevelopmentOnly"]
-
-
 def categorize_rating(rating):
     """Categorize a rating into market segments."""
     if rating >= 3.5:

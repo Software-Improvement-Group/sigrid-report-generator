@@ -72,13 +72,7 @@ class ArchitecturePortfolioData(RatedPortfolioMixin, RatingsChangePortfolioBase)
         return utils.get_system_helper(system, self.data, "system")
 
     def _rated_systems(self):
-        return [
-            system
-            for system in self.data
-            if utils.is_system_active(
-                utils.get_system_metadata(self.metadata, system.get(self._system_tag))
-            )
-        ]
+        return self.data
 
     def _extract_rating(self, system):
         if "ratings" not in system or "architecture" not in system["ratings"]:
