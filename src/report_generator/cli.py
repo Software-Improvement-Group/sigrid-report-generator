@@ -34,19 +34,18 @@ def _normalize_name(ctx, param, value):
     return value.lower() if value else value
 
 
-_DEPRECATED_LAYOUT_ALIASES = presets.DEPRECATED_PRESET_ALIASES
+_resolve_preset_id = presets.resolve_preset_id
 
 
 def _resolve_layout(ctx, param, value):
-    if value in _DEPRECATED_LAYOUT_ALIASES:
-        new_name = _DEPRECATED_LAYOUT_ALIASES[value]
+    new_name = _resolve_preset_id(value)
+    if new_name != value:
         click.secho(
             f"Warning: layout '{value}' is deprecated and will be discontinued in "
             f"the near future. Use the new name '{new_name}' instead.",
             fg="yellow",
         )
-        return new_name
-    return value
+    return new_name
 
 
 def _validate_system_requirement(system: str | None, layout: str | None) -> None:
