@@ -12,6 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from .presets import SYSTEM_LEVEL_PRESETS, ids, run
+from .presets import DEPRECATED_PRESET_ALIASES, SYSTEM_LEVEL_PRESETS, ids, run
 
-__all__ = ["SYSTEM_LEVEL_PRESETS", "ids", "run"]
+__all__ = ["DEPRECATED_PRESET_ALIASES", "SYSTEM_LEVEL_PRESETS", "ids", "run"]

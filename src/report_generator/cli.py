@@ -34,6 +34,21 @@ def _normalize_name(ctx, param, value):
     return value.lower() if value else value
 
 
+_DEPRECATED_LAYOUT_ALIASES = presets.DEPRECATED_PRESET_ALIASES
+
+
+def _resolve_layout(ctx, param, value):
+    if value in _DEPRECATED_LAYOUT_ALIASES:
+        new_name = _DEPRECATED_LAYOUT_ALIASES[value]
+        click.secho(
+            f"Warning: layout '{value}' is deprecated and will be discontinued in "
+            f"the near future. Use the new name '{new_name}' instead.",
+            fg="yellow",
+        )
+        return new_name
+    return value
+
+
 def _validate_system_requirement(system: str | None, layout: str | None) -> None:
     system_required = layout in presets.SYSTEM_LEVEL_PRESETS
     system_provided = system is not None
@@ -89,7 +104,8 @@ def _validate_layout_or_template(ctx, param, value):
     "-l",
     "--layout",
     type=click.Choice(presets.ids),
-    default="system-summary",
+    default="system-snapshot",
+    callback=_resolve_layout,
     help="The type of report (mutually exclusive with the -p/--template option)",
 )
 @click.option(

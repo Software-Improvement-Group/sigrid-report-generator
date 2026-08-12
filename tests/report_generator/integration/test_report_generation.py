@@ -22,7 +22,11 @@ from report_generator.report_generator import ReportGenerator
 from tests.report_generator.integration import _shared
 from tests.report_generator.integration.pptx_diff import compare_pptx
 
-PRESETS_TO_TEST = sorted(p for p in presets.ids if p != "debug")
+PRESETS_TO_TEST = sorted(
+    p
+    for p in presets.ids
+    if p != "debug" and p not in presets.DEPRECATED_PRESET_ALIASES
+)
 
 
 @pytest.mark.parametrize("preset_id", PRESETS_TO_TEST)
