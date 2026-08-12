@@ -19,19 +19,13 @@ from report_generator.generator.context.portfolio_filters import (
     filter_data_on_portfolio_arguments,
 )
 from report_generator.generator.domain.portfolio.shared import utils
-from report_generator.generator.domain.portfolio.shared.security_dashboard_filtering import (
-    filter_excluded_systems,
-)
 
 
 class SecurityDashboardResolutionTimesPortfolioData:
     @cached_property
     @filter_data_on_portfolio_arguments(data_tag="systems", system_tag="system")
     def data(self):
-        data = sigrid_api.get_portfolio_security_resolution_time_findings()
-        return filter_excluded_systems(
-            data, sigrid_api.get_portfolio_metadata(), "system"
-        )
+        return sigrid_api.get_portfolio_security_resolution_time_findings()
 
     @cached_property
     def system_names(self):

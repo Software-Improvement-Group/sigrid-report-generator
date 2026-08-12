@@ -298,6 +298,54 @@ def test_code_ratio_color(ratio):
         return FIVE_STAR_COLOR
 
 
+def _slide_title(slide) -> str:
+    title_shape = slide.shapes.title
+    if title_shape is None or not title_shape.has_text_frame:
+        return "<untitled>"
+    return title_shape.text_frame.text.strip() or "<untitled>"
+
+
+def _iter_shapes_recursive(shapes):
+    for shape in shapes:
+        yield shape
+        if shape.shape_type == MSO_SHAPE_TYPE.GROUP:
+            yield from _iter_shapes_recursive(shape.shapes)
+
+
+def _slide_contains_key(slide, key: str) -> bool:
+    # Text placeholders match on paragraph text; chart/table placeholders match on shape name
+    # (charts/tables are located by shape.name, see find_charts / find_tables). Both paths
+    # descend into group shapes so a placeholder nested in a group is still detected.
+    if find_text_in_slide(slide, key):
+        return True
+    return any(
+        shape.name.strip() == key for shape in _iter_shapes_recursive(slide.shapes)
+    )
+
+
+def delete_slides_with_placeholder(
+    presentation: Presentation, key: str, reason: str | None = None
+) -> None:
+    """Remove every slide that contains the given placeholder key.
+
+    Called when a placeholder fails to resolve: the slide is dropped so the report never shows
+    an unresolved template token. Idempotent across repeated failures — a slide already removed
+    from the id list no longer appears in presentation.slides. `reason`, when given, is the
+    message the Sigrid API returned with the failing request (e.g. a missing-license notice).
+    """
+    id_lst = presentation.slides.element  # <p:sldIdLst>
+    detail = f" ({reason})" if reason else ""
+    # presentation.slides iterates in <p:sldIdLst> order, so the i-th slide corresponds to the
+    # i-th <p:sldId>. Snapshot both to lists up front so removing from id_lst mid-loop is safe.
+    for slide, sld_id in zip(list(presentation.slides), list(id_lst), strict=True):
+        if _slide_contains_key(slide, key):
+            id_lst.remove(sld_id)
+            logging.info(
+                f"Skipped slide '{_slide_title(slide)}' containing placeholder '{key}' "
+                f"because it failed to resolve{detail}"
+            )
+
+
 def find_charts(presentation: Presentation, key: str):
     """Find charts by shape name. This is the recommended way to locate charts in a presentation."""
     charts = [

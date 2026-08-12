@@ -21,7 +21,6 @@ from report_generator.generator.context import portfolio_filters
 from report_generator.generator.context.portfolio_filters import (
     FILTER_CONFIGURATION,
     PlaceholderArgumentError,
-    _are_filters_set,
     _find_system_metadata,
     _include,
     filter_data_on_portfolio_arguments,
@@ -40,30 +39,40 @@ def mock_portfolio_metadata():
             "teamNames": ["TeamA", "TeamB"],
             "divisionName": "DivisionX",
             "supplierNames": ["Acme Corp", "TechVendor"],
+            "active": True,
+            "isDevelopmentOnly": False,
         },
         {
             "systemName": "system2",
             "teamNames": ["TeamC"],
             "divisionName": "DivisionY",
             "supplierNames": ["GlobalSoft"],
+            "active": True,
+            "isDevelopmentOnly": False,
         },
         {
             "systemName": "system3",
             "teamNames": ["TeamA"],
             "divisionName": "DivisionX",
             "supplierNames": ["Acme Corp"],
+            "active": True,
+            "isDevelopmentOnly": False,
         },
         {
             "systemName": "system4",
             "teamNames": ["TeamA"],
             "divisionName": "DivisionY",
             "supplierNames": ["InternalTeam"],
+            "active": True,
+            "isDevelopmentOnly": False,
         },
         {
             "systemName": "system5",
             "teamNames": ["TeamB"],
             "divisionName": "DivisionX",
             "supplierNames": [],
+            "active": True,
+            "isDevelopmentOnly": False,
         },
     ]
 
@@ -144,25 +153,23 @@ class TestPortfolioArguments:
 
         assert portfolio_filters._filter_state["deployment"] == ["PUBLIC_FACING"]
 
-    # Filter Checking Tests
-
-    def test_are_filters_set_returns_false_when_no_filters(self):
-        """Test that _are_filters_set returns False when no filters are set."""
-        assert _are_filters_set() is False
-
-    def test_are_filters_set_returns_true_with_team(self):
-        """Test that _are_filters_set returns True when team filter is set."""
-        set_context(team=["TeamA"])
-
-        assert _are_filters_set() is True
-
-    def test_are_filters_set_returns_true_with_division(self):
-        """Test that _are_filters_set returns True when division filter is set."""
-        set_context(division=["DivisionX"])
-
-        assert _are_filters_set() is True
-
     # System Matching Tests
+
+    def test_include_excludes_inactive_system(self, mock_portfolio_metadata):
+        """Test that _include returns False for a system marked as inactive, even without filters."""
+        mock_portfolio_metadata[0]["active"] = False
+
+        result = _include("system1", mock_portfolio_metadata)
+
+        assert result is False
+
+    def test_include_excludes_development_only_system(self, mock_portfolio_metadata):
+        """Test that _include returns False for a development-only system, even without filters."""
+        mock_portfolio_metadata[0]["isDevelopmentOnly"] = True
+
+        result = _include("system1", mock_portfolio_metadata)
+
+        assert result is False
 
     def test_include_matches_team(self, mock_portfolio_metadata):
         """Test that _include returns True when system matches team filter."""
@@ -294,10 +301,12 @@ class TestPortfolioArguments:
     # Decorator Behavior Tests
 
     @patch("report_generator.generator.context.portfolio_filters.sigrid_api")
-    def test_decorator_returns_unchanged_data_when_no_filters(
-        self, mock_sigrid_api, mock_data_with_data_tag
+    def test_decorator_returns_unchanged_data_when_no_filters_and_all_active(
+        self, mock_sigrid_api, mock_data_with_data_tag, mock_portfolio_metadata
     ):
-        """Test that decorator passes data through unchanged when no filters are set."""
+        """Test that decorator passes data through unchanged when no filters are set and
+        every system is active."""
+        mock_sigrid_api.get_portfolio_metadata.return_value = mock_portfolio_metadata
 
         @filter_data_on_portfolio_arguments(data_tag="systems", system_tag="system")
         def mock_function():
@@ -306,7 +315,22 @@ class TestPortfolioArguments:
         result = mock_function()
 
         assert result == mock_data_with_data_tag
-        mock_sigrid_api.get_portfolio_metadata.assert_not_called()
+
+    @patch("report_generator.generator.context.portfolio_filters.sigrid_api")
+    def test_decorator_excludes_inactive_systems_without_any_filters(
+        self, mock_sigrid_api, mock_data_with_data_tag, mock_portfolio_metadata
+    ):
+        """Test that decorator excludes inactive systems even when no CLI filters are set."""
+        mock_portfolio_metadata[0]["active"] = False  # system1
+        mock_sigrid_api.get_portfolio_metadata.return_value = mock_portfolio_metadata
+
+        @filter_data_on_portfolio_arguments(data_tag="systems", system_tag="system")
+        def mock_function():
+            return mock_data_with_data_tag
+
+        result = mock_function()
+
+        assert [s["system"] for s in result["systems"]] == ["system2", "system3"]
 
     @patch("report_generator.generator.context.portfolio_filters.sigrid_api")
     def test_decorator_filters_systems_with_data_tag(

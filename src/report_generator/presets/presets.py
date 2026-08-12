@@ -33,10 +33,6 @@ def generate_system_summary(output_path: str) -> None:
     _generate_report("system-summary.pptx", output_path)
 
 
-def generate_itdd_system_technical_debt_report(output_path: str) -> None:
-    _generate_report("itdd-technical-debt.pptx", output_path)
-
-
 def generate_modernization_report(output_path: str) -> None:
     _generate_report("modernization.pptx", output_path)
 
@@ -81,7 +77,6 @@ _preset_reports: dict[str, Callable[[str], None]] = {
     "system-summary": generate_system_summary,
     "system-summary-whitelabel": generate_system_summary_whitelabel,
     "debug": generate_debug_docx,
-    "itdd-technical-debt": generate_itdd_system_technical_debt_report,
     "modernization": generate_modernization_report,
     "objectives": generate_objectives_report,
     "refactoring-candidates": generate_refactoring_candidates_report,
@@ -97,7 +92,6 @@ SYSTEM_LEVEL_PRESETS = {
     "system-summary",
     "system-summary-whitelabel",
     "debug",
-    "itdd-technical-debt",
     "refactoring-candidates",
     "system-maintainability-one-pager",
     "system-monitoring-report",

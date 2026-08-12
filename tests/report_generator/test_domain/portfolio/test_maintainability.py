@@ -25,7 +25,6 @@ from report_generator.generator.domain.portfolio.maintainability_delta_quality_p
 )
 from report_generator.generator.domain.portfolio.maintainability_portfolio.data import (
     existed_at_end_date,
-    is_system_active,
     parse_date,
 )
 from report_generator.generator.domain.portfolio.maintainability_portfolio.statistics import (
@@ -249,20 +248,14 @@ class TestMaintainabilityStatistics:
         assert stats["maintainability-change"]["biggest-increase"] == {}
         assert stats["maintainability-change"]["biggest-decrease"] == {}
 
-    def test_statistics_excludes_inactive_systems(self, mocker):
-        """Test that inactive and development-only systems are excluded from statistics."""
+    def test_statistics_counts_every_system_in_system_names(self, mocker):
+        """Statistics trusts `system_names` to already be filtered to active,
+        non-development-only systems (done once, upstream, by
+        `filter_data_on_portfolio_arguments`) and counts every entry it is given."""
 
         stats_obj = MaintainabilityPortfolioStats()
 
-        mock_system_names = ["active_system", "inactive_system", "dev_only_system"]
-
-        def mock_get_system_metadata(portfolio_metadata, system_name):
-            if system_name == "inactive_system":
-                return {"active": False, "isDevelopmentOnly": False}
-            elif system_name == "dev_only_system":
-                return {"active": True, "isDevelopmentOnly": True}
-            else:
-                return {"active": True, "isDevelopmentOnly": False}
+        mock_system_names = ["system1", "system2"]
 
         mocker.patch.object(
             type(maintainability_portfolio_data),
@@ -291,20 +284,6 @@ class TestMaintainabilityStatistics:
             new_callable=mocker.PropertyMock,
             return_value=mock_system_names,
         )
-        mock_metadata = [
-            {"systemName": system_name, "active": True, "isDevelopmentOnly": False}
-            for system_name in mock_system_names
-        ]
-        mocker.patch.object(
-            type(maintainability_portfolio_data),
-            "metadata",
-            new_callable=mocker.PropertyMock,
-            return_value=mock_metadata,
-        )
-        mocker.patch(
-            "report_generator.generator.domain.portfolio.shared.utils.get_system_metadata",
-            side_effect=mock_get_system_metadata,
-        )
         mocker.patch.object(
             maintainability_portfolio_data,
             "start_snapshot",
@@ -318,9 +297,8 @@ class TestMaintainabilityStatistics:
 
         stats = stats_obj.statistics
 
-        # Only active_system should be counted
-        assert stats["maintainability"]["number-of-systems"] == 1
-        assert stats["maintainability-change"]["systems-increased"] == 1
+        assert stats["maintainability"]["number-of-systems"] == 2
+        assert stats["maintainability-change"]["systems-increased"] == 2
 
     def test_statistics_no_change_when_dates_same(self, mocker):
         """Test that systems with same start and end date count as stable (diff=0)."""
@@ -1013,19 +991,15 @@ class TestTestCodeRatioDistribution:
         assert distribution["medium"] == 0
         assert distribution["high"] == 50
 
-    def test_test_code_ratio_distribution_excludes_inactive_systems(self, mocker):
-        """Test that inactive and development-only systems are excluded."""
+    def test_test_code_ratio_distribution_counts_every_system_in_system_names(
+        self, mocker
+    ):
+        """Statistics trusts `system_names` to already be filtered to active,
+        non-development-only systems (done once, upstream, by
+        `filter_data_on_portfolio_arguments`) and counts every entry it is given."""
         stats_obj = MaintainabilityPortfolioStats()
 
-        mock_system_names = ["active_system", "inactive_system", "dev_only_system"]
-
-        def mock_get_system_metadata(portfolio_metadata, system_name):
-            if system_name == "inactive_system":
-                return {"active": False, "isDevelopmentOnly": False}
-            elif system_name == "dev_only_system":
-                return {"active": True, "isDevelopmentOnly": True}
-            else:
-                return {"active": True, "isDevelopmentOnly": False}
+        mock_system_names = ["system1", "system2"]
 
         def mock_end_snapshot(system_name):
             return {"maintainability": 3.5, "testCodeRatio": 0.3}  # all low
@@ -1036,20 +1010,6 @@ class TestTestCodeRatioDistribution:
             new_callable=mocker.PropertyMock,
             return_value=mock_system_names,
         )
-        mock_metadata = [
-            {"systemName": system_name, "active": True, "isDevelopmentOnly": False}
-            for system_name in mock_system_names
-        ]
-        mocker.patch.object(
-            type(maintainability_portfolio_data),
-            "metadata",
-            new_callable=mocker.PropertyMock,
-            return_value=mock_metadata,
-        )
-        mocker.patch(
-            "report_generator.generator.domain.portfolio.shared.utils.get_system_metadata",
-            side_effect=mock_get_system_metadata,
-        )
         mocker.patch.object(
             maintainability_portfolio_data,
             "end_snapshot",
@@ -1058,7 +1018,6 @@ class TestTestCodeRatioDistribution:
 
         distribution = stats_obj.test_code_ratio_distribution_percentages
 
-        # Only active_system should be counted
         assert distribution["low"] == 100
         assert distribution["medium"] == 0
         assert distribution["high"] == 0
@@ -1668,24 +1627,6 @@ class TestMaintainabilityPortfolioHelpers:
         assert stats["maintainability"]["1-star"] == 0
         assert stats["maintainability"]["5-star"] == 0
         assert stats["maintainability"]["number-of-systems"] == 0
-
-    def test_is_system_active_returns_true_for_active(self):
-        """Test that is_system_active returns True for active non-dev systems."""
-        metadata = {"active": True, "isDevelopmentOnly": False}
-
-        assert is_system_active(metadata) is True
-
-    def test_is_system_active_returns_false_for_inactive(self):
-        """Test that is_system_active returns False for inactive systems."""
-        metadata = {"active": False, "isDevelopmentOnly": False}
-
-        assert is_system_active(metadata) is False
-
-    def test_is_system_active_returns_false_for_dev_only(self):
-        """Test that is_system_active returns False for dev-only systems."""
-        metadata = {"active": True, "isDevelopmentOnly": True}
-
-        assert is_system_active(metadata) is False
 
     def test_existed_at_end_date_true_when_head_date_before_end(self):
         """A head date before the end date (no allRatings) means the system existed."""
