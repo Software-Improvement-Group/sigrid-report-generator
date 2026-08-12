@@ -63,6 +63,11 @@ from report_generator.generator.domain.system.architecture import architecture_d
 from report_generator.generator.domain.system.maintainability import (
     maintainability_data,
 )
+from report_generator.generator.domain.system.maintainability_delta_quality import (
+    COLUMNS_BY_TYPE,
+    DELTA_QUALITY_METRICS,
+    maintainability_delta_quality_system_by_type,
+)
 from report_generator.generator.domain.system.osh import osh_data
 from report_generator.generator.domain.system.refactoring_candidates import (
     refactoring_candidates_data,

@@ -40,6 +40,17 @@ class MaintMetric(MetricEnum):
     COMPONENT_ENTANGLEMENT = "COMPONENT_ENTANGLEMENT"
 
 
+class DeltaType(MetricEnum):
+    """The kind of code change compared on a Sigrid delta-quality slide.
+
+    Values match the ``type`` query parameter of the delta-quality API endpoint.
+    """
+
+    NEW_CODE = "NEW_CODE"
+    CHANGED_CODE = "CHANGED_CODE"
+    REMOVED_CODE = "REMOVED_CODE"
+
+
 class ArchMetric(MetricEnum):
     CODE_BREAKDOWN = "CODE_BREAKDOWN"
     COMPONENT_COUPLING = "COMPONENT_COUPLING"

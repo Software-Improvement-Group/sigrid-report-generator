@@ -68,6 +68,18 @@ def star_rating_round(rating) -> str:
     return "N/A" if rating < 0.1 else str(math.floor(rating * 10) / 10)
 
 
+def normalize_percentages(values: list[float]) -> list[float]:
+    """Scale values so they sum to 100, giving uniform-height stacked bars.
+
+    Delta-quality risk profiles do not always sum to exactly 100, so distributions
+    are rescaled before charting. Returns zeros when the input sums to zero.
+    """
+    total = sum(values)
+    if total == 0:
+        return [0.0 for _ in values]
+    return [value / total * 100 for value in values]
+
+
 def biggest_changes_summary(change_data, rating_label: str) -> str:
     """Sentence describing the systems with the largest rating increase and decrease.
 

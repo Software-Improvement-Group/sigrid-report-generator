@@ -16,6 +16,7 @@ import inspect
 
 from . import (
     findings_scatterplots,
+    maintainability_delta_quality_charts,
     maintainability_galaxy_charts,
     osh_charts,
     security_findings,
@@ -26,6 +27,7 @@ _all_implementations = {
     **osh_charts.__dict__,
     **maintainability_galaxy_charts.__dict__,
     **findings_scatterplots.__dict__,
+    **maintainability_delta_quality_charts.__dict__,
 }
 
 _placeholders_map = {
