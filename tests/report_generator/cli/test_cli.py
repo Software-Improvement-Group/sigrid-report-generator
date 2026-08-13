@@ -62,7 +62,7 @@ class TestCLIParameters:
         os.environ["SIGRID_REPORT_GENERATOR_RECORD_USAGE"] = "0"
         runner = CliRunner()
         result = runner.invoke(
-            run_cli, ["--token", "test-token", "--layout", "portfolio-overview"]
+            run_cli, ["--token", "test-token", "--layout", "portfolio-change"]
         )
 
         assert result.exit_code != 0
@@ -88,7 +88,8 @@ class TestCLIParameters:
 
         runner = CliRunner()
         runner.invoke(
-            run_cli, ["--customer", "test-customer", "--layout", "portfolio-overview"]
+            run_cli,
+            ["--customer", "test-customer", "--layout", "portfolio-change"],
         )
 
         # Token should be picked up from environment
@@ -122,14 +123,40 @@ class TestCLIParameters:
     @patch("report_generator.cli.presets")
     @patch("report_generator.cli.sigrid_api")
     def test_layout_defaults_to_default(self, mock_sigrid_api, mock_presets):
-        """Test that --layout defaults to 'system-summary' when not specified."""
+        """Test that --layout defaults to 'system-snapshot' when not specified."""
         os.environ["SIGRID_REPORT_GENERATOR_RECORD_USAGE"] = "0"
         mock_presets.run = MagicMock()
 
         runner = CliRunner()
         runner.invoke(run_cli, ["--customer", "test-customer", "--token", "test-token"])
 
-        mock_presets.run.assert_called_once_with("system-summary", "out")
+        mock_presets.run.assert_called_once_with("system-snapshot", "out")
+
+    @patch("report_generator.cli.presets")
+    @patch("report_generator.cli.sigrid_api")
+    def test_deprecated_layout_alias_resolves_and_warns(
+        self, mock_sigrid_api, mock_presets
+    ):
+        """Test that a deprecated --layout name is resolved to its new name and warns."""
+        os.environ["SIGRID_REPORT_GENERATOR_RECORD_USAGE"] = "0"
+        mock_presets.run = MagicMock()
+
+        runner = CliRunner()
+        result = runner.invoke(
+            run_cli,
+            [
+                "--customer",
+                "test-customer",
+                "--token",
+                "test-token",
+                "--layout",
+                "portfolio-overview",
+            ],
+        )
+
+        mock_presets.run.assert_called_once_with("portfolio-change", "out")
+        assert "deprecated" in result.output.lower()
+        assert "portfolio-change" in result.output
 
     @patch("report_generator.cli.presets")
     @patch("report_generator.cli.sigrid_api")
@@ -147,11 +174,11 @@ class TestCLIParameters:
                 "--token",
                 "test-token",
                 "--layout",
-                "portfolio-overview",
+                "portfolio-change",
             ],
         )
 
-        mock_presets.run.assert_called_once_with("portfolio-overview", "out")
+        mock_presets.run.assert_called_once_with("portfolio-change", "out")
 
     @patch("report_generator.cli.presets")
     @patch("report_generator.cli.sigrid_api")
@@ -169,13 +196,13 @@ class TestCLIParameters:
                 "--token",
                 "test-token",
                 "--layout",
-                "portfolio-overview",
+                "portfolio-change",
                 "--out-file",
                 "custom-report",
             ],
         )
 
-        mock_presets.run.assert_called_once_with("portfolio-overview", "custom-report")
+        mock_presets.run.assert_called_once_with("portfolio-change", "custom-report")
 
     @patch("report_generator.cli.presets")
     @patch("report_generator.cli.sigrid_api")
@@ -193,7 +220,7 @@ class TestCLIParameters:
                 "--token",
                 "test-token",
                 "--layout",
-                "portfolio-overview",
+                "portfolio-change",
                 "--debug",
             ],
         )
@@ -216,7 +243,7 @@ class TestCLIParameters:
                 "--token",
                 "test-token",
                 "--layout",
-                "portfolio-overview",
+                "portfolio-change",
                 "--api-url",
                 "https://custom-api.example.com",
             ],
@@ -244,7 +271,7 @@ class TestCLIParameters:
                 "--token",
                 "test-token",
                 "--layout",
-                "portfolio-overview",
+                "portfolio-change",
                 "--start",
                 "2024-01-01",
                 "--end",
@@ -302,7 +329,7 @@ class TestCLIParameters:
                     "--token",
                     "test-token",
                     "--layout",
-                    "portfolio-overview",
+                    "portfolio-change",
                     "--system",
                     "some-system",
                 ],
@@ -365,7 +392,7 @@ class TestCLIParameters:
                     "--token",
                     "test-token",
                     "--layout",
-                    "portfolio-overview",
+                    "portfolio-change",
                     "--template",
                     "template.pptx",
                 ],
@@ -393,7 +420,7 @@ class TestCLIParameters:
                 "--token",
                 "test-token",
                 "--layout",
-                "portfolio-overview",
+                "portfolio-change",
                 "--team",
                 "TeamA",
             ],
@@ -418,7 +445,7 @@ class TestCLIParameters:
                 "--token",
                 "test-token",
                 "--layout",
-                "portfolio-overview",
+                "portfolio-change",
                 "--team",
                 "TeamA",
                 "--team",
@@ -444,7 +471,7 @@ class TestCLIParameters:
                 "--token",
                 "test-token",
                 "--layout",
-                "portfolio-overview",
+                "portfolio-change",
                 "--division",
                 "DivisionX",
             ],
@@ -468,7 +495,7 @@ class TestCLIParameters:
                 "--token",
                 "test-token",
                 "--layout",
-                "portfolio-overview",
+                "portfolio-change",
                 "--division",
                 "DivisionX",
                 "--division",
@@ -494,7 +521,7 @@ class TestCLIParameters:
                 "--token",
                 "test-token",
                 "--layout",
-                "portfolio-overview",
+                "portfolio-change",
                 "--team",
                 "TeamA",
                 "--division",
@@ -519,7 +546,7 @@ class TestCLITokenErrors:
                 "--token",
                 _make_expired_jwt(),
                 "--layout",
-                "portfolio-overview",
+                "portfolio-change",
             ],
         )
 
@@ -540,7 +567,7 @@ class TestCLITokenErrors:
                 "--token",
                 "not-a-valid-token",
                 "--layout",
-                "portfolio-overview",
+                "portfolio-change",
             ],
         )
 
