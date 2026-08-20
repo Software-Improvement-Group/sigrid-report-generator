@@ -223,6 +223,23 @@ class TestOSHMetricsBase:
         metrics = TestMetrics()
         assert metrics.vulnerabilities_fraction == pytest.approx(0.01)
 
+    def test_medium_or_higher_vulnerabilities_count_uses_risk_distribution(self):
+        """Test the count is per-library (risk distribution), not per-vulnerability-finding."""
+        from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
+
+        class TestMetrics(_StubOSHMetrics, OSHMetricsBase):
+            vulnerability_risk_distribution: ClassVar[list] = [
+                1,
+                1,
+                2,
+                3,
+                20,
+            ]  # critical, high, medium, low, no_risk
+            dependencies_count = 27
+
+        metrics = TestMetrics()
+        assert metrics.medium_or_higher_vulnerabilities_count == 4  # 1 + 1 + 2
+
     def test_outdated_count_only_includes_critical_to_medium(self):
         """Test outdated_count sums critical to medium freshness risk (0-2), excluding low."""
         from report_generator.generator.domain.shared.osh_base import OSHMetricsBase
