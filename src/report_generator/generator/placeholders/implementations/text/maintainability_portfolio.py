@@ -398,7 +398,7 @@ def _biggest_change_sentence(entries, direction, metric_label):
         return None
     system, diff = next(iter(entries.items()))
     display_name = maintainability_portfolio_data.get_system_display_name(system)
-    return f"The largest {direction} in {metric_label} rating was experienced by {display_name} ({int(diff * 10) / 10} stars)."
+    return f"The largest {direction} in {metric_label} rating was experienced by {display_name} ({round(diff, 1)} stars)."
 
 
 @parameterized_text_placeholder(

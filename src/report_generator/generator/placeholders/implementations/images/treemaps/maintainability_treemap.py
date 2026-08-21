@@ -12,6 +12,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from report_generator.generator.domain import (
+    maintainability_portfolio_data,
+)
 from report_generator.generator.placeholders import rendering
 from report_generator.generator.placeholders.formatting import formatters
 from report_generator.generator.placeholders.implementations.base import (
@@ -81,11 +84,10 @@ class MaintainabilityMetricPortfolioTreemapPlaceholder(
 
     @classmethod
     def value(cls, metric, grouping):
-        portfolio = cls.create_portfolio()
         metric_key = metric.to_json_name()
 
         def f(t):
-            return portfolio.get(t, {}).get("end_date_data", {}).get(metric_key)
+            return maintainability_portfolio_data.get_property_rating(t, metric_key)
 
         return cls.create_end_date_portfolio_treemap(
             grouping=grouping.lower(),

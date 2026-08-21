@@ -147,8 +147,12 @@ class MaintainabilityPortfolioData(RatedPortfolioMixin):
     def _rated_systems(self):
         return self.system_names
 
+    def get_property_rating(self, system_name: str, metric_key: str):
+        snapshot = self.end_snapshot(system_name)
+        return snapshot.get(metric_key) if snapshot else None
+
     def _rating_for_metric(self, system_name, metric_key):
-        return self.end_snapshot(system_name).get(metric_key)
+        return self.get_property_rating(system_name, metric_key)
 
     def _rating_and_volume_for_metric(self, system_name, metric_key):
         end_snapshot = self.end_snapshot(system_name)
