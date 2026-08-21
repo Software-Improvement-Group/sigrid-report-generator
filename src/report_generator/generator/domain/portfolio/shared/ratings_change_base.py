@@ -53,16 +53,18 @@ class RatingsChangePortfolioBase(ABC):
             return None
         return end_rating - start_rating
 
-    @cached_property
-    def differences(self) -> dict[str, float | None]:
-        start = {
-            s[self._system_tag]: self._extract_rating(s) for s in self._start_ratings
-        }
-        end = {s[self._system_tag]: self._extract_rating(s) for s in self._end_ratings}
+    def differences_using(self, extractor) -> dict[str, float | None]:
+        """Per-system rating delta over the period, using an arbitrary rating extractor."""
+        start = {s[self._system_tag]: extractor(s) for s in self._start_ratings}
+        end = {s[self._system_tag]: extractor(s) for s in self._end_ratings}
         return {
             name: self._delta(start.get(name), end_rating)
             for name, end_rating in end.items()
         }
+
+    @cached_property
+    def differences(self) -> dict[str, float | None]:
+        return self.differences_using(self._extract_rating)
 
     def get_difference(self, system_name: str) -> float | None:
         return self.differences.get(system_name)
@@ -83,16 +85,14 @@ class RatingsChangePortfolioBase(ABC):
             return system_name
         return md.get("displayName") or system_name
 
-    @cached_property
-    def _valid_differences(self) -> dict[str, float]:
-        return {
-            name: delta for name, delta in self.differences.items() if delta is not None
-        }
+    @staticmethod
+    def _valid_differences(differences: dict[str, float | None]) -> dict[str, float]:
+        return {name: delta for name, delta in differences.items() if delta is not None}
 
-    @cached_property
-    def _change_counts(self) -> dict[str, int]:
+    @staticmethod
+    def _change_counts(valid_differences: dict[str, float]) -> dict[str, int]:
         counts = {"increased": 0, "stable": 0, "decreased": 0}
-        for delta in self._valid_differences.values():
+        for delta in valid_differences.values():
             if delta > 0:
                 counts["increased"] += 1
             elif delta < 0:
@@ -101,51 +101,77 @@ class RatingsChangePortfolioBase(ABC):
                 counts["stable"] += 1
         return counts
 
-    @cached_property
-    def change_distribution_percentages(self) -> dict[str, int]:
-        """Percentage of systems whose rating increased, stayed stable, or decreased."""
-        counts = self._change_counts
+    def change_distribution_percentages_using(self, extractor) -> dict[str, int]:
+        """Percentage of systems whose rating increased, stayed stable, or decreased,
+        using an arbitrary rating extractor."""
+        counts = self._change_counts(
+            self._valid_differences(self.differences_using(extractor))
+        )
         total = sum(counts.values())
         if total == 0:
             return counts
         return {key: round(100 * value / total) for key, value in counts.items()}
 
-    def _biggest_mover(self, selector, keep) -> tuple[str, float] | None:
+    @cached_property
+    def change_distribution_percentages(self) -> dict[str, int]:
+        """Percentage of systems whose rating increased, stayed stable, or decreased."""
+        return self.change_distribution_percentages_using(self._extract_rating)
+
+    def _biggest_mover(
+        self, valid_differences: dict[str, float], selector, keep
+    ) -> tuple[str, float] | None:
         candidates = {
-            name: delta
-            for name, delta in self._valid_differences.items()
-            if keep(delta)
+            name: delta for name, delta in valid_differences.items() if keep(delta)
         }
         if not candidates:
             return None
         system = selector(candidates, key=candidates.get)
         return self.get_display_name(system), round(candidates[system], 1)
 
+    def biggest_increase_using(self, extractor) -> tuple[str, float] | None:
+        """Display name and rounded delta of the system with the largest rating increase,
+        using an arbitrary rating extractor."""
+        return self._biggest_mover(
+            self._valid_differences(self.differences_using(extractor)),
+            max,
+            lambda delta: delta > 0,
+        )
+
+    def biggest_decrease_using(self, extractor) -> tuple[str, float] | None:
+        """Display name and rounded delta of the system with the largest rating decrease,
+        using an arbitrary rating extractor."""
+        return self._biggest_mover(
+            self._valid_differences(self.differences_using(extractor)),
+            min,
+            lambda delta: delta < 0,
+        )
+
     @cached_property
     def biggest_increase(self) -> tuple[str, float] | None:
         """Display name and rounded delta of the system with the largest rating increase."""
-        return self._biggest_mover(max, lambda delta: delta > 0)
+        return self.biggest_increase_using(self._extract_rating)
 
     @cached_property
     def biggest_decrease(self) -> tuple[str, float] | None:
         """Display name and rounded delta of the system with the largest rating decrease."""
-        return self._biggest_mover(min, lambda delta: delta < 0)
+        return self.biggest_decrease_using(self._extract_rating)
 
-    def _rating_and_volume(self, system) -> tuple[float | None, float]:
-        return utils.get_rating_and_volume_from_system(
-            system, self._extract_rating, self._system_tag
+    def weighted_average_using(self, ratings, extractor) -> float:
+        """Volume-weighted average rating for a set of system snapshots, using an arbitrary
+        rating extractor."""
+        return utils.calculate_weighted_average_rating(
+            ratings,
+            lambda system: utils.get_rating_and_volume_from_system(
+                system, extractor, self._system_tag
+            ),
         )
 
     @cached_property
     def start_weighted_average(self) -> float:
         """Volume-weighted average rating at the start of the reporting period."""
-        return utils.calculate_weighted_average_rating(
-            self._start_ratings, self._rating_and_volume
-        )
+        return self.weighted_average_using(self._start_ratings, self._extract_rating)
 
     @cached_property
     def end_weighted_average(self) -> float:
         """Volume-weighted average rating at the end of the reporting period."""
-        return utils.calculate_weighted_average_rating(
-            self._end_ratings, self._rating_and_volume
-        )
+        return self.weighted_average_using(self._end_ratings, self._extract_rating)
