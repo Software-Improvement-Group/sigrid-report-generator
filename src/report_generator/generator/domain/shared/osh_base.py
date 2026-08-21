@@ -129,13 +129,8 @@ class OSHMetricsBase(ABC):
 
     @cached_property
     def medium_or_higher_vulnerabilities_count(self) -> int:
-        """Number of vulnerabilities rated medium severity or higher."""
-        distribution = self.vulnerability_distribution
-        return (
-            distribution.get("critical", 0)
-            + distribution.get("high", 0)
-            + distribution.get("medium", 0)
-        )
+        """Number of dependencies with a medium, high, or critical vulnerability risk."""
+        return sum(self.vulnerability_risk_distribution[0:3])
 
     @cached_property
     def legal_risk_fraction(self) -> float:

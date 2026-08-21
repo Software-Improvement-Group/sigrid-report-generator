@@ -45,9 +45,9 @@ wherever you specify with the `-o` option.
 
 ### Generating standard reports
 
-**System Summary:** Lightweight report that provides general information on a system, suitable for a quick overview of the system's status.
+**System snapshot report:** Lightweight report that provides general information on a system, suitable for a quick overview of the system's status.
 
-- Example: `report-generator -c <your-customer> -s <your-system> --layout system-summary`
+- Example: `report-generator -c <your-customer> -s <your-system> --layout system-snapshot`
 
 <img src="docs/img/sample-mgmt-summary.png" width="300" />
 
@@ -78,10 +78,10 @@ of its current state and its progress over time.
 
 <img src="docs/img/sample-system-maintainability-one-pager.png" width="400" />
 
-**Portfolio overview:** Report that visualizes capability and objectives trends using treemaps and bar charts for
+**Portfolio change report:** Report that visualizes capability and objectives trends using treemaps and bar charts for
 a specified period in time.
 
-- Example: `report-generator -c <your-customer> --layout portfolio-overview`.
+- Example: `report-generator -c <your-customer> --layout portfolio-change`.
 - The default reporting period is one month. If you want to change the reporting period, you can use the
   arguments `--start 2025-03-01` and `--end 2025-05-21`.
 - Team and division filters are also available. Multiple teams/divisions can be specified
@@ -100,10 +100,10 @@ fields, user activity or upload freshness of the systems.
 
 <img src="docs/img/sample-hygiene.png" width="400">
 
-**Portfolio baseline report:** Presents the state of a Sigrid portfolio right after the onboarding has been
+**Portfolio snapshot report:** Presents the state of a Sigrid portfolio right after the onboarding has been
 completed. It includes aspects related to the portfolio hygiene, status of objectives and overview scores.
 
-- Example: `report-generator -c <your-customer> --layout portfolio-baseline-report`.
+- Example: `report-generator -c <your-customer> --layout portfolio-snapshot`.
 - Make sure to set the start and end dates on the same day. Since this is a baseline report, there is no delta time
   interval to report over.
 
