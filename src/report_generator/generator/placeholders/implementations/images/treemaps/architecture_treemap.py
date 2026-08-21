@@ -35,16 +35,11 @@ class ArchitecturePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder
 
     @classmethod
     def value(cls, parameter):
-        def f(t):
-            return (
-                architecture_portfolio_data.get_system(t)["ratings"]["architecture"]
-                if architecture_portfolio_data.get_system(t)
-                else 0
-            )
-
         return cls.create_end_date_portfolio_treemap(
             grouping=parameter.lower(),
-            rating_func=f,
+            rating_func=cls.safe_rating_func(
+                architecture_portfolio_data.get_system, "ratings", "architecture"
+            ),
             rating_rounding_func=formatters.star_rating_round,
             determine_color_function=cls.determine_rating_color,
         )

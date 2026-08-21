@@ -34,17 +34,11 @@ class MaintainabilityDeltaQualityNewCodePortfolioTreemapPlaceholder(
 
     @classmethod
     def value(cls, parameter):
-        def f(t):
-            return (
-                maintainability_delta_quality_new_code.data[t]["filesRatingAtEnd"]
-                if maintainability_delta_quality_new_code.data[t]
-                and maintainability_delta_quality_new_code.data[t]["filesRatingAtEnd"]
-                else 0
-            )
-
         return cls.create_end_date_portfolio_treemap(
             grouping=parameter.lower(),
-            rating_func=f,
+            rating_func=cls.safe_rating_func(
+                maintainability_delta_quality_new_code.get_system, "filesRatingAtEnd"
+            ),
             rating_rounding_func=formatters.star_rating_round,
             determine_color_function=cls.determine_rating_color,
         )
@@ -59,19 +53,12 @@ class MaintainabilityDeltaQualityChangedCodePortfolioTreemapPlaceholder(
 
     @classmethod
     def value(cls, parameter):
-        def f(t):
-            return (
-                maintainability_delta_quality_changed_code.data[t]["filesRatingAtEnd"]
-                if maintainability_delta_quality_changed_code.data[t]
-                and maintainability_delta_quality_changed_code.data[t][
-                    "filesRatingAtEnd"
-                ]
-                else 0
-            )
-
         return cls.create_end_date_portfolio_treemap(
             grouping=parameter.lower(),
-            rating_func=f,
+            rating_func=cls.safe_rating_func(
+                maintainability_delta_quality_changed_code.get_system,
+                "filesRatingAtEnd",
+            ),
             rating_rounding_func=formatters.star_rating_round,
             determine_color_function=cls.determine_rating_color,
         )
@@ -86,21 +73,12 @@ class MaintainabilityDeltaQualityNewAndChangedCodePortfolioTreemapPlaceholder(
 
     @classmethod
     def value(cls, parameter):
-        def f(t):
-            return (
-                maintainability_delta_quality_new_and_changed_code.data[t][
-                    "filesRatingAtEnd"
-                ]
-                if maintainability_delta_quality_new_and_changed_code.data[t]
-                and maintainability_delta_quality_new_and_changed_code.data[t][
-                    "filesRatingAtEnd"
-                ]
-                else 0
-            )
-
         return cls.create_end_date_portfolio_treemap(
             grouping=parameter.lower(),
-            rating_func=f,
+            rating_func=cls.safe_rating_func(
+                maintainability_delta_quality_new_and_changed_code.get_system,
+                "filesRatingAtEnd",
+            ),
             rating_rounding_func=formatters.star_rating_round,
             determine_color_function=cls.determine_rating_color,
         )

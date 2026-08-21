@@ -60,6 +60,21 @@ class _AbstractTreemapPlaceholder(_AbstractParameterizedImagePlaceholder, ABC):
             return 0
         return max(0, min(1, (val - min_val) / (max_val - min_val)))
 
+    @staticmethod
+    def safe_rating_func(accessor, *keys):
+        """Build a rating_func(t) that reads `keys` off accessor(t), defaulting to 0
+        if any level along the way is missing or falsy."""
+
+        def rating_func(t):
+            value = accessor(t)
+            for key in keys:
+                if not value:
+                    return 0
+                value = value[key]
+            return value if value else 0
+
+        return rating_func
+
 
 class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
     grouping_processors: ClassVar[dict[str, Callable]] = {}
