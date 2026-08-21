@@ -16,11 +16,9 @@ from report_generator.generator.domain import (
     osh_portfolio_data,
 )
 from report_generator.generator.placeholders.formatting import formatters
-from report_generator.generator.placeholders.implementations.base import (
-    MultiParameterList,
-)
 from report_generator.generator.placeholders.implementations.images.treemaps.treemap_base import (
     EndDatePortfolioTreemapPlaceholder,
+    MultiParameterList,
 )
 from report_generator.generator.utils.constants import OSHMetric
 

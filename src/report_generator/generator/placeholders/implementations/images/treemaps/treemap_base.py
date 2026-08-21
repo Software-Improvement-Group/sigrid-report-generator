@@ -28,6 +28,9 @@ from report_generator.generator.placeholders.formatting import formatters
 from report_generator.generator.placeholders.formatting.technologies import (
     get_technology_name,
 )
+from report_generator.generator.placeholders.implementations.base import (
+    MultiParameterList,
+)
 from report_generator.generator.placeholders.implementations.images.base import (
     _AbstractParameterizedImagePlaceholder,
 )
@@ -160,7 +163,7 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
     GROUPING_PARAMETERS: ClassVar[list] = [
         x.upper() for x in grouping_processors.keys()
     ]
-    allowed_parameters: ClassVar[list] = GROUPING_PARAMETERS
+    allowed_parameters: ClassVar[list | MultiParameterList] = GROUPING_PARAMETERS
 
     @classmethod
     def _create_blank_portfolio_and_treemap(cls, grouping) -> tuple[dict, dict]:
