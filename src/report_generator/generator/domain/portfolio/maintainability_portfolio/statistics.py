@@ -13,6 +13,7 @@
 #  limitations under the License.
 
 import copy
+import operator
 from dataclasses import dataclass, field
 from datetime import datetime
 from functools import cached_property
@@ -170,16 +171,23 @@ def _track_change_direction(bucket, diff):
         bucket["systems-stable"] += 1
 
 
+def _update_extreme_change(bucket, extreme_key, system_name, diff, is_more_extreme):
+    """Replace the tracked system for `extreme_key` if `diff` is more extreme."""
+    current = bucket[extreme_key]
+    if not current or is_more_extreme(diff, next(iter(current.values()))):
+        bucket[extreme_key] = {system_name: diff}
+
+
 def _update_biggest_changes(bucket, system_name, diff):
     """Track the systems with the largest increase and decrease in a change bucket."""
     if diff > 0.01:
-        biggest = bucket["biggest-increase"]
-        if not biggest or diff > next(iter(biggest.values())):
-            bucket["biggest-increase"] = {system_name: diff}
+        _update_extreme_change(
+            bucket, "biggest-increase", system_name, diff, operator.gt
+        )
     elif diff < -0.01:
-        biggest = bucket["biggest-decrease"]
-        if not biggest or diff < next(iter(biggest.values())):
-            bucket["biggest-decrease"] = {system_name: diff}
+        _update_extreme_change(
+            bucket, "biggest-decrease", system_name, diff, operator.lt
+        )
 
 
 def _update_test_code_ratio_change(statistics, period):

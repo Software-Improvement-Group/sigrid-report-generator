@@ -257,42 +257,21 @@ def portfolio_maint_below_market():
 def portfolio_maint_increased():
     """Percentage of systems that have seen an increase in maintainability."""
     stats = maintainability_portfolio_stats.statistics
-    total = (
-        stats["maintainability-change"]["systems-increased"]
-        + stats["maintainability-change"]["systems-stable"]
-        + stats["maintainability-change"]["systems-decreased"]
-    )
-    if total == 0:
-        return 0
-    return round(100 * stats["maintainability-change"]["systems-increased"] / total)
+    return _change_percentage(stats["maintainability-change"], "systems-increased")
 
 
 @text_placeholder()
 def portfolio_maint_stable():
     """Percentage of systems that have remained stable in maintainability."""
     stats = maintainability_portfolio_stats.statistics
-    total = (
-        stats["maintainability-change"]["systems-increased"]
-        + stats["maintainability-change"]["systems-stable"]
-        + stats["maintainability-change"]["systems-decreased"]
-    )
-    if total == 0:
-        return 0
-    return round(100 * stats["maintainability-change"]["systems-stable"] / total)
+    return _change_percentage(stats["maintainability-change"], "systems-stable")
 
 
 @text_placeholder()
 def portfolio_maint_decreased():
     """Percentage of systems that have seen a decrease in maintainability."""
     stats = maintainability_portfolio_stats.statistics
-    total = (
-        stats["maintainability-change"]["systems-increased"]
-        + stats["maintainability-change"]["systems-stable"]
-        + stats["maintainability-change"]["systems-decreased"]
-    )
-    if total == 0:
-        return 0
-    return round(100 * stats["maintainability-change"]["systems-decreased"] / total)
+    return _change_percentage(stats["maintainability-change"], "systems-decreased")
 
 
 @text_placeholder()
@@ -598,28 +577,14 @@ def portfolio_test_code_difference():
 def portfolio_test_code_increase():
     """Percentage of systems that have seen an increase in test code ratio."""
     stats = maintainability_portfolio_stats.statistics
-    total = (
-        stats["test-code-ratio-change"]["systems-increased"]
-        + stats["test-code-ratio-change"]["systems-stable"]
-        + stats["test-code-ratio-change"]["systems-decreased"]
-    )
-    if total == 0:
-        return 0
-    return round(100 * stats["test-code-ratio-change"]["systems-increased"] / total)
+    return _change_percentage(stats["test-code-ratio-change"], "systems-increased")
 
 
 @text_placeholder()
 def portfolio_test_code_decrease():
     """Percentage of systems that have seen a decrease in test code ratio."""
     stats = maintainability_portfolio_stats.statistics
-    total = (
-        stats["test-code-ratio-change"]["systems-increased"]
-        + stats["test-code-ratio-change"]["systems-stable"]
-        + stats["test-code-ratio-change"]["systems-decreased"]
-    )
-    if total == 0:
-        return 0
-    return round(100 * stats["test-code-ratio-change"]["systems-decreased"] / total)
+    return _change_percentage(stats["test-code-ratio-change"], "systems-decreased")
 
 
 @text_placeholder()
