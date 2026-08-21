@@ -29,10 +29,6 @@ def parse_date(s):
     return datetime.strptime(s, "%Y-%m-%d")
 
 
-def is_system_active(metadata):
-    return metadata["active"] and not metadata["isDevelopmentOnly"]
-
-
 def existed_at_end_date(system, end_date):
     end_dt = parse_date(end_date)
     dates = [r["maintainabilityDate"] for r in system.get("allRatings", [])]
@@ -152,16 +148,9 @@ class MaintainabilityPortfolioData(RatedPortfolioMixin):
         return self.system_names
 
     def _rating_for_metric(self, system_name, metric_key):
-        md = utils.get_system_metadata(self.metadata, system_name)
-        if not is_system_active(md):
-            return None
         return self.end_snapshot(system_name).get(metric_key)
 
     def _rating_and_volume_for_metric(self, system_name, metric_key):
-        md = utils.get_system_metadata(self.metadata, system_name)
-        if not is_system_active(md):
-            return None, 0
-
         end_snapshot = self.end_snapshot(system_name)
         return end_snapshot.get(metric_key), end_snapshot.get("volumeInPersonMonths", 0)
 
@@ -186,9 +175,6 @@ class MaintainabilityPortfolioData(RatedPortfolioMixin):
         )
 
     def _build_rating_entry(self, system_name: str) -> dict | None:
-        md = utils.get_system_metadata(self.metadata, system_name)
-        if md is None or not is_system_active(md):
-            return None
         snapshot = self.end_snapshot(system_name)
         if snapshot is None:
             return None

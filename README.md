@@ -45,9 +45,9 @@ wherever you specify with the `-o` option.
 
 ### Generating standard reports
 
-**ITDD report:** Lightweight report that provides general information on a system, suitable for an ITDD setting.
+**System Summary:** Lightweight report that provides general information on a system, suitable for a quick overview of the system's status.
 
-- Example: `report-generator -c <your-customer> -s <your-system> --layout itdd-technical-debt`
+- Example: `report-generator -c <your-customer> -s <your-system> --layout system-summary`
 
 <img src="docs/img/sample-mgmt-summary.png" width="300" />
 
