@@ -22,6 +22,7 @@ from report_generator.generator.placeholders.formatting.technologies import (
     get_technology_name,
 )
 from report_generator.generator.placeholders.implementations.base import (
+    MultiParameterList,
     ParameterizedPlaceholder,
 )
 from report_generator.generator.placeholders.implementations.table.base import (
@@ -271,7 +272,7 @@ class _AbstractRefactoringCandidatesTableTechPlaceholder(
     are allowed).
     """
 
-    allowed_parameters = (1, 2, 3, 4)
+    allowed_parameters = MultiParameterList((1, 2, 3, 4))
 
     @classmethod
     def value(cls, tech_index: int) -> TableMatrix:

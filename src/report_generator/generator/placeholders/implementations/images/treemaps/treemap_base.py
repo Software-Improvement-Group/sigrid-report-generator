@@ -163,7 +163,9 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
     GROUPING_PARAMETERS: ClassVar[list] = [
         x.upper() for x in grouping_processors.keys()
     ]
-    allowed_parameters: ClassVar[list | MultiParameterList] = GROUPING_PARAMETERS
+    allowed_parameters: ClassVar[MultiParameterList] = MultiParameterList(
+        GROUPING_PARAMETERS
+    )
 
     @classmethod
     def _create_blank_portfolio_and_treemap(cls, grouping) -> tuple[dict, dict]:
