@@ -289,6 +289,31 @@ class OSHRatingsPortfolioData(RatedPortfolioMixin, OSHMetricsBase):
                     pass
         return None
 
+    def get_property_rating(self, system_name, metric_key):
+        system = self.get_system(system_name)
+        return self._extract_osh_rating(system, metric_key) if system else None
+
+    def _rating_and_volume_for_metric(self, system, metric_key):
+        return utils.get_rating_and_volume_from_system(
+            system,
+            lambda s: self._extract_osh_rating(s, metric_key),
+            "systemName",
+        )
+
+    def weighted_average_rating_for_metric(self, metric_key: str) -> float:
+        """Volume-weighted average rating for this metric across all systems in the portfolio."""
+        return utils.calculate_weighted_average_rating(
+            self._rated_systems(),
+            lambda system: self._rating_and_volume_for_metric(system, metric_key),
+        )
+
+    def rating_distribution_percentages_for_metric(self, metric_key: str) -> dict:
+        """Percentage of systems above/at/below market average for this metric."""
+        return utils.get_rating_distribution_percentages(
+            self._rated_systems(),
+            lambda system: self._extract_osh_rating(system, metric_key),
+        )
+
     def _rated_systems(self):
         return self.raw_data.get("systems", [])
 
@@ -296,9 +321,7 @@ class OSHRatingsPortfolioData(RatedPortfolioMixin, OSHMetricsBase):
         return self._extract_osh_rating(system, "system")
 
     def _get_rating_and_volume(self, system):
-        return utils.get_rating_and_volume_from_system(
-            system, lambda s: self._extract_osh_rating(s, "system"), "systemName"
-        )
+        return self._rating_and_volume_for_metric(system, "system")
 
 
 osh_portfolio_data = OSHRatingsPortfolioData()

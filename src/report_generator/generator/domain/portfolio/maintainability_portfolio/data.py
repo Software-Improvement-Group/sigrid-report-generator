@@ -147,15 +147,36 @@ class MaintainabilityPortfolioData(RatedPortfolioMixin):
     def _rated_systems(self):
         return self.system_names
 
-    def _extract_rating(self, system_name):
+    def get_property_rating(self, system_name: str, metric_key: str):
+        snapshot = self.end_snapshot(system_name)
+        return snapshot.get(metric_key) if snapshot else None
+
+    def _rating_for_metric(self, system_name, metric_key):
+        return self.get_property_rating(system_name, metric_key)
+
+    def _rating_and_volume_for_metric(self, system_name, metric_key):
         end_snapshot = self.end_snapshot(system_name)
-        return end_snapshot["maintainability"]
+        return end_snapshot.get(metric_key), end_snapshot.get("volumeInPersonMonths", 0)
+
+    def _extract_rating(self, system_name):
+        return self._rating_for_metric(system_name, "maintainability")
 
     def _get_rating_and_volume(self, system_name):
-        end_snapshot = self.end_snapshot(system_name)
-        rating = end_snapshot["maintainability"]
-        volume = end_snapshot.get("volumeInPersonMonths", 0)
-        return rating, volume
+        return self._rating_and_volume_for_metric(system_name, "maintainability")
+
+    def weighted_average_rating_for_metric(self, metric_key: str) -> float:
+        return utils.calculate_weighted_average_rating(
+            self._rated_systems(),
+            lambda system_name: self._rating_and_volume_for_metric(
+                system_name, metric_key
+            ),
+        )
+
+    def rating_distribution_percentages_for_metric(self, metric_key: str) -> dict:
+        return utils.get_rating_distribution_percentages(
+            self._rated_systems(),
+            lambda system_name: self._rating_for_metric(system_name, metric_key),
+        )
 
     def _build_rating_entry(self, system_name: str) -> dict | None:
         snapshot = self.end_snapshot(system_name)

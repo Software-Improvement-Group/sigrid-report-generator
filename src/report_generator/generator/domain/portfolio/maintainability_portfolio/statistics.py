@@ -23,7 +23,19 @@ from report_generator.generator.domain.portfolio.maintainability_portfolio impor
 from report_generator.generator.domain.portfolio.maintainability_portfolio.data import (
     parse_date,
 )
+from report_generator.generator.utils.constants import MaintMetric
 from report_generator.generator.utils.star_rating import calculate_star_rating_integer
+
+
+def _empty_change_bucket():
+    return {
+        "systems-increased": 0,
+        "systems-stable": 0,
+        "systems-decreased": 0,
+        "biggest-increase": {},
+        "biggest-decrease": {},
+    }
+
 
 _INITIAL_STATISTICS = {
     "maintainability": {
@@ -34,13 +46,7 @@ _INITIAL_STATISTICS = {
         "5-star": 0,
         "number-of-systems": 0,
     },
-    "maintainability-change": {
-        "systems-increased": 0,
-        "systems-stable": 0,
-        "systems-decreased": 0,
-        "biggest-increase": {},
-        "biggest-decrease": {},
-    },
+    "maintainability-change": _empty_change_bucket(),
     "volume-change": {
         "total-start": 0,
         "total-end": 0,
@@ -50,11 +56,10 @@ _INITIAL_STATISTICS = {
     "test-code-ratio-change": {
         "total-start": 0,
         "total-end": 0,
-        "systems-increased": 0,
-        "systems-stable": 0,
-        "systems-decreased": 0,
-        "biggest-increase": {},
-        "biggest-decrease": {},
+        **_empty_change_bucket(),
+    },
+    "metric-changes": {
+        metric.to_json_name(): _empty_change_bucket() for metric in MaintMetric
     },
 }
 
@@ -155,30 +160,34 @@ def _accumulate_test_code_totals(statistics, start_ratio, end_ratio):
     statistics["test-code-ratio-change"]["total-end"] += end_ratio
 
 
-def _track_test_code_change_direction(statistics, diff):
-    """Count systems by change direction."""
+def _track_change_direction(bucket, diff):
+    """Count a system into a change bucket by change direction."""
     if diff > 0.01:
-        statistics["test-code-ratio-change"]["systems-increased"] += 1
+        bucket["systems-increased"] += 1
     elif diff < -0.01:
-        statistics["test-code-ratio-change"]["systems-decreased"] += 1
+        bucket["systems-decreased"] += 1
     else:
-        statistics["test-code-ratio-change"]["systems-stable"] += 1
+        bucket["systems-stable"] += 1
 
 
-def _update_biggest_changes(statistics, system_name, diff):
-    """Track systems with largest increases and decreases."""
+def _update_biggest_increase(bucket, system_name, diff):
+    current = bucket["biggest-increase"]
+    if not current or diff > next(iter(current.values())):
+        bucket["biggest-increase"] = {system_name: diff}
+
+
+def _update_biggest_decrease(bucket, system_name, diff):
+    current = bucket["biggest-decrease"]
+    if not current or diff < next(iter(current.values())):
+        bucket["biggest-decrease"] = {system_name: diff}
+
+
+def _update_biggest_changes(bucket, system_name, diff):
+    """Track the systems with the largest increase and decrease in a change bucket."""
     if diff > 0.01:
-        biggest = statistics["test-code-ratio-change"]["biggest-increase"]
-        if not biggest or diff > next(iter(biggest.values())):
-            statistics["test-code-ratio-change"]["biggest-increase"] = {
-                system_name: diff
-            }
+        _update_biggest_increase(bucket, system_name, diff)
     elif diff < -0.01:
-        biggest = statistics["test-code-ratio-change"]["biggest-decrease"]
-        if not biggest or diff < next(iter(biggest.values())):
-            statistics["test-code-ratio-change"]["biggest-decrease"] = {
-                system_name: diff
-            }
+        _update_biggest_decrease(bucket, system_name, diff)
 
 
 def _update_test_code_ratio_change(statistics, period):
@@ -194,8 +203,25 @@ def _update_test_code_ratio_change(statistics, period):
 
     if period.start_date != period.end_date:
         diff = end_ratio - start_ratio
-        _track_test_code_change_direction(statistics, diff)
-        _update_biggest_changes(statistics, period.system_name, diff)
+        bucket = statistics["test-code-ratio-change"]
+        _track_change_direction(bucket, diff)
+        _update_biggest_changes(bucket, period.system_name, diff)
+
+
+def _update_metric_changes(statistics, period):
+    """Track per-submetric rating changes across the portfolio."""
+    if period.start_date == period.end_date:
+        return
+    for metric in MaintMetric:
+        metric_key = metric.to_json_name()
+        start_value = period.start_snapshot.get(metric_key)
+        end_value = period.end_snapshot.get(metric_key)
+        if start_value is None or end_value is None:
+            continue
+        diff = end_value - start_value
+        bucket = statistics["metric-changes"][metric_key]
+        _track_change_direction(bucket, diff)
+        _update_biggest_changes(bucket, period.system_name, diff)
 
 
 def _finalize_change_statistics(statistics, best_inc, best_dec):
@@ -280,12 +306,17 @@ class MaintainabilityPortfolioStats:
             _update_change_count(statistics, diff)
             _update_volume_change(statistics, period)
             _update_test_code_ratio_change(statistics, period)
+            _update_metric_changes(statistics, period)
             _collect_averages_data(period, accumulators)
 
         _finalize_change_statistics(statistics, best_inc, best_dec)
         _calculate_averages(statistics, accumulators)
 
         return statistics
+
+    def metric_change_statistics(self, metric_key: str) -> dict:
+        """Change statistics (increased/stable/decreased counts, biggest changes) for a submetric."""
+        return self.statistics["metric-changes"][metric_key]
 
     @cached_property
     def average_delta(self) -> float:

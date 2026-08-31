@@ -85,12 +85,9 @@ class TestRefactoringCandidatesTableDuplicationTech:
         )
 
     def test_allowed_parameters(self):
-        assert RefactoringCandidatesTableDuplicationTech.allowed_parameters == (
-            1,
-            2,
-            3,
-            4,
-        )
+        assert RefactoringCandidatesTableDuplicationTech.allowed_parameters.param_lists[
+            0
+        ] == [1, 2, 3, 4]
 
     def test_value_filters_candidates(self, mocker):
         _mock_sorted_tech(mocker, ["csharp", "java"])
@@ -135,7 +132,9 @@ class TestRefactoringCandidatesTableUnitSizeTech:
         )
 
     def test_allowed_parameters(self):
-        assert RefactoringCandidatesTableUnitSizeTech.allowed_parameters == (1, 2, 3, 4)
+        assert RefactoringCandidatesTableUnitSizeTech.allowed_parameters.param_lists[
+            0
+        ] == [1, 2, 3, 4]
 
     def test_value_filters_candidates(self, mocker):
         _mock_sorted_tech(mocker, ["csharp", "java"])
@@ -177,11 +176,11 @@ class TestRefactoringCandidatesTableUnitComplexityTech:
         )
 
     def test_allowed_parameters(self):
-        assert RefactoringCandidatesTableUnitComplexityTech.allowed_parameters == (
-            1,
-            2,
-            3,
-            4,
+        assert (
+            RefactoringCandidatesTableUnitComplexityTech.allowed_parameters.param_lists[
+                0
+            ]
+            == [1, 2, 3, 4]
         )
 
     def test_value_returns_header_only_for_others_tech(self, mocker):
@@ -203,11 +202,11 @@ class TestRefactoringCandidatesTableUnitInterfacingTech:
         )
 
     def test_allowed_parameters(self):
-        assert RefactoringCandidatesTableUnitInterfacingTech.allowed_parameters == (
-            1,
-            2,
-            3,
-            4,
+        assert (
+            RefactoringCandidatesTableUnitInterfacingTech.allowed_parameters.param_lists[
+                0
+            ]
+            == [1, 2, 3, 4]
         )
 
     def test_value_returns_header_only_for_out_of_range_tech(self, mocker):
@@ -229,11 +228,11 @@ class TestRefactoringCandidatesTableModuleCouplingTech:
         )
 
     def test_allowed_parameters(self):
-        assert RefactoringCandidatesTableModuleCouplingTech.allowed_parameters == (
-            1,
-            2,
-            3,
-            4,
+        assert (
+            RefactoringCandidatesTableModuleCouplingTech.allowed_parameters.param_lists[
+                0
+            ]
+            == [1, 2, 3, 4]
         )
 
     def test_value_filters_candidates(self, mocker):
@@ -278,8 +277,10 @@ class TestRefactoringCandidatesTableComponentIndependenceTech:
 
     def test_allowed_parameters(self):
         assert (
-            RefactoringCandidatesTableComponentIndependenceTech.allowed_parameters
-            == (1, 2, 3, 4)
+            RefactoringCandidatesTableComponentIndependenceTech.allowed_parameters.param_lists[
+                0
+            ]
+            == [1, 2, 3, 4]
         )
 
     def test_value_filters_candidates(self, mocker):

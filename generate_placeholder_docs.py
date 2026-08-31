@@ -66,7 +66,7 @@ class Steps(MarkdownElement):
 
 class Table(MarkdownElement):
     def __init__(self, data: pd.DataFrame):
-        data.fillna("")
+        data = data.fillna("")
 
         if "Parameters" in data.columns and data["Parameters"].str.strip().eq("").all():
             data = data.drop(columns=["Parameters"])

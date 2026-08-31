@@ -199,16 +199,26 @@ def market_average_text_placeholder(
     return decorator
 
 
+def _as_multi_parameter_list(
+    parameters: ParameterList | MultiParameterList,
+) -> MultiParameterList:
+    if isinstance(parameters, MultiParameterList):
+        return parameters
+    return MultiParameterList(parameters)
+
+
 def parameterized_text_placeholder(
     custom_key: str, parameters: ParameterList | MultiParameterList
 ) -> Callable:
+    normalized_parameters = _as_multi_parameter_list(parameters)
+
     def decorator(value_func) -> type[ParameterizedPlaceholder]:
         class ParameterizedTextPlaceholder(
             ParameterizedPlaceholder, _AbstractTextPlaceholder
         ):
             __doc__ = value_func.__doc__ if value_func.__doc__ else None
             key = custom_key
-            allowed_parameters = parameters
+            allowed_parameters = normalized_parameters
 
             @classmethod
             def value(cls, *args) -> str:

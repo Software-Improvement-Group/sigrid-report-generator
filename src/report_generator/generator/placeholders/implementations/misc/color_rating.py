@@ -22,6 +22,7 @@ from report_generator.generator.domain import architecture_data, maintainability
 from report_generator.generator.placeholders import rendering
 from report_generator.generator.placeholders.formatting import formatters
 from report_generator.generator.placeholders.implementations.base import (
+    MultiParameterList,
     ParameterizedPlaceholder,
 )
 from report_generator.generator.placeholders.rendering.common import (
@@ -80,7 +81,7 @@ class MaintColorRatingPlaceholder(AbstractColorRatingPlaceholder):
     """Fills the rating value and colors the shape to the corresponding rating color for a maintainability metric."""
 
     key = "COLOR_MAINT_RATING_{parameter}"
-    allowed_parameters: ClassVar[list] = list(MaintMetric)
+    allowed_parameters: ClassVar[MultiParameterList] = MultiParameterList(MaintMetric)
 
     @classmethod
     def value(cls, metric: MaintMetric):
@@ -92,7 +93,9 @@ class ArchColorRatingPlaceholder(AbstractColorRatingPlaceholder):
     """Fills the rating value and colors the shape to the corresponding rating color for an architecture metric."""
 
     key = "COLOR_ARCH_RATING_{parameter}"
-    allowed_parameters: ClassVar[list] = list(ArchMetric) + list(ArchSubcharacteristic)
+    allowed_parameters: ClassVar[MultiParameterList] = MultiParameterList(
+        list(ArchMetric) + list(ArchSubcharacteristic)
+    )
 
     @classmethod
     def value(cls, metric: MetricEnum):

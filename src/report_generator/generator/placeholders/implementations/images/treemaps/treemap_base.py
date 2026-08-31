@@ -28,6 +28,9 @@ from report_generator.generator.placeholders.formatting import formatters
 from report_generator.generator.placeholders.formatting.technologies import (
     get_technology_name,
 )
+from report_generator.generator.placeholders.implementations.base import (
+    MultiParameterList,
+)
 from report_generator.generator.placeholders.implementations.images.base import (
     _AbstractParameterizedImagePlaceholder,
 )
@@ -59,6 +62,21 @@ class _AbstractTreemapPlaceholder(_AbstractParameterizedImagePlaceholder, ABC):
         if min_val == max_val:
             return 0
         return max(0, min(1, (val - min_val) / (max_val - min_val)))
+
+    @staticmethod
+    def safe_rating_func(accessor, *keys):
+        """Build a rating_func(t) that reads `keys` off accessor(t), defaulting to 0
+        if any level along the way is missing or falsy."""
+
+        def rating_func(t):
+            value = accessor(t)
+            for key in keys:
+                if not value:
+                    return 0
+                value = value[key]
+            return value if value else 0
+
+        return rating_func
 
 
 class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
@@ -142,7 +160,12 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
         "main_technology": _process_main_technology_grouping.__func__,
     }
 
-    allowed_parameters: ClassVar[list] = [x.upper() for x in grouping_processors.keys()]
+    GROUPING_PARAMETERS: ClassVar[list] = [
+        x.upper() for x in grouping_processors.keys()
+    ]
+    allowed_parameters: ClassVar[MultiParameterList] = MultiParameterList(
+        GROUPING_PARAMETERS
+    )
 
     @classmethod
     def _create_blank_portfolio_and_treemap(cls, grouping) -> tuple[dict, dict]:

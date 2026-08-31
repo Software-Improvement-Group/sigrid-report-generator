@@ -153,6 +153,39 @@ class TestOSHPortfolioData:
         assert "system2" in names
         assert "system3" in names
 
+    @patch("report_generator.generator.domain.portfolio.osh_portfolio.sigrid_api")
+    def test_get_property_rating_returns_metric_value(self, mock_sigrid_api):
+        mock_sigrid_api.get_portfolio_osh_findings.return_value = {
+            "systems": [
+                {
+                    "systemName": "system1",
+                    "sbom": {
+                        "metadata": {
+                            "properties": [
+                                {"name": "sigrid:ratings:vulnerability", "value": "3.2"}
+                            ]
+                        }
+                    },
+                }
+            ]
+        }
+        osh_portfolio_data.__dict__.pop("raw_data", None)
+
+        rating = osh_portfolio_data.get_property_rating("system1", "vulnerability")
+
+        assert rating == pytest.approx(3.2)
+
+    @patch("report_generator.generator.domain.portfolio.osh_portfolio.sigrid_api")
+    def test_get_property_rating_returns_none_for_unknown_system(self, mock_sigrid_api):
+        mock_sigrid_api.get_portfolio_osh_findings.return_value = {
+            "systems": [{"systemName": "system1", "sbom": {}}]
+        }
+        osh_portfolio_data.__dict__.pop("raw_data", None)
+
+        assert (
+            osh_portfolio_data.get_property_rating("missing", "vulnerability") is None
+        )
+
 
 class _StubOSHMetrics:
     """Stub implementations of OSHMetricsBase abstract methods for testing."""
@@ -874,3 +907,103 @@ class TestLibraryRiskLevelsSystem:
         component = _make_component("lib", "1.0", {})
         result = self._osh_with_components([component]).library_risk_levels
         assert result["no_risk"] == 1
+
+
+def _osh_system(system_name, ratings):
+    """Build a portfolio-OSH system payload with the given metric ratings."""
+    return {
+        "systemName": system_name,
+        "sbom": {
+            "metadata": {
+                "properties": [
+                    {"name": f"sigrid:ratings:{metric}", "value": str(rating)}
+                    for metric, rating in ratings.items()
+                ]
+            }
+        },
+    }
+
+
+class TestOSHPortfolioMetricParams:
+    """Test cases for the per-metric rating helpers on OSHRatingsPortfolioData."""
+
+    def _portfolio_with_raw(self, systems):
+        portfolio = OSHRatingsPortfolioData()
+        portfolio.__dict__["raw_data"] = {"systems": systems}
+        return portfolio
+
+    def test_weighted_average_rating_for_metric(self):
+        portfolio = self._portfolio_with_raw(
+            [
+                _osh_system("a", {"vulnerability": 2.0}),
+                _osh_system("b", {"vulnerability": 4.0}),
+            ]
+        )
+
+        with patch(
+            "report_generator.generator.domain.portfolio.shared.utils.sigrid_api"
+        ) as mock_utils_api:
+            mock_utils_api.get_portfolio_maintainability.return_value = {
+                "systems": [
+                    {"system": "a", "volumeInPersonMonths": 1.0},
+                    {"system": "b", "volumeInPersonMonths": 3.0},
+                ]
+            }
+
+            rating = portfolio.weighted_average_rating_for_metric("vulnerability")
+
+        assert rating == pytest.approx((2.0 * 1 + 4.0 * 3) / 4)
+
+    def test_weighted_average_rating_for_metric_ignores_systems_without_the_rating(
+        self,
+    ):
+        portfolio = self._portfolio_with_raw(
+            [
+                _osh_system("rated", {"vulnerability": 4.0}),
+                _osh_system("unrated", {"legal": 2.0}),
+            ]
+        )
+
+        with patch(
+            "report_generator.generator.domain.portfolio.shared.utils.sigrid_api"
+        ) as mock_utils_api:
+            mock_utils_api.get_portfolio_maintainability.return_value = {
+                "systems": [
+                    {"system": "rated", "volumeInPersonMonths": 1.0},
+                    {"system": "unrated", "volumeInPersonMonths": 5.0},
+                ]
+            }
+
+            rating = portfolio.weighted_average_rating_for_metric("vulnerability")
+
+        assert rating == pytest.approx(4.0)
+
+    def test_rating_distribution_percentages_for_metric(self):
+        portfolio = self._portfolio_with_raw(
+            [
+                _osh_system("high", {"legal": 4.0}),
+                _osh_system("mid", {"legal": 3.0}),
+                _osh_system("low", {"legal": 1.0}),
+            ]
+        )
+
+        distribution = portfolio.rating_distribution_percentages_for_metric("legal")
+
+        assert distribution == {
+            "above_market": 33,
+            "market_average": 33,
+            "below_market": 33,
+        }
+
+    def test_rating_distribution_percentages_for_metric_with_no_data(self):
+        portfolio = self._portfolio_with_raw([])
+
+        distribution = portfolio.rating_distribution_percentages_for_metric(
+            "vulnerability"
+        )
+
+        assert distribution == {
+            "above_market": 0,
+            "market_average": 0,
+            "below_market": 0,
+        }

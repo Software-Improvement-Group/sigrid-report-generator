@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from functools import cached_property
+from functools import cached_property, lru_cache
 
 from report_generator.generator.context import sigrid_api
 from report_generator.generator.context.portfolio_filters import (
@@ -83,6 +83,58 @@ class ArchitecturePortfolioData(RatedPortfolioMixin, RatingsChangePortfolioBase)
         return utils.get_rating_and_volume_from_system(
             system, self._extract_rating, "system"
         )
+
+    @staticmethod
+    def _extract_property_rating(system, metric_key):
+        if system is None:
+            return None
+        return system.get("ratings", {}).get("systemProperties", {}).get(metric_key)
+
+    def get_property_rating(self, system_name, metric_key):
+        return self._extract_property_rating(self.get_system(system_name), metric_key)
+
+    def get_property_difference(self, system_name, metric_key):
+        start = utils.get_system_helper(system_name, self._start_ratings, "system")
+        end = utils.get_system_helper(system_name, self._end_ratings, "system")
+        return self._delta(
+            self._extract_property_rating(start, metric_key),
+            self._extract_property_rating(end, metric_key),
+        )
+
+    def _property_extractor(self, metric_key):
+        return lambda system: self._extract_property_rating(system, metric_key)
+
+    def weighted_average_rating_for_metric(self, metric_key: str) -> float:
+        """Volume-weighted average rating for this metric across all systems in the portfolio."""
+        return self.weighted_average_using(
+            self._rated_systems(), self._property_extractor(metric_key)
+        )
+
+    def rating_distribution_percentages_for_metric(self, metric_key: str) -> dict:
+        """Percentage of systems above/at/below market average for this metric."""
+        return utils.get_rating_distribution_percentages(
+            self._rated_systems(), self._property_extractor(metric_key)
+        )
+
+    @lru_cache  # noqa: B019
+    def change_distribution_percentages_for_metric(self, metric_key: str) -> dict:
+        """Percentage of systems whose rating for this metric increased, stayed stable, or
+        decreased."""
+        return self.change_distribution_percentages_using(
+            self._property_extractor(metric_key)
+        )
+
+    @lru_cache  # noqa: B019
+    def biggest_increase_for_metric(self, metric_key: str) -> tuple[str, float] | None:
+        """Display name and rounded delta of the system with the largest increase in this
+        metric's rating."""
+        return self.biggest_increase_using(self._property_extractor(metric_key))
+
+    @lru_cache  # noqa: B019
+    def biggest_decrease_for_metric(self, metric_key: str) -> tuple[str, float] | None:
+        """Display name and rounded delta of the system with the largest decrease in this
+        metric's rating."""
+        return self.biggest_decrease_using(self._property_extractor(metric_key))
 
 
 architecture_portfolio_data = ArchitecturePortfolioData()

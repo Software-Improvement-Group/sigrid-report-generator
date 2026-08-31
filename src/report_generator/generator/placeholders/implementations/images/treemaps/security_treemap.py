@@ -31,16 +31,11 @@ class SecurityRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlacehol
 
     @classmethod
     def value(cls, parameter):
-        def f(t):
-            return (
-                security_ratings_portfolio_data.get_system(t)["rating"]
-                if security_ratings_portfolio_data.get_system(t)
-                else 0
-            )
-
         return cls.create_end_date_portfolio_treemap(
             grouping=parameter.lower(),
-            rating_func=f,
+            rating_func=cls.safe_rating_func(
+                security_ratings_portfolio_data.get_system, "rating"
+            ),
             rating_rounding_func=formatters.star_rating_round,
             determine_color_function=cls.determine_rating_color,
         )

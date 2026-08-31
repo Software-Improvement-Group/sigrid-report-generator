@@ -227,7 +227,8 @@ class TestMainTechnologyGrouping:
             _AbstractPortfolioTreemapPlaceholder.grouping_processors
         )
         assert (
-            "MAIN_TECHNOLOGY" in _AbstractPortfolioTreemapPlaceholder.allowed_parameters
+            "MAIN_TECHNOLOGY"
+            in _AbstractPortfolioTreemapPlaceholder.allowed_parameters.param_lists[0]
         )
 
     @patch(

@@ -21,10 +21,12 @@ from report_generator.generator.domain.portfolio.maintainability_portfolio.stati
 from report_generator.generator.placeholders.formatting.formatters import (
     star_rating_round,
 )
+from report_generator.generator.utils.constants import MaintMetric
 
 from .base import (
     delta_text_placeholder,
     market_average_text_placeholder,
+    parameterized_text_placeholder,
     text_placeholder,
 )
 
@@ -255,42 +257,21 @@ def portfolio_maint_below_market():
 def portfolio_maint_increased():
     """Percentage of systems that have seen an increase in maintainability."""
     stats = maintainability_portfolio_stats.statistics
-    total = (
-        stats["maintainability-change"]["systems-increased"]
-        + stats["maintainability-change"]["systems-stable"]
-        + stats["maintainability-change"]["systems-decreased"]
-    )
-    if total == 0:
-        return 0
-    return round(100 * stats["maintainability-change"]["systems-increased"] / total)
+    return _change_percentage(stats["maintainability-change"], "systems-increased")
 
 
 @text_placeholder()
 def portfolio_maint_stable():
     """Percentage of systems that have remained stable in maintainability."""
     stats = maintainability_portfolio_stats.statistics
-    total = (
-        stats["maintainability-change"]["systems-increased"]
-        + stats["maintainability-change"]["systems-stable"]
-        + stats["maintainability-change"]["systems-decreased"]
-    )
-    if total == 0:
-        return 0
-    return round(100 * stats["maintainability-change"]["systems-stable"] / total)
+    return _change_percentage(stats["maintainability-change"], "systems-stable")
 
 
 @text_placeholder()
 def portfolio_maint_decreased():
     """Percentage of systems that have seen a decrease in maintainability."""
     stats = maintainability_portfolio_stats.statistics
-    total = (
-        stats["maintainability-change"]["systems-increased"]
-        + stats["maintainability-change"]["systems-stable"]
-        + stats["maintainability-change"]["systems-decreased"]
-    )
-    if total == 0:
-        return 0
-    return round(100 * stats["maintainability-change"]["systems-decreased"] / total)
+    return _change_percentage(stats["maintainability-change"], "systems-decreased")
 
 
 @text_placeholder()
@@ -315,6 +296,134 @@ def portfolio_maint_biggest_changes():
     if res:
         return " ".join(res)
     return ""
+
+
+def _change_percentage(bucket, key):
+    total = (
+        bucket["systems-increased"]
+        + bucket["systems-stable"]
+        + bucket["systems-decreased"]
+    )
+    if total == 0:
+        return 0
+    return round(100 * bucket[key] / total)
+
+
+@parameterized_text_placeholder(
+    custom_key="PORTFOLIO_MAINT_AVG_RATING_{parameter}", parameters=list(MaintMetric)
+)
+def portfolio_maint_avg_rating_param(metric: MaintMetric):
+    """Volume-weighted average rating for this metric across all systems in the portfolio."""
+    rating = maintainability_portfolio_data.weighted_average_rating_for_metric(
+        metric.to_json_name()
+    )
+    return star_rating_round(rating)
+
+
+@parameterized_text_placeholder(
+    custom_key="PORTFOLIO_MAINT_ABOVE_MARKET_{parameter}", parameters=list(MaintMetric)
+)
+def portfolio_maint_above_market_param(metric: MaintMetric):
+    """Percentage of systems scoring above market average (≥3.5 stars) for this metric."""
+    distribution = (
+        maintainability_portfolio_data.rating_distribution_percentages_for_metric(
+            metric.to_json_name()
+        )
+    )
+    return distribution["above_market"]
+
+
+@parameterized_text_placeholder(
+    custom_key="PORTFOLIO_MAINT_MARKET_AVERAGE_{parameter}",
+    parameters=list(MaintMetric),
+)
+def portfolio_maint_market_average_param(metric: MaintMetric):
+    """Percentage of systems scoring market average (2.5-3.5 stars) for this metric."""
+    distribution = (
+        maintainability_portfolio_data.rating_distribution_percentages_for_metric(
+            metric.to_json_name()
+        )
+    )
+    return distribution["market_average"]
+
+
+@parameterized_text_placeholder(
+    custom_key="PORTFOLIO_MAINT_BELOW_MARKET_{parameter}", parameters=list(MaintMetric)
+)
+def portfolio_maint_below_market_param(metric: MaintMetric):
+    """Percentage of systems scoring below market average (<2.5 stars) for this metric."""
+    distribution = (
+        maintainability_portfolio_data.rating_distribution_percentages_for_metric(
+            metric.to_json_name()
+        )
+    )
+    return distribution["below_market"]
+
+
+@parameterized_text_placeholder(
+    custom_key="PORTFOLIO_MAINT_INCREASED_{parameter}", parameters=list(MaintMetric)
+)
+def portfolio_maint_increased_param(metric: MaintMetric):
+    """Percentage of systems that have seen an increase in this metric."""
+    bucket = maintainability_portfolio_stats.metric_change_statistics(
+        metric.to_json_name()
+    )
+    return _change_percentage(bucket, "systems-increased")
+
+
+@parameterized_text_placeholder(
+    custom_key="PORTFOLIO_MAINT_STABLE_{parameter}", parameters=list(MaintMetric)
+)
+def portfolio_maint_stable_param(metric: MaintMetric):
+    """Percentage of systems that have remained stable in this metric."""
+    bucket = maintainability_portfolio_stats.metric_change_statistics(
+        metric.to_json_name()
+    )
+    return _change_percentage(bucket, "systems-stable")
+
+
+@parameterized_text_placeholder(
+    custom_key="PORTFOLIO_MAINT_DECREASED_{parameter}", parameters=list(MaintMetric)
+)
+def portfolio_maint_decreased_param(metric: MaintMetric):
+    """Percentage of systems that have seen a decrease in this metric."""
+    bucket = maintainability_portfolio_stats.metric_change_statistics(
+        metric.to_json_name()
+    )
+    return _change_percentage(bucket, "systems-decreased")
+
+
+def _biggest_change_sentence(entries, direction, metric_label):
+    if not entries:
+        return None
+    system, diff = next(iter(entries.items()))
+    display_name = maintainability_portfolio_data.get_system_display_name(system)
+    return f"The largest {direction} in {metric_label} rating was experienced by {display_name} ({round(diff, 1)} stars)."
+
+
+@parameterized_text_placeholder(
+    custom_key="PORTFOLIO_MAINT_BIGGEST_CHANGES_{parameter}",
+    parameters=list(MaintMetric),
+)
+def portfolio_maint_biggest_changes_param(metric: MaintMetric):
+    """Descriptive summary of the biggest changes in the portfolio for this metric."""
+    bucket = maintainability_portfolio_stats.metric_change_statistics(
+        metric.to_json_name()
+    )
+    metric_label = metric.value.replace("_", " ").title()
+    sentences = [
+        sentence
+        for sentence in (
+            _biggest_change_sentence(
+                bucket["biggest-increase"], "increase", metric_label
+            ),
+            _biggest_change_sentence(
+                bucket["biggest-decrease"], "decrease", metric_label
+            ),
+        )
+        if sentence
+    ]
+    return " ".join(sentences)
 
 
 @text_placeholder()
@@ -468,28 +577,14 @@ def portfolio_test_code_difference():
 def portfolio_test_code_increase():
     """Percentage of systems that have seen an increase in test code ratio."""
     stats = maintainability_portfolio_stats.statistics
-    total = (
-        stats["test-code-ratio-change"]["systems-increased"]
-        + stats["test-code-ratio-change"]["systems-stable"]
-        + stats["test-code-ratio-change"]["systems-decreased"]
-    )
-    if total == 0:
-        return 0
-    return round(100 * stats["test-code-ratio-change"]["systems-increased"] / total)
+    return _change_percentage(stats["test-code-ratio-change"], "systems-increased")
 
 
 @text_placeholder()
 def portfolio_test_code_decrease():
     """Percentage of systems that have seen a decrease in test code ratio."""
     stats = maintainability_portfolio_stats.statistics
-    total = (
-        stats["test-code-ratio-change"]["systems-increased"]
-        + stats["test-code-ratio-change"]["systems-stable"]
-        + stats["test-code-ratio-change"]["systems-decreased"]
-    )
-    if total == 0:
-        return 0
-    return round(100 * stats["test-code-ratio-change"]["systems-decreased"] / total)
+    return _change_percentage(stats["test-code-ratio-change"], "systems-decreased")
 
 
 @text_placeholder()

@@ -173,6 +173,50 @@ def portfolio_osh_avg_market_average():
     return osh_portfolio_data.weighted_average_rating
 
 
+@parameterized_text_placeholder(
+    custom_key="PORTFOLIO_OSH_AVG_RATING_{parameter}", parameters=list(OSHMetric)
+)
+def portfolio_osh_avg_rating_param(metric: OSHMetric):
+    """Volume-weighted average rating for this OSH metric across all systems in the portfolio."""
+    rating = osh_portfolio_data.weighted_average_rating_for_metric(
+        metric.to_json_name()
+    )
+    return star_rating_round(rating)
+
+
+@parameterized_text_placeholder(
+    custom_key="PORTFOLIO_OSH_ABOVE_MARKET_{parameter}", parameters=list(OSHMetric)
+)
+def portfolio_osh_above_market_param(metric: OSHMetric):
+    """Percentage of systems scoring above market average (≥3.5 stars) for this OSH metric."""
+    distribution = osh_portfolio_data.rating_distribution_percentages_for_metric(
+        metric.to_json_name()
+    )
+    return distribution["above_market"]
+
+
+@parameterized_text_placeholder(
+    custom_key="PORTFOLIO_OSH_MARKET_AVERAGE_{parameter}", parameters=list(OSHMetric)
+)
+def portfolio_osh_market_average_param(metric: OSHMetric):
+    """Percentage of systems scoring market average (2.5-3.5 stars) for this OSH metric."""
+    distribution = osh_portfolio_data.rating_distribution_percentages_for_metric(
+        metric.to_json_name()
+    )
+    return distribution["market_average"]
+
+
+@parameterized_text_placeholder(
+    custom_key="PORTFOLIO_OSH_BELOW_MARKET_{parameter}", parameters=list(OSHMetric)
+)
+def portfolio_osh_below_market_param(metric: OSHMetric):
+    """Percentage of systems scoring below market average (<2.5 stars) for this OSH metric."""
+    distribution = osh_portfolio_data.rating_distribution_percentages_for_metric(
+        metric.to_json_name()
+    )
+    return distribution["below_market"]
+
+
 @text_placeholder()
 def osh_portfolio_probability_of_exploit():
     """Probability that at least one known vulnerability across the portfolio can be exploited within 30 days."""

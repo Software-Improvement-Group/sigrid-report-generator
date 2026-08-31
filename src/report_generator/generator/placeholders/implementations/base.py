@@ -150,12 +150,13 @@ class ParameterizedPlaceholder(Placeholder, ABC):
     (specifically `{parameter}`) which is replaced during resolution.
 
     Attributes:
-        allowed_parameters (ParameterList): A list of values (str, int, or Enum) used to
+        allowed_parameters (MultiParameterList): One or more parameter lists (str, int, or
+                                            Enum values) whose cartesian product is used to
                                             generate unique keys and calculate values.
     """
 
     __parameterized_placeholder__ = True
-    allowed_parameters: ParameterList
+    allowed_parameters: MultiParameterList
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -163,15 +164,9 @@ class ParameterizedPlaceholder(Placeholder, ABC):
             cls._validate_key_token_count()
 
     @classmethod
-    def _expected_arity(cls) -> int:
-        if isinstance(cls.allowed_parameters, MultiParameterList):
-            return cls.allowed_parameters.arity
-        return 1
-
-    @classmethod
     def _validate_key_token_count(cls):
         actual = len(PARAMETER_TOKEN_PATTERN.findall(cls.key))
-        expected = cls._expected_arity()
+        expected = cls.allowed_parameters.arity
         if actual != expected:
             raise ValueError(
                 f"Parameterized placeholder key must have {expected} "
@@ -183,24 +178,6 @@ class ParameterizedPlaceholder(Placeholder, ABC):
         resolve_method_name = cls._determine_resolve_method(report.type)
         if not resolve_method_name:
             return
-        if isinstance(cls.allowed_parameters, MultiParameterList):
-            cls._resolve_multi(resolve_method_name, report)
-        else:
-            cls._resolve_single(resolve_method_name, report)
-
-    @classmethod
-    def _resolve_single(cls, resolve_method_name: str, report: Report) -> None:
-        for parameter in cls.allowed_parameters:
-            key_with_param = PARAMETER_TOKEN_PATTERN.sub(
-                str(parameter), cls.key, count=1
-            )
-            value_cb = functools.partial(cls.value, parameter)
-            cls._call_resolve_method(
-                resolve_method_name, report, key_with_param, value_cb
-            )
-
-    @classmethod
-    def _resolve_multi(cls, resolve_method_name: str, report: Report) -> None:
         for param_tuple in cls.allowed_parameters.product():
             key_with_params = cls.key
             for param in param_tuple:

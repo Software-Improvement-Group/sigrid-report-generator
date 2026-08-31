@@ -53,6 +53,10 @@ def generate_portfolio_change(output_path: str) -> None:
     _generate_report("portfolio-change.pptx", output_path)
 
 
+def generate_portfolio_metrics(output_path: str) -> None:
+    _generate_report("portfolio-metrics.pptx", output_path)
+
+
 def generate_hygiene_report(output_path: str) -> None:
     _generate_report("hygiene-report.pptx", output_path)
 
@@ -77,6 +81,7 @@ _preset_reports: dict[str, Callable[[str], None]] = {
     "objectives": generate_objectives_report,
     "refactoring-candidates": generate_refactoring_candidates_report,
     "system-maintainability-one-pager": generate_system_maintainability_one_pager,
+    "portfolio-metrics": generate_portfolio_metrics,
     "portfolio-change": generate_portfolio_change,
     "hygiene-report": generate_hygiene_report,
     "portfolio-snapshot": generate_portfolio_snapshot,

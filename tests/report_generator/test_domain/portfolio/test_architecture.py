@@ -252,3 +252,225 @@ class TestArchitecturePortfolioDataChange:
             "Down System",
             -2.0,
         )
+
+
+def _arch_ratings_with_properties(mapping):
+    """Build an architecture-quality payload with per-system property ratings."""
+    return [
+        {"system": name, "ratings": {"systemProperties": properties}}
+        for name, properties in mapping.items()
+    ]
+
+
+class TestArchitecturePortfolioDataPropertyRatings:
+    """Test cases for per-metric (systemProperties) ratings and deltas."""
+
+    def teardown_method(self):
+        reset_context()
+        for attr in ["data", "_start_ratings", "metadata"]:
+            architecture_portfolio_data.__dict__.pop(attr, None)
+
+    @patch(
+        "report_generator.generator.domain.portfolio.architecture_portfolio.sigrid_api"
+    )
+    def test_get_property_rating_returns_metric_value(self, mock_sigrid_api):
+        mock_sigrid_api.get_portfolio_architecture_findings.return_value = (
+            _arch_ratings_with_properties({"system1": {"componentCoupling": 5.08685}})
+        )
+
+        rating = architecture_portfolio_data.get_property_rating(
+            "system1", "componentCoupling"
+        )
+
+        assert rating == pytest.approx(5.08685)
+
+    @patch(
+        "report_generator.generator.domain.portfolio.architecture_portfolio.sigrid_api"
+    )
+    def test_get_property_rating_returns_none_for_unknown_system(self, mock_sigrid_api):
+        mock_sigrid_api.get_portfolio_architecture_findings.return_value = (
+            _arch_ratings_with_properties({"system1": {"componentCoupling": 5.0}})
+        )
+
+        assert (
+            architecture_portfolio_data.get_property_rating(
+                "missing", "componentCoupling"
+            )
+            is None
+        )
+
+    @patch(
+        "report_generator.generator.domain.portfolio.architecture_portfolio.sigrid_api"
+    )
+    def test_get_property_difference_computes_signed_delta(self, mock_sigrid_api):
+        mock_sigrid_api.get_period.return_value = ("2025-01-01", "2025-12-31")
+        mock_sigrid_api.get_portfolio_architecture_findings.side_effect = (
+            TestArchitecturePortfolioDataChange._ratings_by_end_date(
+                {
+                    "2025-01-01": _arch_ratings_with_properties(
+                        {"system1": {"componentCoupling": 2.0}}
+                    ),
+                    "2025-12-31": _arch_ratings_with_properties(
+                        {"system1": {"componentCoupling": 3.5}}
+                    ),
+                }
+            )
+        )
+
+        difference = architecture_portfolio_data.get_property_difference(
+            "system1", "componentCoupling"
+        )
+
+        assert difference == pytest.approx(1.5)
+
+    @patch(
+        "report_generator.generator.domain.portfolio.architecture_portfolio.sigrid_api"
+    )
+    def test_get_property_difference_is_none_when_system_absent_at_start(
+        self, mock_sigrid_api
+    ):
+        mock_sigrid_api.get_period.return_value = ("2025-01-01", "2025-12-31")
+        mock_sigrid_api.get_portfolio_architecture_findings.side_effect = (
+            TestArchitecturePortfolioDataChange._ratings_by_end_date(
+                {
+                    "2025-01-01": _arch_ratings_with_properties({}),
+                    "2025-12-31": _arch_ratings_with_properties(
+                        {"system1": {"componentCoupling": 3.5}}
+                    ),
+                }
+            )
+        )
+
+        difference = architecture_portfolio_data.get_property_difference(
+            "system1", "componentCoupling"
+        )
+
+        assert difference is None
+
+
+class TestArchitecturePortfolioDataMetricParams:
+    """Test cases for the per-metric (systemProperties) change/rating helpers."""
+
+    def teardown_method(self):
+        reset_context()
+        for attr in ["data", "_start_ratings", "metadata"]:
+            architecture_portfolio_data.__dict__.pop(attr, None)
+        architecture_portfolio_data.change_distribution_percentages_for_metric.cache_clear()
+        architecture_portfolio_data.biggest_increase_for_metric.cache_clear()
+        architecture_portfolio_data.biggest_decrease_for_metric.cache_clear()
+
+    @patch(
+        "report_generator.generator.domain.portfolio.architecture_portfolio.sigrid_api"
+    )
+    def test_change_distribution_percentages_for_metric(self, mock_sigrid_api):
+        mock_sigrid_api.get_period.return_value = ("2025-01-01", "2025-12-31")
+        mock_sigrid_api.get_portfolio_architecture_findings.side_effect = (
+            TestArchitecturePortfolioDataChange._ratings_by_end_date(
+                {
+                    "2025-01-01": _arch_ratings_with_properties(
+                        {
+                            "up": {"componentCoupling": 2.0},
+                            "down": {"componentCoupling": 4.0},
+                            "flat": {"componentCoupling": 3.0},
+                        }
+                    ),
+                    "2025-12-31": _arch_ratings_with_properties(
+                        {
+                            "up": {"componentCoupling": 3.0},
+                            "down": {"componentCoupling": 2.0},
+                            "flat": {"componentCoupling": 3.0},
+                        }
+                    ),
+                }
+            )
+        )
+
+        result = architecture_portfolio_data.change_distribution_percentages_for_metric(
+            "componentCoupling"
+        )
+
+        assert result == {"increased": 33, "stable": 33, "decreased": 33}
+
+    @patch(
+        "report_generator.generator.domain.portfolio.architecture_portfolio.sigrid_api"
+    )
+    def test_biggest_increase_and_decrease_for_metric(self, mock_sigrid_api):
+        mock_sigrid_api.get_period.return_value = ("2025-01-01", "2025-12-31")
+        mock_sigrid_api.get_portfolio_metadata.return_value = []
+        mock_sigrid_api.get_portfolio_architecture_findings.side_effect = (
+            TestArchitecturePortfolioDataChange._ratings_by_end_date(
+                {
+                    "2025-01-01": _arch_ratings_with_properties(
+                        {
+                            "up": {"componentCoupling": 2.0},
+                            "down": {"componentCoupling": 4.0},
+                        }
+                    ),
+                    "2025-12-31": _arch_ratings_with_properties(
+                        {
+                            "up": {"componentCoupling": 3.5},
+                            "down": {"componentCoupling": 2.0},
+                        }
+                    ),
+                }
+            )
+        )
+
+        assert architecture_portfolio_data.biggest_increase_for_metric(
+            "componentCoupling"
+        ) == ("up", 1.5)
+        assert architecture_portfolio_data.biggest_decrease_for_metric(
+            "componentCoupling"
+        ) == ("down", -2.0)
+
+    @patch("report_generator.generator.domain.portfolio.shared.utils.sigrid_api")
+    @patch(
+        "report_generator.generator.domain.portfolio.architecture_portfolio.sigrid_api"
+    )
+    def test_weighted_average_rating_for_metric(self, mock_sigrid_api, mock_utils_api):
+        mock_sigrid_api.get_portfolio_architecture_findings.return_value = (
+            _arch_ratings_with_properties(
+                {
+                    "a": {"componentCoupling": 2.0},
+                    "b": {"componentCoupling": 4.0},
+                }
+            )
+        )
+        mock_utils_api.get_portfolio_maintainability.return_value = {
+            "systems": [
+                {"system": "a", "volumeInPersonMonths": 1.0},
+                {"system": "b", "volumeInPersonMonths": 3.0},
+            ]
+        }
+
+        rating = architecture_portfolio_data.weighted_average_rating_for_metric(
+            "componentCoupling"
+        )
+
+        assert rating == pytest.approx((2.0 * 1 + 4.0 * 3) / 4)
+
+    @patch(
+        "report_generator.generator.domain.portfolio.architecture_portfolio.sigrid_api"
+    )
+    def test_rating_distribution_percentages_for_metric(self, mock_sigrid_api):
+        mock_sigrid_api.get_portfolio_architecture_findings.return_value = (
+            _arch_ratings_with_properties(
+                {
+                    "high": {"componentCoupling": 4.0},
+                    "mid": {"componentCoupling": 3.0},
+                    "low": {"componentCoupling": 1.0},
+                }
+            )
+        )
+
+        distribution = (
+            architecture_portfolio_data.rating_distribution_percentages_for_metric(
+                "componentCoupling"
+            )
+        )
+
+        assert distribution == {
+            "above_market": 33,
+            "market_average": 33,
+            "below_market": 33,
+        }
