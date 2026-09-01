@@ -82,12 +82,6 @@ class _ShapeWalk:
     shape_names: set[str] = field(default_factory=set)
     top_level_shape: object = None
 
-    @classmethod
-    def under(cls, shape) -> "_ShapeWalk":
-        walk = cls()
-        walk.descend_from(shape)
-        return walk
-
     def descend_from(self, top_level_shape) -> None:
         self.top_level_shape = top_level_shape
         self.descend(top_level_shape)
@@ -209,22 +203,6 @@ def matching_paragraphs(records, search_text):
         record.paragraph
         for record in records
         if traversal_cache.matches_word_bounded(record.text, search_text)
-    ]
-
-
-def records_including_nested(shape):
-    return _ShapeWalk.under(shape).records
-
-
-def own_records(shape):
-    return [
-        ParagraphRecord(
-            paragraph=paragraph,
-            text_owner=paragraph,
-            text=paragraph.text,
-            top_level_shape=shape,
-        )
-        for paragraph in shape.text_frame.paragraphs
     ]
 
 

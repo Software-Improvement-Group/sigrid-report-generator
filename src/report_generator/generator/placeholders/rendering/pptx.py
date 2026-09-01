@@ -18,7 +18,6 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 
 from pptx.dml.color import RGBColor
-from pptx.oxml.xmlchemy import OxmlElement
 from pptx.presentation import Presentation
 
 # noinspection PyProtectedMember
@@ -66,28 +65,6 @@ VOLUME_NEG_CHANGE_RANGE_COLORS = [
     RGBColor(0xFA, 0xF1, 0xE1),
     RGBColor(0xE8, 0x99, 0x36),
 ]
-
-DASHBOARD_EXISTING_FINDINGS_COLOR = RGBColor(0xB5, 0xC4, 0xFF)
-DASHBOARD_NEW_FINDINGS_COLOR = RGBColor(0x2E, 0x6B, 0xFF)
-DASHBOARD_RESOLVED_FINDINGS_COLOR = RGBColor(0x40, 0xC3, 0x60)
-
-DASHBOARD_RESOLUTION_NO_RISK_COLOR = DASHBOARD_RESOLVED_FINDINGS_COLOR
-DASHBOARD_RESOLUTION_LOW_RISK_COLOR = RGBColor(0x3A, 0xA4, 0x98)
-DASHBOARD_RESOLUTION_MEDIUM_RISK_COLOR = RGBColor(0x34, 0x8A, 0xC7)
-DASHBOARD_RESOLUTION_HIGH_RISK_COLOR = DASHBOARD_NEW_FINDINGS_COLOR
-
-
-def print_slide_ids(slide):
-    # Print slide IDs and names for debugging purposes
-    logging.debug("Placeholders:")
-    for shape in slide.placeholders:
-        logging.debug(f"{shape.placeholder_format.idx} {shape.name}")
-    logging.debug("----\n")
-    logging.debug("Shapes:")
-    for shape in slide.shapes:
-        logging.debug(
-            f"{shape.shape_id} [{shape.name}] {'(This is a chart)' if shape.has_chart else ''}"
-        )
 
 
 def update_many_paragraphs(
@@ -146,10 +123,6 @@ def find_shapes_with_text(presentation, search_text):
     return shapes
 
 
-def find_shapes_with_text_in_slide(slide, search_text):
-    return _shapes_for_paragraphs(find_text_in_slide(slide, search_text))
-
-
 def find_text_in_presentation(presentation, search_text):
     paragraphs = pptx_index.matching_paragraphs(
         pptx_index.for_presentation(presentation).paragraphs, search_text
@@ -162,57 +135,6 @@ def find_text_in_slide(slide, search_text):
     return pptx_index.matching_paragraphs(
         pptx_index.for_slide(slide).paragraphs, search_text
     )
-
-
-def find_text_in_table(shape, search_text):
-    if not shape.has_table:
-        return []
-    return pptx_index.matching_paragraphs(
-        pptx_index.records_including_nested(shape), search_text
-    )
-
-
-def find_text_in_text_frame(shape, search_text):
-    if not shape.has_text_frame:
-        return []
-    return pptx_index.matching_paragraphs(pptx_index.own_records(shape), search_text)
-
-
-def find_text_in_shape(shape, search_text):
-    return pptx_index.matching_paragraphs(
-        pptx_index.records_including_nested(shape), search_text
-    )
-
-
-def add_content_paragraph(text_frame, markers, content, paragraph=None):
-    pptx_index.invalidate(text_frame)
-    if paragraph is None:
-        paragraph = text_frame.add_paragraph()
-    for marker in markers:
-        set_sig_marker(paragraph, marker)
-    run = paragraph.add_run()
-    run.text = " " + content
-
-
-def set_sig_marker(paragraph, marker):
-    run = paragraph.add_run()
-    run.text = marker
-    run.font.name = "SIGMarker"
-
-    # Red, yellow and green colors are taken from the SIG pptx template Signal colors
-    if marker == "-":
-        run.font.color.rgb = RGBColor(0xCB, 0x55, 0x45)
-    if marker == "=":
-        run.font.color.rgb = RGBColor(0xF0, 0xC8, 0x5A)
-    if marker == "+":
-        run.font.color.rgb = RGBColor(0x77, 0xC6, 0x73)
-
-
-def add_xml_element(parent_xml, tag, **attrs):
-    element = OxmlElement(tag)
-    element.attrib.update(attrs)
-    parent_xml.append(element)
-    return element
 
 
 def remove_shape(shape) -> None:
