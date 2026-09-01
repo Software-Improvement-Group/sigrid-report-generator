@@ -219,8 +219,77 @@ class TestTreemapImagePlaceholder:
         mock_treemap.treemap.assert_called_once()
         call_kwargs = mock_treemap.treemap.call_args[1]
         assert call_kwargs["cmap"] == fig_data["color_mapping"]
+        # A single non-"Unset" group should still show its grouping header
+        assert call_kwargs["levels"] == ["root_names", "system_names"]
+        assert call_kwargs["subgroup_rectprops"]
         # Axes should be turned off
         mock_ax.axis.assert_called_once_with("off")
+
+    @patch(
+        "report_generator.generator.placeholders.implementations.images.treemaps.treemap_base.plt"
+    )
+    @patch(
+        "report_generator.generator.placeholders.implementations.images.treemaps.treemap_base.tr"
+    )
+    def test_draw_image_hides_grouping_header_when_only_unset(
+        self, mock_treemap, mock_plt
+    ):
+        """The grey grouping header bar must not be shown when every system's group is 'Unset'."""
+        from report_generator.generator.placeholders.implementations.images.treemaps.treemap_base import (
+            _AbstractPortfolioTreemapPlaceholder,
+        )
+
+        mock_fig = MagicMock()
+        mock_ax = MagicMock()
+        mock_plt.subplots.return_value = (mock_fig, mock_ax)
+
+        fig_data = {
+            "system_names": ["system1", "system2"],
+            "volumes": [100, 200],
+            "labels": ["System 1", "System 2"],
+            "root_names": ["Unset", "Unset"],
+            "color_mapping": {"system1": "#FF0000", "system2": "#00FF00"},
+        }
+
+        _AbstractPortfolioTreemapPlaceholder.draw_image(10, 10, fig_data)
+
+        call_kwargs = mock_treemap.treemap.call_args[1]
+        assert call_kwargs["levels"] == ["system_names"]
+        assert not call_kwargs["subgroup_rectprops"]
+        assert not call_kwargs["subgroup_textprops"]
+
+    @patch(
+        "report_generator.generator.placeholders.implementations.images.treemaps.treemap_base.plt"
+    )
+    @patch(
+        "report_generator.generator.placeholders.implementations.images.treemaps.treemap_base.tr"
+    )
+    def test_draw_image_shows_grouping_header_when_unset_mixed_with_other_groups(
+        self, mock_treemap, mock_plt
+    ):
+        """When 'Unset' is only one of several distinct groups, the header must still show."""
+        from report_generator.generator.placeholders.implementations.images.treemaps.treemap_base import (
+            _AbstractPortfolioTreemapPlaceholder,
+        )
+
+        mock_fig = MagicMock()
+        mock_ax = MagicMock()
+        mock_plt.subplots.return_value = (mock_fig, mock_ax)
+
+        fig_data = {
+            "system_names": ["system1", "system2"],
+            "volumes": [100, 200],
+            "labels": ["System 1", "System 2"],
+            "root_names": ["Unset", "Team A"],
+            "color_mapping": {"system1": "#FF0000", "system2": "#00FF00"},
+        }
+
+        _AbstractPortfolioTreemapPlaceholder.draw_image(10, 10, fig_data)
+
+        call_kwargs = mock_treemap.treemap.call_args[1]
+        assert call_kwargs["levels"] == ["root_names", "system_names"]
+        assert call_kwargs["subgroup_rectprops"]
+        assert call_kwargs["subgroup_textprops"]
 
 
 class TestMainTechnologyGrouping:

@@ -308,6 +308,31 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
         return portfolio, treemap
 
     @classmethod
+    def _grouping_render_kwargs(cls, root_names):
+        """Suppress the grey grouping header bar when every system's group is the
+        'Unset' placeholder; a real group (even a single one shared by all systems)
+        still gets its header."""
+        if set(root_names) == {"Unset"}:
+            return {
+                "levels": ["system_names"],
+                "subgroup_rectprops": None,
+                "subgroup_textprops": None,
+            }
+        return {
+            "levels": ["root_names", "system_names"],
+            "subgroup_rectprops": {"root_names": {"ec": "w", "fc": cls.BUNDLE_COLOR}},
+            "subgroup_textprops": {
+                "root_names": {
+                    "place": "top center",
+                    "max_fontsize": 8,
+                    "pady": 2,
+                    "fontfamily": "sans-serif",
+                    "color": "k",
+                }
+            },
+        }
+
+    @classmethod
     def draw_image(cls, width, height, fig_data):
         if width <= 0 or height <= 0:
             logging.error("Width and/or height is <0.")
@@ -338,11 +363,12 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
                 name: cls.NA_STAR_COLOR for name in fig_data["system_names"]
             }
 
+        grouping_kwargs = cls._grouping_render_kwargs(fig_data["root_names"])
+
         tr.treemap(
             axes=ax,
             data=df,
             area="volumes",
-            levels=["root_names", "system_names"],
             top=True,
             fill="system_names",
             cmap=color_mapping,
@@ -358,16 +384,7 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
                 "pady": 1,
                 "padx": 1,
             },  # Text inside squares
-            subgroup_rectprops={"root_names": {"ec": "w", "fc": cls.BUNDLE_COLOR}},
-            subgroup_textprops={
-                "root_names": {
-                    "place": "top center",
-                    "max_fontsize": 8,
-                    "pady": 2,
-                    "fontfamily": "sans-serif",
-                    "color": "k",
-                }
-            },
+            **grouping_kwargs,
         )
         ax.axis("off")
         return fig
