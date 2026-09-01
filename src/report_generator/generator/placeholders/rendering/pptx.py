@@ -31,6 +31,7 @@ from pptx.util import Inches
 
 from report_generator.generator.utils.constants.sentiment import Sentiment
 
+from . import pptx_index
 from .common import (
     FontProperties,
     apply_font_properties,
@@ -126,6 +127,8 @@ def update_paragraph(
     if font:
         apply_font_properties(run_with_placeholder, font)
 
+    pptx_index.note_text_changed(paragraph)
+
 
 def _shapes_for_paragraphs(paragraphs):
     # A paragraph is typically in a TextGroup which is in a Shape, so we call getparent() twice.
@@ -152,59 +155,51 @@ def find_shapes_with_text_in_slide(slide, search_text):
 
 
 def find_text_in_presentation(presentation, search_text):
-    paragraphs = []
-    for slide in presentation.slides:
-        paragraphs.extend(find_text_in_slide(slide, search_text))
+    paragraphs = pptx_index.matching_paragraphs(
+        pptx_index.for_presentation(presentation).paragraphs, search_text
+    )
     logging.debug(f"Finds for {search_text}: {len(paragraphs)} paragraphs")
     return paragraphs
 
 
 def find_text_in_slide(slide, search_text):
-    paragraphs = []
-    for shape in slide.shapes:
-        paragraphs.extend(find_text_in_shape(shape, search_text))
-    return paragraphs
+    return pptx_index.matching_paragraphs(
+        pptx_index.for_slide(slide).paragraphs, search_text
+    )
 
 
 def find_text_in_table(shape, search_text):
     if not shape.has_table:
         return []
-    return [
-        cell.text_frame.paragraphs[0]
-        for cell in shape.table.iter_cells()
-        if re.search(rf"\b{re.escape(search_text)}\b", cell.text)
-    ]
+    return pptx_index.matching_paragraphs(pptx_index.shape_records(shape), search_text)
 
 
 def find_text_in_text_frame(shape, search_text):
     if not shape.has_text_frame:
         return []
-    return [
-        paragraph
+    # Only this shape's own paragraphs; nested shapes are the caller's concern.
+    records = [
+        pptx_index.ParagraphRecord(paragraph, paragraph, paragraph.text, shape)
         for paragraph in shape.text_frame.paragraphs
-        if re.search(rf"\b{re.escape(search_text)}\b", paragraph.text)
     ]
+    return pptx_index.matching_paragraphs(records, search_text)
 
 
 def find_text_in_group(shape, search_text):
     if shape.shape_type != MSO_SHAPE_TYPE.GROUP:
         return []
     paragraphs = []
-    for s in shape.shapes:
-        paragraphs.extend(find_text_in_shape(s, search_text))
+    for nested_shape in shape.shapes:
+        paragraphs.extend(find_text_in_shape(nested_shape, search_text))
     return paragraphs
 
 
 def find_text_in_shape(shape, search_text):
-    if "GraphicFrame" in type(shape).__name__:
-        return find_text_in_table(shape, search_text)
-
-    return find_text_in_text_frame(shape, search_text) + find_text_in_group(
-        shape, search_text
-    )
+    return pptx_index.matching_paragraphs(pptx_index.shape_records(shape), search_text)
 
 
 def add_content_paragraph(text_frame, markers, content, paragraph=None):
+    pptx_index.invalidate(text_frame)
     if paragraph is None:
         paragraph = text_frame.add_paragraph()
     for marker in markers:
@@ -232,6 +227,18 @@ def add_xml_element(parent_xml, tag, **attrs):
     element.attrib.update(attrs)
     parent_xml.append(element)
     return element
+
+
+def remove_shape(shape) -> None:
+    """Remove a shape from the slide it is on.
+
+    Invalidates the cached index first: a detached shape's paragraphs would still look writable,
+    but the writes are dropped when the file is saved, so a stale index would turn a visible
+    failure into a silently wrong report.
+    """
+    pptx_index.invalidate(shape)
+    element = shape.element
+    element.getparent().remove(element)
 
 
 def set_shape_color(shape, rgb_color):
@@ -305,22 +312,13 @@ def _slide_title(slide) -> str:
     return title_shape.text_frame.text.strip() or "<untitled>"
 
 
-def _iter_shapes_recursive(shapes):
-    for shape in shapes:
-        yield shape
-        if shape.shape_type == MSO_SHAPE_TYPE.GROUP:
-            yield from _iter_shapes_recursive(shape.shapes)
-
-
 def _slide_contains_key(slide, key: str) -> bool:
     # Text placeholders match on paragraph text; chart/table placeholders match on shape name
     # (charts/tables are located by shape.name, see find_charts / find_tables). Both paths
     # descend into group shapes so a placeholder nested in a group is still detected.
     if find_text_in_slide(slide, key):
         return True
-    return any(
-        shape.name.strip() == key for shape in _iter_shapes_recursive(slide.shapes)
-    )
+    return key in pptx_index.for_slide(slide).shape_names
 
 
 def delete_slides_with_placeholder(
@@ -337,21 +335,28 @@ def delete_slides_with_placeholder(
     detail = f" ({reason})" if reason else ""
     # presentation.slides iterates in <p:sldIdLst> order, so the i-th slide corresponds to the
     # i-th <p:sldId>. Snapshot both to lists up front so removing from id_lst mid-loop is safe.
+    removed_any = False
     for slide, sld_id in zip(list(presentation.slides), list(id_lst), strict=True):
         if _slide_contains_key(slide, key):
             id_lst.remove(sld_id)
+            removed_any = True
             logging.info(
                 f"Skipped slide '{_slide_title(slide)}' containing placeholder '{key}' "
                 f"because it failed to resolve{detail}"
             )
+
+    # Only when something was removed: this runs for every failing placeholder, and a report
+    # missing a licence fails hundreds of them without matching a single slide.
+    if removed_any:
+        pptx_index.invalidate(presentation)
 
 
 def find_charts(presentation: Presentation, key: str):
     """Find charts by shape name. This is the recommended way to locate charts in a presentation."""
     charts = [
         shape.chart
-        for slide in presentation.slides
-        for shape in slide.shapes
+        for slide in pptx_index.for_presentation(presentation).slides
+        for shape in slide.top_level_shapes
         if shape.has_chart and shape.name.strip() == key
     ]
     logging.debug(f"Finds for {key}: {len(charts)}")
@@ -361,8 +366,8 @@ def find_charts(presentation: Presentation, key: str):
 def find_tables(presentation: Presentation, key: str):
     tables = [
         shape.table
-        for slide in presentation.slides
-        for shape in slide.shapes
+        for slide in pptx_index.for_presentation(presentation).slides
+        for shape in slide.top_level_shapes
         if shape.has_table and shape.name.strip() == key
     ]
     logging.debug(f"Finds for {key}: {len(tables)}")
@@ -370,12 +375,20 @@ def find_tables(presentation: Presentation, key: str):
 
 
 def find_shapes(presentation: Presentation, key: str):
-    shapes = [
-        shape
-        for slide in presentation.slides
-        for shape in slide.shapes
-        if find_text_in_shape(shape, key)
-    ]
+    """Find the slide-level shapes whose text contains the key.
+
+    Yields the top-level shape even when the text sits in a nested one, because callers use it
+    for the shape's position and size on the slide.
+    """
+    index = pptx_index.for_presentation(presentation)
+    shapes = []
+    for record in index.paragraphs:
+        if not pptx_index.matches(record.text, key):
+            continue
+        # Records of one shape are contiguous, but a group can match via several of its
+        # children, so de-duplicate on the underlying element.
+        if not shapes or shapes[-1].element is not record.top_level_shape.element:
+            shapes.append(record.top_level_shape)
     logging.debug(f"Finds for {key}: {len(shapes)}")
     return shapes
 
@@ -389,6 +402,7 @@ def remove_row_from_table(table: Table, row: _Row):
 
 
 def remove_rows_from_table(table: Table, row_numbers: Iterable[int]):
+    pptx_index.invalidate(table)
     reversed_numbers = sorted(row_numbers, reverse=True)
     for row_number in reversed_numbers:
         row = table.rows[row_number]
@@ -437,6 +451,8 @@ def replace_paragraph_with_text(
         run.text = "" if text is None else str(text)
     if font:
         apply_font_properties(run, font)
+
+    pptx_index.note_text_changed(paragraph)
 
 
 def interpolate_color(colors, t):

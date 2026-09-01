@@ -57,6 +57,11 @@ placeholders/   Bridge between domain and the report file.
                     rendering/ to write to the file.
   formatting/   Presentation helpers: float→stars, ratio→%, diff→"+0.3". No pptx/docx.
   rendering/    pptx/docx file mechanics only. No Sigrid knowledge. Never calls domain.
+                Locating a placeholder is served from a cached single traversal
+                (traversal_cache.py, pptx_index.py). Any helper that changes document
+                structure — removing a slide, shape or table row, adding a paragraph —
+                must invalidate the cache, or writes through stale records are lost
+                silently. Use rendering.pptx.remove_shape() to delete a shape.
 
 utils/          Pure stateless helpers: constants, enums, star-rating math, time/period
                 arithmetic. Must not import from context/, domain/, or placeholders/.
