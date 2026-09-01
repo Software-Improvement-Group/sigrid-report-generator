@@ -97,35 +97,32 @@ def update_many_paragraphs(
         update_paragraph(paragraph, placeholder_id, replacement_text, font)
 
 
+def _run_to_write_placeholder_into(
+    paragraph: _Paragraph, placeholder_id
+) -> _Run | None:
+    pattern = re.compile(rf"\b{re.escape(placeholder_id)}\b")
+    run = next((run for run in paragraph.runs or [] if pattern.search(run.text)), None)
+    if run is None:
+        logging.warning(
+            f"Attempt to update placeholder '{placeholder_id}', but not found in paragraph: {paragraph.text}"
+        )
+    return run
+
+
 def update_paragraph(
     paragraph: _Paragraph, placeholder_id, replacement_text, font: FontProperties = None
 ):
     merge_runs_with_same_formatting(paragraph)
-
-    try:
-        run_with_placeholder = next(
-            run
-            for run in (paragraph.runs or [])
-            if re.search(rf"\b{re.escape(placeholder_id)}\b", run.text)
-        )
-    except StopIteration:
-        logging.warning(
-            f"Attempt to update placeholder '{placeholder_id}', but not found in paragraph: {paragraph.text}"
-        )
+    run = _run_to_write_placeholder_into(paragraph, placeholder_id)
+    if run is None:
         return
 
-    logging.debug(
-        f'Replacing: {placeholder_id} with "{replacement_text}". New text: {run_with_placeholder.text}'
+    run.text = re.sub(
+        rf"\b{re.escape(placeholder_id)}\b", str(replacement_text), run.text
     )
-    run_with_placeholder.text = re.sub(
-        rf"\b{re.escape(placeholder_id)}\b",
-        str(replacement_text),
-        run_with_placeholder.text,
-    )
-
+    logging.debug(f'Replaced {placeholder_id} with "{replacement_text}": {run.text}')
     if font:
-        apply_font_properties(run_with_placeholder, font)
-
+        apply_font_properties(run, font)
     pptx_index.note_text_changed(paragraph)
 
 
