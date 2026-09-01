@@ -29,6 +29,7 @@ from report_generator.generator.utils.constants import ArchMetric
 class ArchitecturePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
     """Creates a portfolio treemap where the color is determined by the architecture quality rating of the individual systems.
     Append `_GROUPED_BY_<DIMENSION>` to this placeholder's key to override the report's default grouping for this instance."""
+
     key = "PORTFOLIO_PERIOD_ARCHITECTURE"
 
     @classmethod
