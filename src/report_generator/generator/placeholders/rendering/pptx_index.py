@@ -50,18 +50,23 @@ class ParagraphRecord:
 class SlideIndex:
     slide: object
     paragraphs: list[ParagraphRecord]
-    shape_names: set[str]  # every shape, groups descended into
-    top_level_shapes: list  # slide.shapes only, not descended
+    shape_names_including_nested: set[str]
+    top_level_shapes: list
 
 
 @dataclass
 class PresentationIndex:
+    """Every text location in a presentation, plus the maps lookups need to stay cheap.
+
+    `paragraphs` is the slide indexes concatenated, so it is in document order. The maps are
+    keyed on lxml elements rather than proxies because proxies are recreated on every access
+    and so cannot be compared by identity.
+    """
+
     slides: list[SlideIndex]
-    paragraphs: list[ParagraphRecord]  # flat, in slide then walk order
-    by_slide_element: dict
-    by_paragraph_element: (
-        dict  # <a:p> -> records, for refreshing cached text after a write
-    )
+    paragraphs: list[ParagraphRecord]
+    slide_index_by_element: dict[object, SlideIndex]
+    records_by_paragraph_element: dict[object, list[ParagraphRecord]]
 
 
 def _walk_shape(shape, top_level_shape, records, shape_names):
@@ -115,16 +120,16 @@ def _presentation_index(presentation) -> PresentationIndex:
     slides = [_slide_index(slide) for slide in presentation.slides]
     paragraphs = [record for slide in slides for record in slide.paragraphs]
 
-    by_paragraph_element = {}
+    records_by_paragraph_element = {}
     for record in paragraphs:
         # noinspection PyProtectedMember
-        by_paragraph_element.setdefault(record.paragraph._p, []).append(record)
+        records_by_paragraph_element.setdefault(record.paragraph._p, []).append(record)
 
     return PresentationIndex(
         slides=slides,
         paragraphs=paragraphs,
-        by_slide_element={slide.slide.element: slide for slide in slides},
-        by_paragraph_element=by_paragraph_element,
+        slide_index_by_element={slide.slide.element: slide for slide in slides},
+        records_by_paragraph_element=records_by_paragraph_element,
     )
 
 
@@ -143,7 +148,7 @@ def for_slide(slide) -> SlideIndex:
     """
     presentation = slide.part.package.presentation_part.presentation
     index = traversal_cache.index_for(slide, lambda: _presentation_index(presentation))
-    return index.by_slide_element.get(slide.element) or _slide_index(slide)
+    return index.slide_index_by_element.get(slide.element) or _slide_index(slide)
 
 
 def note_text_changed(paragraph: _Paragraph) -> None:
@@ -156,7 +161,7 @@ def note_text_changed(paragraph: _Paragraph) -> None:
     if index is None:
         return
     # noinspection PyProtectedMember
-    for record in index.by_paragraph_element.get(paragraph._p, ()):
+    for record in index.records_by_paragraph_element.get(paragraph._p, ()):
         record.text = record.text_owner.text
 
 
@@ -173,10 +178,17 @@ def matching_paragraphs(records, search_text):
     ]
 
 
-def shape_records(shape):
+def records_including_nested(shape):
     records = []
     _walk_shape(shape, shape, records, set())
     return records
+
+
+def own_records(shape):
+    return [
+        ParagraphRecord(paragraph, paragraph, paragraph.text, shape)
+        for paragraph in shape.text_frame.paragraphs
+    ]
 
 
 def invalidate(anchor) -> None:

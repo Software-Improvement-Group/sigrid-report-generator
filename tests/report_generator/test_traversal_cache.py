@@ -99,7 +99,7 @@ def test_invalidate_drops_only_the_matching_document():
 
 
 def test_capacity_evicts_the_least_recently_used_document():
-    presentations = [Presentation() for _ in range(cache._CAPACITY + 1)]
+    presentations = [Presentation() for _ in range(cache._MAX_CACHED_DOCUMENTS + 1)]
     builders = [_CountingBuilder() for _ in presentations]
     for presentation, builder in zip(presentations, builders, strict=True):
         cache.index_for(presentation, builder)

@@ -70,17 +70,15 @@ class TestPlaceholders:
             else:
                 return "Dummy Value"
 
-        # Create mock reports for both types. `part` identifies the document to the
-        # traversal cache, so a stand-in document has to expose it.
         mock_pptx = MagicMock(spec=Presentation)
         mock_pptx.slides = []
+        # The traversal cache identifies a presentation by its `part`.
         mock_pptx.part = MagicMock()
         report_pptx = Report(mock_pptx, ReportType.PRESENTATION)
 
         mock_docx = MagicMock(spec=Document)
         mock_docx.paragraphs = []
         mock_docx.tables = []
-        mock_docx.part = MagicMock()
         report_docx = Report(mock_docx, ReportType.DOCUMENT)
 
         expected_log_entries = set()

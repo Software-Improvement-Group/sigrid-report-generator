@@ -171,18 +171,15 @@ def find_text_in_slide(slide, search_text):
 def find_text_in_table(shape, search_text):
     if not shape.has_table:
         return []
-    return pptx_index.matching_paragraphs(pptx_index.shape_records(shape), search_text)
+    return pptx_index.matching_paragraphs(
+        pptx_index.records_including_nested(shape), search_text
+    )
 
 
 def find_text_in_text_frame(shape, search_text):
     if not shape.has_text_frame:
         return []
-    # Only this shape's own paragraphs; nested shapes are the caller's concern.
-    records = [
-        pptx_index.ParagraphRecord(paragraph, paragraph, paragraph.text, shape)
-        for paragraph in shape.text_frame.paragraphs
-    ]
-    return pptx_index.matching_paragraphs(records, search_text)
+    return pptx_index.matching_paragraphs(pptx_index.own_records(shape), search_text)
 
 
 def find_text_in_group(shape, search_text):
@@ -195,7 +192,9 @@ def find_text_in_group(shape, search_text):
 
 
 def find_text_in_shape(shape, search_text):
-    return pptx_index.matching_paragraphs(pptx_index.shape_records(shape), search_text)
+    return pptx_index.matching_paragraphs(
+        pptx_index.records_including_nested(shape), search_text
+    )
 
 
 def add_content_paragraph(text_frame, markers, content, paragraph=None):
@@ -318,7 +317,7 @@ def _slide_contains_key(slide, key: str) -> bool:
     # descend into group shapes so a placeholder nested in a group is still detected.
     if find_text_in_slide(slide, key):
         return True
-    return key in pptx_index.for_slide(slide).shape_names
+    return key in pptx_index.for_slide(slide).shape_names_including_nested
 
 
 def delete_slides_with_placeholder(
@@ -345,8 +344,8 @@ def delete_slides_with_placeholder(
                 f"because it failed to resolve{detail}"
             )
 
-    # Only when something was removed: this runs for every failing placeholder, and a report
-    # missing a licence fails hundreds of them without matching a single slide.
+    # A report missing a licence fails hundreds of placeholders without matching a single slide,
+    # and rebuilding the index for each of those would undo the caching.
     if removed_any:
         pptx_index.invalidate(presentation)
 
@@ -381,16 +380,27 @@ def find_shapes(presentation: Presentation, key: str):
     for the shape's position and size on the slide.
     """
     index = pptx_index.for_presentation(presentation)
-    shapes = []
-    for record in index.paragraphs:
-        if not pptx_index.matches(record.text, key):
-            continue
-        # Records of one shape are contiguous, but a group can match via several of its
-        # children, so de-duplicate on the underlying element.
-        if not shapes or shapes[-1].element is not record.top_level_shape.element:
-            shapes.append(record.top_level_shape)
+    shapes = _deduplicate_consecutive_shapes(
+        record.top_level_shape
+        for record in index.paragraphs
+        if pptx_index.matches(record.text, key)
+    )
     logging.debug(f"Finds for {key}: {len(shapes)}")
     return shapes
+
+
+def _deduplicate_consecutive_shapes(shapes):
+    """Drop repeats of the shape that precedes them, comparing underlying elements.
+
+    Every paragraph of a shape is indexed before the next shape's, so a shape that matches
+    several times -- a group matching through more than one of its children, say -- always
+    produces adjacent entries. Elements are compared because proxies are recreated per access.
+    """
+    unique = []
+    for shape in shapes:
+        if not unique or unique[-1].element is not shape.element:
+            unique.append(shape)
+    return unique
 
 
 def remove_row_from_table(table: Table, row: _Row):

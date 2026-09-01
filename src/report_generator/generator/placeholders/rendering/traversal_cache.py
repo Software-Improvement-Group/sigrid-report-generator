@@ -39,14 +39,13 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
-# One report is generated at a time, so a single entry is enough for a ~100% hit rate. The
-# second slot keeps the cache useful if two documents are ever interleaved.
-_CAPACITY = 2
+# One report is generated at a time, so the second slot only matters if two are ever interleaved.
+_MAX_CACHED_DOCUMENTS = 2
 
 
 @dataclass
 class _Entry:
-    package: Any  # strong reference: keeps the key's id() from being reused
+    package_kept_alive: Any
     index: Any
 
 
@@ -68,9 +67,9 @@ def index_for(anchor, build: Callable[[], Any]) -> Any:
         return entry.index
 
     index = build()
-    _entries[key] = _Entry(package=package, index=index)
+    _entries[key] = _Entry(package_kept_alive=package, index=index)
     _entries.move_to_end(key)
-    while len(_entries) > _CAPACITY:
+    while len(_entries) > _MAX_CACHED_DOCUMENTS:
         _entries.popitem(last=False)
     return index
 
