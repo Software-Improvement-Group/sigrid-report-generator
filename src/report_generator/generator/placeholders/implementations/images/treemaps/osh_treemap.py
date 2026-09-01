@@ -24,9 +24,10 @@ from report_generator.generator.utils.constants import OSHMetric
 
 
 class OSHRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
-    """Creates a portfolio treemap where the color is determined by the open-source health rating of the individual systems."""
+    """Creates a portfolio treemap where the color is determined by the open-source health rating of the individual systems.
+    Append `_GROUPED_BY_<DIMENSION>` to this placeholder's key to override the report's default grouping for this instance."""
 
-    key = "PORTFOLIO_PERIOD_OSH_RATINGS_GROUPED_BY_{parameter}"
+    key = "PORTFOLIO_PERIOD_OSH_RATINGS"
 
     @classmethod
     def value(cls, parameter):
@@ -52,12 +53,11 @@ class OSHRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
 
 class OSHMetricPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
     """Creates a portfolio treemap where the color is determined by the rating of a
-    single open-source health metric (e.g. vulnerability) of the individual systems."""
+    single open-source health metric (e.g. vulnerability) of the individual systems.
+    Append `_GROUPED_BY_<DIMENSION>` to this placeholder's key to override the report's default grouping for this instance."""
 
-    key = "PORTFOLIO_PERIOD_OSH_{parameter}_GROUPED_BY_{parameter}"
-    allowed_parameters = MultiParameterList(
-        OSHMetric, EndDatePortfolioTreemapPlaceholder.GROUPING_PARAMETERS
-    )
+    key = "PORTFOLIO_PERIOD_OSH_{parameter}"
+    allowed_parameters = MultiParameterList(OSHMetric)
 
     @classmethod
     def value(cls, metric, grouping):

@@ -11,6 +11,7 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+import functools
 import logging
 from abc import ABC
 from collections.abc import Callable
@@ -22,6 +23,7 @@ import pandas as pd
 
 from report_generator.generator.domain import (
     maintainability_portfolio_data,
+    portfolio_grouping,
 )
 from report_generator.generator.placeholders import rendering
 from report_generator.generator.placeholders.formatting import formatters
@@ -29,6 +31,7 @@ from report_generator.generator.placeholders.formatting.technologies import (
     get_technology_name,
 )
 from report_generator.generator.placeholders.implementations.base import (
+    PARAMETER_TOKEN_PATTERN,
     MultiParameterList,
 )
 from report_generator.generator.placeholders.implementations.images.base import (
@@ -38,9 +41,13 @@ from report_generator.generator.placeholders.implementations.images.treemaps.uti
     treemap as tr,
 )
 from report_generator.generator.utils.constants.metadata import (
+    METADATA_APPLICATION_TYPE_MAPPING,
     METADATA_BUSINESS_CRITICALITY_MAPPING,
     METADATA_DEPLOYMENT_MAPPING,
+    METADATA_DISTRIBUTION_MAPPING,
     METADATA_LIFECYCLE_MAPPING,
+    METADATA_TARGET_INDUSTRY_MAPPING,
+    METADATA_TECHNOLOGY_CATEGORY_MAPPING,
 )
 
 
@@ -117,14 +124,22 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
         return res
 
     @staticmethod
+    def _process_multi_name_grouping(names, multiple_label):
+        if not names:
+            return "Unset"
+        if len(names) > 1:
+            return multiple_label
+        return names[0]
+
+    @staticmethod
     def _process_team_grouping(metadata):
-        team_name = "Unset"
-        if metadata["teamNames"]:
-            if len(metadata["teamNames"]) > 1:
-                team_name = "Multiple teams"
-            else:
-                team_name = metadata["teamNames"][0]
-        return team_name
+        return _AbstractPortfolioTreemapPlaceholder._process_multi_name_grouping(
+            metadata["teamNames"], "Multiple teams"
+        )
+
+    @staticmethod
+    def _process_division_grouping(metadata):
+        return metadata["divisionName"] or "Unset"
 
     @staticmethod
     def _process_lifecycle_grouping(metadata):
@@ -147,25 +162,108 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
         return "Unset"
 
     @staticmethod
+    def _process_distribution_grouping(metadata):
+        if metadata["softwareDistributionStrategy"]:
+            return METADATA_DISTRIBUTION_MAPPING[
+                metadata["softwareDistributionStrategy"]
+            ]
+        return "Unset"
+
+    @staticmethod
+    def _process_application_type_grouping(metadata):
+        if metadata["applicationType"]:
+            return METADATA_APPLICATION_TYPE_MAPPING[metadata["applicationType"]]
+        return "Unset"
+
+    @staticmethod
+    def _process_target_industry_grouping(metadata):
+        if metadata["targetIndustry"]:
+            return METADATA_TARGET_INDUSTRY_MAPPING[metadata["targetIndustry"]]
+        return "Unset"
+
+    @staticmethod
+    def _process_technology_category_grouping(metadata):
+        if metadata["technologyCategory"]:
+            return METADATA_TECHNOLOGY_CATEGORY_MAPPING[metadata["technologyCategory"]]
+        return "Unset"
+
+    @staticmethod
     def _process_main_technology_grouping(metadata):
         if metadata["mainTechnology"]:
             return get_technology_name(metadata["mainTechnology"])
         return "Unset"
 
+    @staticmethod
+    def _process_supplier_grouping(metadata):
+        return _AbstractPortfolioTreemapPlaceholder._process_multi_name_grouping(
+            metadata["supplierNames"], "Multiple suppliers"
+        )
+
     grouping_processors: ClassVar[dict] = {
         "team": _process_team_grouping.__func__,
+        "division": _process_division_grouping.__func__,
         "lifecycle": _process_lifecycle_grouping.__func__,
         "business_criticality": _process_business_criticality_grouping.__func__,
         "deployment": _process_deployment_grouping.__func__,
+        "distribution": _process_distribution_grouping.__func__,
+        "application_type": _process_application_type_grouping.__func__,
+        "target_industry": _process_target_industry_grouping.__func__,
+        "technology_category": _process_technology_category_grouping.__func__,
         "main_technology": _process_main_technology_grouping.__func__,
+        "supplier": _process_supplier_grouping.__func__,
     }
 
     GROUPING_PARAMETERS: ClassVar[list] = [
         x.upper() for x in grouping_processors.keys()
     ]
-    allowed_parameters: ClassVar[MultiParameterList] = MultiParameterList(
-        GROUPING_PARAMETERS
-    )
+
+    # Grouping is not a `{parameter}` token in any concrete class's `key` - it's
+    # resolved entirely below, as a set of candidate suffixes tried alongside the
+    # bare key. `allowed_parameters` therefore only ever covers *other* parameters
+    # (e.g. a metric), and is empty for classes that have none.
+    allowed_parameters: ClassVar[MultiParameterList] = MultiParameterList()
+
+    GROUPED_BY_MARKER: ClassVar[str] = "_GROUPED_BY_"
+
+    @classmethod
+    def resolve(cls, report) -> None:
+        """Resolve every key derived from `cls.key`: the bare, suffix-free default
+        (whatever --group-by selected) and every ..._GROUPED_BY_X pinned variant,
+        for each combination of this class's other parameters (if any)."""
+        resolve_method_name = cls._determine_resolve_method(report.type)
+        if not resolve_method_name:
+            return
+
+        for param_tuple in cls.allowed_parameters.product():
+            bare_key = cls._substitute_key_params(cls.key, param_tuple)
+            cls._resolve_grouping_variants(
+                report, resolve_method_name, bare_key, param_tuple
+            )
+
+    @staticmethod
+    def _substitute_key_params(key: str, param_tuple: tuple) -> str:
+        for param in param_tuple:
+            key = PARAMETER_TOKEN_PATTERN.sub(str(param), key, count=1)
+        return key
+
+    @classmethod
+    def _resolve_grouping_variants(
+        cls, report, resolve_method_name, bare_key: str, param_tuple: tuple
+    ) -> None:
+        # None for the bare key itself (-> the CLI-selected default); the pinned
+        # dimension name for every ..._GROUPED_BY_X variant.
+        candidate_groupings: dict[str, str | None] = {bare_key: None}
+        for dimension in cls.GROUPING_PARAMETERS:
+            candidate_groupings[f"{bare_key}{cls.GROUPED_BY_MARKER}{dimension}"] = (
+                dimension
+            )
+
+        for key_text, dimension in candidate_groupings.items():
+            if not rendering.pptx.find_shapes(report, key_text):
+                continue
+            grouping = dimension or portfolio_grouping.selected.upper()
+            value_cb = functools.partial(cls.value, *param_tuple, grouping)
+            cls._call_resolve_method(resolve_method_name, report, key_text, value_cb)
 
     @classmethod
     def _create_blank_portfolio_and_treemap(cls, grouping) -> tuple[dict, dict]:

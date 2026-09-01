@@ -27,9 +27,10 @@ from report_generator.generator.utils.constants import MaintMetric
 
 
 class MaintainabilityPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
-    """Creates a portfolio treemap where the color is determined by the maintainability rating of the individual systems."""
+    """Creates a portfolio treemap where the color is determined by the maintainability rating of the individual systems.
+    Append `_GROUPED_BY_<DIMENSION>` to this placeholder's key to override the report's default grouping for this instance."""
 
-    key = "PORTFOLIO_PERIOD_MAINTAINABILITY_GROUPED_BY_{parameter}"
+    key = "PORTFOLIO_PERIOD_MAINTAINABILITY"
 
     @classmethod
     def value(cls, parameter):
@@ -53,9 +54,10 @@ class MaintainabilityPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlacehol
 class MaintainabilityChangePortfolioTreemapPlaceholder(
     PeriodPortfolioTreemapPlaceholder
 ):
-    """Creates a portfolio treemap where the color is determined by the change in maintainability rating of the individual systems during the specified period."""
+    """Creates a portfolio treemap where the color is determined by the change in maintainability rating of the individual systems during the specified period.
+    Append `_GROUPED_BY_<DIMENSION>` to this placeholder's key to override the report's default grouping for this instance."""
 
-    key = "PORTFOLIO_PERIOD_MAINTAINABILITY_CHANGE_GROUPED_BY_{parameter}"
+    key = "PORTFOLIO_PERIOD_MAINTAINABILITY_CHANGE"
 
     @classmethod
     def value(cls, parameter):
@@ -73,12 +75,11 @@ class MaintainabilityMetricPortfolioTreemapPlaceholder(
     EndDatePortfolioTreemapPlaceholder
 ):
     """Creates a portfolio treemap where the color is determined by the rating of a
-    single maintainability metric (e.g. duplication) of the individual systems."""
+    single maintainability metric (e.g. duplication) of the individual systems.
+    Append `_GROUPED_BY_<DIMENSION>` to this placeholder's key to override the report's default grouping for this instance."""
 
-    key = "PORTFOLIO_PERIOD_MAINT_{parameter}_GROUPED_BY_{parameter}"
-    allowed_parameters = MultiParameterList(
-        MaintMetric, EndDatePortfolioTreemapPlaceholder.GROUPING_PARAMETERS
-    )
+    key = "PORTFOLIO_PERIOD_MAINT_{parameter}"
+    allowed_parameters = MultiParameterList(MaintMetric)
 
     @classmethod
     def value(cls, metric, grouping):
@@ -100,12 +101,11 @@ class MaintainabilityMetricChangePortfolioTreemapPlaceholder(
 ):
     """Creates a portfolio treemap where the color is determined by the change in the
     rating of a single maintainability metric (e.g. duplication) of the individual
-    systems during the specified period."""
+    systems during the specified period.
+    Append `_GROUPED_BY_<DIMENSION>` to this placeholder's key to override the report's default grouping for this instance."""
 
-    key = "PORTFOLIO_PERIOD_MAINT_{parameter}_CHANGE_GROUPED_BY_{parameter}"
-    allowed_parameters = MultiParameterList(
-        MaintMetric, PeriodPortfolioTreemapPlaceholder.GROUPING_PARAMETERS
-    )
+    key = "PORTFOLIO_PERIOD_MAINT_{parameter}_CHANGE"
+    allowed_parameters = MultiParameterList(MaintMetric)
 
     @classmethod
     def value(cls, metric, grouping):

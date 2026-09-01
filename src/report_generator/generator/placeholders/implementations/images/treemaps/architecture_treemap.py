@@ -27,9 +27,9 @@ from report_generator.generator.utils.constants import ArchMetric
 
 
 class ArchitecturePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
-    """Creates a portfolio treemap where the color is determined by the architecture quality rating of the individual systems."""
-
-    key = "PORTFOLIO_PERIOD_ARCHITECTURE_GROUPED_BY_{parameter}"
+    """Creates a portfolio treemap where the color is determined by the architecture quality rating of the individual systems.
+    Append `_GROUPED_BY_<DIMENSION>` to this placeholder's key to override the report's default grouping for this instance."""
+    key = "PORTFOLIO_PERIOD_ARCHITECTURE"
 
     @classmethod
     def value(cls, parameter):
@@ -46,9 +46,10 @@ class ArchitecturePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder
 class ArchitectureRatingsChangePortfolioTreemapPlaceholder(
     PeriodPortfolioTreemapPlaceholder
 ):
-    """Creates a portfolio treemap where the color is determined by the change in architecture quality rating of the individual systems during the specified period."""
+    """Creates a portfolio treemap where the color is determined by the change in architecture quality rating of the individual systems during the specified period.
+    Append `_GROUPED_BY_<DIMENSION>` to this placeholder's key to override the report's default grouping for this instance."""
 
-    key = "PORTFOLIO_PERIOD_ARCHITECTURE_RATINGS_CHANGE_GROUPED_BY_{parameter}"
+    key = "PORTFOLIO_PERIOD_ARCHITECTURE_RATINGS_CHANGE"
 
     @classmethod
     def value(cls, parameter):
@@ -64,12 +65,11 @@ class ArchitectureRatingsChangePortfolioTreemapPlaceholder(
 
 class ArchitectureMetricPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
     """Creates a portfolio treemap where the color is determined by the rating of a
-    single architecture metric (e.g. component coupling) of the individual systems."""
+    single architecture metric (e.g. component coupling) of the individual systems.
+    Append `_GROUPED_BY_<DIMENSION>` to this placeholder's key to override the report's default grouping for this instance."""
 
-    key = "PORTFOLIO_PERIOD_ARCH_{parameter}_GROUPED_BY_{parameter}"
-    allowed_parameters = MultiParameterList(
-        ArchMetric, EndDatePortfolioTreemapPlaceholder.GROUPING_PARAMETERS
-    )
+    key = "PORTFOLIO_PERIOD_ARCH_{parameter}"
+    allowed_parameters = MultiParameterList(ArchMetric)
 
     @classmethod
     def value(cls, metric, grouping):
@@ -91,12 +91,11 @@ class ArchitectureMetricChangePortfolioTreemapPlaceholder(
 ):
     """Creates a portfolio treemap where the color is determined by the change in the
     rating of a single architecture metric (e.g. component coupling) of the
-    individual systems during the specified period."""
+    individual systems during the specified period.
+    Append `_GROUPED_BY_<DIMENSION>` to this placeholder's key to override the report's default grouping for this instance."""
 
-    key = "PORTFOLIO_PERIOD_ARCH_{parameter}_RATINGS_CHANGE_GROUPED_BY_{parameter}"
-    allowed_parameters = MultiParameterList(
-        ArchMetric, PeriodPortfolioTreemapPlaceholder.GROUPING_PARAMETERS
-    )
+    key = "PORTFOLIO_PERIOD_ARCH_{parameter}_RATINGS_CHANGE"
+    allowed_parameters = MultiParameterList(ArchMetric)
 
     @classmethod
     def value(cls, metric, grouping):

@@ -20,9 +20,10 @@ from report_generator.generator.placeholders.implementations.images.treemaps.tre
 
 
 class VolumeChangePortfolioTreemapPlaceholder(PeriodPortfolioTreemapPlaceholder):
-    """Creates a portfolio treemap where the color is determined by the change in volume change (effort) of the individual systems during the specified period."""
+    """Creates a portfolio treemap where the color is determined by the change in volume change (effort) of the individual systems during the specified period.
+    Append `_GROUPED_BY_<DIMENSION>` to this placeholder's key to override the report's default grouping for this instance."""
 
-    key = "PORTFOLIO_PERIOD_VOLUME_CHANGE_GROUPED_BY_{parameter}"
+    key = "PORTFOLIO_PERIOD_VOLUME_CHANGE"
 
     @classmethod
     def value(cls, parameter):

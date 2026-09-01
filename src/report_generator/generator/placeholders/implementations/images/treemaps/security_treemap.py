@@ -25,9 +25,10 @@ from report_generator.generator.placeholders.implementations.images.treemaps.tre
 
 
 class SecurityRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
-    """Creates a portfolio treemap where the color is determined by the security rating of the individual systems."""
+    """Creates a portfolio treemap where the color is determined by the security rating of the individual systems.
+    Append `_GROUPED_BY_<DIMENSION>` to this placeholder's key to override the report's default grouping for this instance."""
 
-    key = "PORTFOLIO_PERIOD_SECURITY_RATINGS_GROUPED_BY_{parameter}"
+    key = "PORTFOLIO_PERIOD_SECURITY_RATINGS"
 
     @classmethod
     def value(cls, parameter):
@@ -44,9 +45,10 @@ class SecurityRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlacehol
 class SecurityRatingsChangePortfolioTreemapPlaceholder(
     PeriodPortfolioTreemapPlaceholder
 ):
-    """Creates a portfolio treemap where the color is determined by the change in security rating of the individual systems during the specified period."""
+    """Creates a portfolio treemap where the color is determined by the change in security rating of the individual systems during the specified period.
+    Append `_GROUPED_BY_<DIMENSION>` to this placeholder's key to override the report's default grouping for this instance."""
 
-    key = "PORTFOLIO_PERIOD_SECURITY_RATINGS_CHANGE_GROUPED_BY_{parameter}"
+    key = "PORTFOLIO_PERIOD_SECURITY_RATINGS_CHANGE"
 
     @classmethod
     def value(cls, parameter):

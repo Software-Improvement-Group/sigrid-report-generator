@@ -22,9 +22,10 @@ from report_generator.generator.placeholders.implementations.images.treemaps.tre
 
 
 class TestCodePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
-    """Creates a portfolio treemap where the color is determined by the test-to-production code ratio of the individual systems."""
+    """Creates a portfolio treemap where the color is determined by the test-to-production code ratio of the individual systems.
+    Append `_GROUPED_BY_<DIMENSION>` to this placeholder's key to override the report's default grouping for this instance."""
 
-    key = "PORTFOLIO_PERIOD_TEST_CODE_GROUPED_BY_{parameter}"
+    key = "PORTFOLIO_PERIOD_TEST_CODE"
 
     @classmethod
     def value(cls, parameter):
@@ -42,9 +43,10 @@ class TestCodePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
 
 
 class TestCodeChangePortfolioTreemapPlaceholder(PeriodPortfolioTreemapPlaceholder):
-    """Creates a portfolio treemap where the color is determined by the change in test code volume change (%) of the individual systems during the specified period."""
+    """Creates a portfolio treemap where the color is determined by the change in test code volume change (%) of the individual systems during the specified period.
+    Append `_GROUPED_BY_<DIMENSION>` to this placeholder's key to override the report's default grouping for this instance."""
 
-    key = "PORTFOLIO_PERIOD_TEST_CODE_CHANGE_GROUPED_BY_{parameter}"
+    key = "PORTFOLIO_PERIOD_TEST_CODE_CHANGE"
 
     @classmethod
     def value(cls, parameter):

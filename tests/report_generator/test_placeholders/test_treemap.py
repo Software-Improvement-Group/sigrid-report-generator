@@ -17,12 +17,20 @@ from unittest.mock import MagicMock, patch
 import matplotlib.pyplot as plt
 import pytest
 
+from report_generator.generator.context import portfolio_metadata
 from report_generator.generator.placeholders.implementations.images.treemaps.utils.treemap._autofit_text import (
     _DEFAULT_LINESPACING,
     AutofitText,
 )
 
 plt.switch_backend("Agg")
+
+
+@pytest.fixture(autouse=True)
+def reset_grouping_context():
+    portfolio_metadata.reset_group_by()
+    yield
+    portfolio_metadata.reset_group_by()
 
 
 class TestAutofitText:
@@ -228,7 +236,7 @@ class TestMainTechnologyGrouping:
         )
         assert (
             "MAIN_TECHNOLOGY"
-            in _AbstractPortfolioTreemapPlaceholder.allowed_parameters.param_lists[0]
+            in _AbstractPortfolioTreemapPlaceholder.GROUPING_PARAMETERS
         )
 
     @patch(
@@ -264,3 +272,272 @@ class TestMainTechnologyGrouping:
             )
             == "Unset"
         )
+
+
+class TestNewGroupingProcessors:
+    """Test cases for the grouping processors added for the 6 previously-unsupported
+    filter dimensions."""
+
+    def test_all_eleven_dimensions_registered(self):
+        from report_generator.generator.placeholders.implementations.images.treemaps.treemap_base import (
+            _AbstractPortfolioTreemapPlaceholder,
+        )
+
+        assert set(_AbstractPortfolioTreemapPlaceholder.grouping_processors.keys()) == {
+            "team",
+            "division",
+            "lifecycle",
+            "business_criticality",
+            "deployment",
+            "distribution",
+            "application_type",
+            "target_industry",
+            "technology_category",
+            "main_technology",
+            "supplier",
+        }
+
+    def test_division_grouping(self):
+        from report_generator.generator.placeholders.implementations.images.treemaps.treemap_base import (
+            _AbstractPortfolioTreemapPlaceholder,
+        )
+
+        p = _AbstractPortfolioTreemapPlaceholder
+        assert p._process_division_grouping({"divisionName": "Finance"}) == "Finance"
+        assert p._process_division_grouping({"divisionName": None}) == "Unset"
+
+    def test_distribution_grouping(self):
+        from report_generator.generator.placeholders.implementations.images.treemaps.treemap_base import (
+            _AbstractPortfolioTreemapPlaceholder,
+        )
+
+        p = _AbstractPortfolioTreemapPlaceholder
+        assert (
+            p._process_distribution_grouping(
+                {"softwareDistributionStrategy": "NETWORK_SERVICE"}
+            )
+            == "Network service"
+        )
+        assert (
+            p._process_distribution_grouping({"softwareDistributionStrategy": None})
+            == "Unset"
+        )
+
+    def test_application_type_grouping(self):
+        from report_generator.generator.placeholders.implementations.images.treemaps.treemap_base import (
+            _AbstractPortfolioTreemapPlaceholder,
+        )
+
+        p = _AbstractPortfolioTreemapPlaceholder
+        assert (
+            p._process_application_type_grouping({"applicationType": "ANALYTICAL"})
+            == "Analytical"
+        )
+        assert (
+            p._process_application_type_grouping({"applicationType": None}) == "Unset"
+        )
+
+    def test_target_industry_grouping(self):
+        from report_generator.generator.placeholders.implementations.images.treemaps.treemap_base import (
+            _AbstractPortfolioTreemapPlaceholder,
+        )
+
+        p = _AbstractPortfolioTreemapPlaceholder
+        assert (
+            p._process_target_industry_grouping({"targetIndustry": "ICD8300"})
+            == "Banking"
+        )
+        assert p._process_target_industry_grouping({"targetIndustry": None}) == "Unset"
+
+    def test_technology_category_grouping(self):
+        from report_generator.generator.placeholders.implementations.images.treemaps.treemap_base import (
+            _AbstractPortfolioTreemapPlaceholder,
+        )
+
+        p = _AbstractPortfolioTreemapPlaceholder
+        assert (
+            p._process_technology_category_grouping({"technologyCategory": "MAINFRAME"})
+            == "Mainframe"
+        )
+        assert (
+            p._process_technology_category_grouping({"technologyCategory": None})
+            == "Unset"
+        )
+
+    def test_supplier_grouping(self):
+        from report_generator.generator.placeholders.implementations.images.treemaps.treemap_base import (
+            _AbstractPortfolioTreemapPlaceholder,
+        )
+
+        p = _AbstractPortfolioTreemapPlaceholder
+        assert p._process_supplier_grouping({"supplierNames": ["Acme"]}) == "Acme"
+        assert (
+            p._process_supplier_grouping({"supplierNames": ["Acme", "Globex"]})
+            == "Multiple suppliers"
+        )
+        assert p._process_supplier_grouping({"supplierNames": []}) == "Unset"
+
+    def test_team_grouping_still_behaves_as_before(self):
+        from report_generator.generator.placeholders.implementations.images.treemaps.treemap_base import (
+            _AbstractPortfolioTreemapPlaceholder,
+        )
+
+        p = _AbstractPortfolioTreemapPlaceholder
+        assert p._process_team_grouping({"teamNames": ["TeamA"]}) == "TeamA"
+        assert (
+            p._process_team_grouping({"teamNames": ["TeamA", "TeamB"]})
+            == "Multiple teams"
+        )
+        assert p._process_team_grouping({"teamNames": []}) == "Unset"
+
+
+def _fake_shape(text):
+    shape = MagicMock()
+    shape.has_text_frame = True
+    shape.text_frame.paragraphs = [MagicMock(text=text)]
+    shape.shape_type = None  # never MSO_SHAPE_TYPE.GROUP
+    return shape
+
+
+def _fake_report(*texts):
+    report = MagicMock()
+    report.type = "PRESENTATION"
+    slide = MagicMock()
+    slide.shapes = [_fake_shape(text) for text in texts]
+    report.slides = [slide]
+    return report
+
+
+class TestResolveGroupingVariants:
+    """Test cases for resolving both the bare, suffix-free placeholder key that
+    follows --group-by, and the pinned ..._GROUPED_BY_{dimension} keys, in a single
+    scan of the presentation per class."""
+
+    def test_key_has_no_grouping_suffix(self):
+        from report_generator.generator.placeholders.implementations.images.treemaps.maintainability_treemap import (
+            MaintainabilityPortfolioTreemapPlaceholder,
+        )
+
+        assert (
+            MaintainabilityPortfolioTreemapPlaceholder.key
+            == "PORTFOLIO_PERIOD_MAINTAINABILITY"
+        )
+
+    def test_resolve_bare_key_uses_group_by_context(self):
+        from report_generator.generator.placeholders.implementations.images.treemaps.maintainability_treemap import (
+            MaintainabilityPortfolioTreemapPlaceholder as Placeholder,
+        )
+
+        portfolio_metadata.set_group_by("lifecycle")
+        report = _fake_report("PORTFOLIO_PERIOD_MAINTAINABILITY")
+
+        with (
+            patch.object(
+                Placeholder, "_determine_resolve_method", return_value="resolve_pptx"
+            ),
+            patch.object(Placeholder, "_call_resolve_method") as mock_call,
+        ):
+            Placeholder.resolve(report)
+
+            mock_call.assert_called_once()
+            _, _, key, value_cb = mock_call.call_args[0]
+            assert key == "PORTFOLIO_PERIOD_MAINTAINABILITY"
+            assert value_cb.args == ("LIFECYCLE",)
+
+    def test_resolve_pinned_key_ignores_group_by_context(self):
+        from report_generator.generator.placeholders.implementations.images.treemaps.maintainability_treemap import (
+            MaintainabilityPortfolioTreemapPlaceholder as Placeholder,
+        )
+
+        portfolio_metadata.set_group_by("lifecycle")
+        report = _fake_report(
+            "PORTFOLIO_PERIOD_MAINTAINABILITY_GROUPED_BY_MAIN_TECHNOLOGY"
+        )
+
+        with (
+            patch.object(
+                Placeholder, "_determine_resolve_method", return_value="resolve_pptx"
+            ),
+            patch.object(Placeholder, "_call_resolve_method") as mock_call,
+        ):
+            Placeholder.resolve(report)
+
+            mock_call.assert_called_once()
+            _, _, key, value_cb = mock_call.call_args[0]
+            assert key == "PORTFOLIO_PERIOD_MAINTAINABILITY_GROUPED_BY_MAIN_TECHNOLOGY"
+            assert value_cb.args == ("MAIN_TECHNOLOGY",)
+
+    def test_resolve_finds_both_bare_and_pinned_keys_in_one_pass(self):
+        from report_generator.generator.placeholders.implementations.images.treemaps.maintainability_treemap import (
+            MaintainabilityPortfolioTreemapPlaceholder as Placeholder,
+        )
+
+        portfolio_metadata.set_group_by("team")
+        report = _fake_report(
+            "PORTFOLIO_PERIOD_MAINTAINABILITY",
+            "PORTFOLIO_PERIOD_MAINTAINABILITY_GROUPED_BY_MAIN_TECHNOLOGY",
+        )
+
+        with (
+            patch.object(
+                Placeholder, "_determine_resolve_method", return_value="resolve_pptx"
+            ),
+            patch.object(Placeholder, "_call_resolve_method") as mock_call,
+        ):
+            Placeholder.resolve(report)
+
+            resolved = {
+                call.args[2]: call.args[3].args for call in mock_call.call_args_list
+            }
+            assert resolved == {
+                "PORTFOLIO_PERIOD_MAINTAINABILITY": ("TEAM",),
+                "PORTFOLIO_PERIOD_MAINTAINABILITY_GROUPED_BY_MAIN_TECHNOLOGY": (
+                    "MAIN_TECHNOLOGY",
+                ),
+            }
+
+    def test_resolve_ignores_unrelated_key_sharing_prefix(self):
+        """PORTFOLIO_PERIOD_MAINTAINABILITY_CHANGE_... belongs to a different
+        treemap class; it's neither the bare key nor one of its ..._GROUPED_BY_X
+        variants, so exact matching never confuses the two."""
+        from report_generator.generator.placeholders.implementations.images.treemaps.maintainability_treemap import (
+            MaintainabilityPortfolioTreemapPlaceholder as Placeholder,
+        )
+
+        report = _fake_report("PORTFOLIO_PERIOD_MAINTAINABILITY_CHANGE_GROUPED_BY_TEAM")
+
+        with (
+            patch.object(
+                Placeholder, "_determine_resolve_method", return_value="resolve_pptx"
+            ),
+            patch.object(Placeholder, "_call_resolve_method") as mock_call,
+        ):
+            Placeholder.resolve(report)
+
+            mock_call.assert_not_called()
+
+    def test_resolve_with_two_parameter_lists(self):
+        from report_generator.generator.placeholders.implementations.images.treemaps.maintainability_treemap import (
+            MaintainabilityMetricPortfolioTreemapPlaceholder as Placeholder,
+        )
+        from report_generator.generator.utils.constants import MaintMetric
+
+        portfolio_metadata.set_group_by("main_technology")
+        report = _fake_report(
+            *(f"PORTFOLIO_PERIOD_MAINT_{metric}" for metric in MaintMetric)
+        )
+
+        with (
+            patch.object(
+                Placeholder, "_determine_resolve_method", return_value="resolve_pptx"
+            ),
+            patch.object(Placeholder, "_call_resolve_method") as mock_call,
+        ):
+            Placeholder.resolve(report)
+
+            resolved_keys = {c.args[2] for c in mock_call.call_args_list}
+            assert resolved_keys == {
+                f"PORTFOLIO_PERIOD_MAINT_{metric}" for metric in MaintMetric
+            }
+            for call in mock_call.call_args_list:
+                assert call.args[3].args[-1] == "MAIN_TECHNOLOGY"
