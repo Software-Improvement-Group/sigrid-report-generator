@@ -17,7 +17,9 @@ from unittest.mock import ANY, patch
 import pytest
 
 from report_generator.generator.context import portfolio_filters
-from report_generator.generator.placeholders.rendering import traversal_cache
+from report_generator.generator.placeholders.rendering.pptx.index import (
+    cache as traversal_cache,
+)
 
 # `filter_data_on_portfolio_arguments` unconditionally excludes inactive/development-only
 # systems, which requires portfolio metadata. `ANY` matches any systemName lookup, so every

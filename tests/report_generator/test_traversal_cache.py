@@ -14,7 +14,7 @@
 
 from pptx import Presentation
 
-from report_generator.generator.placeholders.rendering import traversal_cache as cache
+from report_generator.generator.placeholders.rendering.pptx.index import cache
 
 
 class _CountingBuilder:

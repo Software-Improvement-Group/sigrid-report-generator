@@ -18,9 +18,7 @@ from pptx import Presentation
 from pptx.util import Inches
 
 from report_generator.generator.placeholders.rendering import pptx as render
-from report_generator.generator.placeholders.rendering import (
-    pptx_index,
-)
+from report_generator.generator.placeholders.rendering.pptx import index as pptx_index
 from report_generator.generator.utils.constants.sentiment import Sentiment
 
 
@@ -267,10 +265,10 @@ def test_delete_slides_with_placeholder_does_not_rebuild_when_nothing_matches(
     presentation = Presentation()
     _add_slide_with_text(presentation, "keep this SYSTEM_PY slide")
     builds = []
-    original = pptx_index._presentation_index
+    original = pptx_index.walk.presentation_index
     monkeypatch.setattr(
-        pptx_index,
-        "_presentation_index",
+        pptx_index.walk,
+        "presentation_index",
         lambda pres: (builds.append(1), original(pres))[1],
     )
     render.find_text_in_presentation(presentation, "SYSTEM_PY")

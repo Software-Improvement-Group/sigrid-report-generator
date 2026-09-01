@@ -12,4 +12,4 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from . import common, docx, pptx, pptx_index, traversal_cache
+from . import common, docx, pptx

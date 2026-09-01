@@ -18,11 +18,11 @@ from pptx.oxml.text import CT_TextParagraph
 # noinspection PyProtectedMember
 from pptx.text.text import _Paragraph
 
+from report_generator.generator.placeholders.rendering.common import (
+    merge_runs_with_same_formatting,
+)
 from report_generator.generator.placeholders.rendering.docx import (
     update_paragraph as update_docx_paragraph,
-)
-from report_generator.generator.placeholders.rendering.pptx import (
-    merge_runs_with_same_formatting,
 )
 from report_generator.generator.placeholders.rendering.pptx import (
     update_paragraph as update_pptx_paragraph,
