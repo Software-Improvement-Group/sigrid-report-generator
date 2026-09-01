@@ -531,6 +531,78 @@ class TestCLIParameters:
 
         assert result.exit_code in [0, 1]  # 1 if no systems match
 
+    @patch("report_generator.cli.presets")
+    @patch("report_generator.cli.sigrid_api")
+    def test_group_by_defaults_to_team(self, mock_sigrid_api, mock_presets):
+        """Test that --group-by defaults to 'team' and is passed to the grouping context."""
+        os.environ["SIGRID_REPORT_GENERATOR_RECORD_USAGE"] = "0"
+        mock_presets.run = MagicMock()
+
+        with patch(
+            "report_generator.cli.portfolio_metadata"
+        ) as mock_portfolio_metadata:
+            runner = CliRunner()
+            runner.invoke(
+                run_cli,
+                [
+                    "--customer",
+                    "test-customer",
+                    "--token",
+                    "test-token",
+                    "--layout",
+                    "portfolio-change",
+                ],
+            )
+
+            mock_portfolio_metadata.set_group_by.assert_called_once_with("team")
+
+    @patch("report_generator.cli.presets")
+    @patch("report_generator.cli.sigrid_api")
+    def test_group_by_parameter_passed_to_context(self, mock_sigrid_api, mock_presets):
+        """Test that --group-by is passed through to the grouping context."""
+        os.environ["SIGRID_REPORT_GENERATOR_RECORD_USAGE"] = "0"
+        mock_presets.run = MagicMock()
+
+        with patch(
+            "report_generator.cli.portfolio_metadata"
+        ) as mock_portfolio_metadata:
+            runner = CliRunner()
+            runner.invoke(
+                run_cli,
+                [
+                    "--customer",
+                    "test-customer",
+                    "--token",
+                    "test-token",
+                    "--layout",
+                    "portfolio-change",
+                    "--group-by",
+                    "lifecycle",
+                ],
+            )
+
+            mock_portfolio_metadata.set_group_by.assert_called_once_with("lifecycle")
+
+    def test_group_by_rejects_invalid_choice(self):
+        """Test that --group-by rejects a value outside the allowed dimensions."""
+        runner = CliRunner()
+        result = runner.invoke(
+            run_cli,
+            [
+                "--customer",
+                "test-customer",
+                "--token",
+                "test-token",
+                "--layout",
+                "portfolio-change",
+                "--group-by",
+                "not-a-real-dimension",
+            ],
+        )
+
+        assert result.exit_code != 0
+        assert "group-by" in result.output.lower()
+
 
 class TestCLITokenErrors:
     """Token-validation failures must exit cleanly, printing only the message."""

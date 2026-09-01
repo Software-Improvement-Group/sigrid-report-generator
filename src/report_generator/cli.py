@@ -21,7 +21,7 @@ import requests
 
 from report_generator import ReportGenerator, presets
 from report_generator.generator import generator_arguments
-from report_generator.generator.context import sigrid_api
+from report_generator.generator.context import portfolio_metadata, sigrid_api
 from report_generator.generator.utils.time_series import add_months
 from report_generator.update_check import check_for_update
 
@@ -136,16 +136,35 @@ def _validate_layout_or_template(ctx, param, value):
     default=None,
     help=f"Sigrid API base URL, will default to {sigrid_api.DEFAULT_BASE_URL} if not provided",
 )
+@click.option(
+    "-g",
+    "--group-by",
+    type=click.Choice(portfolio_metadata.GROUPING_OPTIONS),
+    default="team",
+    help="Metadata dimension all portfolio treemaps are grouped by",
+)
 @generator_arguments
 @click.pass_context
 def run(
-    _, debug, customer, system, token, layout, template, start, end, out_file, api_url
+    _,
+    debug,
+    customer,
+    system,
+    token,
+    layout,
+    template,
+    start,
+    end,
+    out_file,
+    api_url,
+    group_by,
 ):
     _configure_logging(debug)
     if not template:
         _validate_system_requirement(system, layout)
     try:
         _configure_api(customer, system, token, (start, end), api_url)
+        portfolio_metadata.set_group_by(group_by)
     except ValueError as e:
         raise click.ClickException(str(e)) from e
     _record_usage_statistics(layout, customer)
