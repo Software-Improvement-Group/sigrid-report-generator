@@ -13,6 +13,7 @@ requests==2.33.0
 pyjwt==2.13.0
 importlib-resources==6.5.2
 numpy==2.4.6
+tqdm==4.67.1
 pandas==3.0.3
 matplotlib==3.11.1
 squarify==0.4.4
