@@ -12,17 +12,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import pytest
 from pptx import Presentation
 
 from report_generator.generator.placeholders.rendering import traversal_cache as cache
-
-
-@pytest.fixture(autouse=True)
-def _clear_cache():
-    cache.clear()
-    yield
-    cache.clear()
 
 
 class _CountingBuilder:

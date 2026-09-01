@@ -14,23 +14,14 @@
 
 import io
 
-import pytest
 from pptx import Presentation
 from pptx.util import Inches
 
 from report_generator.generator.placeholders.rendering import pptx as render
 from report_generator.generator.placeholders.rendering import (
     pptx_index,
-    traversal_cache,
 )
 from report_generator.generator.utils.constants.sentiment import Sentiment
-
-
-@pytest.fixture(autouse=True)
-def _clear_traversal_cache():
-    traversal_cache.clear()
-    yield
-    traversal_cache.clear()
 
 
 def _presentation_with_paragraphs(*lines):

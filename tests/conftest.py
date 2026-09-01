@@ -17,6 +17,7 @@ from unittest.mock import ANY, patch
 import pytest
 
 from report_generator.generator.context import portfolio_filters
+from report_generator.generator.placeholders.rendering import traversal_cache
 
 # `filter_data_on_portfolio_arguments` unconditionally excludes inactive/development-only
 # systems, which requires portfolio metadata. `ANY` matches any systemName lookup, so every
@@ -40,3 +41,12 @@ def _default_active_portfolio_metadata(request):
         return_value=_DEFAULT_ACTIVE_METADATA,
     ):
         yield
+
+
+@pytest.fixture(autouse=True)
+def _clear_traversal_cache():
+    """The cache holds a strong reference per document and has room for only a few, so a leaked
+    entry (a mock presentation, say) would keep later tests from exercising the warm index."""
+    traversal_cache.clear()
+    yield
+    traversal_cache.clear()

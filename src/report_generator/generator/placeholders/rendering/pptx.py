@@ -18,7 +18,6 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 
 from pptx.dml.color import RGBColor
-from pptx.enum.shapes import MSO_SHAPE_TYPE
 from pptx.oxml.xmlchemy import OxmlElement
 from pptx.presentation import Presentation
 
@@ -180,15 +179,6 @@ def find_text_in_text_frame(shape, search_text):
     if not shape.has_text_frame:
         return []
     return pptx_index.matching_paragraphs(pptx_index.own_records(shape), search_text)
-
-
-def find_text_in_group(shape, search_text):
-    if shape.shape_type != MSO_SHAPE_TYPE.GROUP:
-        return []
-    paragraphs = []
-    for nested_shape in shape.shapes:
-        paragraphs.extend(find_text_in_shape(nested_shape, search_text))
-    return paragraphs
 
 
 def find_text_in_shape(shape, search_text):
@@ -404,6 +394,7 @@ def _deduplicate_consecutive_shapes(shapes):
 
 
 def remove_row_from_table(table: Table, row: _Row):
+    pptx_index.invalidate(table)
     # noinspection PyProtectedMember
     tbl = table._tbl
     # noinspection PyProtectedMember
@@ -412,7 +403,6 @@ def remove_row_from_table(table: Table, row: _Row):
 
 
 def remove_rows_from_table(table: Table, row_numbers: Iterable[int]):
-    pptx_index.invalidate(table)
     reversed_numbers = sorted(row_numbers, reverse=True)
     for row_number in reversed_numbers:
         row = table.rows[row_number]
