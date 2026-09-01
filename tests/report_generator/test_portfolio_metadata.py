@@ -17,15 +17,18 @@ from unittest.mock import patch
 import click
 import pytest
 
-from report_generator.generator.context import portfolio_filters
-from report_generator.generator.context.portfolio_filters import (
+from report_generator.generator.context import portfolio_metadata
+from report_generator.generator.context.portfolio_metadata import (
     FILTER_CONFIGURATION,
     PlaceholderArgumentError,
     _find_system_metadata,
     _include,
     filter_data_on_portfolio_arguments,
+    get_group_by,
     reset_context,
+    reset_group_by,
     set_context,
+    set_group_by,
 )
 from report_generator.generator.utils.constants.filters import FILTER_LABELS
 
@@ -113,22 +116,22 @@ class TestPortfolioArguments:
         """Test that set_context correctly sets team filter."""
         set_context(team=["TeamA"])
 
-        assert portfolio_filters._filter_state["team"] == ["TeamA"]
-        assert portfolio_filters._filter_state["division"] is None
+        assert portfolio_metadata._filter_state["team"] == ["TeamA"]
+        assert portfolio_metadata._filter_state["division"] is None
 
     def test_set_context_with_division(self):
         """Test that set_context correctly sets division filter."""
         set_context(division=["DivisionX"])
 
-        assert portfolio_filters._filter_state["team"] is None
-        assert portfolio_filters._filter_state["division"] == ["DivisionX"]
+        assert portfolio_metadata._filter_state["team"] is None
+        assert portfolio_metadata._filter_state["division"] == ["DivisionX"]
 
     def test_set_context_with_both(self):
         """Test that set_context correctly sets both team and division filters."""
         set_context(team=["TeamA", "TeamB"], division=["DivisionX"])
 
-        assert portfolio_filters._filter_state["team"] == ["TeamA", "TeamB"]
-        assert portfolio_filters._filter_state["division"] == ["DivisionX"]
+        assert portfolio_metadata._filter_state["team"] == ["TeamA", "TeamB"]
+        assert portfolio_metadata._filter_state["division"] == ["DivisionX"]
 
     def test_set_context_raises_on_unknown_filter(self):
         """Test that set_context raises ValueError for unknown filter names."""
@@ -145,13 +148,13 @@ class TestPortfolioArguments:
         with pytest.raises(ValueError):
             set_context(team=["TeamA"], unknown_filter=["value"])
 
-        assert portfolio_filters._filter_state["team"] is None
+        assert portfolio_metadata._filter_state["team"] is None
 
     def test_set_context_accepts_hyphenated_values_for_mapped_filters(self):
         """Help text advertises hyphenated values; validation must accept them too."""
         set_context(deployment=["public-facing"])
 
-        assert portfolio_filters._filter_state["deployment"] == ["PUBLIC_FACING"]
+        assert portfolio_metadata._filter_state["deployment"] == ["PUBLIC_FACING"]
 
     # System Matching Tests
 
@@ -300,7 +303,7 @@ class TestPortfolioArguments:
 
     # Decorator Behavior Tests
 
-    @patch("report_generator.generator.context.portfolio_filters.sigrid_api")
+    @patch("report_generator.generator.context.portfolio_metadata.sigrid_api")
     def test_decorator_returns_unchanged_data_when_no_filters_and_all_active(
         self, mock_sigrid_api, mock_data_with_data_tag, mock_portfolio_metadata
     ):
@@ -316,7 +319,7 @@ class TestPortfolioArguments:
 
         assert result == mock_data_with_data_tag
 
-    @patch("report_generator.generator.context.portfolio_filters.sigrid_api")
+    @patch("report_generator.generator.context.portfolio_metadata.sigrid_api")
     def test_decorator_excludes_inactive_systems_without_any_filters(
         self, mock_sigrid_api, mock_data_with_data_tag, mock_portfolio_metadata
     ):
@@ -332,7 +335,7 @@ class TestPortfolioArguments:
 
         assert [s["system"] for s in result["systems"]] == ["system2", "system3"]
 
-    @patch("report_generator.generator.context.portfolio_filters.sigrid_api")
+    @patch("report_generator.generator.context.portfolio_metadata.sigrid_api")
     def test_decorator_filters_systems_with_data_tag(
         self, mock_sigrid_api, mock_data_with_data_tag, mock_portfolio_metadata
     ):
@@ -351,7 +354,7 @@ class TestPortfolioArguments:
         assert result["systems"][1]["system"] == "system3"
         assert result["metadata"] == "some_metadata"  # Other data preserved
 
-    @patch("report_generator.generator.context.portfolio_filters.sigrid_api")
+    @patch("report_generator.generator.context.portfolio_metadata.sigrid_api")
     def test_decorator_raises_exception_when_no_systems_match(
         self, mock_sigrid_api, mock_data_with_data_tag, mock_portfolio_metadata
     ):
@@ -388,7 +391,7 @@ class TestPortfolioArguments:
 
         assert result is False
 
-    @patch("report_generator.generator.context.portfolio_filters.sigrid_api")
+    @patch("report_generator.generator.context.portfolio_metadata.sigrid_api")
     def test_decorator_with_mixed_matching_systems(
         self, mock_sigrid_api, mock_data_with_data_tag, mock_portfolio_metadata
     ):
@@ -405,7 +408,7 @@ class TestPortfolioArguments:
         assert len(result["systems"]) == 1
         assert result["systems"][0]["system"] == "system2"
 
-    @patch("report_generator.generator.context.portfolio_filters.sigrid_api")
+    @patch("report_generator.generator.context.portfolio_metadata.sigrid_api")
     def test_decorator_does_not_raise_when_api_data_empty_but_filters_match_metadata(
         self, mock_sigrid_api, mock_portfolio_metadata
     ):
@@ -430,10 +433,36 @@ class TestFilterConsistency:
 
     def test_filter_state_matches_configuration(self):
         """Test that _filter_state has exactly the keys defined in FILTER_CONFIGURATION."""
-        assert set(portfolio_filters._filter_state.keys()) == set(
+        assert set(portfolio_metadata._filter_state.keys()) == set(
             FILTER_CONFIGURATION.keys()
         )
 
     def test_filter_labels_match_configuration(self):
         """FILTER_LABELS must define a label for every filter, so filter_info never KeyErrors."""
         assert set(FILTER_LABELS.keys()) == set(FILTER_CONFIGURATION.keys())
+
+
+class TestPortfolioGrouping:
+    """Test cases for the treemap grouping-dimension state, which lives alongside the
+    filter state above since both operate on the same portfolio metadata dimensions."""
+
+    def teardown_method(self):
+        reset_group_by()
+
+    def test_defaults_to_team(self):
+        assert get_group_by() == "team"
+
+    def test_set_group_by_updates_selected_grouping(self):
+        set_group_by("lifecycle")
+
+        assert get_group_by() == "lifecycle"
+
+    def test_set_group_by_rejects_unknown_dimension(self):
+        with pytest.raises(ValueError, match="Invalid group-by value"):
+            set_group_by("not-a-real-dimension")
+
+    def test_reset_group_by_restores_default(self):
+        set_group_by("supplier")
+        reset_group_by()
+
+        assert get_group_by() == "team"

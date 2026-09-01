@@ -16,7 +16,7 @@ from functools import cached_property, lru_cache
 from itertools import chain
 
 from report_generator.generator.context import sigrid_api
-from report_generator.generator.context.portfolio_filters import (
+from report_generator.generator.context.portfolio_metadata import (
     filter_data_on_portfolio_arguments,
 )
 from report_generator.generator.domain.portfolio.maintainability_portfolio import (

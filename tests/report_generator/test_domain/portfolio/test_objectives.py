@@ -14,7 +14,7 @@
 
 from unittest.mock import patch
 
-from report_generator.generator.context.portfolio_filters import reset_context
+from report_generator.generator.context.portfolio_metadata import reset_context
 from report_generator.generator.domain.portfolio.objectives import (
     ObjectivesData,
     ObjectiveStatus,

@@ -14,7 +14,7 @@
 
 from functools import reduce
 
-from report_generator.generator.context.portfolio_filters import (
+from report_generator.generator.context.portfolio_metadata import (
     portfolio_arguments_command,
 )
 from report_generator.generator.domain.external.epss import epss_data
@@ -37,6 +37,9 @@ from report_generator.generator.domain.portfolio.objectives import objectives_da
 from report_generator.generator.domain.portfolio.osh_portfolio import osh_portfolio_data
 from report_generator.generator.domain.portfolio.portfolio_filter_info import (
     portfolio_filter_info,
+)
+from report_generator.generator.domain.portfolio.portfolio_grouping import (
+    portfolio_grouping,
 )
 from report_generator.generator.domain.portfolio.progress_sigrid import (
     progress_sigrid_data,

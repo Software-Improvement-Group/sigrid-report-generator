@@ -16,7 +16,7 @@ from unittest.mock import ANY, patch
 
 import pytest
 
-from report_generator.generator.context import portfolio_filters
+from report_generator.generator.context import portfolio_metadata
 
 # `filter_data_on_portfolio_arguments` unconditionally excludes inactive/development-only
 # systems, which requires portfolio metadata. `ANY` matches any systemName lookup, so every
@@ -35,7 +35,7 @@ def _default_active_portfolio_metadata(request):
         return
 
     with patch.object(
-        portfolio_filters.sigrid_api,
+        portfolio_metadata.sigrid_api,
         "get_portfolio_metadata",
         return_value=_DEFAULT_ACTIVE_METADATA,
     ):

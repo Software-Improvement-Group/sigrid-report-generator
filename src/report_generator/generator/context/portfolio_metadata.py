@@ -141,6 +141,33 @@ def get_filter_values(filter_name: str) -> list[str] | None:
     return _filter_state[filter_name]
 
 
+# The metadata dimension all portfolio treemaps are grouped by, as opposed to the
+# filter state above which picks which systems to include.
+GROUPING_OPTIONS: tuple[str, ...] = tuple(FILTER_CONFIGURATION.keys())
+DEFAULT_GROUP_BY = "team"
+
+_group_by: str = DEFAULT_GROUP_BY
+
+
+def set_group_by(group_by: str) -> None:
+    if group_by not in GROUPING_OPTIONS:
+        raise ValueError(
+            f"Invalid group-by value: {group_by}. "
+            f"Allowed: {', '.join(GROUPING_OPTIONS)}"
+        )
+    global _group_by
+    _group_by = group_by
+
+
+def reset_group_by() -> None:
+    global _group_by
+    _group_by = DEFAULT_GROUP_BY
+
+
+def get_group_by() -> str:
+    return _group_by
+
+
 def _build_help(filter_name: str, mapping: dict | None) -> str:
     flag = f"--{filter_name.replace('_', '-')}"
     example_flag = flag

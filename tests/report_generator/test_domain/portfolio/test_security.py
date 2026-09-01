@@ -16,7 +16,7 @@ from unittest.mock import patch
 
 import pytest
 
-from report_generator.generator.context.portfolio_filters import reset_context
+from report_generator.generator.context.portfolio_metadata import reset_context
 from report_generator.generator.domain.portfolio.security_dashboard_findings_portfolio import (
     SecurityDashboardFindingsPortfolioData,
     security_dashboard_findings_portfolio_data,
@@ -1753,7 +1753,7 @@ class TestSecurityDashboardFindingsPortfolioData:
         assert "system2" in names
         assert "system3" in names
 
-    @patch("report_generator.generator.context.portfolio_filters.sigrid_api")
+    @patch("report_generator.generator.context.portfolio_metadata.sigrid_api")
     @patch(
         "report_generator.generator.domain.portfolio.security_dashboard_findings_portfolio.sigrid_api"
     )
@@ -1855,7 +1855,7 @@ class TestSecurityDashboardResolutionTimesPortfolioData:
         assert "system2" in names
         assert "system3" in names
 
-    @patch("report_generator.generator.context.portfolio_filters.sigrid_api")
+    @patch("report_generator.generator.context.portfolio_metadata.sigrid_api")
     @patch(
         "report_generator.generator.domain.portfolio.security_dashboard_resolution_times_portfolio.sigrid_api"
     )
