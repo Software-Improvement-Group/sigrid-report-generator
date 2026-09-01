@@ -12,10 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import logging
-
-from tqdm import tqdm
-
 from report_generator.generator.placeholders import (
     PlaceholderCollection,
 )
@@ -35,22 +31,8 @@ class ReportGenerator:
     ) -> None:
         self.placeholders.update(placeholders)
 
-    def get_placeholder_progress_bar(self):
-        if logging.getLogger("root").level == logging.DEBUG:
-            return self.placeholders
-
-        return tqdm(self.placeholders, desc="Processing", unit=" placeholders")
-
     def generate(self, output_path: str) -> None:
-        pbar = self.get_placeholder_progress_bar()
-        pbar_enabled = isinstance(pbar, tqdm)
-        for placeholder in pbar:
-            if pbar_enabled:
-                pbar.set_postfix_str(f"Current: {placeholder.key}")
-
+        for placeholder in self.placeholders:
             placeholder.resolve(self.report)
-
-        if pbar_enabled:
-            pbar.close()
 
         self.report.save(output_path)
