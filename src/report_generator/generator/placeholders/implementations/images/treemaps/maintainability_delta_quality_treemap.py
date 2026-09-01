@@ -27,14 +27,14 @@ class MaintainabilityDeltaQualityNewCodePortfolioTreemapPlaceholder(
     EndDatePortfolioTreemapPlaceholder
 ):
     """Creates a portfolio treemap where the color is determined by the delta quality of maintainability rating (new code) of the individual systems.
-    Append `_GROUPED_BY_<DIMENSION>` to this placeholder's key to override the report's default grouping for this instance."""
+    Leave parameter empty to apply the default/provided grouping."""
 
-    key = "PORTFOLIO_PERIOD_MAINTAINABILITY_DELTA_QUALITY_NEW_CODE"
+    key = "PORTFOLIO_PERIOD_MAINTAINABILITY_DELTA_QUALITY_NEW_CODE{parameter}"
 
     @classmethod
     def value(cls, parameter):
         return cls.create_end_date_portfolio_treemap(
-            grouping=parameter.lower(),
+            grouping=cls._dimension_from_parameter(parameter).lower(),
             rating_func=cls.safe_rating_func(
                 maintainability_delta_quality_new_code.get_system, "filesRatingAtEnd"
             ),
@@ -47,14 +47,14 @@ class MaintainabilityDeltaQualityChangedCodePortfolioTreemapPlaceholder(
     EndDatePortfolioTreemapPlaceholder
 ):
     """Creates a portfolio treemap where the color is determined by the delta quality of maintainability rating (changed code) of the individual systems.
-    Append `_GROUPED_BY_<DIMENSION>` to this placeholder's key to override the report's default grouping for this instance."""
+    Leave parameter empty to apply the default/provided grouping."""
 
-    key = "PORTFOLIO_PERIOD_MAINTAINABILITY_DELTA_QUALITY_CHANGED_CODE"
+    key = "PORTFOLIO_PERIOD_MAINTAINABILITY_DELTA_QUALITY_CHANGED_CODE{parameter}"
 
     @classmethod
     def value(cls, parameter):
         return cls.create_end_date_portfolio_treemap(
-            grouping=parameter.lower(),
+            grouping=cls._dimension_from_parameter(parameter).lower(),
             rating_func=cls.safe_rating_func(
                 maintainability_delta_quality_changed_code.get_system,
                 "filesRatingAtEnd",
@@ -68,14 +68,16 @@ class MaintainabilityDeltaQualityNewAndChangedCodePortfolioTreemapPlaceholder(
     EndDatePortfolioTreemapPlaceholder
 ):
     """Creates a portfolio treemap where the color is determined by the delta quality of maintainability rating (new and changed code) of the individual systems.
-    Append `_GROUPED_BY_<DIMENSION>` to this placeholder's key to override the report's default grouping for this instance."""
+    Leave parameter empty to apply the default/provided grouping."""
 
-    key = "PORTFOLIO_PERIOD_MAINTAINABILITY_DELTA_QUALITY_NEW_AND_CHANGED_CODE"
+    key = (
+        "PORTFOLIO_PERIOD_MAINTAINABILITY_DELTA_QUALITY_NEW_AND_CHANGED_CODE{parameter}"
+    )
 
     @classmethod
     def value(cls, parameter):
         return cls.create_end_date_portfolio_treemap(
-            grouping=parameter.lower(),
+            grouping=cls._dimension_from_parameter(parameter).lower(),
             rating_func=cls.safe_rating_func(
                 maintainability_delta_quality_new_and_changed_code.get_system,
                 "filesRatingAtEnd",

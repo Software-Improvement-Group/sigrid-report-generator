@@ -235,7 +235,7 @@ class TestMainTechnologyGrouping:
             _AbstractPortfolioTreemapPlaceholder.grouping_processors
         )
         assert (
-            "MAIN_TECHNOLOGY"
+            "_GROUPED_BY_MAIN_TECHNOLOGY"
             in _AbstractPortfolioTreemapPlaceholder.GROUPING_PARAMETERS
         )
 
@@ -396,6 +396,8 @@ def _fake_shape(text):
     shape.has_text_frame = True
     shape.text_frame.paragraphs = [MagicMock(text=text)]
     shape.shape_type = None  # never MSO_SHAPE_TYPE.GROUP
+    shape.width.inches = 1.0
+    shape.height.inches = 1.0
     return shape
 
 
@@ -408,20 +410,72 @@ def _fake_report(*texts):
     return report
 
 
-class TestResolveGroupingVariants:
-    """Test cases for resolving both the bare, suffix-free placeholder key that
-    follows --group-by, and the pinned ..._GROUPED_BY_{dimension} keys, in a single
-    scan of the presentation per class."""
+class TestDimensionFromParameter:
+    """Grouping is a plain parameter value now: the full "_GROUPED_BY_X" suffix,
+    or "" for the bare key. _dimension_from_parameter translates either form back
+    into the uppercase dimension name grouping_processors expects."""
 
-    def test_key_has_no_grouping_suffix(self):
+    def test_bare_parameter_uses_group_by_context(self):
+        from report_generator.generator.placeholders.implementations.images.treemaps.treemap_base import (
+            _AbstractPortfolioTreemapPlaceholder,
+        )
+
+        portfolio_metadata.set_group_by("lifecycle")
+
+        assert (
+            _AbstractPortfolioTreemapPlaceholder._dimension_from_parameter("")
+            == "LIFECYCLE"
+        )
+
+    def test_suffixed_parameter_strips_marker(self):
+        from report_generator.generator.placeholders.implementations.images.treemaps.treemap_base import (
+            _AbstractPortfolioTreemapPlaceholder,
+        )
+
+        assert (
+            _AbstractPortfolioTreemapPlaceholder._dimension_from_parameter(
+                "_GROUPED_BY_MAIN_TECHNOLOGY"
+            )
+            == "MAIN_TECHNOLOGY"
+        )
+
+
+class TestResolveGroupingVariants:
+    """Grouping is resolved through the normal ParameterizedPlaceholder mechanism:
+    one key template with a single {parameter} token, substituted with either ""
+    (the bare, suffix-free default that follows --group-by) or one of the
+    "_GROUPED_BY_X" suffixes (pinned to dimension X). No custom resolve()."""
+
+    def test_key_uses_a_single_parameter_token(self):
         from report_generator.generator.placeholders.implementations.images.treemaps.maintainability_treemap import (
             MaintainabilityPortfolioTreemapPlaceholder,
         )
 
         assert (
             MaintainabilityPortfolioTreemapPlaceholder.key
-            == "PORTFOLIO_PERIOD_MAINTAINABILITY"
+            == "PORTFOLIO_PERIOD_MAINTAINABILITY{parameter}"
         )
+
+    def test_resolve_only_calls_value_for_keys_present_in_the_report(self):
+        from report_generator.generator.placeholders.implementations.images.treemaps.maintainability_treemap import (
+            MaintainabilityPortfolioTreemapPlaceholder as Placeholder,
+        )
+
+        report = _fake_report(
+            "PORTFOLIO_PERIOD_MAINTAINABILITY",
+            "PORTFOLIO_PERIOD_MAINTAINABILITY_GROUPED_BY_MAIN_TECHNOLOGY",
+        )
+
+        with (
+            patch.object(
+                Placeholder, "_determine_resolve_method", return_value="resolve_pptx"
+            ),
+            patch.object(Placeholder, "value", return_value=None) as mock_value,
+        ):
+            Placeholder.resolve(report)
+
+        resolved_parameters = {c.args[0] for c in mock_value.call_args_list}
+        assert resolved_parameters == {"", "_GROUPED_BY_MAIN_TECHNOLOGY"}
 
     def test_resolve_bare_key_uses_group_by_context(self):
         from report_generator.generator.placeholders.implementations.images.treemaps.maintainability_treemap import (
@@ -435,14 +489,12 @@ class TestResolveGroupingVariants:
             patch.object(
                 Placeholder, "_determine_resolve_method", return_value="resolve_pptx"
             ),
-            patch.object(Placeholder, "_call_resolve_method") as mock_call,
+            patch.object(Placeholder, "value", return_value=None) as mock_value,
         ):
             Placeholder.resolve(report)
 
-            mock_call.assert_called_once()
-            _, _, key, value_cb = mock_call.call_args[0]
-            assert key == "PORTFOLIO_PERIOD_MAINTAINABILITY"
-            assert value_cb.args == ("LIFECYCLE",)
+        mock_value.assert_called_once_with("")
+        assert Placeholder._dimension_from_parameter("") == "LIFECYCLE"
 
     def test_resolve_pinned_key_ignores_group_by_context(self):
         from report_generator.generator.placeholders.implementations.images.treemaps.maintainability_treemap import (
@@ -458,43 +510,15 @@ class TestResolveGroupingVariants:
             patch.object(
                 Placeholder, "_determine_resolve_method", return_value="resolve_pptx"
             ),
-            patch.object(Placeholder, "_call_resolve_method") as mock_call,
+            patch.object(Placeholder, "value", return_value=None) as mock_value,
         ):
             Placeholder.resolve(report)
 
-            mock_call.assert_called_once()
-            _, _, key, value_cb = mock_call.call_args[0]
-            assert key == "PORTFOLIO_PERIOD_MAINTAINABILITY_GROUPED_BY_MAIN_TECHNOLOGY"
-            assert value_cb.args == ("MAIN_TECHNOLOGY",)
-
-    def test_resolve_finds_both_bare_and_pinned_keys_in_one_pass(self):
-        from report_generator.generator.placeholders.implementations.images.treemaps.maintainability_treemap import (
-            MaintainabilityPortfolioTreemapPlaceholder as Placeholder,
+        mock_value.assert_called_once_with("_GROUPED_BY_MAIN_TECHNOLOGY")
+        assert (
+            Placeholder._dimension_from_parameter("_GROUPED_BY_MAIN_TECHNOLOGY")
+            == "MAIN_TECHNOLOGY"
         )
-
-        portfolio_metadata.set_group_by("team")
-        report = _fake_report(
-            "PORTFOLIO_PERIOD_MAINTAINABILITY",
-            "PORTFOLIO_PERIOD_MAINTAINABILITY_GROUPED_BY_MAIN_TECHNOLOGY",
-        )
-
-        with (
-            patch.object(
-                Placeholder, "_determine_resolve_method", return_value="resolve_pptx"
-            ),
-            patch.object(Placeholder, "_call_resolve_method") as mock_call,
-        ):
-            Placeholder.resolve(report)
-
-            resolved = {
-                call.args[2]: call.args[3].args for call in mock_call.call_args_list
-            }
-            assert resolved == {
-                "PORTFOLIO_PERIOD_MAINTAINABILITY": ("TEAM",),
-                "PORTFOLIO_PERIOD_MAINTAINABILITY_GROUPED_BY_MAIN_TECHNOLOGY": (
-                    "MAIN_TECHNOLOGY",
-                ),
-            }
 
     def test_resolve_ignores_unrelated_key_sharing_prefix(self):
         """PORTFOLIO_PERIOD_MAINTAINABILITY_CHANGE_... belongs to a different
@@ -510,11 +534,11 @@ class TestResolveGroupingVariants:
             patch.object(
                 Placeholder, "_determine_resolve_method", return_value="resolve_pptx"
             ),
-            patch.object(Placeholder, "_call_resolve_method") as mock_call,
+            patch.object(Placeholder, "value", return_value=None) as mock_value,
         ):
             Placeholder.resolve(report)
 
-            mock_call.assert_not_called()
+        mock_value.assert_not_called()
 
     def test_resolve_with_two_parameter_lists(self):
         from report_generator.generator.placeholders.implementations.images.treemaps.maintainability_treemap import (
@@ -522,7 +546,6 @@ class TestResolveGroupingVariants:
         )
         from report_generator.generator.utils.constants import MaintMetric
 
-        portfolio_metadata.set_group_by("main_technology")
         report = _fake_report(
             *(f"PORTFOLIO_PERIOD_MAINT_{metric}" for metric in MaintMetric)
         )
@@ -531,13 +554,11 @@ class TestResolveGroupingVariants:
             patch.object(
                 Placeholder, "_determine_resolve_method", return_value="resolve_pptx"
             ),
-            patch.object(Placeholder, "_call_resolve_method") as mock_call,
+            patch.object(Placeholder, "value", return_value=None) as mock_value,
         ):
             Placeholder.resolve(report)
 
-            resolved_keys = {c.args[2] for c in mock_call.call_args_list}
-            assert resolved_keys == {
-                f"PORTFOLIO_PERIOD_MAINT_{metric}" for metric in MaintMetric
-            }
-            for call in mock_call.call_args_list:
-                assert call.args[3].args[-1] == "MAIN_TECHNOLOGY"
+        resolved_metrics = {c.args[0] for c in mock_value.call_args_list}
+        assert resolved_metrics == set(MaintMetric)
+        for c in mock_value.call_args_list:
+            assert c.args[1] == ""

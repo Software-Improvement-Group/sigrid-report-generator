@@ -25,9 +25,9 @@ from report_generator.generator.utils.constants import OSHMetric
 
 class OSHRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
     """Creates a portfolio treemap where the color is determined by the open-source health rating of the individual systems.
-    Append `_GROUPED_BY_<DIMENSION>` to this placeholder's key to override the report's default grouping for this instance."""
+    Leave parameter empty to apply the default/provided grouping."""
 
-    key = "PORTFOLIO_PERIOD_OSH_RATINGS"
+    key = "PORTFOLIO_PERIOD_OSH_RATINGS{parameter}"
 
     @classmethod
     def value(cls, parameter):
@@ -44,7 +44,7 @@ class OSHRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
             )
 
         return cls.create_end_date_portfolio_treemap(
-            grouping=parameter.lower(),
+            grouping=cls._dimension_from_parameter(parameter).lower(),
             rating_func=rating_function,
             rating_rounding_func=formatters.star_rating_round,
             determine_color_function=cls.determine_rating_color,
@@ -54,10 +54,12 @@ class OSHRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
 class OSHMetricPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
     """Creates a portfolio treemap where the color is determined by the rating of a
     single open-source health metric (e.g. vulnerability) of the individual systems.
-    Append `_GROUPED_BY_<DIMENSION>` to this placeholder's key to override the report's default grouping for this instance."""
+    Leave parameter empty to apply the default/provided grouping."""
 
-    key = "PORTFOLIO_PERIOD_OSH_{parameter}"
-    allowed_parameters = MultiParameterList(OSHMetric)
+    key = "PORTFOLIO_PERIOD_OSH_{parameter}{parameter}"
+    allowed_parameters = MultiParameterList(
+        OSHMetric, EndDatePortfolioTreemapPlaceholder.GROUPING_PARAMETERS
+    )
 
     @classmethod
     def value(cls, metric, grouping):
@@ -67,7 +69,7 @@ class OSHMetricPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
             return osh_portfolio_data.get_property_rating(system_name, metric_key)
 
         return cls.create_end_date_portfolio_treemap(
-            grouping=grouping.lower(),
+            grouping=cls._dimension_from_parameter(grouping).lower(),
             rating_func=rating_function,
             rating_rounding_func=formatters.star_rating_round,
             determine_color_function=cls.determine_rating_color,

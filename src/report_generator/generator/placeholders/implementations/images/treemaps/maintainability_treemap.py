@@ -28,9 +28,9 @@ from report_generator.generator.utils.constants import MaintMetric
 
 class MaintainabilityPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
     """Creates a portfolio treemap where the color is determined by the maintainability rating of the individual systems.
-    Append `_GROUPED_BY_<DIMENSION>` to this placeholder's key to override the report's default grouping for this instance."""
+    Leave parameter empty to apply the default/provided grouping."""
 
-    key = "PORTFOLIO_PERIOD_MAINTAINABILITY"
+    key = "PORTFOLIO_PERIOD_MAINTAINABILITY{parameter}"
 
     @classmethod
     def value(cls, parameter):
@@ -44,7 +44,7 @@ class MaintainabilityPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlacehol
             )
 
         return cls.create_end_date_portfolio_treemap(
-            grouping=parameter.lower(),
+            grouping=cls._dimension_from_parameter(parameter).lower(),
             rating_func=f,
             rating_rounding_func=formatters.star_rating_round,
             determine_color_function=cls.determine_rating_color,
@@ -55,14 +55,14 @@ class MaintainabilityChangePortfolioTreemapPlaceholder(
     PeriodPortfolioTreemapPlaceholder
 ):
     """Creates a portfolio treemap where the color is determined by the change in maintainability rating of the individual systems during the specified period.
-    Append `_GROUPED_BY_<DIMENSION>` to this placeholder's key to override the report's default grouping for this instance."""
+    Leave parameter empty to apply the default/provided grouping."""
 
-    key = "PORTFOLIO_PERIOD_MAINTAINABILITY_CHANGE"
+    key = "PORTFOLIO_PERIOD_MAINTAINABILITY_CHANGE{parameter}"
 
     @classmethod
     def value(cls, parameter):
         return cls.create_period_portfolio_treemap(
-            grouping=parameter.lower(),
+            grouping=cls._dimension_from_parameter(parameter).lower(),
             metric="maintainability",
             style=_PeriodChangeStyle(
                 rendering.pptx.RATING_POS_CHANGE_RANGE_COLORS,
@@ -76,10 +76,12 @@ class MaintainabilityMetricPortfolioTreemapPlaceholder(
 ):
     """Creates a portfolio treemap where the color is determined by the rating of a
     single maintainability metric (e.g. duplication) of the individual systems.
-    Append `_GROUPED_BY_<DIMENSION>` to this placeholder's key to override the report's default grouping for this instance."""
+    Leave parameter empty to apply the default/provided grouping."""
 
-    key = "PORTFOLIO_PERIOD_MAINT_{parameter}"
-    allowed_parameters = MultiParameterList(MaintMetric)
+    key = "PORTFOLIO_PERIOD_MAINT_{parameter}{parameter}"
+    allowed_parameters = MultiParameterList(
+        MaintMetric, EndDatePortfolioTreemapPlaceholder.GROUPING_PARAMETERS
+    )
 
     @classmethod
     def value(cls, metric, grouping):
@@ -89,7 +91,7 @@ class MaintainabilityMetricPortfolioTreemapPlaceholder(
             return maintainability_portfolio_data.get_property_rating(t, metric_key)
 
         return cls.create_end_date_portfolio_treemap(
-            grouping=grouping.lower(),
+            grouping=cls._dimension_from_parameter(grouping).lower(),
             rating_func=f,
             rating_rounding_func=formatters.star_rating_round,
             determine_color_function=cls.determine_rating_color,
@@ -102,15 +104,17 @@ class MaintainabilityMetricChangePortfolioTreemapPlaceholder(
     """Creates a portfolio treemap where the color is determined by the change in the
     rating of a single maintainability metric (e.g. duplication) of the individual
     systems during the specified period.
-    Append `_GROUPED_BY_<DIMENSION>` to this placeholder's key to override the report's default grouping for this instance."""
+    Leave parameter empty to apply the default/provided grouping."""
 
-    key = "PORTFOLIO_PERIOD_MAINT_{parameter}_CHANGE"
-    allowed_parameters = MultiParameterList(MaintMetric)
+    key = "PORTFOLIO_PERIOD_MAINT_{parameter}_CHANGE{parameter}"
+    allowed_parameters = MultiParameterList(
+        MaintMetric, PeriodPortfolioTreemapPlaceholder.GROUPING_PARAMETERS
+    )
 
     @classmethod
     def value(cls, metric, grouping):
         return cls.create_period_portfolio_treemap(
-            grouping=grouping.lower(),
+            grouping=cls._dimension_from_parameter(grouping).lower(),
             metric=metric.to_json_name(),
             style=_PeriodChangeStyle(
                 rendering.pptx.RATING_POS_CHANGE_RANGE_COLORS,

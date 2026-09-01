@@ -11,7 +11,6 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-import functools
 import logging
 from abc import ABC
 from collections.abc import Callable
@@ -31,7 +30,6 @@ from report_generator.generator.placeholders.formatting.technologies import (
     get_technology_name,
 )
 from report_generator.generator.placeholders.implementations.base import (
-    PARAMETER_TOKEN_PATTERN,
     MultiParameterList,
 )
 from report_generator.generator.placeholders.implementations.images.base import (
@@ -213,57 +211,24 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
         "supplier": _process_supplier_grouping.__func__,
     }
 
-    GROUPING_PARAMETERS: ClassVar[list] = [
-        x.upper() for x in grouping_processors.keys()
-    ]
-
-    # Grouping is not a `{parameter}` token in any concrete class's `key` - it's
-    # resolved entirely below, as a set of candidate suffixes tried alongside the
-    # bare key. `allowed_parameters` therefore only ever covers *other* parameters
-    # (e.g. a metric), and is empty for classes that have none.
-    allowed_parameters: ClassVar[MultiParameterList] = MultiParameterList()
-
     GROUPED_BY_MARKER: ClassVar[str] = "_GROUPED_BY_"
 
-    @classmethod
-    def resolve(cls, report) -> None:
-        """Resolve every key derived from `cls.key`: the bare, suffix-free default
-        (whatever --group-by selected) and every ..._GROUPED_BY_X pinned variant,
-        for each combination of this class's other parameters (if any)."""
-        resolve_method_name = cls._determine_resolve_method(report.type)
-        if not resolve_method_name:
-            return
+    # One value per real dimension (the full "_GROUPED_BY_X" suffix, substituted
+    # into a concrete class's key like any other parameter) plus "" for the bare
+    # key, which falls back to whatever --group-by selected at render time.
+    GROUPING_PARAMETERS: ClassVar[list] = [""] + [
+        f"_GROUPED_BY_{x.upper()}" for x in grouping_processors.keys()
+    ]
 
-        for param_tuple in cls.allowed_parameters.product():
-            bare_key = cls._substitute_key_params(cls.key, param_tuple)
-            cls._resolve_grouping_variants(
-                report, resolve_method_name, bare_key, param_tuple
-            )
-
-    @staticmethod
-    def _substitute_key_params(key: str, param_tuple: tuple) -> str:
-        for param in param_tuple:
-            key = PARAMETER_TOKEN_PATTERN.sub(str(param), key, count=1)
-        return key
+    allowed_parameters: ClassVar[MultiParameterList] = MultiParameterList(
+        GROUPING_PARAMETERS
+    )
 
     @classmethod
-    def _resolve_grouping_variants(
-        cls, report, resolve_method_name, bare_key: str, param_tuple: tuple
-    ) -> None:
-        # None for the bare key itself (-> the CLI-selected default); the pinned
-        # dimension name for every ..._GROUPED_BY_X variant.
-        candidate_groupings: dict[str, str | None] = {bare_key: None}
-        for dimension in cls.GROUPING_PARAMETERS:
-            candidate_groupings[f"{bare_key}{cls.GROUPED_BY_MARKER}{dimension}"] = (
-                dimension
-            )
-
-        for key_text, dimension in candidate_groupings.items():
-            if not rendering.pptx.find_shapes(report, key_text):
-                continue
-            grouping = dimension or portfolio_grouping.selected.upper()
-            value_cb = functools.partial(cls.value, *param_tuple, grouping)
-            cls._call_resolve_method(resolve_method_name, report, key_text, value_cb)
+    def _dimension_from_parameter(cls, parameter: str) -> str:
+        if parameter == "":
+            return portfolio_grouping.selected.upper()
+        return parameter.removeprefix(cls.GROUPED_BY_MARKER)
 
     @classmethod
     def _create_blank_portfolio_and_treemap(cls, grouping) -> tuple[dict, dict]:
