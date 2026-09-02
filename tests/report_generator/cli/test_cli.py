@@ -18,9 +18,18 @@ import time
 from importlib.metadata import version
 from unittest.mock import MagicMock, patch
 
+import pytest
 from click.testing import CliRunner
 
 from report_generator.cli import run as run_cli
+from report_generator.generator.context import portfolio_metadata
+
+
+@pytest.fixture(autouse=True)
+def _reset_group_by():
+    portfolio_metadata.reset_group_by()
+    yield
+    portfolio_metadata.reset_group_by()
 
 
 def _make_expired_jwt() -> str:
@@ -534,54 +543,49 @@ class TestCLIParameters:
     @patch("report_generator.cli.presets")
     @patch("report_generator.cli.sigrid_api")
     def test_group_by_defaults_to_team(self, mock_sigrid_api, mock_presets):
-        """Test that --group-by defaults to 'team' and is passed to the grouping context."""
+        """Test that --group-by defaults to 'team' and is applied to the grouping context."""
         os.environ["SIGRID_REPORT_GENERATOR_RECORD_USAGE"] = "0"
         mock_presets.run = MagicMock()
 
-        with patch(
-            "report_generator.cli.portfolio_metadata"
-        ) as mock_portfolio_metadata:
-            runner = CliRunner()
-            runner.invoke(
-                run_cli,
-                [
-                    "--customer",
-                    "test-customer",
-                    "--token",
-                    "test-token",
-                    "--layout",
-                    "portfolio-change",
-                ],
-            )
+        runner = CliRunner()
+        runner.invoke(
+            run_cli,
+            [
+                "--customer",
+                "test-customer",
+                "--token",
+                "test-token",
+                "--layout",
+                "portfolio-change",
+            ],
+        )
 
-            mock_portfolio_metadata.set_group_by.assert_called_once_with("team")
+        assert portfolio_metadata.get_group_by() == "team"
 
     @patch("report_generator.cli.presets")
     @patch("report_generator.cli.sigrid_api")
     def test_group_by_parameter_passed_to_context(self, mock_sigrid_api, mock_presets):
-        """Test that --group-by is passed through to the grouping context."""
+        """Test that --group-by is applied to the grouping context via the same
+        declarative filter-decorator pattern used by --team, --division, etc."""
         os.environ["SIGRID_REPORT_GENERATOR_RECORD_USAGE"] = "0"
         mock_presets.run = MagicMock()
 
-        with patch(
-            "report_generator.cli.portfolio_metadata"
-        ) as mock_portfolio_metadata:
-            runner = CliRunner()
-            runner.invoke(
-                run_cli,
-                [
-                    "--customer",
-                    "test-customer",
-                    "--token",
-                    "test-token",
-                    "--layout",
-                    "portfolio-change",
-                    "--group-by",
-                    "lifecycle",
-                ],
-            )
+        runner = CliRunner()
+        runner.invoke(
+            run_cli,
+            [
+                "--customer",
+                "test-customer",
+                "--token",
+                "test-token",
+                "--layout",
+                "portfolio-change",
+                "--group-by",
+                "lifecycle",
+            ],
+        )
 
-            mock_portfolio_metadata.set_group_by.assert_called_once_with("lifecycle")
+        assert portfolio_metadata.get_group_by() == "lifecycle"
 
     def test_group_by_rejects_invalid_choice(self):
         """Test that --group-by rejects a value outside the allowed dimensions."""

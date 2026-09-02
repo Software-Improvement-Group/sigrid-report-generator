@@ -13,14 +13,7 @@
 #  limitations under the License.
 
 from report_generator.generator.domain import maintainability_data, system_metadata
-from report_generator.generator.utils.constants.metadata import (
-    METADATA_APPLICATION_TYPE_MAPPING,
-    METADATA_BUSINESS_CRITICALITY_MAPPING,
-    METADATA_DEPLOYMENT_MAPPING,
-    METADATA_DISTRIBUTION_MAPPING,
-    METADATA_LIFECYCLE_MAPPING,
-    METADATA_TARGET_INDUSTRY_MAPPING,
-)
+from report_generator.generator.utils.constants import metadata as metadata_constants
 
 from .base import text_placeholder
 
@@ -98,7 +91,9 @@ def metadata_business_criticality():
     criticality = system_metadata.business_criticality
     if not criticality:
         return ""
-    return METADATA_BUSINESS_CRITICALITY_MAPPING.get(criticality, criticality)
+    return metadata_constants.METADATA_BUSINESS_CRITICALITY_MAPPING.get(
+        criticality, criticality
+    )
 
 
 @text_placeholder()
@@ -107,7 +102,7 @@ def metadata_lifecycle_phase():
     phase = system_metadata.lifecycle_phase
     if not phase:
         return ""
-    return METADATA_LIFECYCLE_MAPPING.get(phase, phase)
+    return metadata_constants.METADATA_LIFECYCLE_MAPPING.get(phase, phase)
 
 
 @text_placeholder()
@@ -116,7 +111,7 @@ def metadata_target_industry():
     industry = system_metadata.target_industry
     if not industry:
         return ""
-    return METADATA_TARGET_INDUSTRY_MAPPING.get(industry, industry)
+    return metadata_constants.METADATA_TARGET_INDUSTRY_MAPPING.get(industry, industry)
 
 
 @text_placeholder()
@@ -125,7 +120,7 @@ def metadata_deployment_type():
     deployment = system_metadata.deployment_type
     if not deployment:
         return ""
-    return METADATA_DEPLOYMENT_MAPPING.get(deployment, deployment)
+    return metadata_constants.METADATA_DEPLOYMENT_MAPPING.get(deployment, deployment)
 
 
 @text_placeholder()
@@ -134,7 +129,7 @@ def metadata_application_type():
     app_type = system_metadata.application_type
     if not app_type:
         return ""
-    return METADATA_APPLICATION_TYPE_MAPPING.get(app_type, app_type)
+    return metadata_constants.METADATA_APPLICATION_TYPE_MAPPING.get(app_type, app_type)
 
 
 @text_placeholder()
@@ -143,7 +138,7 @@ def metadata_distribution_strategy():
     strategy = system_metadata.software_distribution_strategy
     if not strategy:
         return ""
-    return METADATA_DISTRIBUTION_MAPPING.get(strategy, strategy)
+    return metadata_constants.METADATA_DISTRIBUTION_MAPPING.get(strategy, strategy)
 
 
 @text_placeholder()

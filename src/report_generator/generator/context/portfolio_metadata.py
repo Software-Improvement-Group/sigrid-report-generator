@@ -19,15 +19,7 @@ from typing import NamedTuple
 import click
 
 from report_generator.generator.context import sigrid_api
-from report_generator.generator.utils.constants.metadata import (
-    METADATA_APPLICATION_TYPE_MAPPING,
-    METADATA_BUSINESS_CRITICALITY_MAPPING,
-    METADATA_DEPLOYMENT_MAPPING,
-    METADATA_DISTRIBUTION_MAPPING,
-    METADATA_LIFECYCLE_MAPPING,
-    METADATA_TARGET_INDUSTRY_MAPPING,
-    METADATA_TECHNOLOGY_CATEGORY_MAPPING,
-)
+from report_generator.generator.utils.constants import metadata as metadata_constants
 
 
 class FilterSpec(NamedTuple):
@@ -47,37 +39,43 @@ FILTER_CONFIGURATION: dict[str, FilterSpec] = {
     "team": FilterSpec(None, None, "teamNames", None),
     "division": FilterSpec(None, None, "divisionName", None),
     "lifecycle": FilterSpec(
-        METADATA_LIFECYCLE_MAPPING, "Lifecycle", "lifecyclePhase", str.upper
+        metadata_constants.METADATA_LIFECYCLE_MAPPING,
+        "Lifecycle",
+        "lifecyclePhase",
+        str.upper,
     ),
     "deployment": FilterSpec(
-        METADATA_DEPLOYMENT_MAPPING,
+        metadata_constants.METADATA_DEPLOYMENT_MAPPING,
         "Deployment",
         "deploymentType",
         lambda x: x.upper().replace("-", "_"),
     ),
     "business_criticality": FilterSpec(
-        METADATA_BUSINESS_CRITICALITY_MAPPING,
+        metadata_constants.METADATA_BUSINESS_CRITICALITY_MAPPING,
         "Business criticality",
         "businessCriticality",
         str.upper,
     ),
     "distribution": FilterSpec(
-        METADATA_DISTRIBUTION_MAPPING,
+        metadata_constants.METADATA_DISTRIBUTION_MAPPING,
         "Distribution",
         "softwareDistributionStrategy",
         lambda x: x.upper().replace("-", "_"),
     ),
     "application_type": FilterSpec(
-        METADATA_APPLICATION_TYPE_MAPPING,
+        metadata_constants.METADATA_APPLICATION_TYPE_MAPPING,
         "Application type",
         "applicationType",
         lambda x: x.upper().replace("-", "_"),
     ),
     "target_industry": FilterSpec(
-        METADATA_TARGET_INDUSTRY_MAPPING, "Target industry", "targetIndustry", str.upper
+        metadata_constants.METADATA_TARGET_INDUSTRY_MAPPING,
+        "Target industry",
+        "targetIndustry",
+        str.upper,
     ),
     "technology_category": FilterSpec(
-        METADATA_TECHNOLOGY_CATEGORY_MAPPING,
+        metadata_constants.METADATA_TECHNOLOGY_CATEGORY_MAPPING,
         "Technology category",
         "technologyCategory",
         lambda x: x.upper().replace("-", "_"),
@@ -200,6 +198,8 @@ def _make_filter_wrapper(func):
             k: kwargs.pop(k) for k in list(FILTER_CONFIGURATION) if k in kwargs
         }
         set_context(**filter_kwargs)
+        if "group_by" in kwargs:
+            set_group_by(kwargs.pop("group_by"))
         return func(*args, **kwargs)
 
     return wrapper

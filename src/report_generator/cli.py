@@ -157,14 +157,12 @@ def run(
     end,
     out_file,
     api_url,
-    group_by,
 ):
     _configure_logging(debug)
     if not template:
         _validate_system_requirement(system, layout)
     try:
         _configure_api(customer, system, token, (start, end), api_url)
-        portfolio_metadata.set_group_by(group_by)
     except ValueError as e:
         raise click.ClickException(str(e)) from e
     _record_usage_statistics(layout, customer)

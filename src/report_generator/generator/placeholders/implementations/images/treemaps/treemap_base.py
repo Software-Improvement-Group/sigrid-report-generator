@@ -13,7 +13,6 @@
 #  limitations under the License.
 import logging
 from abc import ABC
-from collections.abc import Callable
 from dataclasses import dataclass
 from typing import ClassVar
 
@@ -38,15 +37,7 @@ from report_generator.generator.placeholders.implementations.images.base import 
 from report_generator.generator.placeholders.implementations.images.treemaps.utils import (
     treemap as tr,
 )
-from report_generator.generator.utils.constants.metadata import (
-    METADATA_APPLICATION_TYPE_MAPPING,
-    METADATA_BUSINESS_CRITICALITY_MAPPING,
-    METADATA_DEPLOYMENT_MAPPING,
-    METADATA_DISTRIBUTION_MAPPING,
-    METADATA_LIFECYCLE_MAPPING,
-    METADATA_TARGET_INDUSTRY_MAPPING,
-    METADATA_TECHNOLOGY_CATEGORY_MAPPING,
-)
+from report_generator.generator.utils.constants import metadata as metadata_constants
 
 
 class _AbstractTreemapPlaceholder(_AbstractParameterizedImagePlaceholder, ABC):
@@ -85,8 +76,6 @@ class _AbstractTreemapPlaceholder(_AbstractParameterizedImagePlaceholder, ABC):
 
 
 class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
-    grouping_processors: ClassVar[dict[str, Callable]] = {}
-
     @classmethod
     def resolve_pptx(cls, presentation, key, value_cb):
         shapes = rendering.pptx.find_shapes(presentation, key)
@@ -142,13 +131,15 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
     @staticmethod
     def _process_lifecycle_grouping(metadata):
         if metadata["lifecyclePhase"]:
-            return METADATA_LIFECYCLE_MAPPING[metadata["lifecyclePhase"]]
+            return metadata_constants.METADATA_LIFECYCLE_MAPPING[
+                metadata["lifecyclePhase"]
+            ]
         return "Unset"
 
     @staticmethod
     def _process_business_criticality_grouping(metadata):
         if metadata["businessCriticality"]:
-            return METADATA_BUSINESS_CRITICALITY_MAPPING[
+            return metadata_constants.METADATA_BUSINESS_CRITICALITY_MAPPING[
                 metadata["businessCriticality"]
             ]
         return "Unset"
@@ -156,13 +147,15 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
     @staticmethod
     def _process_deployment_grouping(metadata):
         if metadata["deploymentType"]:
-            return METADATA_DEPLOYMENT_MAPPING[metadata["deploymentType"]]
+            return metadata_constants.METADATA_DEPLOYMENT_MAPPING[
+                metadata["deploymentType"]
+            ]
         return "Unset"
 
     @staticmethod
     def _process_distribution_grouping(metadata):
         if metadata["softwareDistributionStrategy"]:
-            return METADATA_DISTRIBUTION_MAPPING[
+            return metadata_constants.METADATA_DISTRIBUTION_MAPPING[
                 metadata["softwareDistributionStrategy"]
             ]
         return "Unset"
@@ -170,19 +163,25 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
     @staticmethod
     def _process_application_type_grouping(metadata):
         if metadata["applicationType"]:
-            return METADATA_APPLICATION_TYPE_MAPPING[metadata["applicationType"]]
+            return metadata_constants.METADATA_APPLICATION_TYPE_MAPPING[
+                metadata["applicationType"]
+            ]
         return "Unset"
 
     @staticmethod
     def _process_target_industry_grouping(metadata):
         if metadata["targetIndustry"]:
-            return METADATA_TARGET_INDUSTRY_MAPPING[metadata["targetIndustry"]]
+            return metadata_constants.METADATA_TARGET_INDUSTRY_MAPPING[
+                metadata["targetIndustry"]
+            ]
         return "Unset"
 
     @staticmethod
     def _process_technology_category_grouping(metadata):
         if metadata["technologyCategory"]:
-            return METADATA_TECHNOLOGY_CATEGORY_MAPPING[metadata["technologyCategory"]]
+            return metadata_constants.METADATA_TECHNOLOGY_CATEGORY_MAPPING[
+                metadata["technologyCategory"]
+            ]
         return "Unset"
 
     @staticmethod
