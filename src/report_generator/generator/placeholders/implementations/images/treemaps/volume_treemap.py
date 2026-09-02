@@ -28,7 +28,7 @@ class VolumeChangePortfolioTreemapPlaceholder(PeriodPortfolioTreemapPlaceholder)
     @classmethod
     def value(cls, parameter):
         return cls.create_period_portfolio_treemap(
-            grouping=cls._dimension_from_parameter(parameter).lower(),
+            grouping=cls._dimension_from_parameter(parameter),
             metric="volumeInPersonMonths",
             style=_PeriodChangeStyle(
                 rendering.pptx.VOLUME_POS_CHANGE_RANGE_COLORS,

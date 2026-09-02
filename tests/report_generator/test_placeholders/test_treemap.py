@@ -482,7 +482,7 @@ def _fake_report(*texts):
 class TestDimensionFromParameter:
     """Grouping is a plain parameter value now: the full "_GROUPED_BY_X" suffix,
     or "" for the bare key. _dimension_from_parameter translates either form back
-    into the uppercase dimension name grouping_processors expects."""
+    into the lowercase dimension name grouping_processors expects."""
 
     def test_bare_parameter_uses_group_by_context(self):
         from report_generator.generator.placeholders.implementations.images.treemaps.treemap_base import (
@@ -493,7 +493,7 @@ class TestDimensionFromParameter:
 
         assert (
             _AbstractPortfolioTreemapPlaceholder._dimension_from_parameter("")
-            == "LIFECYCLE"
+            == "lifecycle"
         )
 
     def test_suffixed_parameter_strips_marker(self):
@@ -505,7 +505,7 @@ class TestDimensionFromParameter:
             _AbstractPortfolioTreemapPlaceholder._dimension_from_parameter(
                 "_GROUPED_BY_MAIN_TECHNOLOGY"
             )
-            == "MAIN_TECHNOLOGY"
+            == "main_technology"
         )
 
 
@@ -563,7 +563,7 @@ class TestResolveGroupingVariants:
             Placeholder.resolve(report)
 
         mock_value.assert_called_once_with("")
-        assert Placeholder._dimension_from_parameter("") == "LIFECYCLE"
+        assert Placeholder._dimension_from_parameter("") == "lifecycle"
 
     def test_resolve_pinned_key_ignores_group_by_context(self):
         from report_generator.generator.placeholders.implementations.images.treemaps.maintainability_treemap import (
@@ -586,7 +586,7 @@ class TestResolveGroupingVariants:
         mock_value.assert_called_once_with("_GROUPED_BY_MAIN_TECHNOLOGY")
         assert (
             Placeholder._dimension_from_parameter("_GROUPED_BY_MAIN_TECHNOLOGY")
-            == "MAIN_TECHNOLOGY"
+            == "main_technology"
         )
 
     def test_resolve_ignores_unrelated_key_sharing_prefix(self):

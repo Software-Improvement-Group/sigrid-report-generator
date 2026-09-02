@@ -44,7 +44,7 @@ class MaintainabilityPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlacehol
             )
 
         return cls.create_end_date_portfolio_treemap(
-            grouping=cls._dimension_from_parameter(parameter).lower(),
+            grouping=cls._dimension_from_parameter(parameter),
             rating_func=f,
             rating_rounding_func=formatters.star_rating_round,
             determine_color_function=cls.determine_rating_color,
@@ -62,7 +62,7 @@ class MaintainabilityChangePortfolioTreemapPlaceholder(
     @classmethod
     def value(cls, parameter):
         return cls.create_period_portfolio_treemap(
-            grouping=cls._dimension_from_parameter(parameter).lower(),
+            grouping=cls._dimension_from_parameter(parameter),
             metric="maintainability",
             style=_PeriodChangeStyle(
                 rendering.pptx.RATING_POS_CHANGE_RANGE_COLORS,
@@ -91,7 +91,7 @@ class MaintainabilityMetricPortfolioTreemapPlaceholder(
             return maintainability_portfolio_data.get_property_rating(t, metric_key)
 
         return cls.create_end_date_portfolio_treemap(
-            grouping=cls._dimension_from_parameter(grouping).lower(),
+            grouping=cls._dimension_from_parameter(grouping),
             rating_func=f,
             rating_rounding_func=formatters.star_rating_round,
             determine_color_function=cls.determine_rating_color,
@@ -114,7 +114,7 @@ class MaintainabilityMetricChangePortfolioTreemapPlaceholder(
     @classmethod
     def value(cls, metric, grouping):
         return cls.create_period_portfolio_treemap(
-            grouping=cls._dimension_from_parameter(grouping).lower(),
+            grouping=cls._dimension_from_parameter(grouping),
             metric=metric.to_json_name(),
             style=_PeriodChangeStyle(
                 rendering.pptx.RATING_POS_CHANGE_RANGE_COLORS,

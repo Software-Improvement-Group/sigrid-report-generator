@@ -44,7 +44,7 @@ class OSHRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
             )
 
         return cls.create_end_date_portfolio_treemap(
-            grouping=cls._dimension_from_parameter(parameter).lower(),
+            grouping=cls._dimension_from_parameter(parameter),
             rating_func=rating_function,
             rating_rounding_func=formatters.star_rating_round,
             determine_color_function=cls.determine_rating_color,
@@ -69,7 +69,7 @@ class OSHMetricPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
             return osh_portfolio_data.get_property_rating(system_name, metric_key)
 
         return cls.create_end_date_portfolio_treemap(
-            grouping=cls._dimension_from_parameter(grouping).lower(),
+            grouping=cls._dimension_from_parameter(grouping),
             rating_func=rating_function,
             rating_rounding_func=formatters.star_rating_round,
             determine_color_function=cls.determine_rating_color,

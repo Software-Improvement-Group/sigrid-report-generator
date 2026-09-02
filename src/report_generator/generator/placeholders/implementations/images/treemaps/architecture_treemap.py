@@ -35,7 +35,7 @@ class ArchitecturePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder
     @classmethod
     def value(cls, parameter):
         return cls.create_end_date_portfolio_treemap(
-            grouping=cls._dimension_from_parameter(parameter).lower(),
+            grouping=cls._dimension_from_parameter(parameter),
             rating_func=cls.safe_rating_func(
                 architecture_portfolio_data.get_system, "ratings", "architecture"
             ),
@@ -55,7 +55,7 @@ class ArchitectureRatingsChangePortfolioTreemapPlaceholder(
     @classmethod
     def value(cls, parameter):
         return cls.create_period_portfolio_treemap_from_differences(
-            grouping=cls._dimension_from_parameter(parameter).lower(),
+            grouping=cls._dimension_from_parameter(parameter),
             difference_provider=architecture_portfolio_data.get_difference,
             style=_PeriodChangeStyle(
                 rendering.pptx.RATING_POS_CHANGE_RANGE_COLORS,
@@ -82,7 +82,7 @@ class ArchitectureMetricPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlace
             return architecture_portfolio_data.get_property_rating(t, metric_key)
 
         return cls.create_end_date_portfolio_treemap(
-            grouping=cls._dimension_from_parameter(grouping).lower(),
+            grouping=cls._dimension_from_parameter(grouping),
             rating_func=f,
             rating_rounding_func=formatters.star_rating_round,
             determine_color_function=cls.determine_rating_color,
@@ -112,7 +112,7 @@ class ArchitectureMetricChangePortfolioTreemapPlaceholder(
             )
 
         return cls.create_period_portfolio_treemap_from_differences(
-            grouping=cls._dimension_from_parameter(grouping).lower(),
+            grouping=cls._dimension_from_parameter(grouping),
             difference_provider=difference_provider,
             style=_PeriodChangeStyle(
                 rendering.pptx.RATING_POS_CHANGE_RANGE_COLORS,

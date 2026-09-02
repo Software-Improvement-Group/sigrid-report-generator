@@ -35,7 +35,7 @@ class TestCodePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
             return portfolio[t]["end_date_data"]["testCodeRatio"]
 
         return cls.create_end_date_portfolio_treemap(
-            grouping=cls._dimension_from_parameter(parameter).lower(),
+            grouping=cls._dimension_from_parameter(parameter),
             rating_func=f,
             rating_rounding_func=formatters.ratio_to_percentage,
             determine_color_function=cls.test_code_ratio_color,
@@ -51,7 +51,7 @@ class TestCodeChangePortfolioTreemapPlaceholder(PeriodPortfolioTreemapPlaceholde
     @classmethod
     def value(cls, parameter):
         return cls.create_period_portfolio_treemap(
-            grouping=cls._dimension_from_parameter(parameter).lower(),
+            grouping=cls._dimension_from_parameter(parameter),
             metric="testCodeRatio",
             style=_PeriodChangeStyle(
                 rendering.pptx.RATING_POS_CHANGE_RANGE_COLORS,

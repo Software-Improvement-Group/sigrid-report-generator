@@ -226,8 +226,8 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
     @classmethod
     def _dimension_from_parameter(cls, parameter: str) -> str:
         if parameter == "":
-            return portfolio_grouping.selected.upper()
-        return parameter.removeprefix(cls.GROUPED_BY_MARKER)
+            return portfolio_grouping.selected.lower()
+        return parameter.removeprefix(cls.GROUPED_BY_MARKER).lower()
 
     @classmethod
     def _create_blank_portfolio_and_treemap(cls, grouping) -> tuple[dict, dict]:

@@ -34,7 +34,7 @@ class MaintainabilityDeltaQualityNewCodePortfolioTreemapPlaceholder(
     @classmethod
     def value(cls, parameter):
         return cls.create_end_date_portfolio_treemap(
-            grouping=cls._dimension_from_parameter(parameter).lower(),
+            grouping=cls._dimension_from_parameter(parameter),
             rating_func=cls.safe_rating_func(
                 maintainability_delta_quality_new_code.get_system, "filesRatingAtEnd"
             ),
@@ -54,7 +54,7 @@ class MaintainabilityDeltaQualityChangedCodePortfolioTreemapPlaceholder(
     @classmethod
     def value(cls, parameter):
         return cls.create_end_date_portfolio_treemap(
-            grouping=cls._dimension_from_parameter(parameter).lower(),
+            grouping=cls._dimension_from_parameter(parameter),
             rating_func=cls.safe_rating_func(
                 maintainability_delta_quality_changed_code.get_system,
                 "filesRatingAtEnd",
@@ -77,7 +77,7 @@ class MaintainabilityDeltaQualityNewAndChangedCodePortfolioTreemapPlaceholder(
     @classmethod
     def value(cls, parameter):
         return cls.create_end_date_portfolio_treemap(
-            grouping=cls._dimension_from_parameter(parameter).lower(),
+            grouping=cls._dimension_from_parameter(parameter),
             rating_func=cls.safe_rating_func(
                 maintainability_delta_quality_new_and_changed_code.get_system,
                 "filesRatingAtEnd",
