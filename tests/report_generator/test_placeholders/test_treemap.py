@@ -123,13 +123,13 @@ class TestTreemapImagePlaceholder:
 
         _AbstractPortfolioTreemapPlaceholder.draw_image(10, 10, fig_data)
 
-        # Should have called treemap with a non-empty color mapping
+        # Should have built a TreemapStyle with a non-empty color mapping
         assert mock_treemap.treemap.called
-        call_kwargs = mock_treemap.treemap.call_args[1]
-        assert "cmap" in call_kwargs
-        assert len(call_kwargs["cmap"]) == 2  # Should have colors for both systems
-        assert "system1" in call_kwargs["cmap"]
-        assert "system2" in call_kwargs["cmap"]
+        style_kwargs = mock_treemap.TreemapStyle.call_args[1]
+        assert "cmap" in style_kwargs
+        assert len(style_kwargs["cmap"]) == 2  # Should have colors for both systems
+        assert "system1" in style_kwargs["cmap"]
+        assert "system2" in style_kwargs["cmap"]
 
     @patch(
         "report_generator.generator.placeholders.implementations.images.treemaps.treemap_base.plt"
@@ -207,10 +207,10 @@ class TestTreemapImagePlaceholder:
 
         # Should return the figure
         assert result == mock_fig
-        # Treemap should be called with the provided color mapping
+        # TreemapStyle should be built with the provided color mapping
         mock_treemap.treemap.assert_called_once()
-        call_kwargs = mock_treemap.treemap.call_args[1]
-        assert call_kwargs["cmap"] == fig_data["color_mapping"]
+        style_kwargs = mock_treemap.TreemapStyle.call_args[1]
+        assert style_kwargs["cmap"] == fig_data["color_mapping"]
         # Axes should be turned off
         mock_ax.axis.assert_called_once_with("off")
 

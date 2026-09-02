@@ -252,11 +252,9 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
         if fig_data is None:
             logging.error("Figure data is None.")
             return
-        fig, ax = plt.subplots(figsize=(width, height), dpi=200)
-        subkeys = ["system_names", "volumes", "labels", "root_names"]
-        df = pd.DataFrame({k: fig_data[k] for k in subkeys})
 
-        # Check if there's any data to display
+        fig, ax = plt.subplots(figsize=(width, height), dpi=200)
+        df = cls._treemap_dataframe(fig_data)
         if df.empty or not fig_data.get("system_names"):
             logging.warning(
                 "No systems to display in treemap (empty dataframe), returning None"
@@ -264,26 +262,41 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
             plt.close(fig)
             return None
 
-        # Handle empty color_mapping by creating a default mapping
-        color_mapping = fig_data["color_mapping"]
-        if not color_mapping:
-            # Create default color mapping for all systems if none exists
-            logging.warning(
-                f"Empty color_mapping detected, creating default mapping for {len(fig_data['system_names'])} systems"
-            )
-            color_mapping = {
-                name: cls.NA_STAR_COLOR for name in fig_data["system_names"]
-            }
-
         tr.treemap(
             axes=ax,
             data=df,
-            area="volumes",
-            levels=["root_names", "system_names"],
-            top=True,
-            fill="system_names",
-            cmap=color_mapping,
-            labels="labels",
+            columns=tr.PlotColumns(
+                area="volumes",
+                labels="labels",
+                fill="system_names",
+                levels=["root_names", "system_names"],
+            ),
+            style=cls._portfolio_treemap_style(fig_data),
+        )
+        ax.axis("off")
+        return fig
+
+    @staticmethod
+    def _treemap_dataframe(fig_data):
+        subkeys = ["system_names", "volumes", "labels", "root_names"]
+        return pd.DataFrame({k: fig_data[k] for k in subkeys})
+
+    @classmethod
+    def _resolve_color_mapping(cls, fig_data):
+        color_mapping = fig_data["color_mapping"]
+        if color_mapping:
+            return color_mapping
+
+        # Create default color mapping for all systems if none exists
+        logging.warning(
+            f"Empty color_mapping detected, creating default mapping for {len(fig_data['system_names'])} systems"
+        )
+        return {name: cls.NA_STAR_COLOR for name in fig_data["system_names"]}
+
+    @classmethod
+    def _portfolio_treemap_style(cls, fig_data):
+        return tr.TreemapStyle(
+            cmap=cls._resolve_color_mapping(fig_data),
             rectprops={"ec": "w", "pad": (0, 0, 0, 4.5)},  # 'Grouped by' headers
             textprops={
                 "fontfamily": "sans-serif",
@@ -306,8 +319,6 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
                 }
             },
         )
-        ax.axis("off")
-        return fig
 
 
 class EndDatePortfolioTreemapPlaceholder(_AbstractPortfolioTreemapPlaceholder, ABC):
