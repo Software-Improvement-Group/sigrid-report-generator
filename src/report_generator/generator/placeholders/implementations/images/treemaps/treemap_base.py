@@ -13,17 +13,15 @@
 #  limitations under the License.
 import logging
 from abc import ABC
-from collections.abc import Callable
 from dataclasses import dataclass
 from typing import ClassVar
 
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from report_generator.generator.domain import (
-    maintainability_portfolio_data,
-)
+from report_generator.generator.domain import maintainability_portfolio_data
 from report_generator.generator.placeholders import rendering
+from report_generator.generator.placeholders.context import get_group_by
 from report_generator.generator.placeholders.formatting import formatters
 from report_generator.generator.placeholders.formatting.technologies import (
     get_technology_name,
@@ -37,11 +35,7 @@ from report_generator.generator.placeholders.implementations.images.base import 
 from report_generator.generator.placeholders.implementations.images.treemaps.utils import (
     treemap as tr,
 )
-from report_generator.generator.utils.constants.metadata import (
-    METADATA_BUSINESS_CRITICALITY_MAPPING,
-    METADATA_DEPLOYMENT_MAPPING,
-    METADATA_LIFECYCLE_MAPPING,
-)
+from report_generator.generator.utils.constants import metadata as metadata_constants
 
 
 class _AbstractTreemapPlaceholder(_AbstractParameterizedImagePlaceholder, ABC):
@@ -80,8 +74,6 @@ class _AbstractTreemapPlaceholder(_AbstractParameterizedImagePlaceholder, ABC):
 
 
 class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
-    grouping_processors: ClassVar[dict[str, Callable]] = {}
-
     @classmethod
     def resolve_pptx(cls, presentation, key, value_cb):
         shapes = rendering.pptx.find_shapes(presentation, key)
@@ -117,25 +109,35 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
         return res
 
     @staticmethod
+    def _process_multi_name_grouping(names, multiple_label):
+        if not names:
+            return "Unset"
+        if len(names) > 1:
+            return multiple_label
+        return names[0]
+
+    @staticmethod
     def _process_team_grouping(metadata):
-        team_name = "Unset"
-        if metadata["teamNames"]:
-            if len(metadata["teamNames"]) > 1:
-                team_name = "Multiple teams"
-            else:
-                team_name = metadata["teamNames"][0]
-        return team_name
+        return _AbstractPortfolioTreemapPlaceholder._process_multi_name_grouping(
+            metadata["teamNames"], "Multiple teams"
+        )
+
+    @staticmethod
+    def _process_division_grouping(metadata):
+        return metadata["divisionName"] or "Unset"
 
     @staticmethod
     def _process_lifecycle_grouping(metadata):
         if metadata["lifecyclePhase"]:
-            return METADATA_LIFECYCLE_MAPPING[metadata["lifecyclePhase"]]
+            return metadata_constants.METADATA_LIFECYCLE_MAPPING[
+                metadata["lifecyclePhase"]
+            ]
         return "Unset"
 
     @staticmethod
     def _process_business_criticality_grouping(metadata):
         if metadata["businessCriticality"]:
-            return METADATA_BUSINESS_CRITICALITY_MAPPING[
+            return metadata_constants.METADATA_BUSINESS_CRITICALITY_MAPPING[
                 metadata["businessCriticality"]
             ]
         return "Unset"
@@ -143,7 +145,41 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
     @staticmethod
     def _process_deployment_grouping(metadata):
         if metadata["deploymentType"]:
-            return METADATA_DEPLOYMENT_MAPPING[metadata["deploymentType"]]
+            return metadata_constants.METADATA_DEPLOYMENT_MAPPING[
+                metadata["deploymentType"]
+            ]
+        return "Unset"
+
+    @staticmethod
+    def _process_distribution_grouping(metadata):
+        if metadata["softwareDistributionStrategy"]:
+            return metadata_constants.METADATA_DISTRIBUTION_MAPPING[
+                metadata["softwareDistributionStrategy"]
+            ]
+        return "Unset"
+
+    @staticmethod
+    def _process_application_type_grouping(metadata):
+        if metadata["applicationType"]:
+            return metadata_constants.METADATA_APPLICATION_TYPE_MAPPING[
+                metadata["applicationType"]
+            ]
+        return "Unset"
+
+    @staticmethod
+    def _process_target_industry_grouping(metadata):
+        if metadata["targetIndustry"]:
+            return metadata_constants.METADATA_TARGET_INDUSTRY_MAPPING[
+                metadata["targetIndustry"]
+            ]
+        return "Unset"
+
+    @staticmethod
+    def _process_technology_category_grouping(metadata):
+        if metadata["technologyCategory"]:
+            return metadata_constants.METADATA_TECHNOLOGY_CATEGORY_MAPPING[
+                metadata["technologyCategory"]
+            ]
         return "Unset"
 
     @staticmethod
@@ -152,20 +188,44 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
             return get_technology_name(metadata["mainTechnology"])
         return "Unset"
 
+    @staticmethod
+    def _process_supplier_grouping(metadata):
+        return _AbstractPortfolioTreemapPlaceholder._process_multi_name_grouping(
+            metadata["supplierNames"], "Multiple suppliers"
+        )
+
     grouping_processors: ClassVar[dict] = {
         "team": _process_team_grouping.__func__,
+        "division": _process_division_grouping.__func__,
         "lifecycle": _process_lifecycle_grouping.__func__,
         "business_criticality": _process_business_criticality_grouping.__func__,
         "deployment": _process_deployment_grouping.__func__,
+        "distribution": _process_distribution_grouping.__func__,
+        "application_type": _process_application_type_grouping.__func__,
+        "target_industry": _process_target_industry_grouping.__func__,
+        "technology_category": _process_technology_category_grouping.__func__,
         "main_technology": _process_main_technology_grouping.__func__,
+        "supplier": _process_supplier_grouping.__func__,
     }
 
-    GROUPING_PARAMETERS: ClassVar[list] = [
-        x.upper() for x in grouping_processors.keys()
+    GROUPED_BY_MARKER: ClassVar[str] = "_GROUPED_BY_"
+
+    # One value per real dimension (the full "_GROUPED_BY_X" suffix, substituted
+    # into a concrete class's key like any other parameter) plus "" for the bare
+    # key, which falls back to whatever --group-by selected at render time.
+    GROUPING_PARAMETERS: ClassVar[list] = [""] + [
+        f"_GROUPED_BY_{x.upper()}" for x in grouping_processors.keys()
     ]
+
     allowed_parameters: ClassVar[MultiParameterList] = MultiParameterList(
         GROUPING_PARAMETERS
     )
+
+    @classmethod
+    def _dimension_from_parameter(cls, parameter: str) -> str:
+        if parameter == "":
+            return get_group_by().lower()
+        return parameter.removeprefix(cls.GROUPED_BY_MARKER).lower()
 
     @classmethod
     def _create_blank_portfolio_and_treemap(cls, grouping) -> tuple[dict, dict]:
@@ -245,6 +305,31 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
         return portfolio, treemap
 
     @classmethod
+    def _grouping_render_kwargs(cls, root_names):
+        """Suppress the grey grouping header bar when every system's group is the
+        'Unset' placeholder; a real group (even a single one shared by all systems)
+        still gets its header."""
+        if set(root_names) == {"Unset"}:
+            return {
+                "levels": ["system_names"],
+                "subgroup_rectprops": {},
+                "subgroup_textprops": {},
+            }
+        return {
+            "levels": ["root_names", "system_names"],
+            "subgroup_rectprops": {"root_names": {"ec": "w", "fc": cls.BUNDLE_COLOR}},
+            "subgroup_textprops": {
+                "root_names": {
+                    "place": "top center",
+                    "max_fontsize": 8,
+                    "pady": 2,
+                    "fontfamily": "sans-serif",
+                    "color": "k",
+                }
+            },
+        }
+
+    @classmethod
     def draw_image(cls, width, height, fig_data):
         if width <= 0 or height <= 0:
             logging.error("Width and/or height is <0.")
@@ -262,6 +347,8 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
             plt.close(fig)
             return None
 
+        grouping_kwargs = cls._grouping_render_kwargs(fig_data["root_names"])
+
         tr.treemap(
             axes=ax,
             data=df,
@@ -269,9 +356,9 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
                 area="volumes",
                 labels="labels",
                 fill="system_names",
-                levels=["root_names", "system_names"],
+                levels=grouping_kwargs["levels"],
             ),
-            style=cls._portfolio_treemap_style(fig_data),
+            style=cls._portfolio_treemap_style(fig_data, grouping_kwargs),
         )
         ax.axis("off")
         return fig
@@ -294,7 +381,7 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
         return {name: cls.NA_STAR_COLOR for name in fig_data["system_names"]}
 
     @classmethod
-    def _portfolio_treemap_style(cls, fig_data):
+    def _portfolio_treemap_style(cls, fig_data, grouping_kwargs):
         return tr.TreemapStyle(
             cmap=cls._resolve_color_mapping(fig_data),
             rectprops={"ec": "w", "pad": (0, 0, 0, 4.5)},  # 'Grouped by' headers
@@ -308,16 +395,8 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
                 "pady": 1,
                 "padx": 1,
             },  # Text inside squares
-            subgroup_rectprops={"root_names": {"ec": "w", "fc": cls.BUNDLE_COLOR}},
-            subgroup_textprops={
-                "root_names": {
-                    "place": "top center",
-                    "max_fontsize": 8,
-                    "pady": 2,
-                    "fontfamily": "sans-serif",
-                    "color": "k",
-                }
-            },
+            subgroup_rectprops=grouping_kwargs["subgroup_rectprops"],
+            subgroup_textprops=grouping_kwargs["subgroup_textprops"],
         )
 
 

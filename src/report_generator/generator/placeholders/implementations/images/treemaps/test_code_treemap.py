@@ -22,9 +22,10 @@ from report_generator.generator.placeholders.implementations.images.treemaps.tre
 
 
 class TestCodePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
-    """Creates a portfolio treemap where the color is determined by the test-to-production code ratio of the individual systems."""
+    """Creates a portfolio treemap where the color is determined by the test-to-production code ratio of the individual systems.
+    Leave parameter empty to apply the default/provided grouping."""
 
-    key = "PORTFOLIO_PERIOD_TEST_CODE_GROUPED_BY_{parameter}"
+    key = "PORTFOLIO_PERIOD_TEST_CODE{parameter}"
 
     @classmethod
     def value(cls, parameter):
@@ -34,7 +35,7 @@ class TestCodePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
             return portfolio[t]["end_date_data"]["testCodeRatio"]
 
         return cls.create_end_date_portfolio_treemap(
-            grouping=parameter.lower(),
+            grouping=cls._dimension_from_parameter(parameter),
             rating_func=f,
             rating_rounding_func=formatters.ratio_to_percentage,
             determine_color_function=cls.test_code_ratio_color,
@@ -42,14 +43,15 @@ class TestCodePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
 
 
 class TestCodeChangePortfolioTreemapPlaceholder(PeriodPortfolioTreemapPlaceholder):
-    """Creates a portfolio treemap where the color is determined by the change in test code volume change (%) of the individual systems during the specified period."""
+    """Creates a portfolio treemap where the color is determined by the change in test code volume change (%) of the individual systems during the specified period.
+    Leave parameter empty to apply the default/provided grouping."""
 
-    key = "PORTFOLIO_PERIOD_TEST_CODE_CHANGE_GROUPED_BY_{parameter}"
+    key = "PORTFOLIO_PERIOD_TEST_CODE_CHANGE{parameter}"
 
     @classmethod
     def value(cls, parameter):
         return cls.create_period_portfolio_treemap(
-            grouping=parameter.lower(),
+            grouping=cls._dimension_from_parameter(parameter),
             metric="testCodeRatio",
             style=_PeriodChangeStyle(
                 rendering.pptx.RATING_POS_CHANGE_RANGE_COLORS,

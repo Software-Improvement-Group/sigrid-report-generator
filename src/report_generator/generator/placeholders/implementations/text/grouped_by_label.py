@@ -12,20 +12,16 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from report_generator.generator.domain import portfolio_filter_info
+from report_generator.generator.placeholders.context import get_group_by
 from report_generator.generator.utils.constants.metadata_labels import METADATA_LABELS
 
 from .base import text_placeholder
 
 
 @text_placeholder()
-def filter_info():
-    """A comma-separated description of every portfolio filter applied to the report. Each
-    filter is prefixed with its label, singular for a single value or plural for multiple
-    (e.g. "team: teamA, divisions: divA, divB"). Empty when no filter is applied."""
-    segments = []
-    for applied in portfolio_filter_info.applied_filters:
-        singular, plural = METADATA_LABELS[applied.name]
-        label = singular if len(applied.values) == 1 else plural
-        segments.append(f"{label}: {', '.join(applied.values)}")
-    return ", ".join(segments)
+def grouped_by_label():
+    """The human-readable label of the metadata dimension all portfolio treemaps are
+    currently grouped by (e.g. "Team", "Lifecycle phase"), following the --group-by
+    CLI parameter."""
+    singular, _ = METADATA_LABELS[get_group_by()]
+    return singular.title()

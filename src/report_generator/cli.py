@@ -23,6 +23,7 @@ import requests
 from report_generator import ReportGenerator, presets
 from report_generator.generator import generator_arguments
 from report_generator.generator.context import sigrid_api
+from report_generator.generator.placeholders import context as placeholders_context
 from report_generator.generator.utils.time_series import add_months
 from report_generator.update_check import check_for_update
 
@@ -137,6 +138,13 @@ def _validate_layout_or_template(ctx, param, value):
     default=None,
     help=f"Sigrid API base URL, will default to {sigrid_api.DEFAULT_BASE_URL} if not provided",
 )
+@click.option(
+    "-g",
+    "--group-by",
+    type=click.Choice(placeholders_context.GROUPING_OPTIONS),
+    default=placeholders_context.DEFAULT_GROUP_BY,
+    help="Metadata dimension all portfolio treemaps are grouped by",
+)
 @generator_arguments
 @click.pass_context
 def run(_, **kwargs):
@@ -148,6 +156,7 @@ def run(_, **kwargs):
         _configure_api(config)
     except ValueError as e:
         raise click.ClickException(str(e)) from e
+    placeholders_context.set_group_by(config.group_by)
     _record_usage_statistics(config.layout, config.customer)
 
     try:
@@ -178,6 +187,7 @@ class _RunConfig:
     end: str
     out_file: str
     api_url: str | None
+    group_by: str
 
 
 def _configure_api(config: _RunConfig):

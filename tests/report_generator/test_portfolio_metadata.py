@@ -27,7 +27,7 @@ from report_generator.generator.context.portfolio_filters import (
     reset_context,
     set_context,
 )
-from report_generator.generator.utils.constants.filters import FILTER_LABELS
+from report_generator.generator.utils.constants.metadata_labels import METADATA_LABELS
 
 
 @pytest.fixture
@@ -435,5 +435,5 @@ class TestFilterConsistency:
         )
 
     def test_filter_labels_match_configuration(self):
-        """FILTER_LABELS must define a label for every filter, so filter_info never KeyErrors."""
-        assert set(FILTER_LABELS.keys()) == set(FILTER_CONFIGURATION.keys())
+        """METADATA_LABELS must define a label for every filter, so filter_info never KeyErrors."""
+        assert set(METADATA_LABELS.keys()) == set(FILTER_CONFIGURATION.keys())

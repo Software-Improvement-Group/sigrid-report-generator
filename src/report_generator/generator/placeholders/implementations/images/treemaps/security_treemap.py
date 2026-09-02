@@ -25,14 +25,15 @@ from report_generator.generator.placeholders.implementations.images.treemaps.tre
 
 
 class SecurityRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
-    """Creates a portfolio treemap where the color is determined by the security rating of the individual systems."""
+    """Creates a portfolio treemap where the color is determined by the security rating of the individual systems.
+    Leave parameter empty to apply the default/provided grouping."""
 
-    key = "PORTFOLIO_PERIOD_SECURITY_RATINGS_GROUPED_BY_{parameter}"
+    key = "PORTFOLIO_PERIOD_SECURITY_RATINGS{parameter}"
 
     @classmethod
     def value(cls, parameter):
         return cls.create_end_date_portfolio_treemap(
-            grouping=parameter.lower(),
+            grouping=cls._dimension_from_parameter(parameter),
             rating_func=cls.safe_rating_func(
                 security_ratings_portfolio_data.get_system, "rating"
             ),
@@ -44,14 +45,15 @@ class SecurityRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlacehol
 class SecurityRatingsChangePortfolioTreemapPlaceholder(
     PeriodPortfolioTreemapPlaceholder
 ):
-    """Creates a portfolio treemap where the color is determined by the change in security rating of the individual systems during the specified period."""
+    """Creates a portfolio treemap where the color is determined by the change in security rating of the individual systems during the specified period.
+    Leave parameter empty to apply the default/provided grouping."""
 
-    key = "PORTFOLIO_PERIOD_SECURITY_RATINGS_CHANGE_GROUPED_BY_{parameter}"
+    key = "PORTFOLIO_PERIOD_SECURITY_RATINGS_CHANGE{parameter}"
 
     @classmethod
     def value(cls, parameter):
         return cls.create_period_portfolio_treemap_from_differences(
-            grouping=parameter.lower(),
+            grouping=cls._dimension_from_parameter(parameter),
             difference_provider=security_ratings_portfolio_data.get_difference,
             style=_PeriodChangeStyle(
                 rendering.pptx.RATING_POS_CHANGE_RANGE_COLORS,
