@@ -128,4 +128,5 @@ issues worth fixing:
 
 ## Version Bump
 
-Every change to production code requires a version bump in `setup.cfg` (semantic versioning).
+Every change to production code requires a version bump in `setup.cfg` (semantic versioning). This only applies to
+merges into `main` — commits within a branch or PR do not need to bump the version each time.
