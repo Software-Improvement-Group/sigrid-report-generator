@@ -62,7 +62,7 @@ def test_any_proxy_of_the_same_document_is_an_equivalent_anchor():
     assert builder.calls == 1
 
 
-def test_two_documents_do_not_share_an_index():
+def test_a_different_document_replaces_the_cached_entry():
     first_presentation = Presentation()
     second_presentation = Presentation()
     first_builder = _CountingBuilder("first")
@@ -70,38 +70,11 @@ def test_two_documents_do_not_share_an_index():
 
     assert cache.index_for(first_presentation, first_builder) == "first"
     assert cache.index_for(second_presentation, second_builder) == "second"
+    # The first document was pushed out by the second, so it has to be rebuilt.
     assert cache.index_for(first_presentation, first_builder) == "first"
-    assert first_builder.calls == 1
-
-
-def test_invalidate_drops_only_the_matching_document():
-    first_presentation = Presentation()
-    second_presentation = Presentation()
-    first_builder = _CountingBuilder()
-    second_builder = _CountingBuilder()
-    cache.index_for(first_presentation, first_builder)
-    cache.index_for(second_presentation, second_builder)
-
-    cache.invalidate(first_presentation)
-    cache.index_for(first_presentation, first_builder)
-    cache.index_for(second_presentation, second_builder)
 
     assert first_builder.calls == 2
     assert second_builder.calls == 1
-
-
-def test_capacity_evicts_the_least_recently_used_document():
-    presentations = [Presentation() for _ in range(cache._MAX_CACHED_DOCUMENTS + 1)]
-    builders = [_CountingBuilder() for _ in presentations]
-    for presentation, builder in zip(presentations, builders, strict=True):
-        cache.index_for(presentation, builder)
-
-    # The oldest entry was pushed out, so it has to be rebuilt; the newest is still cached.
-    cache.index_for(presentations[0], builders[0])
-    cache.index_for(presentations[-1], builders[-1])
-
-    assert builders[0].calls == 2
-    assert builders[-1].calls == 1
 
 
 def test_cached_index_returns_none_before_anything_is_built():

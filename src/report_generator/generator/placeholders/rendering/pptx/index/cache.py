@@ -11,18 +11,17 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-"""Caches one document traversal per open document.
+"""Caches one document traversal for the currently open document.
 
 Locating a placeholder used to walk the whole document, and a report resolves over a thousand
 placeholder keys, so the walk ran a thousand times. The walk itself is cheap (tens of
 milliseconds); repeating it was not. This module keeps the result of a single walk so every
 subsequent lookup is a scan over cached records instead of a fresh traversal.
 
-Entries are keyed on ``id()`` of the document's ``Package`` and hold a strong reference to it.
-Weak keys look tempting but would never be collected: the cached records hold document proxies
-whose parent chain reaches the package, so the value keeps the key alive. The strong reference
-also guarantees the package outlives its entry, so its ``id()`` can never be reused by another
-object while we are still keyed on it. Capacity is therefore bounded explicitly instead.
+Only one report is generated at a time, so a single slot suffices: indexing a different
+document simply replaces the cached entry. The entry holds a strong reference to the document's
+``Package``, so it is compared by identity rather than by ``id()`` -- there is no risk of an
+``id()`` being reused by another object while we still hold the reference.
 
 Any proxy that exposes ``.part.package`` works as an anchor -- a presentation, a slide, a shape,
 a table or a paragraph. That matters because the callers reach this module from all of those, and
@@ -34,13 +33,9 @@ any hot path, so it is left alone.
 """
 
 import re
-from collections import OrderedDict
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
-
-# One report is generated at a time, so the second slot only matters if two are ever interleaved.
-_MAX_CACHED_DOCUMENTS = 2
 
 
 @dataclass
@@ -49,7 +44,7 @@ class _Entry:
     index: Any
 
 
-_entries: OrderedDict[int, _Entry] = OrderedDict()
+_entry: _Entry | None = None
 
 
 def _package_of(anchor) -> Any:
@@ -58,19 +53,14 @@ def _package_of(anchor) -> Any:
 
 def index_for(anchor, build: Callable[[], Any]) -> Any:
     """Return the cached index for the anchor's document, building it on first use."""
+    global _entry
     package = _package_of(anchor)
-    key = id(package)
 
-    entry = _entries.get(key)
-    if entry is not None:
-        _entries.move_to_end(key)
-        return entry.index
+    if _entry is not None and _entry.package_kept_alive is package:
+        return _entry.index
 
     index = build()
-    _entries[key] = _Entry(package_kept_alive=package, index=index)
-    _entries.move_to_end(key)
-    while len(_entries) > _MAX_CACHED_DOCUMENTS:
-        _entries.popitem(last=False)
+    _entry = _Entry(package_kept_alive=package, index=index)
     return index
 
 
@@ -86,8 +76,9 @@ def cached_index(anchor) -> Any | None:
     except AttributeError:
         return None
 
-    entry = _entries.get(id(package))
-    return entry.index if entry else None
+    if _entry is not None and _entry.package_kept_alive is package:
+        return _entry.index
+    return None
 
 
 def invalidate(anchor) -> None:
@@ -97,12 +88,15 @@ def invalidate(anchor) -> None:
     table row, or adding a paragraph. Rebuilding costs a single walk, and structural changes
     happen a handful of times per report, so there is no need to prune individual records.
     """
-    _entries.pop(id(_package_of(anchor)), None)
+    global _entry
+    if _entry is not None and _entry.package_kept_alive is _package_of(anchor):
+        _entry = None
 
 
 def clear() -> None:
-    """Drop every cached index. Test seam."""
-    _entries.clear()
+    """Drop the cached index. Test seam."""
+    global _entry
+    _entry = None
 
 
 @dataclass
