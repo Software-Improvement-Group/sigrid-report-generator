@@ -14,7 +14,7 @@
 
 from functools import reduce
 
-from report_generator.generator.context.portfolio_metadata import (
+from report_generator.generator.context.portfolio_filters import (
     portfolio_arguments_command,
 )
 from report_generator.generator.domain.external.epss import epss_data

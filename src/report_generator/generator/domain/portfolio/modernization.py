@@ -19,7 +19,7 @@ from functools import cached_property
 from typing import ClassVar
 
 from report_generator.generator.context import sigrid_api
-from report_generator.generator.context.portfolio_metadata import (
+from report_generator.generator.context.portfolio_filters import (
     filter_data_on_portfolio_arguments,
 )
 

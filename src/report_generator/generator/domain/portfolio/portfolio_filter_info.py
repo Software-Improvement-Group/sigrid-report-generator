@@ -14,7 +14,7 @@
 
 from typing import NamedTuple
 
-from report_generator.generator.context.portfolio_metadata import (
+from report_generator.generator.context.portfolio_filters import (
     FILTER_CONFIGURATION,
     FilterSpec,
     get_filter_values,

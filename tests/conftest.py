@@ -16,7 +16,7 @@ from unittest.mock import ANY, patch
 
 import pytest
 
-from report_generator.generator.context import portfolio_metadata
+from report_generator.generator.context import portfolio_filters
 from report_generator.generator.placeholders.rendering.pptx.index import (
     cache as traversal_cache,
 )
@@ -38,7 +38,7 @@ def _default_active_portfolio_metadata(request):
         return
 
     with patch.object(
-        portfolio_metadata.sigrid_api,
+        portfolio_filters.sigrid_api,
         "get_portfolio_metadata",
         return_value=_DEFAULT_ACTIVE_METADATA,
     ):
