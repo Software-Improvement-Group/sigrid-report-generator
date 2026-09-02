@@ -300,7 +300,7 @@ class TestPortfolioArguments:
 
     # Decorator Behavior Tests
 
-    @patch("report_generator.generator.context.portfolio_metadata.sigrid_api")
+    @patch("report_generator.generator.context.portfolio_filters.sigrid_api")
     def test_decorator_returns_unchanged_data_when_no_filters_and_all_active(
         self, mock_sigrid_api, mock_data_with_data_tag, mock_portfolio_metadata
     ):
@@ -316,7 +316,7 @@ class TestPortfolioArguments:
 
         assert result == mock_data_with_data_tag
 
-    @patch("report_generator.generator.context.portfolio_metadata.sigrid_api")
+    @patch("report_generator.generator.context.portfolio_filters.sigrid_api")
     def test_decorator_excludes_inactive_systems_without_any_filters(
         self, mock_sigrid_api, mock_data_with_data_tag, mock_portfolio_metadata
     ):
@@ -332,7 +332,7 @@ class TestPortfolioArguments:
 
         assert [s["system"] for s in result["systems"]] == ["system2", "system3"]
 
-    @patch("report_generator.generator.context.portfolio_metadata.sigrid_api")
+    @patch("report_generator.generator.context.portfolio_filters.sigrid_api")
     def test_decorator_filters_systems_with_data_tag(
         self, mock_sigrid_api, mock_data_with_data_tag, mock_portfolio_metadata
     ):
@@ -351,7 +351,7 @@ class TestPortfolioArguments:
         assert result["systems"][1]["system"] == "system3"
         assert result["metadata"] == "some_metadata"  # Other data preserved
 
-    @patch("report_generator.generator.context.portfolio_metadata.sigrid_api")
+    @patch("report_generator.generator.context.portfolio_filters.sigrid_api")
     def test_decorator_raises_exception_when_no_systems_match(
         self, mock_sigrid_api, mock_data_with_data_tag, mock_portfolio_metadata
     ):
@@ -388,7 +388,7 @@ class TestPortfolioArguments:
 
         assert result is False
 
-    @patch("report_generator.generator.context.portfolio_metadata.sigrid_api")
+    @patch("report_generator.generator.context.portfolio_filters.sigrid_api")
     def test_decorator_with_mixed_matching_systems(
         self, mock_sigrid_api, mock_data_with_data_tag, mock_portfolio_metadata
     ):
@@ -405,7 +405,7 @@ class TestPortfolioArguments:
         assert len(result["systems"]) == 1
         assert result["systems"][0]["system"] == "system2"
 
-    @patch("report_generator.generator.context.portfolio_metadata.sigrid_api")
+    @patch("report_generator.generator.context.portfolio_filters.sigrid_api")
     def test_decorator_does_not_raise_when_api_data_empty_but_filters_match_metadata(
         self, mock_sigrid_api, mock_portfolio_metadata
     ):
