@@ -140,7 +140,7 @@ def _validate_layout_or_template(ctx, param, value):
     "-g",
     "--group-by",
     type=click.Choice(portfolio_metadata.GROUPING_OPTIONS),
-    default="team",
+    default=portfolio_metadata.DEFAULT_GROUP_BY,
     help="Metadata dimension all portfolio treemaps are grouped by",
 )
 @generator_arguments
