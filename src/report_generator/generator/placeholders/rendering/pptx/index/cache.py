@@ -87,9 +87,17 @@ def invalidate(anchor) -> None:
     Called by every helper that changes document *structure* -- removing a slide, a shape or a
     table row, or adding a paragraph. Rebuilding costs a single walk, and structural changes
     happen a handful of times per report, so there is no need to prune individual records.
+
+    A proxy that is not attached to a document has no part at all -- also nothing to invalidate,
+    rather than a failure.
     """
     global _entry
-    if _entry is not None and _entry.package_kept_alive is _package_of(anchor):
+    try:
+        package = _package_of(anchor)
+    except AttributeError:
+        return
+
+    if _entry is not None and _entry.package_kept_alive is package:
         _entry = None
 
 
