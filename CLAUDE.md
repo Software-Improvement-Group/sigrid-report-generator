@@ -75,17 +75,8 @@ The import boundaries above are mechanically enforced by `import-linter` (config
 
 ### Common violations
 
-**Skipping domain:** Placeholder implementations that import from `context/` or do data transformation
-(filtering, aggregation, reshaping) inline. Domain must always mediate.
-
-**Orchestrating in placeholders:** A placeholder retrieves a value from one domain object and passes it
-to another domain object's method. That wiring belongs in domain — domain objects expose ready-to-consume
-values.
-
-**Error swallowing:** Adding try/except in placeholder implementations. The base class `_call_resolve_method`
-handles failures centrally — a failing placeholder logs the error and report generation continues.
-
-**Layer boundary violations** to watch for elsewhere in the stack:
+**Layer boundary violations** to watch for across the stack (placeholder-specific violations — domain mediation,
+orchestration, error handling — are covered in `placeholders/implementations/CLAUDE.md`):
 
 - `context/` parsing, reshaping, or applying semantic meaning to an API response — it must return raw JSON only.
 - `domain/` returning display-ready output (formatted strings, star symbols, percentage strings, color names) — that
@@ -100,30 +91,11 @@ handles failures centrally — a failing placeholder logs the error and report g
 Import order, unused imports, and dependency direction are already enforced by `lint-imports` — no need to flag those
 separately.
 
-### Adding a placeholder
+### Nested guidance
 
-1. Add a domain object or property in `domain/system/` or `domain/portfolio/` if new data is needed.
-2. Create a placeholder in `placeholders/implementations/text/` (or `charts/`, `table/`, `images/`, `misc/`) using the
-   `@text_placeholder()` decorator or by subclassing `Placeholder`.
-3. Register it in the relevant `implementations/__init__.py` so it is included in the default set.
-4. The function/class name becomes the template key (uppercased). The `key` attribute can be set explicitly for custom
-   keys.
-5. Add a docstring — it is used to auto-generate `docs/placeholder descriptions.md`. After adding, run
-   `./generate_placeholder_docs.py` and commit the result. Never hand-edit `docs/placeholder descriptions.md`
-   directly — it is generated; fix the source docstring instead. The docstring should describe what the placeholder
-   renders (its output), not internal mechanics.
-
-### Parameterized placeholders
-
-Use `@parameterized_text_placeholder(custom_key="KEY_{parameter}", parameters=[...])` when a single logical value
-expands to multiple template keys (e.g. `TECH_1`, `TECH_2`, ...).
-
-### Domain singletons
-
-Domain modules expose module-level singleton objects (e.g. `maintainability_data`, `osh_portfolio_data`). These are
-lazily loaded and cached via `functools.cached_property` or `@cache` on the underlying API calls. Tests that exercise
-domain logic must patch `sigrid_api` functions or call `sigrid_api.set_context()` / `sigrid_api.reset_context()` to
-avoid polluting state across tests.
+- Adding a placeholder, parameterized placeholders, and other placeholder-implementation conventions are covered in
+  `placeholders/implementations/CLAUDE.md`.
+- Domain singleton conventions are covered in `domain/CLAUDE.md`.
 
 ## Design Quality
 
