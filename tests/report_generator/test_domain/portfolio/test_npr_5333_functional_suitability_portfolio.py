@@ -14,7 +14,7 @@
 
 from unittest.mock import patch
 
-from report_generator.generator.context.portfolio_metadata import reset_context
+from report_generator.generator.context.portfolio_filters import reset_context
 from report_generator.generator.context.sigrid_api import SigridAPIRequestFailedError
 from report_generator.generator.domain.portfolio.npr_5333_functional_suitability_portfolio import (
     Npr5333FunctionalSuitabilityPortfolioData,

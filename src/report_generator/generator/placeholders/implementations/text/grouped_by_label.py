@@ -13,7 +13,7 @@
 #  limitations under the License.
 
 from report_generator.generator.placeholders.context import get_group_by
-from report_generator.generator.utils.constants.filters import DIMENSION_LABELS
+from report_generator.generator.utils.constants.metadata_labels import METADATA_LABELS
 
 from .base import text_placeholder
 
@@ -23,5 +23,5 @@ def grouped_by_label():
     """The human-readable label of the metadata dimension all portfolio treemaps are
     currently grouped by (e.g. "Team", "Lifecycle phase"), following the --group-by
     CLI parameter."""
-    singular, _ = DIMENSION_LABELS[get_group_by()]
+    singular, _ = METADATA_LABELS[get_group_by()]
     return singular.title()

@@ -16,7 +16,7 @@
 # applied filters and the active group-by in a report. Keys must match the filter
 # names in FILTER_CONFIGURATION.
 
-DIMENSION_LABELS: dict[str, tuple[str, str]] = {
+METADATA_LABELS: dict[str, tuple[str, str]] = {
     "team": ("team", "teams"),
     "division": ("division", "divisions"),
     "lifecycle": ("lifecycle phase", "lifecycle phases"),

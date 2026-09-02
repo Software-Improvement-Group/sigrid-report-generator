@@ -12,9 +12,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from report_generator.generator.utils.constants.filters import DIMENSION_LABELS
+from report_generator.generator.utils.constants.metadata_labels import METADATA_LABELS
 
-GROUPING_OPTIONS: tuple[str, ...] = tuple(DIMENSION_LABELS.keys())
+GROUPING_OPTIONS: tuple[str, ...] = tuple(METADATA_LABELS.keys())
 DEFAULT_GROUP_BY = "team"
 
 _group_by: str = DEFAULT_GROUP_BY

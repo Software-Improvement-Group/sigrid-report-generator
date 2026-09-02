@@ -13,7 +13,7 @@
 #  limitations under the License.
 
 from report_generator.generator.domain import portfolio_filter_info
-from report_generator.generator.utils.constants.filters import DIMENSION_LABELS
+from report_generator.generator.utils.constants.metadata_labels import METADATA_LABELS
 
 from .base import text_placeholder
 
@@ -25,7 +25,7 @@ def filter_info():
     (e.g. "team: teamA, divisions: divA, divB"). Empty when no filter is applied."""
     segments = []
     for applied in portfolio_filter_info.applied_filters:
-        singular, plural = DIMENSION_LABELS[applied.name]
+        singular, plural = METADATA_LABELS[applied.name]
         label = singular if len(applied.values) == 1 else plural
         segments.append(f"{label}: {', '.join(applied.values)}")
     return ", ".join(segments)

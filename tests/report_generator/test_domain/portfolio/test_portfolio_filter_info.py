@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from report_generator.generator.context import portfolio_metadata
+from report_generator.generator.context import portfolio_filters
 from report_generator.generator.domain.portfolio.portfolio_filter_info import (
     portfolio_filter_info,
 )
@@ -20,17 +20,17 @@ from report_generator.generator.domain.portfolio.portfolio_filter_info import (
 
 class TestPortfolioFilterInfo:
     def test_applied_filters_empty_by_default(self):
-        portfolio_metadata.reset_context()
+        portfolio_filters.reset_context()
 
         assert portfolio_filter_info.applied_filters == []
 
     def test_applied_filters_reflects_context_after_set(self):
-        portfolio_metadata.set_context(team=["TeamA"])
+        portfolio_filters.set_context(team=["TeamA"])
 
         try:
             applied = portfolio_filter_info.applied_filters
         finally:
-            portfolio_metadata.reset_context()
+            portfolio_filters.reset_context()
 
         assert len(applied) == 1
         assert applied[0].name == "team"

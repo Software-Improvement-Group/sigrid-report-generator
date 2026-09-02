@@ -17,8 +17,8 @@ from unittest.mock import patch
 import click
 import pytest
 
-from report_generator.generator.context import portfolio_metadata
-from report_generator.generator.context.portfolio_metadata import (
+from report_generator.generator.context import portfolio_filters
+from report_generator.generator.context.portfolio_filters import (
     FILTER_CONFIGURATION,
     PlaceholderArgumentError,
     _find_system_metadata,
@@ -27,7 +27,7 @@ from report_generator.generator.context.portfolio_metadata import (
     reset_context,
     set_context,
 )
-from report_generator.generator.utils.constants.filters import DIMENSION_LABELS
+from report_generator.generator.utils.constants.metadata_labels import METADATA_LABELS
 
 
 @pytest.fixture
@@ -113,22 +113,22 @@ class TestPortfolioArguments:
         """Test that set_context correctly sets team filter."""
         set_context(team=["TeamA"])
 
-        assert portfolio_metadata._filter_state["team"] == ["TeamA"]
-        assert portfolio_metadata._filter_state["division"] is None
+        assert portfolio_filters._filter_state["team"] == ["TeamA"]
+        assert portfolio_filters._filter_state["division"] is None
 
     def test_set_context_with_division(self):
         """Test that set_context correctly sets division filter."""
         set_context(division=["DivisionX"])
 
-        assert portfolio_metadata._filter_state["team"] is None
-        assert portfolio_metadata._filter_state["division"] == ["DivisionX"]
+        assert portfolio_filters._filter_state["team"] is None
+        assert portfolio_filters._filter_state["division"] == ["DivisionX"]
 
     def test_set_context_with_both(self):
         """Test that set_context correctly sets both team and division filters."""
         set_context(team=["TeamA", "TeamB"], division=["DivisionX"])
 
-        assert portfolio_metadata._filter_state["team"] == ["TeamA", "TeamB"]
-        assert portfolio_metadata._filter_state["division"] == ["DivisionX"]
+        assert portfolio_filters._filter_state["team"] == ["TeamA", "TeamB"]
+        assert portfolio_filters._filter_state["division"] == ["DivisionX"]
 
     def test_set_context_raises_on_unknown_filter(self):
         """Test that set_context raises ValueError for unknown filter names."""
@@ -145,13 +145,13 @@ class TestPortfolioArguments:
         with pytest.raises(ValueError):
             set_context(team=["TeamA"], unknown_filter=["value"])
 
-        assert portfolio_metadata._filter_state["team"] is None
+        assert portfolio_filters._filter_state["team"] is None
 
     def test_set_context_accepts_hyphenated_values_for_mapped_filters(self):
         """Help text advertises hyphenated values; validation must accept them too."""
         set_context(deployment=["public-facing"])
 
-        assert portfolio_metadata._filter_state["deployment"] == ["PUBLIC_FACING"]
+        assert portfolio_filters._filter_state["deployment"] == ["PUBLIC_FACING"]
 
     # System Matching Tests
 
@@ -430,10 +430,10 @@ class TestFilterConsistency:
 
     def test_filter_state_matches_configuration(self):
         """Test that _filter_state has exactly the keys defined in FILTER_CONFIGURATION."""
-        assert set(portfolio_metadata._filter_state.keys()) == set(
+        assert set(portfolio_filters._filter_state.keys()) == set(
             FILTER_CONFIGURATION.keys()
         )
 
     def test_filter_labels_match_configuration(self):
-        """DIMENSION_LABELS must define a label for every filter, so filter_info never KeyErrors."""
-        assert set(DIMENSION_LABELS.keys()) == set(FILTER_CONFIGURATION.keys())
+        """METADATA_LABELS must define a label for every filter, so filter_info never KeyErrors."""
+        assert set(METADATA_LABELS.keys()) == set(FILTER_CONFIGURATION.keys())

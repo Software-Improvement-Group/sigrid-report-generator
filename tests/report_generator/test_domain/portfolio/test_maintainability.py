@@ -16,7 +16,7 @@ from unittest.mock import patch
 
 import pytest
 
-from report_generator.generator.context.portfolio_metadata import reset_context
+from report_generator.generator.context.portfolio_filters import reset_context
 from report_generator.generator.domain import maintainability_portfolio_data
 
 # noinspection PyProtectedMember
