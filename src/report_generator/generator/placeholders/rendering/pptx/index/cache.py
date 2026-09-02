@@ -137,3 +137,10 @@ def matches_word_bounded(text: str, search_text: str) -> bool:
     return search_text in text and bool(
         _patterns.word_bounded(search_text).search(text)
     )
+
+
+def word_bounded_pattern(search_text: str) -> re.Pattern:
+    """The cached compiled ``\\bsearch_text\\b`` pattern, for callers that need the pattern
+    itself (to locate or replace a match) rather than a yes/no answer.
+    """
+    return _patterns.word_bounded(search_text)

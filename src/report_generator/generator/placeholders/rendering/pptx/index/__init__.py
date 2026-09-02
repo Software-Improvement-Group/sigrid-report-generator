@@ -34,6 +34,7 @@ __all__ = [
     "matches",
     "matching_paragraphs",
     "note_text_changed",
+    "word_bounded_pattern",
 ]
 
 
@@ -82,3 +83,10 @@ def matching_paragraphs(records, search_text):
         for record in records
         if cache.matches_word_bounded(record.text, search_text)
     ]
+
+
+def word_bounded_pattern(search_text: str):
+    """The cached compiled ``\\bsearch_text\\b`` pattern, for callers that need to locate or
+    replace a match rather than just test whether one exists.
+    """
+    return cache.word_bounded_pattern(search_text)

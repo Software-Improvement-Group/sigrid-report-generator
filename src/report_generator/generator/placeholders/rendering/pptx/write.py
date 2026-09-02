@@ -13,7 +13,6 @@
 #  limitations under the License.
 
 import logging
-import re
 from dataclasses import dataclass
 
 # noinspection PyProtectedMember
@@ -48,7 +47,7 @@ def update_many_paragraphs(
 def _run_to_write_placeholder_into(
     paragraph: _Paragraph, placeholder_id
 ) -> _Run | None:
-    pattern = re.compile(rf"\b{re.escape(placeholder_id)}\b")
+    pattern = index.word_bounded_pattern(placeholder_id)
     run = next((run for run in paragraph.runs or [] if pattern.search(run.text)), None)
     if run is None:
         logging.warning(
@@ -65,8 +64,8 @@ def update_paragraph(
     if run is None:
         return
 
-    run.text = re.sub(
-        rf"\b{re.escape(placeholder_id)}\b", str(replacement_text), run.text
+    run.text = index.word_bounded_pattern(placeholder_id).sub(
+        str(replacement_text), run.text
     )
     logging.debug(f'Replaced {placeholder_id} with "{replacement_text}": {run.text}')
     if font:
