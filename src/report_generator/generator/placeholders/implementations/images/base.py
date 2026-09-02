@@ -55,8 +55,7 @@ class _AbstractImage:
                 height=Inches(pos_height),
             )
 
-        el = shape_placeholder.element
-        el.getparent().remove(el)
+        rendering.pptx.remove_shape(shape_placeholder)
         plt.close("all")
 
 

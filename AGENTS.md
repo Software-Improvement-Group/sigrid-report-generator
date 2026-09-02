@@ -7,16 +7,6 @@ This file provides guidance to AI agents when working with code in this reposito
 Write maintainable code: single responsibility, small focused functions, clear naming, avoid duplication, simple control
 flow.
 
-## MANDATORY: Quality Gate
-
-Before reporting ANY task as complete:
-
-1. Run the Sigrid Code Quality Guardrails tool on all changed production code
-2. Maintainability findings: accept if principles were followed, otherwise refactor
-3. Security findings: fix if straightforward, otherwise flag to user
-
-Only skip this step if you are not able to access Sigrid Code Quality Guardrails. Indicate this in your response.
-
 ## Commands
 
 ```bash
@@ -57,6 +47,20 @@ placeholders/   Bridge between domain and the report file.
                     rendering/ to write to the file.
   formatting/   Presentation helpers: float→stars, ratio→%, diff→"+0.3". No pptx/docx.
   rendering/    pptx/docx file mechanics only. No Sigrid knowledge. Never calls domain.
+    common.py     Font and run helpers shared by both formats.
+    docx.py       The Word path.
+    pptx/         The PowerPoint path, one module per concern:
+      index/        Where the text is, from one cached traversal per document. Locating a
+                    placeholder is a scan over cached records, not a fresh walk.
+      find.py       Locating text, charts, tables and shapes.
+      write.py      Writing text into paragraphs and tables.
+      structure.py  Removing slides, shapes and rows. Every helper here must invalidate the
+                    index, or writes through stale records are lost silently.
+      shapes.py     Shape fill and size.
+      colors.py     The palette, and the rules mapping a rating or ratio onto it.
+
+                pptx/__init__.py re-exports the whole API, so callers keep using
+                rendering.pptx.X and need not know which module a helper lives in.
 
 utils/          Pure stateless helpers: constants, enums, star-rating math, time/period
                 arithmetic. Must not import from context/, domain/, or placeholders/.
@@ -124,4 +128,5 @@ issues worth fixing:
 
 ## Version Bump
 
-Every change to production code requires a version bump in `setup.cfg` (semantic versioning).
+Every change to production code requires a version bump in `setup.cfg` (semantic versioning). This only applies to
+merges into `main` — commits within a branch or PR do not need to bump the version each time.
