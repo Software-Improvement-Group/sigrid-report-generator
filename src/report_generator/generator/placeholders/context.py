@@ -12,15 +12,27 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from report_generator.generator.context.portfolio_metadata import get_group_by
+from report_generator.generator.utils.constants.filters import DIMENSION_LABELS
+
+GROUPING_OPTIONS: tuple[str, ...] = tuple(DIMENSION_LABELS.keys())
+DEFAULT_GROUP_BY = "team"
+
+_group_by: str = DEFAULT_GROUP_BY
 
 
-class PortfolioGrouping:
-    """Exposes the metadata dimension portfolio treemaps are currently grouped by."""
+def set_group_by(group_by: str) -> None:
+    if group_by not in GROUPING_OPTIONS:
+        raise ValueError(
+            f"Invalid group-by value: {group_by}. Allowed: {', '.join(GROUPING_OPTIONS)}"
+        )
+    global _group_by
+    _group_by = group_by
 
-    @property
-    def selected(self) -> str:
-        return get_group_by()
+
+def reset_group_by() -> None:
+    global _group_by
+    _group_by = DEFAULT_GROUP_BY
 
 
-portfolio_grouping = PortfolioGrouping()
+def get_group_by() -> str:
+    return _group_by

@@ -22,14 +22,14 @@ import pytest
 from click.testing import CliRunner
 
 from report_generator.cli import run as run_cli
-from report_generator.generator.context import portfolio_metadata
+from report_generator.generator.placeholders import context as placeholders_context
 
 
 @pytest.fixture(autouse=True)
 def _reset_group_by():
-    portfolio_metadata.reset_group_by()
+    placeholders_context.reset_group_by()
     yield
-    portfolio_metadata.reset_group_by()
+    placeholders_context.reset_group_by()
 
 
 def _make_expired_jwt() -> str:
@@ -560,7 +560,7 @@ class TestCLIParameters:
             ],
         )
 
-        assert portfolio_metadata.get_group_by() == "team"
+        assert placeholders_context.get_group_by() == "team"
 
     @patch("report_generator.cli.presets")
     @patch("report_generator.cli.sigrid_api")
@@ -585,7 +585,7 @@ class TestCLIParameters:
             ],
         )
 
-        assert portfolio_metadata.get_group_by() == "lifecycle"
+        assert placeholders_context.get_group_by() == "lifecycle"
 
     def test_group_by_rejects_invalid_choice(self):
         """Test that --group-by rejects a value outside the allowed dimensions."""

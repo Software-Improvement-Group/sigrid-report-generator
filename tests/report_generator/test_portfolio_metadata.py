@@ -24,13 +24,10 @@ from report_generator.generator.context.portfolio_metadata import (
     _find_system_metadata,
     _include,
     filter_data_on_portfolio_arguments,
-    get_group_by,
     reset_context,
-    reset_group_by,
     set_context,
-    set_group_by,
 )
-from report_generator.generator.utils.constants.filters import FILTER_LABELS
+from report_generator.generator.utils.constants.filters import DIMENSION_LABELS
 
 
 @pytest.fixture
@@ -438,31 +435,5 @@ class TestFilterConsistency:
         )
 
     def test_filter_labels_match_configuration(self):
-        """FILTER_LABELS must define a label for every filter, so filter_info never KeyErrors."""
-        assert set(FILTER_LABELS.keys()) == set(FILTER_CONFIGURATION.keys())
-
-
-class TestPortfolioGrouping:
-    """Test cases for the treemap grouping-dimension state, which lives alongside the
-    filter state above since both operate on the same portfolio metadata dimensions."""
-
-    def teardown_method(self):
-        reset_group_by()
-
-    def test_defaults_to_team(self):
-        assert get_group_by() == "team"
-
-    def test_set_group_by_updates_selected_grouping(self):
-        set_group_by("lifecycle")
-
-        assert get_group_by() == "lifecycle"
-
-    def test_set_group_by_rejects_unknown_dimension(self):
-        with pytest.raises(ValueError, match="Invalid group-by value"):
-            set_group_by("not-a-real-dimension")
-
-    def test_reset_group_by_restores_default(self):
-        set_group_by("supplier")
-        reset_group_by()
-
-        assert get_group_by() == "team"
+        """DIMENSION_LABELS must define a label for every filter, so filter_info never KeyErrors."""
+        assert set(DIMENSION_LABELS.keys()) == set(FILTER_CONFIGURATION.keys())

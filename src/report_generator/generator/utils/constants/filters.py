@@ -12,9 +12,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-# Singular/plural label for each portfolio filter, used to describe applied
-# filters in a report. Keys must match the filter names in FILTER_CONFIGURATION.
-FILTER_LABELS: dict[str, tuple[str, str]] = {
+# Singular/plural label for each portfolio metadata dimension, used to describe
+# applied filters and the active group-by in a report. Keys must match the filter
+# names in FILTER_CONFIGURATION.
+
+DIMENSION_LABELS: dict[str, tuple[str, str]] = {
     "team": ("team", "teams"),
     "division": ("division", "divisions"),
     "lifecycle": ("lifecycle phase", "lifecycle phases"),

@@ -21,7 +21,8 @@ import requests
 
 from report_generator import ReportGenerator, presets
 from report_generator.generator import generator_arguments
-from report_generator.generator.context import portfolio_metadata, sigrid_api
+from report_generator.generator.context import sigrid_api
+from report_generator.generator.placeholders import context as placeholders_context
 from report_generator.generator.utils.time_series import add_months
 from report_generator.update_check import check_for_update
 
@@ -139,8 +140,8 @@ def _validate_layout_or_template(ctx, param, value):
 @click.option(
     "-g",
     "--group-by",
-    type=click.Choice(portfolio_metadata.GROUPING_OPTIONS),
-    default=portfolio_metadata.DEFAULT_GROUP_BY,
+    type=click.Choice(placeholders_context.GROUPING_OPTIONS),
+    default=placeholders_context.DEFAULT_GROUP_BY,
     help="Metadata dimension all portfolio treemaps are grouped by",
 )
 @generator_arguments
@@ -157,6 +158,7 @@ def run(
     end,
     out_file,
     api_url,
+    group_by,
 ):
     _configure_logging(debug)
     if not template:
@@ -165,6 +167,7 @@ def run(
         _configure_api(customer, system, token, (start, end), api_url)
     except ValueError as e:
         raise click.ClickException(str(e)) from e
+    placeholders_context.set_group_by(group_by)
     _record_usage_statistics(layout, customer)
 
     try:

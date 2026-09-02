@@ -19,11 +19,9 @@ from typing import ClassVar
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from report_generator.generator.domain import (
-    maintainability_portfolio_data,
-    portfolio_grouping,
-)
+from report_generator.generator.domain import maintainability_portfolio_data
 from report_generator.generator.placeholders import rendering
+from report_generator.generator.placeholders.context import get_group_by
 from report_generator.generator.placeholders.formatting import formatters
 from report_generator.generator.placeholders.formatting.technologies import (
     get_technology_name,
@@ -226,7 +224,7 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
     @classmethod
     def _dimension_from_parameter(cls, parameter: str) -> str:
         if parameter == "":
-            return portfolio_grouping.selected.lower()
+            return get_group_by().lower()
         return parameter.removeprefix(cls.GROUPED_BY_MARKER).lower()
 
     @classmethod

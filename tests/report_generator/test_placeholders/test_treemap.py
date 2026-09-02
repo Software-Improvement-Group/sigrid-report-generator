@@ -17,7 +17,7 @@ from unittest.mock import MagicMock, patch
 import matplotlib.pyplot as plt
 import pytest
 
-from report_generator.generator.context import portfolio_metadata
+from report_generator.generator.placeholders import context as placeholders_context
 from report_generator.generator.placeholders.implementations.images.treemaps.utils.treemap._autofit_text import (
     _DEFAULT_LINESPACING,
     AutofitText,
@@ -28,9 +28,9 @@ plt.switch_backend("Agg")
 
 @pytest.fixture(autouse=True)
 def reset_grouping_context():
-    portfolio_metadata.reset_group_by()
+    placeholders_context.reset_group_by()
     yield
-    portfolio_metadata.reset_group_by()
+    placeholders_context.reset_group_by()
 
 
 class TestAutofitText:
@@ -489,7 +489,7 @@ class TestDimensionFromParameter:
             _AbstractPortfolioTreemapPlaceholder,
         )
 
-        portfolio_metadata.set_group_by("lifecycle")
+        placeholders_context.set_group_by("lifecycle")
 
         assert (
             _AbstractPortfolioTreemapPlaceholder._dimension_from_parameter("")
@@ -551,7 +551,7 @@ class TestResolveGroupingVariants:
             MaintainabilityPortfolioTreemapPlaceholder as Placeholder,
         )
 
-        portfolio_metadata.set_group_by("lifecycle")
+        placeholders_context.set_group_by("lifecycle")
         report = _fake_report("PORTFOLIO_PERIOD_MAINTAINABILITY")
 
         with (
@@ -570,7 +570,7 @@ class TestResolveGroupingVariants:
             MaintainabilityPortfolioTreemapPlaceholder as Placeholder,
         )
 
-        portfolio_metadata.set_group_by("lifecycle")
+        placeholders_context.set_group_by("lifecycle")
         report = _fake_report(
             "PORTFOLIO_PERIOD_MAINTAINABILITY_GROUPED_BY_MAIN_TECHNOLOGY"
         )

@@ -38,9 +38,6 @@ from report_generator.generator.domain.portfolio.osh_portfolio import osh_portfo
 from report_generator.generator.domain.portfolio.portfolio_filter_info import (
     portfolio_filter_info,
 )
-from report_generator.generator.domain.portfolio.portfolio_grouping import (
-    portfolio_grouping,
-)
 from report_generator.generator.domain.portfolio.progress_sigrid import (
     progress_sigrid_data,
 )

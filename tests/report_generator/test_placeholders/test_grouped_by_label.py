@@ -14,7 +14,7 @@
 
 import pytest
 
-from report_generator.generator.context import portfolio_metadata
+from report_generator.generator.placeholders import context as placeholders_context
 from report_generator.generator.placeholders.implementations.text.grouped_by_label import (
     grouped_by_label,
 )
@@ -22,9 +22,9 @@ from report_generator.generator.placeholders.implementations.text.grouped_by_lab
 
 @pytest.fixture(autouse=True)
 def reset_grouping_context():
-    portfolio_metadata.reset_group_by()
+    placeholders_context.reset_group_by()
     yield
-    portfolio_metadata.reset_group_by()
+    placeholders_context.reset_group_by()
 
 
 class TestGroupedByLabelPlaceholder:
@@ -35,6 +35,6 @@ class TestGroupedByLabelPlaceholder:
         assert grouped_by_label.value() == "Team"
 
     def test_reflects_selected_grouping(self):
-        portfolio_metadata.set_group_by("lifecycle")
+        placeholders_context.set_group_by("lifecycle")
 
         assert grouped_by_label.value() == "Lifecycle Phase"
