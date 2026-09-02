@@ -131,13 +131,13 @@ class TestTreemapImagePlaceholder:
 
         _AbstractPortfolioTreemapPlaceholder.draw_image(10, 10, fig_data)
 
-        # Should have called treemap with a non-empty color mapping
+        # Should have built a TreemapStyle with a non-empty color mapping
         assert mock_treemap.treemap.called
-        call_kwargs = mock_treemap.treemap.call_args[1]
-        assert "cmap" in call_kwargs
-        assert len(call_kwargs["cmap"]) == 2  # Should have colors for both systems
-        assert "system1" in call_kwargs["cmap"]
-        assert "system2" in call_kwargs["cmap"]
+        style_kwargs = mock_treemap.TreemapStyle.call_args[1]
+        assert "cmap" in style_kwargs
+        assert len(style_kwargs["cmap"]) == 2  # Should have colors for both systems
+        assert "system1" in style_kwargs["cmap"]
+        assert "system2" in style_kwargs["cmap"]
 
     @patch(
         "report_generator.generator.placeholders.implementations.images.treemaps.treemap_base.plt"
@@ -215,13 +215,14 @@ class TestTreemapImagePlaceholder:
 
         # Should return the figure
         assert result == mock_fig
-        # Treemap should be called with the provided color mapping
+        # TreemapStyle should be built with the provided color mapping
         mock_treemap.treemap.assert_called_once()
-        call_kwargs = mock_treemap.treemap.call_args[1]
-        assert call_kwargs["cmap"] == fig_data["color_mapping"]
+        columns_kwargs = mock_treemap.PlotColumns.call_args[1]
+        style_kwargs = mock_treemap.TreemapStyle.call_args[1]
+        assert style_kwargs["cmap"] == fig_data["color_mapping"]
         # A single non-"Unset" group should still show its grouping header
-        assert call_kwargs["levels"] == ["root_names", "system_names"]
-        assert call_kwargs["subgroup_rectprops"]
+        assert columns_kwargs["levels"] == ["root_names", "system_names"]
+        assert style_kwargs["subgroup_rectprops"]
         # Axes should be turned off
         mock_ax.axis.assert_called_once_with("off")
 
@@ -253,10 +254,11 @@ class TestTreemapImagePlaceholder:
 
         _AbstractPortfolioTreemapPlaceholder.draw_image(10, 10, fig_data)
 
-        call_kwargs = mock_treemap.treemap.call_args[1]
-        assert call_kwargs["levels"] == ["system_names"]
-        assert not call_kwargs["subgroup_rectprops"]
-        assert not call_kwargs["subgroup_textprops"]
+        columns_kwargs = mock_treemap.PlotColumns.call_args[1]
+        style_kwargs = mock_treemap.TreemapStyle.call_args[1]
+        assert columns_kwargs["levels"] == ["system_names"]
+        assert not style_kwargs["subgroup_rectprops"]
+        assert not style_kwargs["subgroup_textprops"]
 
     @patch(
         "report_generator.generator.placeholders.implementations.images.treemaps.treemap_base.plt"
@@ -286,10 +288,11 @@ class TestTreemapImagePlaceholder:
 
         _AbstractPortfolioTreemapPlaceholder.draw_image(10, 10, fig_data)
 
-        call_kwargs = mock_treemap.treemap.call_args[1]
-        assert call_kwargs["levels"] == ["root_names", "system_names"]
-        assert call_kwargs["subgroup_rectprops"]
-        assert call_kwargs["subgroup_textprops"]
+        columns_kwargs = mock_treemap.PlotColumns.call_args[1]
+        style_kwargs = mock_treemap.TreemapStyle.call_args[1]
+        assert columns_kwargs["levels"] == ["root_names", "system_names"]
+        assert style_kwargs["subgroup_rectprops"]
+        assert style_kwargs["subgroup_textprops"]
 
 
 class TestMainTechnologyGrouping:

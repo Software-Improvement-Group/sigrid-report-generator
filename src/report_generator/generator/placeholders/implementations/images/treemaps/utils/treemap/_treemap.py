@@ -5,8 +5,15 @@
 # Modifications from the original:
 # - Replaced deprecated cm.get_cmap() with matplotlib.colormaps (Matplotlib 3.9+)
 # - Fixed pandas Copy-on-Write violations (pandas 2.0+)
+# - Grouped style keyword arguments into TreemapStyle and split draw_subgroup()/
+#   get_plot_data() into focused helpers (maintainability)
+# - Trimmed the general-purpose API (padded/"split" layout, non-DataFrame inputs,
+#   the discarded TreemapContainer return value, arbitrary axis normalization,
+#   uncommon position codes) down to what this codebase's one caller uses
+#   (maintainability)
 
 import itertools
+from dataclasses import dataclass, field
 
 import matplotlib
 import matplotlib.colors as mcolors
@@ -15,249 +22,252 @@ import matplotlib.transforms as trans
 import numpy as np
 import pandas as pd
 import squarify
-from matplotlib import cm
 
 from . import _autofit_text as _at
-from . import _container as trc
+from ._padding import resolve_pad
+
+_TEXTPROPS_LAYOUT_KEYS = (
+    "grow",
+    "reflow",
+    "xmax",
+    "ymax",
+    "place",
+    "max_fontsize",
+    "min_fontsize",
+    "padx",
+    "pady",
+)
+
+# Axes are always normalized to a 0-100 square, top-anchored (row 0 at the top).
+_NORM_SIZE = 100
+_DEFAULT_PAD = 0.0
 
 
-def treemap(
-    axes,
-    data,
-    *,
-    area=None,
-    labels=None,
-    fill=None,
-    cmap=None,
-    levels=None,
-    norm_x=100,
-    norm_y=100,
-    top=False,
-    pad=0.0,
-    split=False,
-    subgroup_rectprops=None,
-    subgroup_textprops=None,
-    rectprops=None,
-    textprops=None,
-):
+@dataclass(frozen=True)
+class TreemapStyle:
+    """Tile/label styling, coloring, and padding for a treemap's leaf and subgroup levels."""
+
+    cmap: object = None
+    rectprops: dict = field(default_factory=dict)
+    textprops: dict = field(default_factory=dict)
+    subgroup_rectprops: dict = field(default_factory=dict)
+    subgroup_textprops: dict = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class _SubgroupDrawContext:
+    """Per-call context shared by the rect/text drawing helpers in draw_subgroup()."""
+
+    axes: object
+    cmap: object
+    rectprops: dict
+    textprops: dict
+    is_leaf: bool
+
+
+@dataclass(frozen=True)
+class _ColorResolution:
+    """Colors resolved once per subgroup and reused for every row it contains."""
+
+    colors: object
+    fill_is_numeric: bool
+    norm: object
+
+
+@dataclass(frozen=True)
+class _RectDraw:
+    """The rectangle patch drawn for one row, and its lower-left y in axes coordinates."""
+
+    patch: object
+    y0: float
+
+
+@dataclass(frozen=True)
+class PlotColumns:
+    """Column selectors that shape get_plot_data()'s output DataFrame."""
+
+    area: object = None
+    labels: object = None
+    fill: object = None
+    levels: object = None
+
+
+@dataclass(frozen=True)
+class _OptionalColumnSpec:
+    """Destination column name and the argument name used in get_plot_data() error messages."""
+
+    colname: str
+    arg_name: str
+
+
+def treemap(axes, data, *, columns=None, style=None):
     """Plot a treemap based on the `squarify` package.
 
     Parameters
     ----------
     axes : Axes
         The axes where the treemap will be drawn.
-    data : DataFrame | list[number]
-        The recommended data type is a pandas `DataFrame`. However, a list of
-        numbers can also be accepted.
-    area : None | int | float | str | list[number], optional
-        If `data` is a `DataFrame`, `area` cannot be `None`. If `data` is a list
-        of numbers, `area` won't take effect.
-    labels : None | str | list[str], optional
-        Specify the column in the data (`DataFrame`) used as labels for the leaf
-        tiles, by default None.
-    fill : None | str | list, optional
-        Specify the column in the data (`DataFrame`) used to determine the fill
-        color for the leaf tiles, by default None.
-    cmap : None | str | dict | list, optional
-        Color mapping for fill values, by default None.
-    levels : None | list[str], optional
-        Hierarchical column names for multi-level treemaps, by default None.
-    norm_x : int, optional
-        x normalization value for squarify, by default 100.
-    norm_y : int, optional
-        y normalization value for squarify, by default 100.
-    top : bool, optional
-        If True, the treemap will be upside down, by default False.
-    pad : float | a 2- or 4-tuple of float, optional
-        Global tile padding in data coordinates, by default 0.0.
-    split : bool, optional
-        If True, split into equal-sized root tiles, by default False.
-    subgroup_rectprops : dict of dict, optional
-        Tile properties for non-leaf levels, by default None.
-    subgroup_textprops : dict of dict, optional
-        Label properties for non-leaf levels, by default None.
-    rectprops : dict, optional
-        Tile properties for the leaf level, by default None.
-    textprops : dict, optional
-        Label properties for the leaf level, by default None.
-
-    Returns
-    -------
-    TreemapContainer
+    data : DataFrame
+        The data to plot.
+    columns : PlotColumns, optional
+        Column selectors (area/labels/fill/levels) for `data`, by default `PlotColumns()`.
+    style : TreemapStyle, optional
+        Tile/label styling, coloring, and padding, by default `TreemapStyle()`.
     """
-    tr_container = trc.TreemapContainer({}, {}, handles={})
+    columns = columns or PlotColumns()
+    style = style or TreemapStyle()
 
-    if rectprops is None:
-        rectprops = {}
-    if textprops is None:
-        textprops = {}
+    plot_data = get_plot_data(data, columns)
+    subgroups = get_subgroups(plot_data, columns.levels)
+    squarified = _squarify_treemap_subgroups(subgroups, columns.levels, style)
 
-    if subgroup_rectprops is None:
-        subgroup_rectprops = {}
-    if subgroup_textprops is None:
-        subgroup_textprops = {}
+    axes.set_xlim([0, _NORM_SIZE])
+    axes.set_ylim([0, _NORM_SIZE])
 
-    plot_data = get_plot_data(
-        data=data, area=area, labels=labels, fill=fill, levels=levels
+    for key, subgroup in squarified.items():
+        context = _resolve_subgroup_draw_context(axes, key, columns.levels, style)
+        if context is not None:
+            draw_subgroup(subgroup, context)
+
+
+def _squarify_treemap_subgroups(subgroups, levels, style):
+    sub_pads = {levels[-1]: style.rectprops.get("pad", _DEFAULT_PAD)}
+    for k, v in style.subgroup_rectprops.items():
+        sub_pads[k] = v.get("pad", _DEFAULT_PAD)
+    return squarify_subgroups(subgroups, levels, sub_pads)
+
+
+def _resolve_subgroup_draw_context(axes, key, levels, style):
+    """Build the _SubgroupDrawContext for one subgroup key, or None if it should be skipped."""
+    if key in style.subgroup_rectprops:
+        rectprops = style.subgroup_rectprops[key]
+        textprops = style.subgroup_textprops.get(key, {})
+        is_leaf = False
+    elif key == levels[-1] or key not in levels:
+        rectprops = style.rectprops
+        textprops = style.textprops
+        is_leaf = True
+    else:
+        return None
+
+    return _SubgroupDrawContext(
+        axes=axes,
+        cmap=style.cmap,
+        rectprops=rectprops,
+        textprops=textprops,
+        is_leaf=is_leaf,
     )
 
-    subgroups = get_subgroups(plot_data, split=split, levels=levels)
 
-    sub_pads = {levels[-1]: rectprops.get("pad", pad)} if levels is not None else {}
-    for k, v in subgroup_rectprops.items():
-        sub_pads[k] = v.get("pad", pad)
-    squarified = squarify_subgroups(
-        subgroups,
-        norm_x=norm_x,
-        norm_y=norm_y,
-        levels=levels,
-        pad=pad,
-        split=split,
-        subgroup_pads=sub_pads,
-    )
-
-    axes.set_xlim([0, norm_x])
-    axes.set_ylim([0, norm_y])
-
-    mappable = None
-    for k, subgroup in squarified.items():
-        if k in subgroup_rectprops:
-            rect_artists, text_artists, handles, mappable = draw_subgroup(
-                axes,
-                subgroup,
-                top,
-                norm_y,
-                cmap,
-                subgroup_rectprops[k],
-                subgroup_textprops.get(k, {}),
-                False,
-            )
-            tr_container.patches[k] = rect_artists
-            tr_container.texts[k] = text_artists
-            tr_container.handles[k] = handles
-        elif levels is None or (k == levels[-1]) or (k not in levels):
-            rect_artists, text_artists, handles, mappable = draw_subgroup(
-                axes, subgroup, top, norm_y, cmap, rectprops, textprops, True
-            )
-            tr_container.patches[k] = rect_artists
-            tr_container.texts[k] = text_artists
-            tr_container.handles[k] = handles
-
-    tr_container.mappable = mappable
-
-    return tr_container
-
-
-def draw_subgroup(axes, subgroup, top, norm_y, cmap, rectprops, textprops, is_leaf):
-    rect_artists = []
-    text_artists = []
-    handles_artists = None
-    mappable_artists = None
-
-    if "_fill_" in subgroup.columns:
-        colors = get_colormap(cmap, subgroup["_fill_"])
-        fill_is_numeric = pd.api.types.is_numeric_dtype(subgroup.loc[:, "_fill_"].dtype)
-        if fill_is_numeric:
-            max_value = subgroup["_fill_"].max()
-            min_value = subgroup["_fill_"].min()
-            norm = mcolors.Normalize(vmin=min_value, vmax=max_value)
-            mappable_artists = cm.ScalarMappable(norm, colors)
-        else:
-            handles_artists = [
-                mpatches.Patch(color=v, label=k) for k, v in colors.items()
-            ]
+def draw_subgroup(subgroup, context):
+    color_res = _resolve_subgroup_colors(subgroup, context.cmap)
 
     for idx in subgroup.index:
-        if ("_fill_" in subgroup.columns) and fill_is_numeric:
-            rectprops["color"] = colors(norm(subgroup.loc[idx, "_fill_"]))
-        elif "_fill_" in subgroup.columns:
-            rectprops["color"] = colors[subgroup.loc[idx, "_fill_"]]
+        rect_draw = _draw_subgroup_rect(subgroup, idx, context, color_res)
 
-        rect = subgroup.loc[idx, "_rect_"]
-        y0 = norm_y - rect["y"] - rect["dy"] if top else rect["y"]
-        kwargs = {k: v for k, v in rectprops.items() if k != "pad"}
-        patch = mpatches.Rectangle((rect["x"], y0), rect["dx"], rect["dy"], **kwargs)
-        axes.add_patch(patch)
+        if context.textprops and ("_label_" in subgroup.columns):
+            _draw_subgroup_text(subgroup, idx, context, rect_draw)
 
-        rect_artists.append(patch)
 
-        if textprops and ("_label_" in subgroup.columns):
-            extra = [
-                "grow",
-                "reflow",
-                "xmax",
-                "ymax",
-                "place",
-                "max_fontsize",
-                "min_fontsize",
-                "padx",
-                "pady",
-            ]
-            grow = textprops.get("grow", False)
-            reflow = textprops.get("reflow", False)
-            xmax = textprops.get("xmax", 1)
-            ymax = textprops.get("ymax", 1)
-            place = textprops.get("place", "center")
-            max_fontsize = textprops.get("max_fontsize", None)
-            min_fontsize = textprops.get("min_fontsize", None)
-            padx = textprops.get("padx", None)
-            pady = textprops.get("pady", None)
+def _resolve_subgroup_colors(subgroup, cmap):
+    if "_fill_" not in subgroup.columns:
+        return _ColorResolution(colors=None, fill_is_numeric=False, norm=None)
 
-            xa0, ya0, width, height = rect["x"], y0, rect["dx"], rect["dy"]
+    colors = get_colormap(cmap, subgroup["_fill_"])
+    fill_is_numeric = pd.api.types.is_numeric_dtype(subgroup.loc[:, "_fill_"].dtype)
+    norm = None
+    if fill_is_numeric:
+        max_value = subgroup["_fill_"].max()
+        min_value = subgroup["_fill_"].min()
+        norm = mcolors.Normalize(vmin=min_value, vmax=max_value)
+    return _ColorResolution(colors=colors, fill_is_numeric=fill_is_numeric, norm=norm)
 
-            marginx = patch.get_linewidth() if padx is None else padx
-            marginy = patch.get_linewidth() if pady is None else pady
-            offsetx = points2dist(marginx, axes.figure.get_dpi(), axes.transData)
-            offsety = points2dist(marginy, axes.figure.get_dpi(), axes.transData)
-            (x, y, ha, va) = get_position(
-                xa0, ya0, width, height, place, (offsetx, offsety)
-            )
 
-            text_kwargs = {k: v for k, v in textprops.items() if k not in extra}
+def _draw_subgroup_rect(subgroup, idx, context, color_res):
+    rectprops = context.rectprops
+    if color_res.colors is not None:
+        rectprops["color"] = (
+            color_res.colors(color_res.norm(subgroup.loc[idx, "_fill_"]))
+            if color_res.fill_is_numeric
+            else color_res.colors[subgroup.loc[idx, "_fill_"]]
+        )
 
-            padx1 = marginx if xmax == 1 else 0
-            pady1 = marginy if ymax == 1 else 0
+    rect = subgroup.loc[idx, "_rect_"]
+    y0 = _NORM_SIZE - rect["y"] - rect["dy"]
+    kwargs = {k: v for k, v in rectprops.items() if k != "pad"}
+    patch = mpatches.Rectangle((rect["x"], y0), rect["dx"], rect["dy"], **kwargs)
+    context.axes.add_patch(patch)
+    return _RectDraw(patch=patch, y0=y0)
 
-            if is_leaf:
-                txtobj = _at.AutofitText(
-                    (x, y),
-                    xmax * width,
-                    ymax * height,
-                    subgroup.loc[idx, "_label_"],
-                    pad=(padx1, pady1),
-                    reflow=reflow,
-                    grow=grow,
-                    max_fontsize=max_fontsize,
-                    min_fontsize=min_fontsize,
-                    ha=ha,
-                    va=va,
-                    **text_kwargs,
-                )
-            else:
-                if isinstance(idx, tuple):
-                    subgroup_label = [lbl for lbl in idx if lbl][-1]
-                else:
-                    subgroup_label = idx
-                txtobj = _at.AutofitText(
-                    (x, y),
-                    xmax * width,
-                    ymax * height,
-                    subgroup_label,
-                    pad=(padx1, pady1),
-                    reflow=reflow,
-                    grow=grow,
-                    max_fontsize=max_fontsize,
-                    min_fontsize=min_fontsize,
-                    ha=ha,
-                    va=va,
-                    **text_kwargs,
-                )
 
-            axes.add_artist(txtobj)
+def _draw_subgroup_text(subgroup, idx, context, rect_draw):
+    textprops = context.textprops
+    rect = subgroup.loc[idx, "_rect_"]
+    geometry = _resolve_text_geometry(context.axes, rect, rect_draw, textprops)
+    label = subgroup.loc[idx, "_label_"] if context.is_leaf else _subgroup_label(idx)
 
-            text_artists.append(txtobj)
+    txtobj = _build_autofit_text(label, rect, geometry, textprops)
+    context.axes.add_artist(txtobj)
 
-    return rect_artists, text_artists, handles_artists, mappable_artists
+
+@dataclass(frozen=True)
+class _TextGeometry:
+    """Position, alignment, and inset margins resolved for one subgroup label."""
+
+    x: float
+    y: float
+    ha: str
+    va: str
+    marginx: float
+    marginy: float
+
+
+def _resolve_text_geometry(axes, rect, rect_draw, textprops):
+    padx = textprops.get("padx", None)
+    pady = textprops.get("pady", None)
+    marginx = rect_draw.patch.get_linewidth() if padx is None else padx
+    marginy = rect_draw.patch.get_linewidth() if pady is None else pady
+    offsetx = points2dist(marginx, axes.figure.get_dpi(), axes.transData)
+    offsety = points2dist(marginy, axes.figure.get_dpi(), axes.transData)
+
+    place = textprops.get("place", "center")
+    x, y, ha, va = get_position(
+        (rect["x"], rect_draw.y0, rect["dx"], rect["dy"]), place, (offsetx, offsety)
+    )
+    return _TextGeometry(x=x, y=y, ha=ha, va=va, marginx=marginx, marginy=marginy)
+
+
+def _build_autofit_text(label, rect, geometry, textprops):
+    xmax = textprops.get("xmax", 1)
+    ymax = textprops.get("ymax", 1)
+    width, height = rect["dx"], rect["dy"]
+    padx1 = geometry.marginx if xmax == 1 else 0
+    pady1 = geometry.marginy if ymax == 1 else 0
+
+    text_kwargs = {
+        k: v for k, v in textprops.items() if k not in _TEXTPROPS_LAYOUT_KEYS
+    }
+
+    return _at.AutofitText(
+        (geometry.x, geometry.y),
+        xmax * width,
+        ymax * height,
+        label,
+        pad=(padx1, pady1),
+        reflow=textprops.get("reflow", False),
+        grow=textprops.get("grow", False),
+        max_fontsize=textprops.get("max_fontsize", None),
+        min_fontsize=textprops.get("min_fontsize", None),
+        ha=geometry.ha,
+        va=geometry.va,
+        **text_kwargs,
+    )
+
+
+def _subgroup_label(idx):
+    if isinstance(idx, tuple):
+        return [lbl for lbl in idx if lbl][-1]
+    return idx
 
 
 def points2dist(points, dpi, transform):
@@ -267,37 +277,24 @@ def points2dist(points, dpi, transform):
     return bbox.width
 
 
-def get_position(x, y, dx, dy, pos, pad):
+_INVALID_POSITION_MESSAGE = (
+    'Invalid position. Available positions are:\n- "center", \n- "bottom left", '
+    '"bottom center", "bottom right", \n- "top left", "top center", "top right".'
+)
+
+
+def get_position(rect, pos, pad):
+    x, y, dx, dy = rect
     x_pos = {"center": x + dx / 2, "left": x + pad[0], "right": x + dx - pad[0]}
     y_pos = {"center": y + dy / 2, "bottom": y + pad[1], "top": y + dy - pad[1]}
-    name_dict = {"b": "bottom", "c": "center", "t": "top", "l": "left", "r": "right"}
+
     try:
-        if (pos == "c") or (pos == "center") or (pos == "centre"):
-            return (
-                x_pos.get(pos, x_pos["center"]),
-                y_pos.get(pos, y_pos["center"]),
-                "center",
-                "center",
-            )
-        elif len(pos) == 2:
-            ytxt, xtxt = pos[0], pos[1]
-            return (
-                x_pos[name_dict[xtxt]],
-                y_pos[name_dict[ytxt]],
-                name_dict[xtxt],
-                name_dict[ytxt],
-            )
-        else:
-            ytxt, xtxt = pos.split()
-            ytxt = "center" if ytxt == "centre" else ytxt
-            xtxt = "center" if xtxt == "centre" else xtxt
-            return (x_pos[xtxt], y_pos[ytxt], xtxt, ytxt)
+        if pos == "center":
+            return x_pos["center"], y_pos["center"], "center", "center"
+        ytxt, xtxt = pos.split()
+        return x_pos[xtxt], y_pos[ytxt], xtxt, ytxt
     except KeyError as exc:
-        raise ValueError(
-            'Invalid position. Available positions are:\n- "center" (British spelling accepted), '
-            '"center left", "center right", \n- "bottom left", "bottom center", "bottom right", '
-            '\n- "top left", "top center", "top right".'
-        ) from exc
+        raise ValueError(_INVALID_POSITION_MESSAGE) from exc
 
 
 def get_colormap(cmap, fill_col):
@@ -314,103 +311,58 @@ def get_colormap(cmap, fill_col):
     return dict(zip(fill_col.unique(), itertools.cycle(colors)))
 
 
-def squarify_subgroups(
-    data,
-    norm_x,
-    norm_y,
-    levels=None,
-    pad=0.0,
-    split=False,
-    subgroup_pads=None,
-):
-    rect_colname = "_rect_"
-
-    if subgroup_pads is None:
-        subgroup_pads = {}
-
-    if levels is None:
-        for k, v in data.items():
-            data[k] = squarify_data(v, x=0, y=0, dx=norm_x, dy=norm_y, split=False)
-        return data
-
+def squarify_subgroups(data, levels, subgroup_pads):
     for i, level in enumerate(levels):
-        subgroup = data[level]
         if not i:
-            data[level] = squarify_data(
-                subgroup, x=0, y=0, dx=norm_x, dy=norm_y, split=split
-            )
+            data[level] = squarify_data(data[level], (0, 0, _NORM_SIZE, _NORM_SIZE))
         else:
-            sub_pad = subgroup_pads.get(level, pad)
-            pad_left, pad_right, pad_top, pad_bottom = get_surrounding_pad(sub_pad)
-            subgroup = data[level].copy()
-            parent_idx = set(idx[:-1] for idx in subgroup.index)
-            for parent in parent_idx:
-                child_group = subgroup.loc[parent, :].copy()
-                parent_rect = data[levels[i - 1]].loc[parent, rect_colname]
-                x, y, dx, dy = (
-                    parent_rect["x"],
-                    parent_rect["y"],
-                    parent_rect["dx"],
-                    parent_rect["dy"],
-                )
-                child_group = squarify_data(
-                    child_group,
-                    x + (0 if (not child_group.index[0]) else pad_left),
-                    y + (0 if (not child_group.index[0]) else pad_bottom),
-                    dx - (0 if (not child_group.index[0]) else pad_left + pad_right),
-                    dy - (0 if (not child_group.index[0]) else pad_bottom + pad_top),
-                    split=False,
-                )
-                subgroup.loc[parent, rect_colname] = child_group[rect_colname].values
-            data[level] = subgroup
+            data[level] = _squarify_child_level(
+                data, levels, i, subgroup_pads.get(level, _DEFAULT_PAD)
+            )
 
     return data
 
 
-def get_surrounding_pad(pad):
-    if isinstance(pad, (int, float)):
-        pad_left, pad_right, pad_top, pad_bottom = pad, pad, pad, pad
-    elif isinstance(pad, tuple) and (len(pad) == 2):
-        pad_left, pad_top = pad
-        pad_right, pad_bottom = pad
-    elif isinstance(pad, tuple) and (len(pad) == 4):
-        pad_left, pad_right, pad_top, pad_bottom = pad
-    else:
-        raise ValueError(
-            "`pad` can only be a number, or a tuple of two or four numbers."
+def _squarify_child_level(data, levels, level_index, sub_pad):
+    rect_colname = "_rect_"
+    level = levels[level_index]
+    pad_left, pad_right, pad_top, pad_bottom = resolve_pad(sub_pad)
+    subgroup = data[level].copy()
+
+    parent_idx = set(idx[:-1] for idx in subgroup.index)
+    for parent in parent_idx:
+        child_group = subgroup.loc[parent, :].copy()
+        parent_rect = data[levels[level_index - 1]].loc[parent, rect_colname]
+        is_root = not child_group.index[0]
+        bounds = (
+            parent_rect["x"] + (0 if is_root else pad_left),
+            parent_rect["y"] + (0 if is_root else pad_bottom),
+            parent_rect["dx"] - (0 if is_root else pad_left + pad_right),
+            parent_rect["dy"] - (0 if is_root else pad_bottom + pad_top),
         )
+        child_group = squarify_data(child_group, bounds)
+        subgroup.loc[parent, rect_colname] = child_group[rect_colname].values
 
-    return pad_left, pad_right, pad_top, pad_bottom
+    return subgroup
 
 
-def squarify_data(df, x, y, dx, dy, split):
+def squarify_data(df, bounds):
+    x, y, dx, dy = bounds
     area_colname = "_area_"
     rect_colname = "_rect_"
     sorted_df = df.sort_values(by=area_colname, ascending=False).copy()
-    if split:
-        sorted_df.loc[:, rect_colname] = squarify.padded_squarify(
-            sizes=squarify.normalize_sizes(sorted_df[area_colname].values, dx, dy),
-            x=x,
-            y=y,
-            dx=dx,
-            dy=dy,
-        )
-    else:
-        sorted_df.loc[:, rect_colname] = squarify.squarify(
-            sizes=squarify.normalize_sizes(sorted_df[area_colname].values, dx, dy),
-            x=x,
-            y=y,
-            dx=dx,
-            dy=dy,
-        )
+    sorted_df.loc[:, rect_colname] = squarify.squarify(
+        sizes=squarify.normalize_sizes(sorted_df[area_colname].values, dx, dy),
+        x=x,
+        y=y,
+        dx=dx,
+        dy=dy,
+    )
 
     return df.loc[:, df.columns != rect_colname].join(sorted_df.loc[:, rect_colname])
 
 
-def get_subgroups(data, split=False, levels=None):
-    if levels is None:
-        return {"_group_": data}
-
+def get_subgroups(data, levels):
     agg_fun = {"_area_": "sum"}
     if "_label_" in data.columns:
         agg_fun["_label_"] = "first"
@@ -422,113 +374,46 @@ def get_subgroups(data, split=False, levels=None):
     for level in levels:
         current_level.append(level)
         subgroups[level] = data.groupby(by=current_level, dropna=False).agg(agg_fun)
-        if split and level == levels[0]:
-            subgroups[level] = subgroups[level].assign(_area_=1)
 
     return subgroups
 
 
-def get_plot_data(data, area=None, labels=None, fill=None, levels=None):
-    if levels is None:
-        levels = []
+def get_plot_data(data, columns=None):
+    columns = columns or PlotColumns()
 
-    area_colname = "_area_"
-    label_colname = "_label_"
-    fill_colname = "_fill_"
-
-    if isinstance(data, pd.DataFrame):
-        if area is None:
-            raise TypeError(
-                "`area` must be specified when `data` is a DataFrame. "
-                "It can be a `str`, a `number` or a list of `numbers`."
-            )
-
-        if isinstance(area, str):
-            try:
-                selected_data = data.loc[:, [*levels, area]].copy()
-            except KeyError as exc:
-                raise KeyError(
-                    "columns specified by `area` or `levels` not included in `data`."
-                ) from exc
-
-            selected_data = selected_data.rename(columns={area: area_colname})
-
-        elif isinstance(area, (int, float)):
-            try:
-                selected_data = data.loc[:, levels].copy()
-            except KeyError as exc:
-                raise KeyError(
-                    "columns specified by `levels` not included in `data`."
-                ) from exc
-            selected_data[area_colname] = area
-
-        else:
-            try:
-                selected_data = data.loc[:, levels].copy()
-            except KeyError as exc:
-                raise KeyError(
-                    "columns specified by `levels` not included in `data`."
-                ) from exc
-
-            area_arr = np.array(area)
-
-            if np.issubdtype(area_arr.dtype, np.number):
-                try:
-                    selected_data[area_colname] = area_arr
-                except ValueError as exc:
-                    raise ValueError(
-                        "The length of `area` does not match the length of `data`."
-                    ) from exc
-            else:
-                raise ValueError("`area` must be all numbers.")
-
-    else:
-        data_arr = np.atleast_1d(data)
-        if np.issubdtype(data_arr.dtype, np.number):
-            selected_data = pd.DataFrame({"_area_": data_arr})
-        else:
-            raise ValueError("`data` must be all numbers.")
-
-    if isinstance(labels, str):
-        try:
-            selected_data[label_colname] = data.loc[:, labels]
-        except KeyError as exc:
-            raise KeyError(
-                "column specified by `labels` not included in `data`."
-            ) from exc
-        except AttributeError as exc:
-            raise ValueError(
-                "`data` does not support `labels` specified by a string. "
-                "Specify the `labels` by a list of string."
-            ) from exc
-    elif labels is not None:
-        label_arr = np.atleast_1d(labels)
-        try:
-            selected_data[label_colname] = label_arr
-        except ValueError as exc:
-            raise ValueError(
-                "The length of `labels` does not match the length of `data`."
-            ) from exc
-
-    if isinstance(fill, str):
-        try:
-            selected_data[fill_colname] = data.loc[:, fill]
-        except KeyError as exc:
-            raise KeyError(
-                "column specified by `fill` not included in `data`."
-            ) from exc
-        except AttributeError as exc:
-            raise ValueError(
-                "`data` does not support `fill` specified by a string. "
-                "Specify the `fill` by a list."
-            ) from exc
-    elif fill is not None:
-        fill_arr = np.atleast_1d(fill)
-        try:
-            selected_data[fill_colname] = fill_arr
-        except ValueError as exc:
-            raise ValueError(
-                "The length of `fill` does not match the length of `data`."
-            ) from exc
+    selected_data = _resolve_area_column(data, columns.area, columns.levels)
+    selected_data = _assign_optional_column(
+        selected_data, data, columns.labels, _OptionalColumnSpec("_label_", "labels")
+    )
+    selected_data = _assign_optional_column(
+        selected_data, data, columns.fill, _OptionalColumnSpec("_fill_", "fill")
+    )
 
     return selected_data.fillna("")
+
+
+def _resolve_area_column(data, area, levels):
+    if area is None:
+        raise TypeError("`area` must be specified as a column name in `data`.")
+
+    try:
+        selected_data = data.loc[:, [*levels, area]].copy()
+    except KeyError as exc:
+        raise KeyError(
+            "columns specified by `area` or `levels` not included in `data`."
+        ) from exc
+    return selected_data.rename(columns={area: "_area_"})
+
+
+def _assign_optional_column(selected_data, data, value, spec):
+    """Assign the column named `value` in `data` onto `selected_data[spec.colname]`, if given."""
+    if value is None:
+        return selected_data
+
+    try:
+        selected_data[spec.colname] = data.loc[:, value]
+    except KeyError as exc:
+        raise KeyError(
+            f"column specified by `{spec.arg_name}` not included in `data`."
+        ) from exc
+    return selected_data

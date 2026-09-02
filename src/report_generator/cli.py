@@ -14,6 +14,7 @@
 
 import logging
 import os
+from dataclasses import dataclass
 from datetime import date
 
 import click
@@ -146,35 +147,23 @@ def _validate_layout_or_template(ctx, param, value):
 )
 @generator_arguments
 @click.pass_context
-def run(
-    _,
-    debug,
-    customer,
-    system,
-    token,
-    layout,
-    template,
-    start,
-    end,
-    out_file,
-    api_url,
-    group_by,
-):
-    _configure_logging(debug)
-    if not template:
-        _validate_system_requirement(system, layout)
+def run(_, **kwargs):
+    config = _RunConfig(**kwargs)
+    _configure_logging(config.debug)
+    if not config.template:
+        _validate_system_requirement(config.system, config.layout)
     try:
-        _configure_api(customer, system, token, (start, end), api_url)
+        _configure_api(config)
     except ValueError as e:
         raise click.ClickException(str(e)) from e
-    placeholders_context.set_group_by(group_by)
-    _record_usage_statistics(layout, customer)
+    placeholders_context.set_group_by(config.group_by)
+    _record_usage_statistics(config.layout, config.customer)
 
     try:
-        if template:
-            ReportGenerator(template.name).generate(out_file)
+        if config.template:
+            ReportGenerator(config.template.name).generate(config.out_file)
         else:
-            presets.run(layout, out_file)
+            presets.run(config.layout, config.out_file)
     except (
         sigrid_api.SigridAccessDeniedError,
         sigrid_api.SigridTokenInvalidError,
@@ -184,19 +173,30 @@ def run(
     _notify_if_update_available()
 
 
-def _configure_api(
-    customer: str,
-    system: str,
-    token: str,
-    period: tuple[str, str],
-    api_url: str | None,
-):
+@dataclass(frozen=True)
+class _RunConfig:
+    """The CLI options accepted by `run()`, grouped into a single parameter object."""
+
+    debug: bool
+    customer: str
+    system: str | None
+    token: str | None
+    layout: str | None
+    template: object | None
+    start: str
+    end: str
+    out_file: str
+    api_url: str | None
+    group_by: str
+
+
+def _configure_api(config: _RunConfig):
     sigrid_api.set_context(
-        bearer_token=token,
-        customer=customer,
-        system=system,
-        period=period,
-        base_url=api_url,
+        bearer_token=config.token,
+        customer=config.customer,
+        system=config.system,
+        period=(config.start, config.end),
+        base_url=config.api_url,
     )
 
 

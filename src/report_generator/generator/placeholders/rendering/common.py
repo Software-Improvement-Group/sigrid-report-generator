@@ -78,27 +78,26 @@ def has_same_formatting(run_a: CommonRun, run_b: CommonRun) -> bool:
     return get_font_properties(run_a) == get_font_properties(run_b)
 
 
+_SIMPLE_FONT_ATTRS = ("bold", "italic", "name", "size", "underline")
+
+
 def get_font_properties(run: CommonRun) -> FontProperties | None:
     font = run.font
 
     if not font:
         return None
 
-    props = FontProperties(
-        bold=font.bold,
-        italic=font.italic,
-        name=font.name,
-        size=font.size,
-        underline=font.underline,
-    )
+    props = FontProperties(**{attr: getattr(font, attr) for attr in _SIMPLE_FONT_ATTRS})
 
     # Accessing the color property has side effects in pptx, so we check if it exists first
-    if not font.fill.type or not font.color.type:
-        return props
+    if font.fill.type and font.color.type:
+        props.color = _resolve_font_color(font.color)
 
-    color = font.color
+    return props
 
-    props.color = FontColor(
+
+def _resolve_font_color(color) -> FontColor:
+    return FontColor(
         rgb=color.rgb if hasattr(color, "rgb") else None,
         theme_color=(
             color.theme_color
@@ -110,28 +109,24 @@ def get_font_properties(run: CommonRun) -> FontProperties | None:
         brightness=color.brightness if hasattr(color, "brightness") else None,
     )
 
-    return props
-
 
 def apply_font_properties(run: CommonRun, font_props: FontProperties):
     font = run.font
-    if font_props.bold is not None:
-        font.bold = font_props.bold
-    if font_props.italic is not None:
-        font.italic = font_props.italic
-    if font_props.name is not None:
-        font.name = font_props.name
-    if font_props.size is not None:
-        font.size = font_props.size
-    if font_props.underline is not None:
-        font.underline = font_props.underline
+    for attr in _SIMPLE_FONT_ATTRS:
+        value = getattr(font_props, attr)
+        if value is not None:
+            setattr(font, attr, value)
     if font_props.color is not None:
-        if font_props.color.rgb is not None:
-            font.color.rgb = font_props.color.rgb
-        if font_props.color.theme_color is not None:
-            font.color.theme_color = font_props.color.theme_color
-        if font_props.color.brightness is not None and run.font.color.type is not None:
-            font.color.brightness = font_props.color.brightness
+        _apply_font_color(font, font_props.color)
+
+
+def _apply_font_color(font, color: FontColor):
+    if color.rgb is not None:
+        font.color.rgb = color.rgb
+    if color.theme_color is not None:
+        font.color.theme_color = color.theme_color
+    if color.brightness is not None and font.color.type is not None:
+        font.color.brightness = color.brightness
 
 
 def combine_runs(base: CommonRun, suffix: CommonRun):
