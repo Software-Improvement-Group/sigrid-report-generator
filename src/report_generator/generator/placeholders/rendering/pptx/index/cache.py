@@ -52,7 +52,6 @@ def _package_of(anchor) -> Any:
 
 
 def index_for(anchor, build: Callable[[], Any]) -> Any:
-    """Return the cached index for the anchor's document, building it on first use."""
     global _entry
     package = _package_of(anchor)
 
@@ -65,9 +64,7 @@ def index_for(anchor, build: Callable[[], Any]) -> Any:
 
 
 def cached_index(anchor) -> Any | None:
-    """Return the already-built index for the anchor's document, or None if there is none.
-
-    Used by the refresh hooks, which are best-effort by nature: if nothing has been indexed
+    """Used by the refresh hooks, which are best-effort by nature: if nothing has been indexed
     there is nothing to go stale. A proxy that is not attached to a document has no part at
     all -- also nothing to refresh, rather than a failure.
     """
@@ -82,9 +79,7 @@ def cached_index(anchor) -> Any | None:
 
 
 def invalidate(anchor) -> None:
-    """Drop the cached index for the anchor's document.
-
-    Called by every helper that changes document *structure* -- removing a slide, a shape or a
+    """Called by every helper that changes document *structure* -- removing a slide, a shape or a
     table row, or adding a paragraph. Rebuilding costs a single walk, and structural changes
     happen a handful of times per report, so there is no need to prune individual records.
 
@@ -102,7 +97,7 @@ def invalidate(anchor) -> None:
 
 
 def clear() -> None:
-    """Drop the cached index. Test seam."""
+    """Test seam."""
     global _entry
     _entry = None
 

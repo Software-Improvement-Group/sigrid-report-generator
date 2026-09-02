@@ -12,11 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-"""Where the text in a presentation is, answered from one cached traversal.
-
-Locating a placeholder used to walk the whole presentation, once per placeholder key. This
-package walks it once and answers every later lookup from the result.
-"""
+"""Where the text in a presentation is, answered from one cached traversal."""
 
 # noinspection PyProtectedMember
 from pptx.text.text import _Paragraph
