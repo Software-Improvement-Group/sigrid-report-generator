@@ -18,7 +18,12 @@ All `value()` signatures must match the contract defined by their base class:
 - `ParameterizedPlaceholder.value(cls, parameter)` — parameterized placeholders receive their parameter, nothing else.
 
 No extra arguments (e.g. `additional_parameter`, dimension dicts) beyond what the base class defines. If only one
-subclass family needs extra context, handle it in that family's `resolve_*` override.
+subclass family needs extra context, handle it in that family's `resolve_*` override. Watch for the same pattern
+leaking into other shared interfaces:
+
+- A base class method gaining a parameter that most subclasses ignore or default to `None`.
+- A callback wrapper forwarding a "mystery" argument that only one caller actually provides.
+- A `= None` default added purely to avoid a `TypeError` in callers that don't use the parameter.
 
 ## Call `value_cb()` once, before the rendering loop
 
