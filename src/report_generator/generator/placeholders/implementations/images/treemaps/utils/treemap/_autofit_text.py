@@ -6,7 +6,6 @@ import re
 import textwrap
 
 import matplotlib.artist as artist
-import matplotlib.patches as mpatches
 import matplotlib.text as mtext
 import matplotlib.transforms as trans
 from matplotlib.backends.backend_agg import get_hinting_flag
@@ -36,7 +35,6 @@ class AutofitText(mtext.Text):
         grow=False,
         max_fontsize=None,
         min_fontsize=None,
-        show_rect=False,
         **kwargs,
     ):
         """Create a `.AutoFitText` instance at *x*, *y* with the string *text*
@@ -68,9 +66,6 @@ class AutofitText(mtext.Text):
         min_fontsize : float, optional
             The minimum fontsize in points, by default None. This option makes sure that
             the auto-fitted text won't have a fontsize smaller than *min_fontsize*.
-        show_rect : bool, optional
-            If True, show the box edge for the debug purpose. Default to False,
-            and usually you won't need it to be `True`.
         **kwargs :
             Additional kwargs are passed to `~matplotlib.text.Text`.
         """
@@ -84,7 +79,6 @@ class AutofitText(mtext.Text):
         self._grow = grow
         self._max_fontsize = max_fontsize
         self._min_fontsize = min_fontsize
-        self._show_rect = show_rect
         self._kwargs = kwargs
         self._validate_text()
 
@@ -119,9 +113,6 @@ class AutofitText(mtext.Text):
             )
 
         self._fontproperties.set_size(adjusted_fontsize)
-
-        if self._show_rect:
-            self._rect = self._draw_debug_rect(renderer, transform)
 
         super().draw(renderer)
 
@@ -181,90 +172,6 @@ class AutofitText(mtext.Text):
             self._text = "\n".join(wrap_txt)
             return adjusted_size
         return adjusted_fontsize
-
-    def _draw_debug_rect(self, renderer, transform):
-        x0, y0, *_ = self.get_window_extent(renderer).bounds
-        x0, y0 = transform.inverted().transform((x0, y0))
-        rect = mpatches.Rectangle(
-            (x0, y0),
-            self._width,
-            self._height,
-            fill=False,
-            ls="--",
-            transform=transform,
-        )
-        rect.draw(renderer)
-        return rect
-
-    @property
-    def width(self):
-        return self._width
-
-    @width.setter
-    def width(self, value):
-        if value != self._width:
-            self._width = value
-            self.stale = True
-
-    @property
-    def height(self):
-        return self._height
-
-    @height.setter
-    def height(self, value):
-        if value != self._height:
-            self._height = value
-            self.stale = True
-
-    @property
-    def reflow(self):
-        return self._reflow
-
-    @reflow.setter
-    def reflow(self, value):
-        if value != self._reflow:
-            self._reflow = value
-            self.stale = True
-
-    @property
-    def grow(self):
-        return self._grow
-
-    @grow.setter
-    def grow(self, value):
-        if value != self._grow:
-            self._grow = value
-            self.stale = True
-
-    @property
-    def max_fontsize(self):
-        return self._max_fontsize
-
-    @max_fontsize.setter
-    def max_fontsize(self, value):
-        if value != self._max_fontsize:
-            self._max_fontsize = value
-            self.stale = True
-
-    @property
-    def min_fontsize(self):
-        return self._min_fontsize
-
-    @min_fontsize.setter
-    def min_fontsize(self, value):
-        if value != self._min_fontsize:
-            self._min_fontsize = value
-            self.stale = True
-
-    @property
-    def show_rect(self):
-        return self._show_rect
-
-    @show_rect.setter
-    def show_rect(self, value):
-        if value != self._show_rect:
-            self._show_rect = value
-            self.stale = True
 
     def _get_wrapped_fontsize(self, txt, height, width, n, linespacing, dpi, fontprops):
         words = self._split_words(txt)

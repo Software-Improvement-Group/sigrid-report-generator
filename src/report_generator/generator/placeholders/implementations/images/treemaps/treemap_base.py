@@ -271,7 +271,6 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
                 fill="system_names",
                 levels=["root_names", "system_names"],
             ),
-            layout=tr.TreemapLayout(top=True),
             style=cls._portfolio_treemap_style(fig_data),
         )
         ax.axis("off")

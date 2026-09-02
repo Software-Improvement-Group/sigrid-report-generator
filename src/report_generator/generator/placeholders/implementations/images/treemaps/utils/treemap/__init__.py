@@ -1,3 +1,3 @@
-from ._treemap import PlotColumns, TreemapLayout, TreemapStyle, treemap
+from ._treemap import PlotColumns, TreemapStyle, treemap
 
-__all__ = ["PlotColumns", "TreemapLayout", "TreemapStyle", "treemap"]
+__all__ = ["PlotColumns", "TreemapStyle", "treemap"]
