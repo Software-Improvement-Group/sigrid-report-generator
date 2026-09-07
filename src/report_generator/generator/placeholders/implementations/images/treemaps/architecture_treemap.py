@@ -12,11 +12,16 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import logging
+
 from report_generator.generator.domain import (
     architecture_portfolio_data,
 )
 from report_generator.generator.placeholders import rendering
 from report_generator.generator.placeholders.formatting import formatters
+from report_generator.generator.placeholders.implementations.base import (
+    class_name_to_placeholder_key,
+)
 from report_generator.generator.placeholders.implementations.images.treemaps.treemap_base import (
     EndDatePortfolioTreemapPlaceholder,
     MultiParameterList,
@@ -34,6 +39,7 @@ class ArchitecturePortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder
 
     @classmethod
     def value(cls, parameter):
+        logging.debug("Resolving %s", class_name_to_placeholder_key(cls.__name__))
         return cls.create_end_date_portfolio_treemap(
             grouping=cls._dimension_from_parameter(parameter),
             rating_func=cls.safe_rating_func(

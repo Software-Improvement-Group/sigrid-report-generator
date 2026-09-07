@@ -12,10 +12,15 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import logging
+
 from report_generator.generator.domain import (
     osh_portfolio_data,
 )
 from report_generator.generator.placeholders.formatting import formatters
+from report_generator.generator.placeholders.implementations.base import (
+    class_name_to_placeholder_key,
+)
 from report_generator.generator.placeholders.implementations.images.treemaps.treemap_base import (
     EndDatePortfolioTreemapPlaceholder,
     MultiParameterList,
@@ -31,6 +36,8 @@ class OSHRatingsPortfolioTreemapPlaceholder(EndDatePortfolioTreemapPlaceholder):
 
     @classmethod
     def value(cls, parameter):
+        logging.debug("Resolving %s", class_name_to_placeholder_key(cls.__name__))
+
         def rating_function(system_name):
             system = osh_portfolio_data.find_system(system_name)
             props = system.get("sbom", {}).get("metadata", {}).get("properties", [])
