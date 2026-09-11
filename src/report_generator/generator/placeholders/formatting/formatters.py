@@ -36,6 +36,10 @@ def use_sig_sterren(enabled: bool = True) -> None:
     _USE_SIG_STERREN = enabled
 
 
+def get_star() -> str:
+    return "H" if _USE_SIG_STERREN else "★"
+
+
 def calculate_stars(maintainability_rating: float) -> str:
     sig_sterren_ratings = ("HIIII", "HHIII", "HHHII", "HHHHI", "HHHHH")
     star_ratings = ("★☆☆☆☆", "★★☆☆☆", "★★★☆☆", "★★★★☆", "★★★★★")
@@ -46,12 +50,6 @@ def calculate_stars(maintainability_rating: float) -> str:
         return ""
     star_rating = calculate_star_rating_integer(maintainability_rating)
     return ratings[star_rating - 1]
-
-
-def print_star() -> str:
-    if _USE_SIG_STERREN:
-        return "H"
-    return "★"
 
 
 def maintainability_round(rating) -> str:
@@ -168,11 +166,12 @@ def format_metric_change_sentence(label: str, delta: float) -> str:
         signed_value = "+0.00"
     else:
         signed_value = f"+{delta:.2f}" if delta >= 0 else f"-{abs(delta):.2f}"
+    star = get_star()
     if sentiment == Sentiment.POSITIVE:
-        return f"{label} has increased in score by {signed_value}★ on average across the portfolio."
+        return f"{label} has increased in score by {signed_value}{star} on average across the portfolio."
     if sentiment == Sentiment.NEGATIVE:
-        return f"{label} has decreased in score by {signed_value}★ on average across the portfolio."
-    return f"{label} has remained stable in score ({signed_value}★) on average across the portfolio."
+        return f"{label} has decreased in score by {signed_value}{star} on average across the portfolio."
+    return f"{label} has remained stable in score ({signed_value}{star}) on average across the portfolio."
 
 
 def format_market_average(score: float) -> str:

@@ -24,11 +24,14 @@ class TestFormatter:
         assert formatters.calculate_stars(-3) == ""
 
         formatters.use_sig_sterren()
-        assert formatters.calculate_stars(1.5) == "HHIII"
-        assert formatters.calculate_stars(1.499999) == "HIIII"
-        assert formatters.calculate_stars(4.5) == "HHHHH"
-        assert formatters.calculate_stars(7.5) == "HHHHH"
-        assert formatters.calculate_stars(-3) == ""
+        try:
+            assert formatters.calculate_stars(1.5) == "HHIII"
+            assert formatters.calculate_stars(1.499999) == "HIIII"
+            assert formatters.calculate_stars(4.5) == "HHHHH"
+            assert formatters.calculate_stars(7.5) == "HHHHH"
+            assert formatters.calculate_stars(-3) == ""
+        finally:
+            formatters.use_sig_sterren(False)
 
     def test_star_rating_round(self):
         assert formatters.star_rating_round(1.50000) == "1.5"

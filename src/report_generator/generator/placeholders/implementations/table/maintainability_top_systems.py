@@ -15,7 +15,7 @@
 from report_generator.generator.domain import maintainability_portfolio_data
 from report_generator.generator.placeholders.formatting.formatters import (
     build_sigrid_link,
-    print_star,
+    get_star,
     star_rating_round,
 )
 from report_generator.generator.placeholders.implementations.table.base import (
@@ -47,7 +47,7 @@ class MaintainabilityTopSystemsTable(TablePlaceholder):
         system_name = entry["systemName"]
         return [
             entry["displayName"],
-            f"{star_rating_round(entry['rating'])}{print_star()}",
+            f"{star_rating_round(entry['rating'])}{get_star()}",
             entry["volume_py"],
             Hyperlink(
                 "link",
