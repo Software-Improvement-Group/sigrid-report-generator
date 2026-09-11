@@ -19,6 +19,7 @@ from report_generator.generator.domain.portfolio.maintainability_portfolio.stati
     maintainability_portfolio_stats,
 )
 from report_generator.generator.placeholders.formatting.formatters import (
+    format_metric_change_sentence,
     star_rating_round,
 )
 from report_generator.generator.utils.constants import MaintMetric
@@ -26,6 +27,7 @@ from report_generator.generator.utils.constants import MaintMetric
 from .base import (
     delta_text_placeholder,
     market_average_text_placeholder,
+    parameterized_delta_text_placeholder,
     parameterized_text_placeholder,
     text_placeholder,
 )
@@ -320,6 +322,16 @@ def portfolio_maint_avg_rating_param(metric: MaintMetric):
     return star_rating_round(rating)
 
 
+@parameterized_delta_text_placeholder(
+    custom_key="PORTFOLIO_MAINT_AVG_DELTA_{parameter}", parameters=list(MaintMetric)
+)
+def portfolio_maint_avg_delta_param(metric: MaintMetric):
+    """Signed change in the volume-weighted average rating for this metric across all systems
+    in the portfolio over the period (e.g. +0.01, -0.01, =), colored green up / red down / blue
+    unchanged."""
+    return maintainability_portfolio_stats.metric_average_delta(metric.to_json_name())
+
+
 @parameterized_text_placeholder(
     custom_key="PORTFOLIO_MAINT_ABOVE_MARKET_{parameter}", parameters=list(MaintMetric)
 )
@@ -424,6 +436,19 @@ def portfolio_maint_biggest_changes_param(metric: MaintMetric):
         if sentence
     ]
     return " ".join(sentences)
+
+
+@parameterized_text_placeholder(
+    custom_key="PORTFOLIO_MAINT_CHANGE_SUMMARY_{parameter}",
+    parameters=list(MaintMetric),
+)
+def portfolio_maint_change_summary_param(metric: MaintMetric):
+    """Sentence describing the volume-weighted average maintainability rating change for this
+    metric across the portfolio (e.g. "Duplication has increased in score by +0.30★ on average
+    across the portfolio.")."""
+    delta = maintainability_portfolio_stats.metric_average_delta(metric.to_json_name())
+    metric_label = metric.value.replace("_", " ").title()
+    return format_metric_change_sentence(metric_label, delta)
 
 
 @text_placeholder()

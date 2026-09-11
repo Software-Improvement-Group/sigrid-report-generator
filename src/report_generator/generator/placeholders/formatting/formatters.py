@@ -159,6 +159,22 @@ def format_signed_delta(delta: float) -> str:
     return "="
 
 
+def format_metric_change_sentence(label: str, delta: float) -> str:
+    """Full sentence describing a volume-weighted average rating change for a metric,
+    e.g. "Duplication has increased in score by +0.30★ on average across the portfolio."
+    """
+    sentiment = delta_sentiment(delta)
+    if sentiment == Sentiment.NEUTRAL:
+        signed_value = "+0.00"
+    else:
+        signed_value = f"+{delta:.2f}" if delta >= 0 else f"-{abs(delta):.2f}"
+    if sentiment == Sentiment.POSITIVE:
+        return f"{label} has increased in score by {signed_value}★ on average across the portfolio."
+    if sentiment == Sentiment.NEGATIVE:
+        return f"{label} has decreased in score by {signed_value}★ on average across the portfolio."
+    return f"{label} has remained stable in score ({signed_value}★) on average across the portfolio."
+
+
 def format_market_average(score: float) -> str:
     """Return whether a star rating is below, at, or above market average as
     'below' (< 2.5), 'average' (2.5 - 3.4) or 'above' (>= 3.5)."""

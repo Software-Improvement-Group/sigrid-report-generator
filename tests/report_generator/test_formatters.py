@@ -63,6 +63,28 @@ class TestFormatter:
         assert formatters.delta_sentiment(0.004) == Sentiment.NEUTRAL
         assert formatters.delta_sentiment(-0.004) == Sentiment.NEUTRAL
 
+    def test_format_metric_change_sentence(self):
+        assert (
+            formatters.format_metric_change_sentence("Duplication", 0.3)
+            == "Duplication has increased in score by +0.30★ on average across the portfolio."
+        )
+        assert (
+            formatters.format_metric_change_sentence("Duplication", -0.3)
+            == "Duplication has decreased in score by -0.30★ on average across the portfolio."
+        )
+        assert (
+            formatters.format_metric_change_sentence("Duplication", 0.0)
+            == "Duplication has remained stable in score (+0.00★) on average across the portfolio."
+        )
+        assert (
+            formatters.format_metric_change_sentence("Duplication", 0.004)
+            == "Duplication has remained stable in score (+0.00★) on average across the portfolio."
+        )
+        assert (
+            formatters.format_metric_change_sentence("Unit Size", -1.234)
+            == "Unit Size has decreased in score by -1.23★ on average across the portfolio."
+        )
+
     def test_market_average_sentiment(self):
         assert formatters.market_average_sentiment(2.4) == Sentiment.NEGATIVE
         assert formatters.market_average_sentiment(3.0) == Sentiment.NEUTRAL

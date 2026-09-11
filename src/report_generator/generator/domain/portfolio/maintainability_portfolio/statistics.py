@@ -61,6 +61,10 @@ _INITIAL_STATISTICS = {
     "metric-changes": {
         metric.to_json_name(): _empty_change_bucket() for metric in MaintMetric
     },
+    "metric-averages": {
+        metric.to_json_name(): {"start-average": None, "end-average": None}
+        for metric in MaintMetric
+    },
 }
 
 
@@ -78,10 +82,10 @@ class SystemPeriod:
 
 @dataclass
 class AverageAccumulators:
-    """Running lists used to compute volume-weighted maintainability averages."""
+    """Running lists used to compute a volume-weighted average rating (for a metric)."""
 
-    start_maintainability_ratings: list = field(default_factory=list)
-    end_maintainability_ratings: list = field(default_factory=list)
+    start_ratings: list = field(default_factory=list)
+    end_ratings: list = field(default_factory=list)
     start_volumes: list = field(default_factory=list)
     end_volumes: list = field(default_factory=list)
 
@@ -125,14 +129,30 @@ def _update_best_changes(period, best_inc, best_dec):
 
 def _collect_averages_data(period, accumulators):
     if period.start_date < period.period_start:
-        accumulators.start_maintainability_ratings.append(
-            period.start_snapshot["maintainability"]
-        )
+        accumulators.start_ratings.append(period.start_snapshot["maintainability"])
         accumulators.start_volumes.append(period.start_snapshot["volumeInPersonMonths"])
-    accumulators.end_maintainability_ratings.append(
-        period.end_snapshot["maintainability"]
-    )
+    accumulators.end_ratings.append(period.end_snapshot["maintainability"])
     accumulators.end_volumes.append(period.end_snapshot["volumeInPersonMonths"])
+
+
+def _collect_metric_averages_data(period, metric_accumulators):
+    """Track per-submetric volume-weighted average inputs across the portfolio."""
+    for metric in MaintMetric:
+        metric_key = metric.to_json_name()
+        end_value = period.end_snapshot.get(metric_key)
+        if end_value is None:
+            continue
+
+        accumulators = metric_accumulators[metric_key]
+        accumulators.end_ratings.append(end_value)
+        accumulators.end_volumes.append(period.end_snapshot["volumeInPersonMonths"])
+
+        start_value = period.start_snapshot.get(metric_key)
+        if start_value is not None and period.start_date < period.period_start:
+            accumulators.start_ratings.append(start_value)
+            accumulators.start_volumes.append(
+                period.start_snapshot["volumeInPersonMonths"]
+            )
 
 
 def _update_volume_change(statistics, period):
@@ -246,10 +266,10 @@ def _update_change_count(statistics, diff):
 
 def _calculate_averages(statistics, accumulators):
     statistics["maintainability"]["start-average"] = _weighted_avg(
-        accumulators.start_maintainability_ratings, accumulators.start_volumes
+        accumulators.start_ratings, accumulators.start_volumes
     )
     statistics["maintainability"]["end-average"] = _weighted_avg(
-        accumulators.end_maintainability_ratings, accumulators.end_volumes
+        accumulators.end_ratings, accumulators.end_volumes
     )
 
 
@@ -260,6 +280,26 @@ def _weighted_avg(values, weights):
         if tw
         else 0.000001
     )
+
+
+def _weighted_avg_or_none(values, weights):
+    """Like `_weighted_avg`, but returns `None` (rather than a near-zero sentinel) when no
+    system contributes volume, so a metric delta can distinguish "no data" from "no change"."""
+    total_weight = sum(weights)
+    if not total_weight:
+        return None
+    return sum(v * w for v, w in zip(values, weights, strict=True)) / total_weight
+
+
+def _calculate_metric_averages(statistics, metric_accumulators):
+    for metric_key, accumulators in metric_accumulators.items():
+        averages = statistics["metric-averages"][metric_key]
+        averages["start-average"] = _weighted_avg_or_none(
+            accumulators.start_ratings, accumulators.start_volumes
+        )
+        averages["end-average"] = _weighted_avg_or_none(
+            accumulators.end_ratings, accumulators.end_volumes
+        )
 
 
 class MaintainabilityPortfolioStats:
@@ -288,6 +328,9 @@ class MaintainabilityPortfolioStats:
         best_inc: tuple[str | None, float] = (None, float("-inf"))
         best_dec: tuple[str | None, float] = (None, float("inf"))
         accumulators = AverageAccumulators()
+        metric_accumulators = {
+            metric.to_json_name(): AverageAccumulators() for metric in MaintMetric
+        }
 
         for system_name in maintainability_portfolio_data.system_names:
             start_snapshot = maintainability_portfolio_data.start_snapshot(system_name)
@@ -308,9 +351,11 @@ class MaintainabilityPortfolioStats:
             _update_test_code_ratio_change(statistics, period)
             _update_metric_changes(statistics, period)
             _collect_averages_data(period, accumulators)
+            _collect_metric_averages_data(period, metric_accumulators)
 
         _finalize_change_statistics(statistics, best_inc, best_dec)
         _calculate_averages(statistics, accumulators)
+        _calculate_metric_averages(statistics, metric_accumulators)
 
         return statistics
 
@@ -323,6 +368,17 @@ class MaintainabilityPortfolioStats:
         """End-of-period minus start-of-period volume-weighted maintainability average."""
         maint = self.statistics["maintainability"]
         return maint["end-average"] - maint["start-average"]
+
+    def metric_average_delta(self, metric_key: str) -> float:
+        """End-of-period minus start-of-period volume-weighted average for a submetric.
+
+        Returns 0.0 when no system contributes data at either period boundary.
+        """
+        averages = self.statistics["metric-averages"][metric_key]
+        start_average, end_average = averages["start-average"], averages["end-average"]
+        if start_average is None or end_average is None:
+            return 0.0
+        return end_average - start_average
 
     @cached_property
     def test_code_ratio_distribution_percentages(self):

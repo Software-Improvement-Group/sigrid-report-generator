@@ -179,6 +179,157 @@ class TestMaintainabilityStatistics:
         assert "start-average" in stats["maintainability"]
         assert "end-average" in stats["maintainability"]
 
+    def test_statistics_populates_metric_averages_per_submetric(self, mocker):
+        """The `metric-averages` bucket carries volume-weighted start/end averages for each
+        submetric, computed from that submetric's own values rather than the overall rating."""
+
+        stats_obj = MaintainabilityPortfolioStats()
+
+        mock_system_names = ["system1", "system2"]
+
+        mocker.patch.object(
+            type(maintainability_portfolio_data),
+            "period",
+            new_callable=mocker.PropertyMock,
+            return_value=["2024-01-01", "2024-12-31"],
+        )
+
+        def mock_start_snapshot(system_name):
+            snapshots = {
+                "system1": {
+                    "maintainability": 3.0,
+                    "unitSize": 2.0,
+                    "maintainabilityDate": "2023-06-01",
+                    "volumeInPersonMonths": 100,
+                },
+                "system2": {
+                    "maintainability": 3.0,
+                    "unitSize": 4.0,
+                    "maintainabilityDate": "2023-06-01",
+                    "volumeInPersonMonths": 100,
+                },
+            }
+            return snapshots[system_name]
+
+        def mock_end_snapshot(system_name):
+            snapshots = {
+                "system1": {
+                    "maintainability": 3.5,
+                    "unitSize": 3.0,
+                    "maintainabilityDate": "2024-12-31",
+                    "volumeInPersonMonths": 100,
+                },
+                "system2": {
+                    "maintainability": 3.5,
+                    "unitSize": 5.0,
+                    "maintainabilityDate": "2024-12-31",
+                    "volumeInPersonMonths": 100,
+                },
+            }
+            return snapshots[system_name]
+
+        mocker.patch.object(
+            type(maintainability_portfolio_data),
+            "system_names",
+            new_callable=mocker.PropertyMock,
+            return_value=mock_system_names,
+        )
+        mocker.patch.object(
+            type(maintainability_portfolio_data),
+            "metadata",
+            new_callable=mocker.PropertyMock,
+            return_value=[
+                {"systemName": name, "active": True, "isDevelopmentOnly": False}
+                for name in mock_system_names
+            ],
+        )
+        mocker.patch(
+            "report_generator.generator.domain.portfolio.shared.utils.get_system_metadata",
+            side_effect=lambda portfolio_metadata, system_name: {
+                "active": True,
+                "isDevelopmentOnly": False,
+            },
+        )
+        mocker.patch.object(
+            maintainability_portfolio_data,
+            "start_snapshot",
+            side_effect=mock_start_snapshot,
+        )
+        mocker.patch.object(
+            maintainability_portfolio_data,
+            "end_snapshot",
+            side_effect=mock_end_snapshot,
+        )
+
+        stats = stats_obj.statistics
+        unit_size_averages = stats["metric-averages"]["unitSize"]
+
+        # Equal volumes on both systems, so the metric average is a plain mean.
+        assert unit_size_averages["start-average"] == pytest.approx(3.0)
+        assert unit_size_averages["end-average"] == pytest.approx(4.0)
+        assert stats_obj.metric_average_delta("unitSize") == pytest.approx(1.0)
+
+    def test_metric_average_delta_via_full_pipeline_is_zero_without_submetric_data(
+        self, mocker
+    ):
+        """Submetrics absent from every snapshot (e.g. not measured for this portfolio) must
+        yield a delta of 0.0 rather than a spurious value derived from the near-zero sentinel
+        used elsewhere for empty weighted averages."""
+
+        stats_obj = MaintainabilityPortfolioStats()
+
+        mocker.patch.object(
+            type(maintainability_portfolio_data),
+            "period",
+            new_callable=mocker.PropertyMock,
+            return_value=["2024-01-01", "2024-12-31"],
+        )
+        mocker.patch.object(
+            type(maintainability_portfolio_data),
+            "system_names",
+            new_callable=mocker.PropertyMock,
+            return_value=["system1"],
+        )
+        mocker.patch.object(
+            type(maintainability_portfolio_data),
+            "metadata",
+            new_callable=mocker.PropertyMock,
+            return_value=[
+                {"systemName": "system1", "active": True, "isDevelopmentOnly": False}
+            ],
+        )
+        mocker.patch(
+            "report_generator.generator.domain.portfolio.shared.utils.get_system_metadata",
+            side_effect=lambda portfolio_metadata, system_name: {
+                "active": True,
+                "isDevelopmentOnly": False,
+            },
+        )
+        mocker.patch.object(
+            maintainability_portfolio_data,
+            "start_snapshot",
+            return_value={
+                "maintainability": 3.0,
+                "maintainabilityDate": "2024-02-01",
+                "volumeInPersonMonths": 100,
+            },
+        )
+        mocker.patch.object(
+            maintainability_portfolio_data,
+            "end_snapshot",
+            return_value={
+                "maintainability": 3.5,
+                "maintainabilityDate": "2024-12-31",
+                "volumeInPersonMonths": 100,
+            },
+        )
+
+        stats = stats_obj.statistics
+
+        assert stats["metric-averages"]["duplication"]["start-average"] is None
+        assert stats["metric-averages"]["duplication"]["end-average"] is None
+        assert stats_obj.metric_average_delta("duplication") == 0.0
+
     def test_statistics_all_stable(self, mocker):
         """Test statistics when all systems remain stable."""
         stats_obj = MaintainabilityPortfolioStats()
@@ -1681,6 +1832,49 @@ class TestMaintainabilityPortfolioHelpers:
         }
 
         assert stats_obj.average_delta == pytest.approx(-0.3)
+
+    def test_metric_average_delta_returns_end_minus_start(self):
+        """metric_average_delta is the end-of-period minus start-of-period weighted average
+        for the given submetric."""
+        stats_obj = MaintainabilityPortfolioStats()
+        stats_obj.__dict__["statistics"] = {
+            "metric-averages": {
+                "unitComplexity": {"start-average": 3.0, "end-average": 3.4}
+            }
+        }
+
+        assert stats_obj.metric_average_delta("unitComplexity") == pytest.approx(0.4)
+
+    def test_metric_average_delta_negative_when_declined(self):
+        stats_obj = MaintainabilityPortfolioStats()
+        stats_obj.__dict__["statistics"] = {
+            "metric-averages": {"unitSize": {"start-average": 4.0, "end-average": 3.7}}
+        }
+
+        assert stats_obj.metric_average_delta("unitSize") == pytest.approx(-0.3)
+
+    def test_metric_average_delta_is_zero_when_no_data_at_either_boundary(self):
+        """A submetric with no contributing systems at start or end must not fall back to the
+        near-zero sentinel used by `_weighted_avg`, which would otherwise produce a spurious
+        large delta."""
+        stats_obj = MaintainabilityPortfolioStats()
+        stats_obj.__dict__["statistics"] = {
+            "metric-averages": {
+                "duplication": {"start-average": None, "end-average": None}
+            }
+        }
+
+        assert stats_obj.metric_average_delta("duplication") == 0.0
+
+    def test_metric_average_delta_is_zero_when_no_data_at_start_only(self):
+        stats_obj = MaintainabilityPortfolioStats()
+        stats_obj.__dict__["statistics"] = {
+            "metric-averages": {
+                "duplication": {"start-average": None, "end-average": 4.2}
+            }
+        }
+
+        assert stats_obj.metric_average_delta("duplication") == 0.0
 
     def test_weighted_avg_calculates_correctly(self):
         """Test that _weighted_avg calculates weighted average correctly."""

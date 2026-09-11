@@ -227,3 +227,46 @@ def parameterized_text_placeholder(
         return ParameterizedTextPlaceholder
 
     return decorator
+
+
+def parameterized_delta_text_placeholder(
+    custom_key: str, parameters: ParameterList | MultiParameterList
+) -> Callable[[Callable[..., float]], type[ParameterizedPlaceholder]]:
+    """Turn a function returning a numeric delta into a parameterized text placeholder that
+    expands per parameter, rendering the signed delta (e.g. +0.01, -0.01, =) colored green for
+    an increase, red for a decrease and blue when unchanged. Coloring is applied in PowerPoint;
+    Word renders the value without color."""
+    normalized_parameters = _as_multi_parameter_list(parameters)
+
+    def decorator(delta_func: Callable[..., float]) -> type[ParameterizedPlaceholder]:
+        class ParameterizedDeltaTextPlaceholder(
+            ParameterizedPlaceholder, _AbstractTextPlaceholder
+        ):
+            __doc__ = delta_func.__doc__ if delta_func.__doc__ else None
+            key = custom_key
+            allowed_parameters = normalized_parameters
+
+            @classmethod
+            def value(cls, *args) -> float:
+                return delta_func(*args)
+
+            @classmethod
+            def resolve_pptx(
+                cls, presentation: Presentation, key: str, value_cb: Callable
+            ) -> None:
+                _render_colored_delta(presentation, key, value_cb)
+
+            @classmethod
+            def resolve_docx(
+                cls, document: Document, key: str, value_cb: Callable
+            ) -> None:
+                _AbstractTextPlaceholder._resolve_with_adapter(
+                    _AbstractTextPlaceholder._DOCX_ADAPTER,
+                    document,
+                    key,
+                    lambda: formatters.format_signed_delta(value_cb()),
+                )
+
+        return ParameterizedDeltaTextPlaceholder
+
+    return decorator
