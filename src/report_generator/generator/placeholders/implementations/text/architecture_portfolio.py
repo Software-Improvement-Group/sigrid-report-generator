@@ -208,7 +208,7 @@ def portfolio_arch_decreased_param(metric: ArchMetric):
 def portfolio_arch_biggest_changes_param(metric: ArchMetric):
     """Descriptive summary of the biggest changes in the portfolio for this metric."""
     metric_key = metric.to_json_name()
-    metric_label = metric.value.replace("_", " ").title()
+    metric_label = metric.to_label()
     change = _MetricChange(
         biggest_increase=architecture_portfolio_data.biggest_increase_for_metric(
             metric_key

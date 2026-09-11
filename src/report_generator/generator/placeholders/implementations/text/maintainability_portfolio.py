@@ -429,7 +429,7 @@ def portfolio_maint_biggest_changes_param(metric: MaintMetric):
     bucket = maintainability_portfolio_stats.metric_change_statistics(
         metric.to_json_name()
     )
-    metric_label = metric.value.replace("_", " ").title()
+    metric_label = metric.to_label()
     sentences = [
         sentence
         for sentence in (
@@ -454,7 +454,7 @@ def portfolio_maint_change_summary_param(metric: MaintMetric):
     saw in this metric (e.g. "Duplication has increased in score by +0.30★ on average across the
     portfolio.")."""
     delta = maintainability_portfolio_stats.metric_average_delta(metric.to_json_name())
-    metric_label = metric.value.replace("_", " ").title()
+    metric_label = metric.to_label()
     return format_metric_change_sentence(metric_label, delta)
 
 
