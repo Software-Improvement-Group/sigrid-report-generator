@@ -25,10 +25,13 @@ from report_generator.generator.placeholders.formatting.formatters import (
 from report_generator.generator.utils.constants import ArchMetric
 
 from .base import (
-    delta_text_placeholder,
-    market_average_text_placeholder,
     parameterized_text_placeholder,
     text_placeholder,
+)
+from .sentiment import (
+    MARKET_AVERAGE,
+    SIGNED_DELTA,
+    sentiment_text_placeholder,
 )
 
 
@@ -59,14 +62,14 @@ def portfolio_arch_avg_rating():
     return star_rating_round(architecture_portfolio_data.weighted_average_rating)
 
 
-@market_average_text_placeholder()
+@sentiment_text_placeholder(MARKET_AVERAGE)
 def portfolio_arch_avg_market_average():
     """Colored indication of whether the portfolio's volume-weighted average architecture quality
     rating is below (red), at (blue) or above (green) market average."""
     return architecture_portfolio_data.weighted_average_rating
 
 
-@delta_text_placeholder()
+@sentiment_text_placeholder(SIGNED_DELTA)
 def portfolio_arch_average_delta():
     """Signed change in the portfolio's volume-weighted architecture quality average over the period (e.g. +0.01, -0.01, =), colored green up / red down / blue unchanged."""
     return architecture_portfolio_data.average_delta

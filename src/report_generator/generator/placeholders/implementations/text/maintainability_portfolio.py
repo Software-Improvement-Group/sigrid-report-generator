@@ -25,11 +25,14 @@ from report_generator.generator.placeholders.formatting.formatters import (
 from report_generator.generator.utils.constants import MaintMetric
 
 from .base import (
-    delta_text_placeholder,
-    market_average_text_placeholder,
-    parameterized_delta_text_placeholder,
     parameterized_text_placeholder,
     text_placeholder,
+)
+from .sentiment import (
+    MARKET_AVERAGE,
+    SIGNED_DELTA,
+    parameterized_sentiment_text_placeholder,
+    sentiment_text_placeholder,
 )
 
 
@@ -208,7 +211,7 @@ def portfolio_period_maint_change_short_summary():
     return f"The portfolio's maintainability has {'increased' if start_avg < end_avg else 'decreased'} (with {diff} to {end_avg}) during the measured period"
 
 
-@delta_text_placeholder()
+@sentiment_text_placeholder(SIGNED_DELTA)
 def portfolio_maint_average_delta():
     """Signed change in the portfolio's weighted maintainability average over the period (e.g. +0.01, -0.01, =), colored green up / red down / blue unchanged."""
     return maintainability_portfolio_stats.average_delta
@@ -241,7 +244,7 @@ def portfolio_maint_market_average():
     return distribution["market_average"]
 
 
-@market_average_text_placeholder()
+@sentiment_text_placeholder(MARKET_AVERAGE)
 def portfolio_maint_avg_market_average():
     """Colored indication of whether the portfolio's volume-weighted average maintainability
     rating is below (red), at (blue) or above (green) market average."""
@@ -322,8 +325,10 @@ def portfolio_maint_avg_rating_param(metric: MaintMetric):
     return star_rating_round(rating)
 
 
-@parameterized_delta_text_placeholder(
-    custom_key="PORTFOLIO_MAINT_AVG_DELTA_{parameter}", parameters=list(MaintMetric)
+@parameterized_sentiment_text_placeholder(
+    SIGNED_DELTA,
+    custom_key="PORTFOLIO_MAINT_AVG_DELTA_{parameter}",
+    parameters=list(MaintMetric),
 )
 def portfolio_maint_avg_delta_param(metric: MaintMetric):
     """Signed change in the volume-weighted average rating for this metric across all systems

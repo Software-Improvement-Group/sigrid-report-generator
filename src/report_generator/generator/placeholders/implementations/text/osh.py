@@ -24,9 +24,12 @@ from report_generator.generator.utils.constants import OSHMetric
 
 from ...formatting import smart_remarks
 from .base import (
-    market_average_text_placeholder,
     parameterized_text_placeholder,
     text_placeholder,
+)
+from .sentiment import (
+    MARKET_AVERAGE,
+    sentiment_text_placeholder,
 )
 
 
@@ -141,7 +144,7 @@ def osh_relative():
     return smart_remarks.osh_relative_rating(osh_data.system_rating)
 
 
-@market_average_text_placeholder()
+@sentiment_text_placeholder(MARKET_AVERAGE)
 def osh_market_average():
     """Colored indication of whether the system's Open-Source Health Rating is below (red), at
     (blue) or above (green) market average."""
