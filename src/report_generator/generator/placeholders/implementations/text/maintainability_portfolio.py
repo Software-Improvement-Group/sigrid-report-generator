@@ -206,9 +206,12 @@ def portfolio_period_maint_change_short_summary():
     start_avg = int(stats["maintainability"]["start-average"] * 10) / 10
     end_avg = int(stats["maintainability"]["end-average"] * 10) / 10
     diff = int((end_avg - start_avg) * 10) / 10
+    end_display = star_rating_round(stats["maintainability"]["end-average"])
     if abs(diff) < 0.01:
-        return f"The portfolio remained stable ({end_avg}) during the measured period"
-    return f"The portfolio's maintainability has {'increased' if start_avg < end_avg else 'decreased'} (with {diff} to {end_avg}) during the measured period"
+        return (
+            f"The portfolio remained stable ({end_display}) during the measured period"
+        )
+    return f"The portfolio's maintainability has {'increased' if start_avg < end_avg else 'decreased'} (with {diff} to {end_display}) during the measured period"
 
 
 @sentiment_text_placeholder(SIGNED_DELTA)

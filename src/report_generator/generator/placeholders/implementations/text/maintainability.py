@@ -312,7 +312,7 @@ def tech_lines_of_code(idx: int):
 def tech_maintainability_rating(idx: int):
     """Maintainability rating of the technology in the system (if present). One decimal."""
     rating = maintainability_data.sorted_tech_get_key(idx - 1, "maintainability")
-    return round(rating, 1) if rating else ""
+    return star_rating_round(rating) if rating else ""
 
 
 @parameterized_text_placeholder(
