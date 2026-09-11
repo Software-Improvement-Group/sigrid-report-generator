@@ -160,7 +160,7 @@ def format_signed_delta(delta: float) -> str:
 
 
 def format_metric_change_sentence(label: str, delta: float) -> str:
-    """Full sentence describing a volume-weighted average rating change for a metric,
+    """Full sentence describing an average rating change for a metric,
     e.g. "Duplication has increased in score by +0.30★ on average across the portfolio."
     """
     sentiment = delta_sentiment(delta)

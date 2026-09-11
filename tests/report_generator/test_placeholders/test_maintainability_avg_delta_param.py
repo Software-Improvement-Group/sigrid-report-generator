@@ -27,17 +27,12 @@ from report_generator.generator.utils.constants import MaintMetric
 
 
 @pytest.fixture
-def prime_metric_averages():
+def prime_metric_delta():
     """Prime the portfolio stats singleton's caches and clean them up afterwards."""
 
-    def _prime(metric: MaintMetric, start_average, end_average):
+    def _prime(metric: MaintMetric, delta):
         maintainability_portfolio_stats.__dict__["statistics"] = {
-            "metric-averages": {
-                metric.to_json_name(): {
-                    "start-average": start_average,
-                    "end-average": end_average,
-                }
-            }
+            "metric-deltas": {metric.to_json_name(): delta}
         }
 
     yield _prime
@@ -72,8 +67,8 @@ def test_key_is_derived_from_custom_key_template():
     )
 
 
-def test_increase_renders_signed_value_in_green(prime_metric_averages):
-    prime_metric_averages(MaintMetric.UNIT_COMPLEXITY, 3.2, 3.5)
+def test_increase_renders_signed_value_in_green(prime_metric_delta):
+    prime_metric_delta(MaintMetric.UNIT_COMPLEXITY, 0.3)
     key = portfolio_maint_avg_delta_param.key.format(
         parameter=MaintMetric.UNIT_COMPLEXITY
     )
@@ -86,8 +81,8 @@ def test_increase_renders_signed_value_in_green(prime_metric_averages):
     assert run.font.color.rgb == render.FIVE_STAR_COLOR
 
 
-def test_decrease_renders_signed_value_in_red(prime_metric_averages):
-    prime_metric_averages(MaintMetric.UNIT_SIZE, 4.0, 3.99)
+def test_decrease_renders_signed_value_in_red(prime_metric_delta):
+    prime_metric_delta(MaintMetric.UNIT_SIZE, -0.01)
     key = portfolio_maint_avg_delta_param.key.format(parameter=MaintMetric.UNIT_SIZE)
     presentation = _presentation_with_text(key)
 
@@ -98,8 +93,8 @@ def test_decrease_renders_signed_value_in_red(prime_metric_averages):
     assert run.font.color.rgb == render.ONE_STAR_COLOR
 
 
-def test_unchanged_renders_equals_in_blue(prime_metric_averages):
-    prime_metric_averages(MaintMetric.DUPLICATION, 3.5, 3.5)
+def test_unchanged_renders_equals_in_blue(prime_metric_delta):
+    prime_metric_delta(MaintMetric.DUPLICATION, 0.0)
     key = portfolio_maint_avg_delta_param.key.format(parameter=MaintMetric.DUPLICATION)
     presentation = _presentation_with_text(key)
 
@@ -110,10 +105,10 @@ def test_unchanged_renders_equals_in_blue(prime_metric_averages):
     assert run.font.color.rgb == render.SIG_BLUE_COLOR
 
 
-def test_no_data_at_either_boundary_renders_equals_in_blue(prime_metric_averages):
-    """A submetric absent from every snapshot must render as unchanged rather than a spurious
-    large delta derived from the near-zero sentinel used elsewhere for empty weighted averages."""
-    prime_metric_averages(MaintMetric.MODULE_COUPLING, None, None)
+def test_empty_cohort_renders_equals_in_blue(prime_metric_delta):
+    """A submetric no system can evidence a change for must render as unchanged rather than a
+    spurious large delta derived from the near-zero sentinel used for empty weighted averages."""
+    prime_metric_delta(MaintMetric.MODULE_COUPLING, None)
     key = portfolio_maint_avg_delta_param.key.format(
         parameter=MaintMetric.MODULE_COUPLING
     )

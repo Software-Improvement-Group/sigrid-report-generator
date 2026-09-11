@@ -331,9 +331,8 @@ def portfolio_maint_avg_rating_param(metric: MaintMetric):
     parameters=list(MaintMetric),
 )
 def portfolio_maint_avg_delta_param(metric: MaintMetric):
-    """Signed change in the volume-weighted average rating for this metric across all systems
-    in the portfolio over the period (e.g. +0.01, -0.01, =), colored green up / red down / blue
-    unchanged."""
+    """Volume-weighted average of the rating changes individual systems saw in this metric over
+    the period (e.g. +0.01, -0.01, =), colored green up / red down / blue unchanged."""
     return maintainability_portfolio_stats.metric_average_delta(metric.to_json_name())
 
 
@@ -448,9 +447,9 @@ def portfolio_maint_biggest_changes_param(metric: MaintMetric):
     parameters=list(MaintMetric),
 )
 def portfolio_maint_change_summary_param(metric: MaintMetric):
-    """Sentence describing the volume-weighted average maintainability rating change for this
-    metric across the portfolio (e.g. "Duplication has increased in score by +0.30★ on average
-    across the portfolio.")."""
+    """Sentence describing the volume-weighted average of the rating changes individual systems
+    saw in this metric (e.g. "Duplication has increased in score by +0.30★ on average across the
+    portfolio.")."""
     delta = maintainability_portfolio_stats.metric_average_delta(metric.to_json_name())
     metric_label = metric.value.replace("_", " ").title()
     return format_metric_change_sentence(metric_label, delta)

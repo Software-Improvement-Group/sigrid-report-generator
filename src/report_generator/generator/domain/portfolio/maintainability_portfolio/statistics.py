@@ -61,10 +61,7 @@ _INITIAL_STATISTICS = {
     "metric-changes": {
         metric.to_json_name(): _empty_change_bucket() for metric in MaintMetric
     },
-    "metric-averages": {
-        metric.to_json_name(): {"start-average": None, "end-average": None}
-        for metric in MaintMetric
-    },
+    "metric-deltas": {metric.to_json_name(): None for metric in MaintMetric},
 }
 
 
@@ -88,6 +85,14 @@ class AverageAccumulators:
     end_ratings: list = field(default_factory=list)
     start_volumes: list = field(default_factory=list)
     end_volumes: list = field(default_factory=list)
+
+
+@dataclass
+class DeltaAccumulators:
+    """Running lists used to compute a volume-weighted average rating change (for a metric)."""
+
+    diffs: list = field(default_factory=list)
+    volumes: list = field(default_factory=list)
 
 
 def _categorize_test_code_ratio(ratio):
@@ -135,24 +140,35 @@ def _collect_averages_data(period, accumulators):
     accumulators.end_volumes.append(period.end_snapshot["volumeInPersonMonths"])
 
 
-def _collect_metric_averages_data(period, metric_accumulators):
-    """Track per-submetric volume-weighted average inputs across the portfolio."""
+def _measurable_metric_diffs(period):
+    """Yield `(metric_key, diff)` for every submetric whose change this system can evidence.
+
+    A system contributes only when it has two distinct snapshots and a value for the metric
+    at both, so every statistic derived from this generator covers the same cohort.
+    """
+    if period.start_date == period.end_date:
+        return
     for metric in MaintMetric:
         metric_key = metric.to_json_name()
-        end_value = period.end_snapshot.get(metric_key)
-        if end_value is None:
-            continue
-
-        accumulators = metric_accumulators[metric_key]
-        accumulators.end_ratings.append(end_value)
-        accumulators.end_volumes.append(period.end_snapshot["volumeInPersonMonths"])
-
         start_value = period.start_snapshot.get(metric_key)
-        if start_value is not None and period.start_date < period.period_start:
-            accumulators.start_ratings.append(start_value)
-            accumulators.start_volumes.append(
-                period.start_snapshot["volumeInPersonMonths"]
-            )
+        end_value = period.end_snapshot.get(metric_key)
+        if start_value is None or end_value is None:
+            continue
+        yield metric_key, end_value - start_value
+
+
+def _collect_metric_delta_data(period, metric_accumulators):
+    """Track the inputs for each submetric's volume-weighted average rating change.
+
+    Weighs a system's own change by its end-of-period volume, so the average describes how
+    systems moved rather than how the portfolio total moved. Systems whose rating held steady
+    take part with their near-zero change: the average covers every system that could move,
+    not only those that did.
+    """
+    for metric_key, diff in _measurable_metric_diffs(period):
+        accumulators = metric_accumulators[metric_key]
+        accumulators.diffs.append(diff)
+        accumulators.volumes.append(period.end_snapshot["volumeInPersonMonths"])
 
 
 def _update_volume_change(statistics, period):
@@ -230,15 +246,7 @@ def _update_test_code_ratio_change(statistics, period):
 
 def _update_metric_changes(statistics, period):
     """Track per-submetric rating changes across the portfolio."""
-    if period.start_date == period.end_date:
-        return
-    for metric in MaintMetric:
-        metric_key = metric.to_json_name()
-        start_value = period.start_snapshot.get(metric_key)
-        end_value = period.end_snapshot.get(metric_key)
-        if start_value is None or end_value is None:
-            continue
-        diff = end_value - start_value
+    for metric_key, diff in _measurable_metric_diffs(period):
         bucket = statistics["metric-changes"][metric_key]
         _track_change_direction(bucket, diff)
         _update_biggest_changes(bucket, period.system_name, diff)
@@ -284,21 +292,19 @@ def _weighted_avg(values, weights):
 
 def _weighted_avg_or_none(values, weights):
     """Like `_weighted_avg`, but returns `None` (rather than a near-zero sentinel) when no
-    system contributes volume, so a metric delta can distinguish "no data" from "no change"."""
+    weight is contributed at all, so an empty cohort stays distinguishable from a zero result."""
     total_weight = sum(weights)
     if not total_weight:
         return None
     return sum(v * w for v, w in zip(values, weights, strict=True)) / total_weight
 
 
-def _calculate_metric_averages(statistics, metric_accumulators):
+def _calculate_metric_deltas(statistics, metric_accumulators):
+    """Reduce each submetric's accumulated changes to one average, or `None` when no system in
+    the portfolio could evidence a change for it."""
     for metric_key, accumulators in metric_accumulators.items():
-        averages = statistics["metric-averages"][metric_key]
-        averages["start-average"] = _weighted_avg_or_none(
-            accumulators.start_ratings, accumulators.start_volumes
-        )
-        averages["end-average"] = _weighted_avg_or_none(
-            accumulators.end_ratings, accumulators.end_volumes
+        statistics["metric-deltas"][metric_key] = _weighted_avg_or_none(
+            accumulators.diffs, accumulators.volumes
         )
 
 
@@ -329,7 +335,7 @@ class MaintainabilityPortfolioStats:
         best_dec: tuple[str | None, float] = (None, float("inf"))
         accumulators = AverageAccumulators()
         metric_accumulators = {
-            metric.to_json_name(): AverageAccumulators() for metric in MaintMetric
+            metric.to_json_name(): DeltaAccumulators() for metric in MaintMetric
         }
 
         for system_name in maintainability_portfolio_data.system_names:
@@ -351,11 +357,11 @@ class MaintainabilityPortfolioStats:
             _update_test_code_ratio_change(statistics, period)
             _update_metric_changes(statistics, period)
             _collect_averages_data(period, accumulators)
-            _collect_metric_averages_data(period, metric_accumulators)
+            _collect_metric_delta_data(period, metric_accumulators)
 
         _finalize_change_statistics(statistics, best_inc, best_dec)
         _calculate_averages(statistics, accumulators)
-        _calculate_metric_averages(statistics, metric_accumulators)
+        _calculate_metric_deltas(statistics, metric_accumulators)
 
         return statistics
 
@@ -370,15 +376,12 @@ class MaintainabilityPortfolioStats:
         return maint["end-average"] - maint["start-average"]
 
     def metric_average_delta(self, metric_key: str) -> float:
-        """End-of-period minus start-of-period volume-weighted average for a submetric.
+        """Volume-weighted average of the individual systems' rating changes for a submetric.
 
-        Returns 0.0 when no system contributes data at either period boundary.
+        Returns 0.0 when no system in the portfolio can evidence a change for this metric.
         """
-        averages = self.statistics["metric-averages"][metric_key]
-        start_average, end_average = averages["start-average"], averages["end-average"]
-        if start_average is None or end_average is None:
-            return 0.0
-        return end_average - start_average
+        delta = self.statistics["metric-deltas"][metric_key]
+        return 0.0 if delta is None else delta
 
     @cached_property
     def test_code_ratio_distribution_percentages(self):
