@@ -19,15 +19,20 @@ from report_generator.generator.domain.portfolio.maintainability_portfolio.stati
     maintainability_portfolio_stats,
 )
 from report_generator.generator.placeholders.formatting.formatters import (
+    format_metric_change_sentence,
     star_rating_round,
 )
 from report_generator.generator.utils.constants import MaintMetric
 
 from .base import (
-    delta_text_placeholder,
-    market_average_text_placeholder,
     parameterized_text_placeholder,
     text_placeholder,
+)
+from .sentiment import (
+    MARKET_AVERAGE,
+    SIGNED_DELTA,
+    parameterized_sentiment_text_placeholder,
+    sentiment_text_placeholder,
 )
 
 
@@ -201,12 +206,15 @@ def portfolio_period_maint_change_short_summary():
     start_avg = int(stats["maintainability"]["start-average"] * 10) / 10
     end_avg = int(stats["maintainability"]["end-average"] * 10) / 10
     diff = int((end_avg - start_avg) * 10) / 10
+    end_display = star_rating_round(stats["maintainability"]["end-average"])
     if abs(diff) < 0.01:
-        return f"The portfolio remained stable ({end_avg}) during the measured period"
-    return f"The portfolio's maintainability has {'increased' if start_avg < end_avg else 'decreased'} (with {diff} to {end_avg}) during the measured period"
+        return (
+            f"The portfolio remained stable ({end_display}) during the measured period"
+        )
+    return f"The portfolio's maintainability has {'increased' if start_avg < end_avg else 'decreased'} (with {diff} to {end_display}) during the measured period"
 
 
-@delta_text_placeholder()
+@sentiment_text_placeholder(SIGNED_DELTA)
 def portfolio_maint_average_delta():
     """Signed change in the portfolio's weighted maintainability average over the period (e.g. +0.01, -0.01, =), colored green up / red down / blue unchanged."""
     return maintainability_portfolio_stats.average_delta
@@ -239,7 +247,7 @@ def portfolio_maint_market_average():
     return distribution["market_average"]
 
 
-@market_average_text_placeholder()
+@sentiment_text_placeholder(MARKET_AVERAGE)
 def portfolio_maint_avg_market_average():
     """Colored indication of whether the portfolio's volume-weighted average maintainability
     rating is below (red), at (blue) or above (green) market average."""
@@ -318,6 +326,17 @@ def portfolio_maint_avg_rating_param(metric: MaintMetric):
         metric.to_json_name()
     )
     return star_rating_round(rating)
+
+
+@parameterized_sentiment_text_placeholder(
+    SIGNED_DELTA,
+    custom_key="PORTFOLIO_MAINT_AVG_DELTA_{parameter}",
+    parameters=list(MaintMetric),
+)
+def portfolio_maint_avg_delta_param(metric: MaintMetric):
+    """Volume-weighted average of the rating changes individual systems saw in this metric over
+    the period (e.g. +0.01, -0.01, =), colored green up / red down / blue unchanged."""
+    return maintainability_portfolio_stats.metric_average_delta(metric.to_json_name())
 
 
 @parameterized_text_placeholder(
@@ -410,7 +429,7 @@ def portfolio_maint_biggest_changes_param(metric: MaintMetric):
     bucket = maintainability_portfolio_stats.metric_change_statistics(
         metric.to_json_name()
     )
-    metric_label = metric.value.replace("_", " ").title()
+    metric_label = metric.to_label()
     sentences = [
         sentence
         for sentence in (
@@ -424,6 +443,19 @@ def portfolio_maint_biggest_changes_param(metric: MaintMetric):
         if sentence
     ]
     return " ".join(sentences)
+
+
+@parameterized_text_placeholder(
+    custom_key="PORTFOLIO_MAINT_CHANGE_SUMMARY_{parameter}",
+    parameters=list(MaintMetric),
+)
+def portfolio_maint_change_summary_param(metric: MaintMetric):
+    """Sentence describing the volume-weighted average of the rating changes individual systems
+    saw in this metric (e.g. "Duplication has increased in score by +0.30★ on average across the
+    portfolio.")."""
+    delta = maintainability_portfolio_stats.metric_average_delta(metric.to_json_name())
+    metric_label = metric.to_label()
+    return format_metric_change_sentence(metric_label, delta)
 
 
 @text_placeholder()

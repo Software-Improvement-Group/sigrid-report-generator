@@ -25,9 +25,12 @@ from report_generator.generator.placeholders.formatting.formatters import (
 )
 
 from .base import (
-    delta_text_placeholder,
-    market_average_text_placeholder,
     text_placeholder,
+)
+from .sentiment import (
+    MARKET_AVERAGE,
+    SIGNED_DELTA,
+    sentiment_text_placeholder,
 )
 
 
@@ -67,14 +70,14 @@ def portfolio_sec_avg_rating():
     return star_rating_round(security_ratings_portfolio_data.weighted_average_rating)
 
 
-@market_average_text_placeholder()
+@sentiment_text_placeholder(MARKET_AVERAGE)
 def portfolio_sec_avg_market_average():
     """Colored indication of whether the portfolio's volume-weighted average security rating is
     below (red), at (blue) or above (green) market average."""
     return security_ratings_portfolio_data.weighted_average_rating
 
 
-@delta_text_placeholder()
+@sentiment_text_placeholder(SIGNED_DELTA)
 def portfolio_sec_average_delta():
     """Signed change in the portfolio's volume-weighted security average over the period (e.g. +0.01, -0.01, =), colored green up / red down / blue unchanged."""
     return security_ratings_portfolio_data.average_delta

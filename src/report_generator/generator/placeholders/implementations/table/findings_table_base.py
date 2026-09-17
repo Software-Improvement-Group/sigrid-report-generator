@@ -19,7 +19,7 @@ from report_generator.generator.domain.portfolio.shared.findings_portfolio_base 
 )
 from report_generator.generator.placeholders.formatting.formatters import (
     build_sigrid_link,
-    print_star,
+    get_star,
     star_rating_round,
 )
 from report_generator.generator.placeholders.implementations.table.base import (
@@ -74,9 +74,7 @@ class FindingsTopSystemsTableBase(TablePlaceholder):
             entry["displayName"],
             f"\u2265 {objective_target.title()}" if objective_target else "N/A",
             entry["findings_above_objective"],
-            f"{star_rating_round(rating)}{print_star()}"
-            if rating is not None
-            else "N/A",
+            f"{star_rating_round(rating)}{get_star()}" if rating is not None else "N/A",
             cls._format_link(system_name),
         ]
 

@@ -24,11 +24,14 @@ class TestFormatter:
         assert formatters.calculate_stars(-3) == ""
 
         formatters.use_sig_sterren()
-        assert formatters.calculate_stars(1.5) == "HHIII"
-        assert formatters.calculate_stars(1.499999) == "HIIII"
-        assert formatters.calculate_stars(4.5) == "HHHHH"
-        assert formatters.calculate_stars(7.5) == "HHHHH"
-        assert formatters.calculate_stars(-3) == ""
+        try:
+            assert formatters.calculate_stars(1.5) == "HHIII"
+            assert formatters.calculate_stars(1.499999) == "HIIII"
+            assert formatters.calculate_stars(4.5) == "HHHHH"
+            assert formatters.calculate_stars(7.5) == "HHHHH"
+            assert formatters.calculate_stars(-3) == ""
+        finally:
+            formatters.use_sig_sterren(False)
 
     def test_star_rating_round(self):
         assert formatters.star_rating_round(1.50000) == "1.5"
@@ -62,6 +65,28 @@ class TestFormatter:
         # Sub-0.005 deltas round to 0.00 and count as unchanged.
         assert formatters.delta_sentiment(0.004) == Sentiment.NEUTRAL
         assert formatters.delta_sentiment(-0.004) == Sentiment.NEUTRAL
+
+    def test_format_metric_change_sentence(self):
+        assert (
+            formatters.format_metric_change_sentence("Duplication", 0.3)
+            == "Duplication has increased in score by +0.30★ on average across the portfolio."
+        )
+        assert (
+            formatters.format_metric_change_sentence("Duplication", -0.3)
+            == "Duplication has decreased in score by -0.30★ on average across the portfolio."
+        )
+        assert (
+            formatters.format_metric_change_sentence("Duplication", 0.0)
+            == "Duplication has remained stable in score (+0.00★) on average across the portfolio."
+        )
+        assert (
+            formatters.format_metric_change_sentence("Duplication", 0.004)
+            == "Duplication has remained stable in score (+0.00★) on average across the portfolio."
+        )
+        assert (
+            formatters.format_metric_change_sentence("Unit Size", -1.234)
+            == "Unit Size has decreased in score by -1.23★ on average across the portfolio."
+        )
 
     def test_market_average_sentiment(self):
         assert formatters.market_average_sentiment(2.4) == Sentiment.NEGATIVE

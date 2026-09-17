@@ -36,6 +36,56 @@ from report_generator.generator.domain.portfolio.maintainability_portfolio.stati
 )
 
 
+def _snapshot(date, volume_in_person_months, **ratings):
+    """A maintainability snapshot, defaulting the overall rating the statistics always read."""
+    return {
+        "maintainability": 3.0,
+        "maintainabilityDate": date,
+        "volumeInPersonMonths": volume_in_person_months,
+        **ratings,
+    }
+
+
+def _mock_portfolio(mocker, start_snapshots, end_snapshots, period=None):
+    """Patch the portfolio data singleton to serve the given per-system snapshots."""
+    period = period or ["2024-01-01", "2024-12-31"]
+    system_names = list(end_snapshots)
+
+    for name, value in (("period", period), ("system_names", system_names)):
+        mocker.patch.object(
+            type(maintainability_portfolio_data),
+            name,
+            new_callable=mocker.PropertyMock,
+            return_value=value,
+        )
+    mocker.patch.object(
+        type(maintainability_portfolio_data),
+        "metadata",
+        new_callable=mocker.PropertyMock,
+        return_value=[
+            {"systemName": name, "active": True, "isDevelopmentOnly": False}
+            for name in system_names
+        ],
+    )
+    mocker.patch(
+        "report_generator.generator.domain.portfolio.shared.utils.get_system_metadata",
+        side_effect=lambda portfolio_metadata, system_name: {
+            "active": True,
+            "isDevelopmentOnly": False,
+        },
+    )
+    mocker.patch.object(
+        maintainability_portfolio_data,
+        "start_snapshot",
+        side_effect=start_snapshots.__getitem__,
+    )
+    mocker.patch.object(
+        maintainability_portfolio_data,
+        "end_snapshot",
+        side_effect=end_snapshots.__getitem__,
+    )
+
+
 class TestMaintainabilityStatistics:
     """Test the statistics cached property for maintainability portfolio."""
 
@@ -178,6 +228,203 @@ class TestMaintainabilityStatistics:
         # Verify averages exist
         assert "start-average" in stats["maintainability"]
         assert "end-average" in stats["maintainability"]
+
+    def test_statistics_populates_metric_deltas_per_submetric(self, mocker):
+        """The `metric-deltas` bucket carries the volume-weighted average rating change for each
+        submetric, computed from that submetric's own values rather than the overall rating."""
+
+        stats_obj = MaintainabilityPortfolioStats()
+
+        mock_system_names = ["system1", "system2"]
+
+        mocker.patch.object(
+            type(maintainability_portfolio_data),
+            "period",
+            new_callable=mocker.PropertyMock,
+            return_value=["2024-01-01", "2024-12-31"],
+        )
+
+        def mock_start_snapshot(system_name):
+            snapshots = {
+                "system1": {
+                    "maintainability": 3.0,
+                    "unitSize": 2.0,
+                    "maintainabilityDate": "2023-06-01",
+                    "volumeInPersonMonths": 100,
+                },
+                "system2": {
+                    "maintainability": 3.0,
+                    "unitSize": 4.0,
+                    "maintainabilityDate": "2023-06-01",
+                    "volumeInPersonMonths": 100,
+                },
+            }
+            return snapshots[system_name]
+
+        def mock_end_snapshot(system_name):
+            snapshots = {
+                "system1": {
+                    "maintainability": 3.5,
+                    "unitSize": 3.0,
+                    "maintainabilityDate": "2024-12-31",
+                    "volumeInPersonMonths": 100,
+                },
+                "system2": {
+                    "maintainability": 3.5,
+                    "unitSize": 5.0,
+                    "maintainabilityDate": "2024-12-31",
+                    "volumeInPersonMonths": 100,
+                },
+            }
+            return snapshots[system_name]
+
+        mocker.patch.object(
+            type(maintainability_portfolio_data),
+            "system_names",
+            new_callable=mocker.PropertyMock,
+            return_value=mock_system_names,
+        )
+        mocker.patch.object(
+            type(maintainability_portfolio_data),
+            "metadata",
+            new_callable=mocker.PropertyMock,
+            return_value=[
+                {"systemName": name, "active": True, "isDevelopmentOnly": False}
+                for name in mock_system_names
+            ],
+        )
+        mocker.patch(
+            "report_generator.generator.domain.portfolio.shared.utils.get_system_metadata",
+            side_effect=lambda portfolio_metadata, system_name: {
+                "active": True,
+                "isDevelopmentOnly": False,
+            },
+        )
+        mocker.patch.object(
+            maintainability_portfolio_data,
+            "start_snapshot",
+            side_effect=mock_start_snapshot,
+        )
+        mocker.patch.object(
+            maintainability_portfolio_data,
+            "end_snapshot",
+            side_effect=mock_end_snapshot,
+        )
+
+        stats = stats_obj.statistics
+
+        # Both systems gained a full star on unit size, at equal volumes.
+        assert stats["metric-deltas"]["unitSize"] == pytest.approx(1.0)
+        assert stats_obj.metric_average_delta("unitSize") == pytest.approx(1.0)
+
+    def test_metric_delta_weighs_each_system_change_by_its_end_volume(self, mocker):
+        """A system's own rating change counts in proportion to its end-of-period volume, so a
+        large system moving outweighs a small one moving the other way."""
+
+        stats_obj = MaintainabilityPortfolioStats()
+        _mock_portfolio(
+            mocker,
+            start_snapshots={
+                "big": _snapshot("2023-06-01", 300, unitSize=2.0),
+                "small": _snapshot("2023-06-01", 100, unitSize=4.0),
+            },
+            end_snapshots={
+                "big": _snapshot("2024-12-31", 300, unitSize=3.0),
+                "small": _snapshot("2024-12-31", 100, unitSize=3.0),
+            },
+        )
+
+        # (+1.0 * 300 + -1.0 * 100) / 400 = +0.5
+        assert stats_obj.metric_average_delta("unitSize") == pytest.approx(0.5)
+
+    def test_metric_delta_covers_the_same_cohort_as_the_change_counts(self, mocker):
+        """The average change must describe exactly the systems counted as increased, stable or
+        decreased on the same slide: one snapshot is no evidence of change, so a system onboarded
+        mid-period is excluded from both rather than dragging the average by merely joining."""
+
+        stats_obj = MaintainabilityPortfolioStats()
+        onboarded_mid_period = _snapshot("2024-07-01", 1000, unitSize=1.0)
+        _mock_portfolio(
+            mocker,
+            start_snapshots={
+                "established": _snapshot("2023-06-01", 100, unitSize=3.0),
+                "newcomer": onboarded_mid_period,
+            },
+            end_snapshots={
+                "established": _snapshot("2024-12-31", 100, unitSize=3.4),
+                "newcomer": onboarded_mid_period,
+            },
+        )
+
+        bucket = stats_obj.metric_change_statistics("unitSize")
+        counted_systems = (
+            bucket["systems-increased"]
+            + bucket["systems-stable"]
+            + bucket["systems-decreased"]
+        )
+
+        assert counted_systems == 1
+        assert stats_obj.metric_average_delta("unitSize") == pytest.approx(0.4)
+
+    def test_metric_average_delta_via_full_pipeline_is_zero_without_submetric_data(
+        self, mocker
+    ):
+        """Submetrics absent from every snapshot (e.g. not measured for this portfolio) must
+        yield a delta of 0.0 rather than a spurious value derived from the near-zero sentinel
+        used elsewhere for empty weighted averages."""
+
+        stats_obj = MaintainabilityPortfolioStats()
+
+        mocker.patch.object(
+            type(maintainability_portfolio_data),
+            "period",
+            new_callable=mocker.PropertyMock,
+            return_value=["2024-01-01", "2024-12-31"],
+        )
+        mocker.patch.object(
+            type(maintainability_portfolio_data),
+            "system_names",
+            new_callable=mocker.PropertyMock,
+            return_value=["system1"],
+        )
+        mocker.patch.object(
+            type(maintainability_portfolio_data),
+            "metadata",
+            new_callable=mocker.PropertyMock,
+            return_value=[
+                {"systemName": "system1", "active": True, "isDevelopmentOnly": False}
+            ],
+        )
+        mocker.patch(
+            "report_generator.generator.domain.portfolio.shared.utils.get_system_metadata",
+            side_effect=lambda portfolio_metadata, system_name: {
+                "active": True,
+                "isDevelopmentOnly": False,
+            },
+        )
+        mocker.patch.object(
+            maintainability_portfolio_data,
+            "start_snapshot",
+            return_value={
+                "maintainability": 3.0,
+                "maintainabilityDate": "2024-02-01",
+                "volumeInPersonMonths": 100,
+            },
+        )
+        mocker.patch.object(
+            maintainability_portfolio_data,
+            "end_snapshot",
+            return_value={
+                "maintainability": 3.5,
+                "maintainabilityDate": "2024-12-31",
+                "volumeInPersonMonths": 100,
+            },
+        )
+
+        stats = stats_obj.statistics
+
+        assert stats["metric-deltas"]["duplication"] is None
+        assert stats_obj.metric_average_delta("duplication") == 0.0
 
     def test_statistics_all_stable(self, mocker):
         """Test statistics when all systems remain stable."""
@@ -1681,6 +1928,28 @@ class TestMaintainabilityPortfolioHelpers:
         }
 
         assert stats_obj.average_delta == pytest.approx(-0.3)
+
+    def test_metric_average_delta_reads_the_precomputed_metric_delta(self):
+        """metric_average_delta surfaces the volume-weighted average of the systems' own rating
+        changes for the given submetric."""
+        stats_obj = MaintainabilityPortfolioStats()
+        stats_obj.__dict__["statistics"] = {"metric-deltas": {"unitComplexity": 0.4}}
+
+        assert stats_obj.metric_average_delta("unitComplexity") == pytest.approx(0.4)
+
+    def test_metric_average_delta_negative_when_declined(self):
+        stats_obj = MaintainabilityPortfolioStats()
+        stats_obj.__dict__["statistics"] = {"metric-deltas": {"unitSize": -0.3}}
+
+        assert stats_obj.metric_average_delta("unitSize") == pytest.approx(-0.3)
+
+    def test_metric_average_delta_is_zero_for_an_empty_cohort(self):
+        """A submetric no system can evidence a change for must not fall back to the near-zero
+        sentinel used by `_weighted_avg`, which would produce a spurious large delta."""
+        stats_obj = MaintainabilityPortfolioStats()
+        stats_obj.__dict__["statistics"] = {"metric-deltas": {"duplication": None}}
+
+        assert stats_obj.metric_average_delta("duplication") == 0.0
 
     def test_weighted_avg_calculates_correctly(self):
         """Test that _weighted_avg calculates weighted average correctly."""

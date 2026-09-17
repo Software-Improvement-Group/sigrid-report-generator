@@ -17,7 +17,11 @@ from report_generator.generator.placeholders.formatting.smart_remarks import (
     relative_to_market_average,
 )
 
-from .base import market_average_text_placeholder, text_placeholder
+from .base import text_placeholder
+from .sentiment import (
+    MARKET_AVERAGE,
+    sentiment_text_placeholder,
+)
 
 
 @text_placeholder()
@@ -59,7 +63,7 @@ def security_relative():
     return f"{relative_to_market_average(security_data.security_rating)} market average"
 
 
-@market_average_text_placeholder()
+@sentiment_text_placeholder(MARKET_AVERAGE)
 def security_market_average():
     """Colored indication of whether the system's Security Rating is below (red), at (blue) or
     above (green) market average."""

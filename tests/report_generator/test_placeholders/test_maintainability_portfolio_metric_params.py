@@ -22,9 +22,11 @@ from report_generator.generator.domain.portfolio.maintainability_portfolio.stati
 )
 from report_generator.generator.placeholders.implementations.text.maintainability_portfolio import (
     portfolio_maint_above_market_param,
+    portfolio_maint_avg_delta_param,
     portfolio_maint_avg_rating_param,
     portfolio_maint_below_market_param,
     portfolio_maint_biggest_changes_param,
+    portfolio_maint_change_summary_param,
     portfolio_maint_decreased_param,
     portfolio_maint_increased_param,
     portfolio_maint_market_average_param,
@@ -62,6 +64,28 @@ def test_avg_rating_param_uses_weighted_average_for_that_metric(monkeypatch):
     )
 
     assert portfolio_maint_avg_rating_param.value(MaintMetric.UNIT_COMPLEXITY) == "4.0"
+
+
+def test_avg_delta_param_key_is_metric_specific():
+    assert (
+        portfolio_maint_avg_delta_param.key.format(parameter=MaintMetric.UNIT_SIZE)
+        == "PORTFOLIO_MAINT_AVG_DELTA_UNIT_SIZE"
+    )
+
+
+def test_avg_delta_param_uses_weighted_average_delta_for_that_metric(monkeypatch):
+    monkeypatch.setattr(
+        maintainability_portfolio_stats,
+        "metric_average_delta",
+        lambda metric_key: 0.4 if metric_key == "unitComplexity" else -0.1,
+    )
+
+    assert portfolio_maint_avg_delta_param.value(
+        MaintMetric.UNIT_COMPLEXITY
+    ) == pytest.approx(0.4)
+    assert portfolio_maint_avg_delta_param.value(MaintMetric.VOLUME) == pytest.approx(
+        -0.1
+    )
 
 
 def test_market_distribution_params_use_that_metrics_distribution(monkeypatch):
@@ -162,3 +186,49 @@ def test_biggest_changes_param_returns_empty_string_when_no_changes(
     )
 
     assert portfolio_maint_biggest_changes_param.value(MaintMetric.UNIT_SIZE) == ""
+
+
+def test_change_summary_param_key_is_metric_specific():
+    assert (
+        portfolio_maint_change_summary_param.key.format(parameter=MaintMetric.UNIT_SIZE)
+        == "PORTFOLIO_MAINT_CHANGE_SUMMARY_UNIT_SIZE"
+    )
+
+
+def test_change_summary_param_describes_increase(monkeypatch):
+    monkeypatch.setattr(
+        maintainability_portfolio_stats,
+        "metric_average_delta",
+        lambda metric_key: 0.3 if metric_key == "duplication" else 0.0,
+    )
+
+    assert (
+        portfolio_maint_change_summary_param.value(MaintMetric.DUPLICATION)
+        == "Duplication has increased in score by +0.30★ on average across the portfolio."
+    )
+
+
+def test_change_summary_param_describes_decrease(monkeypatch):
+    monkeypatch.setattr(
+        maintainability_portfolio_stats,
+        "metric_average_delta",
+        lambda metric_key: -0.3 if metric_key == "unitSize" else 0.0,
+    )
+
+    assert (
+        portfolio_maint_change_summary_param.value(MaintMetric.UNIT_SIZE)
+        == "Unit Size has decreased in score by -0.30★ on average across the portfolio."
+    )
+
+
+def test_change_summary_param_describes_stable(monkeypatch):
+    monkeypatch.setattr(
+        maintainability_portfolio_stats,
+        "metric_average_delta",
+        lambda metric_key: 0.0,
+    )
+
+    assert (
+        portfolio_maint_change_summary_param.value(MaintMetric.MODULE_COUPLING)
+        == "Module Coupling has remained stable in score (+0.00★) on average across the portfolio."
+    )

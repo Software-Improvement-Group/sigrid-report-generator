@@ -23,9 +23,12 @@ from report_generator.generator.placeholders.formatting.formatters import (
     star_rating_round,
 )
 from report_generator.generator.placeholders.implementations.text.base import (
-    market_average_text_placeholder,
     parameterized_text_placeholder,
     text_placeholder,
+)
+from report_generator.generator.placeholders.implementations.text.sentiment import (
+    MARKET_AVERAGE,
+    sentiment_text_placeholder,
 )
 from report_generator.generator.utils.constants import MaintMetric
 
@@ -87,7 +90,7 @@ def maint_indication():
     return maint_relative_cost.value()
 
 
-@market_average_text_placeholder()
+@sentiment_text_placeholder(MARKET_AVERAGE)
 def maint_market_average():
     """Colored indication of whether the system's Maintainability Rating is below (red), at
     (blue) or above (green) market average."""
@@ -309,7 +312,7 @@ def tech_lines_of_code(idx: int):
 def tech_maintainability_rating(idx: int):
     """Maintainability rating of the technology in the system (if present). One decimal."""
     rating = maintainability_data.sorted_tech_get_key(idx - 1, "maintainability")
-    return round(rating, 1) if rating else ""
+    return star_rating_round(rating) if rating else ""
 
 
 @parameterized_text_placeholder(

@@ -28,6 +28,9 @@ class MetricEnum(Enum):
         metric = metric_name.replace("_", " ").title().replace(" ", "")
         return metric[0].lower() + metric[1:]
 
+    def to_label(self) -> str:
+        return self.value.replace("_", " ").title()
+
 
 class MaintMetric(MetricEnum):
     VOLUME = "VOLUME"
