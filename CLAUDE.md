@@ -70,7 +70,7 @@ presets/        Named report configurations. Each is a thin wrapper around Repor
                 pointing at a bundled .pptx/.docx template. Never imported by generator/.
 ```
 
-The import boundaries above are mechanically enforced by `import-linter` (configured in `pyproject.toml`). Run
+The import boundaries above are mechanically enforced by `import-linter` (configured in `.importlinter`). Run
 `lint-imports` to check.
 
 ### Common violations
