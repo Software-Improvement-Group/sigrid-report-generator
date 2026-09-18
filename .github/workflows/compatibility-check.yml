@@ -21,11 +21,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
-          cache-dependency-path: '**/setup.cfg'
+          cache-dependency-path: '**/requirements-dev.txt'
 
       - name: "Install dependencies"
         run: |
-          pip3 install -e ".[test]"
+          pip3 install -r requirements-dev.txt -e .
 
       - name: "Check syntax and imports"
         run: |

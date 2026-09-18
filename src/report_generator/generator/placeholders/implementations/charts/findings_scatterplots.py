@@ -16,19 +16,14 @@ import math
 from dataclasses import dataclass
 
 from pptx.chart.data import XyChartData
-from pptx.presentation import Presentation
 
 from report_generator.generator.domain import (
     npr_5333_functional_suitability_portfolio_data,
     reliability_ratings_portfolio_data,
     security_ratings_portfolio_data,
 )
-from report_generator.generator.placeholders import rendering
-from report_generator.generator.placeholders.implementations.base import (
-    Placeholder,
-    PlaceholderDocType,
-)
 from report_generator.generator.placeholders.implementations.charts.base import (
+    ChartPlaceholder,
     findings_x_axis_max,
 )
 
@@ -126,23 +121,17 @@ def _build_functional_suitability_scatterplot_data() -> tuple[
     return chart_data, display_names, _FunctionalSuitabilityBounds(max_x, max_y)
 
 
-def _resolve_scatterplot_pptx(
-    presentation, key: str, domain_data, series_name: str
-) -> None:
-    charts = rendering.pptx.find_charts(presentation, key)
-    if not charts:
-        return
+def _resolve_scatterplot_pptx(charts, domain_data, series_name: str) -> None:
     chart_data, display_names, max_findings = _build_scatterplot_data(
         domain_data, series_name
     )
     _populate_charts(charts, chart_data, display_names, max_findings)
 
 
-class PortfolioSecurityScatterplotPlaceholder(Placeholder):
+class PortfolioSecurityScatterplotPlaceholder(ChartPlaceholder):
     """Portfolio scatterplot: open security findings above objective (X) vs security rating (Y)."""
 
     key = "PORTFOLIO_SECURITY_SCATTERPLOT"
-    __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
     def value(cls):
@@ -152,17 +141,14 @@ class PortfolioSecurityScatterplotPlaceholder(Placeholder):
         return chart_data
 
     @staticmethod
-    def resolve_pptx(presentation: Presentation, key: str, _) -> None:
-        _resolve_scatterplot_pptx(
-            presentation, key, security_ratings_portfolio_data, "Security"
-        )
+    def _populate_chart(charts, value_cb) -> None:
+        _resolve_scatterplot_pptx(charts, security_ratings_portfolio_data, "Security")
 
 
-class PortfolioReliabilityScatterplotPlaceholder(Placeholder):
+class PortfolioReliabilityScatterplotPlaceholder(ChartPlaceholder):
     """Portfolio scatterplot: open reliability findings above objective (X) vs reliability rating (Y)."""
 
     key = "PORTFOLIO_RELIABILITY_SCATTERPLOT"
-    __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
     def value(cls):
@@ -172,17 +158,16 @@ class PortfolioReliabilityScatterplotPlaceholder(Placeholder):
         return chart_data
 
     @staticmethod
-    def resolve_pptx(presentation: Presentation, key: str, _) -> None:
+    def _populate_chart(charts, value_cb) -> None:
         _resolve_scatterplot_pptx(
-            presentation, key, reliability_ratings_portfolio_data, "Reliability"
+            charts, reliability_ratings_portfolio_data, "Reliability"
         )
 
 
-class PortfolioNpr5333FunctionalSuitabilityScatterplotPlaceholder(Placeholder):
+class PortfolioNpr5333FunctionalSuitabilityScatterplotPlaceholder(ChartPlaceholder):
     """Portfolio scatterplot: NPR-5333 functional suitability findings (X) vs test code ratio (Y)."""
 
     key = "PORTFOLIO_NPR_5333_FUNCTIONAL_SUITABILITY_SCATTERPLOT"
-    __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
     def value(cls):
@@ -190,10 +175,7 @@ class PortfolioNpr5333FunctionalSuitabilityScatterplotPlaceholder(Placeholder):
         return chart_data
 
     @staticmethod
-    def resolve_pptx(presentation: Presentation, key: str, _) -> None:
-        charts = rendering.pptx.find_charts(presentation, key)
-        if not charts:
-            return
+    def _populate_chart(charts, value_cb) -> None:
         chart_data, display_names, bounds = (
             _build_functional_suitability_scatterplot_data()
         )
