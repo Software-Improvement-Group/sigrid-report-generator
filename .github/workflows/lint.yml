@@ -39,10 +39,10 @@ jobs:
         with:
           python-version: "3.13"
           cache: 'pip'
-          cache-dependency-path: '**/setup.cfg'
+          cache-dependency-path: '**/requirements-dev.txt'
 
       - name: "Install dependencies"
-        run: pip install -e ".[test]"
+        run: pip install -r requirements-dev.txt -e .
 
       - name: "Check architecture contracts"
         run: lint-imports
