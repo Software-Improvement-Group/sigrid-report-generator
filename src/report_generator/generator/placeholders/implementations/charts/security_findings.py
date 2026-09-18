@@ -12,20 +12,16 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from collections.abc import Callable
 from dataclasses import dataclass
 
 from pptx.chart.data import CategoryChartData
-from pptx.presentation import Presentation
 
 from report_generator.generator.domain import (
     security_dashboard_findings_portfolio_data,
     security_dashboard_resolution_times_portfolio_data,
 )
-from report_generator.generator.placeholders import rendering
-from report_generator.generator.placeholders.implementations.base import (
-    Placeholder,
-    PlaceholderDocType,
+from report_generator.generator.placeholders.implementations.charts.base import (
+    ChartPlaceholder,
 )
 
 
@@ -105,63 +101,53 @@ def _create_security_findings_chart_data(severity: str) -> CategoryChartData:
     return chart_data
 
 
-def _populate_chart(
-    presentation: Presentation, value_cb: Callable[[], CategoryChartData], key: str
-) -> None:
-    charts = rendering.pptx.find_charts(presentation, key)
-
-    if not charts:
-        return
-
+def _replace_chart_data(charts, value_cb) -> None:
     chart_data = value_cb()
 
     for chart in charts:
         chart.replace_data(chart_data)
 
 
-class SecurityDashboardCriticalFindingsChartPlaceholder(Placeholder):
+class SecurityDashboardCriticalFindingsChartPlaceholder(ChartPlaceholder):
     """PowerPoint chart showing new, existing, and resolved critical security findings over the last 12 months."""
 
     key = "PORTFOLIO_SECURITY_FINDINGS_CRITICAL"
-    __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
     def value(cls):
         return _create_security_findings_chart_data("CRITICAL")
 
     @staticmethod
-    def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
-        _populate_chart(presentation, value_cb, key)
+    def _populate_chart(charts, value_cb) -> None:
+        _replace_chart_data(charts, value_cb)
 
 
-class SecurityDashboardHighFindingsChartPlaceholder(Placeholder):
+class SecurityDashboardHighFindingsChartPlaceholder(ChartPlaceholder):
     """PowerPoint chart showing new, existing, and resolved high security findings over the last 12 months."""
 
     key = "PORTFOLIO_SECURITY_FINDINGS_HIGH"
-    __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
     def value(cls):
         return _create_security_findings_chart_data("HIGH")
 
     @staticmethod
-    def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
-        _populate_chart(presentation, value_cb, key)
+    def _populate_chart(charts, value_cb) -> None:
+        _replace_chart_data(charts, value_cb)
 
 
-class SecurityDashboardMediumFindingsChartPlaceholder(Placeholder):
+class SecurityDashboardMediumFindingsChartPlaceholder(ChartPlaceholder):
     """PowerPoint chart showing new, existing, and resolved medium security findings over the last 12 months."""
 
     key = "PORTFOLIO_SECURITY_FINDINGS_MEDIUM"
-    __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
     def value(cls):
         return _create_security_findings_chart_data("MEDIUM")
 
     @staticmethod
-    def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
-        _populate_chart(presentation, value_cb, key)
+    def _populate_chart(charts, value_cb) -> None:
+        _replace_chart_data(charts, value_cb)
 
 
 def _create_open_acute_trend_chart_data() -> CategoryChartData:
@@ -174,19 +160,18 @@ def _create_open_acute_trend_chart_data() -> CategoryChartData:
     return chart_data
 
 
-class SecurityDashboardOpenAcuteTrendChartPlaceholder(Placeholder):
+class SecurityDashboardOpenAcuteTrendChartPlaceholder(ChartPlaceholder):
     """PowerPoint line chart showing the number of open acute (Critical + High) security findings per month across the portfolio."""
 
     key = "PORTFOLIO_SECURITY_OPEN_ACUTE"
-    __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
     def value(cls):
         return _create_open_acute_trend_chart_data()
 
     @staticmethod
-    def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
-        _populate_chart(presentation, value_cb, key)
+    def _populate_chart(charts, value_cb) -> None:
+        _replace_chart_data(charts, value_cb)
 
 
 # Resolution Times Placeholders
@@ -240,46 +225,43 @@ def _create_resolution_times_chart_data(severity: str) -> CategoryChartData:
     return chart_data
 
 
-class SecurityDashboardCriticalResolutionTimesChartPlaceholder(Placeholder):
+class SecurityDashboardCriticalResolutionTimesChartPlaceholder(ChartPlaceholder):
     """PowerPoint chart showing resolution times of critical security findings over the last 12 months."""
 
     key = "PORTFOLIO_SECURITY_RESOLUTION_CRITICAL"
-    __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
     def value(cls):
         return _create_resolution_times_chart_data("CRITICAL")
 
     @staticmethod
-    def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
-        _populate_chart(presentation, value_cb, key)
+    def _populate_chart(charts, value_cb) -> None:
+        _replace_chart_data(charts, value_cb)
 
 
-class SecurityDashboardHighResolutionTimesChartPlaceholder(Placeholder):
+class SecurityDashboardHighResolutionTimesChartPlaceholder(ChartPlaceholder):
     """PowerPoint chart showing resolution times of high security findings over the last 12 months."""
 
     key = "PORTFOLIO_SECURITY_RESOLUTION_HIGH"
-    __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
     def value(cls):
         return _create_resolution_times_chart_data("HIGH")
 
     @staticmethod
-    def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
-        _populate_chart(presentation, value_cb, key)
+    def _populate_chart(charts, value_cb) -> None:
+        _replace_chart_data(charts, value_cb)
 
 
-class SecurityDashboardMediumResolutionTimesChartPlaceholder(Placeholder):
+class SecurityDashboardMediumResolutionTimesChartPlaceholder(ChartPlaceholder):
     """PowerPoint chart showing resolution times of medium security findings over the last 12 months."""
 
     key = "PORTFOLIO_SECURITY_RESOLUTION_MEDIUM"
-    __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
     def value(cls):
         return _create_resolution_times_chart_data("MEDIUM")
 
     @staticmethod
-    def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
-        _populate_chart(presentation, value_cb, key)
+    def _populate_chart(charts, value_cb) -> None:
+        _replace_chart_data(charts, value_cb)
