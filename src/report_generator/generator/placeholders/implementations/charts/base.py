@@ -13,6 +13,29 @@
 #  limitations under the License.
 
 import math
+from abc import ABC, abstractmethod
+
+from report_generator.generator.placeholders.implementations.base import (
+    Placeholder,
+    PlaceholderDocType,
+)
+from report_generator.generator.placeholders.rendering.pptx import find_charts
+
+
+class ChartPlaceholder(Placeholder, ABC):
+    __doc_type__ = PlaceholderDocType.CHART
+
+    @classmethod
+    def resolve_pptx(cls, presentation, key: str, value_cb):
+        charts = find_charts(presentation, key)
+        if not charts:
+            return
+        cls._populate_chart(charts, value_cb)
+
+    @staticmethod
+    @abstractmethod
+    def _populate_chart(charts, value_cb) -> None:
+        pass
 
 
 def findings_x_axis_max(value: int) -> int:

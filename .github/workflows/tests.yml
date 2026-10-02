@@ -18,9 +18,9 @@ jobs:
         with:
           python-version: "3.13"
           cache: 'pip'
-          cache-dependency-path: '**/setup.cfg'
+          cache-dependency-path: '**/requirements-dev.txt'
       - name: "Install Python dependencies"
-        run: pip install -e ".[test]"
+        run: pip install -r requirements-dev.txt -e .
       - name: "Unit tests"
         run: pytest --junitxml=unit-results.xml
       - uses: actions/upload-artifact@v7
@@ -41,9 +41,9 @@ jobs:
         with:
           python-version: "3.13"
           cache: 'pip'
-          cache-dependency-path: '**/setup.cfg'
+          cache-dependency-path: '**/requirements-dev.txt'
       - name: "Install Python dependencies"
-        run: pip install -e ".[test]"
+        run: pip install -r requirements-dev.txt -e .
       - name: "Integration tests"
         run: pytest -m integration --junitxml=integration-results.xml
       - uses: actions/upload-artifact@v7

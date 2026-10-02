@@ -13,17 +13,14 @@
 #  limitations under the License.
 
 from pptx.chart.data import XyChartData
-from pptx.presentation import Presentation
 
 from report_generator.generator.domain import (
     maintainability_data,
     maintainability_portfolio_data,
     system_metadata,
 )
-from report_generator.generator.placeholders import rendering
-from report_generator.generator.placeholders.implementations.base import (
-    Placeholder,
-    PlaceholderDocType,
+from report_generator.generator.placeholders.implementations.charts.base import (
+    ChartPlaceholder,
 )
 
 
@@ -56,10 +53,7 @@ def _build_portfolio_chart_data() -> XyChartData:
     )
 
 
-def _populate_system_chart(presentation: Presentation, key: str, build_fn) -> None:
-    charts = rendering.pptx.find_charts(presentation, key)
-    if not charts:
-        return
+def _populate_system_chart(charts, build_fn) -> None:
     chart_data = build_fn()
     for chart in charts:
         chart.replace_data(chart_data)
@@ -67,10 +61,7 @@ def _populate_system_chart(presentation: Presentation, key: str, build_fn) -> No
             series.points[0].data_label.text_frame.text = series.name
 
 
-def _populate_portfolio_chart(presentation: Presentation) -> None:
-    charts = rendering.pptx.find_charts(presentation, "PORTFOLIO_GALAXY_CHART")
-    if not charts:
-        return
+def _populate_portfolio_chart(charts) -> None:
     chart_data = _build_portfolio_chart_data()
     display_names = [
         maintainability_portfolio_data.get_system_display_name(n)
@@ -82,31 +73,29 @@ def _populate_portfolio_chart(presentation: Presentation) -> None:
             point.data_label.text_frame.text = display_names[i]
 
 
-class MaintainabilityGalaxyChartPlaceholder(Placeholder):
+class MaintainabilityGalaxyChartPlaceholder(ChartPlaceholder):
     """Traditional SIG benchmark galaxy chart."""
 
     key = "GALAXY_CHART"
-    __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
     def value(cls):
         return _build_system_chart_data()
 
     @staticmethod
-    def resolve_pptx(presentation: Presentation, key: str, _) -> None:
-        _populate_system_chart(presentation, key, _build_system_chart_data)
+    def _populate_chart(charts, value_cb) -> None:
+        _populate_system_chart(charts, _build_system_chart_data)
 
 
-class MaintainabilityPortfolioGalaxyChartPlaceholder(Placeholder):
+class MaintainabilityPortfolioGalaxyChartPlaceholder(ChartPlaceholder):
     """Portfolio-level galaxy chart with one data point per system."""
 
     key = "PORTFOLIO_GALAXY_CHART"
-    __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
     def value(cls):
         return _build_portfolio_chart_data()
 
     @staticmethod
-    def resolve_pptx(presentation: Presentation, key: str, _) -> None:
-        _populate_portfolio_chart(presentation)
+    def _populate_chart(charts, value_cb) -> None:
+        _populate_portfolio_chart(charts)

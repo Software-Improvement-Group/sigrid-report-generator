@@ -12,16 +12,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from collections.abc import Callable
-
 from pptx.chart.data import ChartData
-from pptx.presentation import Presentation
 
 from report_generator.generator.domain import osh_data, osh_portfolio_data
-from report_generator.generator.placeholders import rendering
-from report_generator.generator.placeholders.implementations.base import (
-    Placeholder,
-    PlaceholderDocType,
+from report_generator.generator.placeholders.implementations.charts.base import (
+    ChartPlaceholder,
 )
 
 
@@ -68,14 +63,8 @@ def _set_chart_data_and_axis(chart, data, axis_max):
     chart.value_axis.maximum_scale = axis_max
 
 
-def _resolve_single_osh_chart(
-    presentation: Presentation, key: str, value_cb, data_source
-) -> None:
+def _resolve_single_osh_chart(charts, value_cb, data_source) -> None:
     """Resolver for a single OSH chart."""
-    charts = rendering.pptx.find_charts(presentation, key)
-    if not charts:
-        return
-
     chart_data = value_cb()
     chart_axis_max = _determine_chart_axis_max(data_source)
     for chart in charts:
@@ -91,26 +80,24 @@ OTHER_RISKS_CATEGORIES = [
 ]
 
 
-class OSHVulnLegalGraphPlaceholder(Placeholder):
+class OSHVulnLegalGraphPlaceholder(ChartPlaceholder):
     """OSH system-level vulnerability and legal risk bar chart."""
 
     key = "OSH_VULN_LEGAL_GRAPH"
-    __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
     def value(cls):
         return _format_osh_chart_data(osh_data.risk_distributions, VULN_LIC_CATEGORIES)
 
     @staticmethod
-    def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
-        _resolve_single_osh_chart(presentation, key, value_cb, osh_data)
+    def _populate_chart(charts, value_cb) -> None:
+        _resolve_single_osh_chart(charts, value_cb, osh_data)
 
 
-class OSHOtherRisksGraphPlaceholder(Placeholder):
+class OSHOtherRisksGraphPlaceholder(ChartPlaceholder):
     """OSH system-level freshness, stability, management, and activity risk bar chart."""
 
     key = "OSH_OTHER_RISKS_GRAPH"
-    __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
     def value(cls):
@@ -119,15 +106,14 @@ class OSHOtherRisksGraphPlaceholder(Placeholder):
         )
 
     @staticmethod
-    def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
-        _resolve_single_osh_chart(presentation, key, value_cb, osh_data)
+    def _populate_chart(charts, value_cb) -> None:
+        _resolve_single_osh_chart(charts, value_cb, osh_data)
 
 
-class OSHPortfolioVulnLegalGraphPlaceholder(Placeholder):
+class OSHPortfolioVulnLegalGraphPlaceholder(ChartPlaceholder):
     """OSH portfolio-level vulnerability and legal risk bar chart."""
 
     key = "OSH_PORTFOLIO_VULN_LEGAL_GRAPH"
-    __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
     def value(cls):
@@ -136,15 +122,14 @@ class OSHPortfolioVulnLegalGraphPlaceholder(Placeholder):
         )
 
     @staticmethod
-    def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
-        _resolve_single_osh_chart(presentation, key, value_cb, osh_portfolio_data)
+    def _populate_chart(charts, value_cb) -> None:
+        _resolve_single_osh_chart(charts, value_cb, osh_portfolio_data)
 
 
-class OSHPortfolioOtherRisksGraphPlaceholder(Placeholder):
+class OSHPortfolioOtherRisksGraphPlaceholder(ChartPlaceholder):
     """OSH portfolio-level freshness, stability, management, and activity risk bar chart."""
 
     key = "OSH_PORTFOLIO_OTHER_RISKS_GRAPH"
-    __doc_type__ = PlaceholderDocType.CHART
 
     @classmethod
     def value(cls):
@@ -153,5 +138,5 @@ class OSHPortfolioOtherRisksGraphPlaceholder(Placeholder):
         )
 
     @staticmethod
-    def resolve_pptx(presentation: Presentation, key: str, value_cb: Callable) -> None:
-        _resolve_single_osh_chart(presentation, key, value_cb, osh_portfolio_data)
+    def _populate_chart(charts, value_cb) -> None:
+        _resolve_single_osh_chart(charts, value_cb, osh_portfolio_data)
