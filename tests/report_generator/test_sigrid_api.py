@@ -34,7 +34,8 @@ def _make_jwt(exp: int) -> str:
 
     header = _b64url({"kid": "test-key", "alg": "RS256"})
     payload = _b64url({"sub": "test-user", "customer": "acme", "exp": exp})
-    return f"{header}.{payload}.FAKE_SIGNATURE"
+    signature = base64.urlsafe_b64encode(b"fake-signature").rstrip(b"=").decode()
+    return f"{header}.{payload}.{signature}"
 
 
 class TestSigridAPI:

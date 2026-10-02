@@ -40,7 +40,8 @@ def _make_expired_jwt() -> str:
 
     header = _b64url({"kid": "test-key", "alg": "RS256"})
     payload = _b64url({"sub": "test-user", "exp": int(time.time()) - 3600})
-    return f"{header}.{payload}.FAKE_SIGNATURE"
+    signature = base64.urlsafe_b64encode(b"fake-signature").rstrip(b"=").decode()
+    return f"{header}.{payload}.{signature}"
 
 
 class TestCLIVersion:
