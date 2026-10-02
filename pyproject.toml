@@ -5,6 +5,72 @@ requires = [
 ]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "report-generator"
+version = "1.7.4"
+description = "Generate Sigrid reports"
+readme = { file = "README.md", content-type = "text/markdown" }
+authors = [
+    { name = "Software Improvement Group (SIG)", email = "support@softwareimprovementgroup.com" }
+]
+license-files = [
+    "LICENSE",
+    "LICENSES/MIT-matplotlib-extra.txt"
+]
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: Apache Software License"
+]
+keywords = [
+    "report",
+    "powerpoint",
+    "excel",
+    "word",
+    "pdf"
+]
+dependencies = [
+    "pyyaml>=6.0.3",
+    "click>=8.4.2",
+    "pillow>=12.3.0",
+    "lxml>=6.1.0",
+    "python-pptx>=1.0.2",
+    "python-docx>=1.2.0",
+    "pygments>=2.20.0",
+    "requests>=2.33.0",
+    "pyjwt>=2.10.0",
+    "importlib-resources>=6.5.2",
+    "numpy>=2.4.6",
+    "tqdm>=4.67.1",
+    "pandas>=3.0.3",
+    "matplotlib>=3.11.1",
+    "squarify>=0.4.4",
+    "platformdirs>=4.9.4"
+]
+
+[project.urls]
+Homepage = "https://github.com/Software-Improvement-Group/sigrid-report-generator"
+Source = "https://github.com/Software-Improvement-Group/sigrid-report-generator"
+
+[project.scripts]
+report-generator = "report_generator.cli:run"
+
+[dependency-groups]
+dev = [
+    "pytest==8.3.3",
+    "pytest-mock==3.14.0",
+    "freezegun==1.5.1",
+    "ruff==0.15.8",
+    "import-linter==2.1"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"report_generator.presets" = ["templates/*"]
+
 [tool.pytest.ini_options]
 testpaths = [
     "tests"

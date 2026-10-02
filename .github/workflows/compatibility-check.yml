@@ -21,11 +21,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
-          cache-dependency-path: '**/requirements-dev.txt'
+          cache-dependency-path: '**/pylock*.toml'
 
       - name: "Install dependencies"
         run: |
-          pip3 install -r requirements-dev.txt -e .
+          pip3 install -r pylock.toml -r pylock.dev.toml && pip3 install --no-deps -e .
 
       - name: "Check syntax and imports"
         run: |

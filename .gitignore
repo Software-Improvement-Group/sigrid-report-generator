@@ -5,6 +5,10 @@ __pycache__
 .vscode/
 build/
 
+# Intermediate resolution file used only to regenerate pylock.toml / pylock.dev.toml
+# consistently; pylock.toml is the committed lockfile standard, not uv.lock.
+uv.lock
+
 # User claude settings
 .claude/settings.local.json
 

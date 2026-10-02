@@ -39,10 +39,10 @@ jobs:
         with:
           python-version: "3.13"
           cache: 'pip'
-          cache-dependency-path: '**/requirements-dev.txt'
+          cache-dependency-path: '**/pylock*.toml'
 
       - name: "Install dependencies"
-        run: pip install -r requirements-dev.txt -e .
+        run: pip install -r pylock.toml -r pylock.dev.toml && pip install --no-deps -e .
 
       - name: "Check architecture contracts"
         run: lint-imports

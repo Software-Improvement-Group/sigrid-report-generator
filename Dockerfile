@@ -15,7 +15,7 @@ RUN apk add --no-cache \
 WORKDIR /build
 
 # Copy packaging metadata first (better cache reuse)
-COPY pyproject.toml setup.cfg setup.py README.md ./
+COPY pyproject.toml setup.py README.md ./
 # Copy only the application source
 COPY src/ src/
 
