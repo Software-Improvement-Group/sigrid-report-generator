@@ -128,40 +128,36 @@ class TestSecurityDashboardChartPlaceholders:
         mock_data.chart_findings_by_severity.assert_called_once_with("CRITICAL")
 
     @patch(
-        "report_generator.generator.placeholders.implementations.charts.security_findings.rendering.pptx.find_charts"
+        "report_generator.generator.placeholders.implementations.charts.base.find_charts"
     )
     def test_populate_security_findings_chart_no_slides(self, mock_find_charts):
-        """Test _populate_chart returns early when no charts found."""
+        """Test resolve_pptx returns early when no charts found."""
         from report_generator.generator.placeholders.implementations.charts.security_findings import (
-            _populate_chart,
+            SecurityDashboardCriticalFindingsChartPlaceholder,
         )
 
         mock_find_charts.return_value = []
         mock_presentation = MagicMock()
         mock_value_cb = MagicMock()
 
-        _populate_chart(mock_presentation, mock_value_cb, "TEST_CHART")
+        SecurityDashboardCriticalFindingsChartPlaceholder.resolve_pptx(
+            mock_presentation, "TEST_CHART", mock_value_cb
+        )
 
         # Should not call value_cb if no charts found
         mock_value_cb.assert_not_called()
 
-    @patch(
-        "report_generator.generator.placeholders.implementations.charts.security_findings.rendering.pptx.find_charts"
-    )
-    def test_populate_security_findings_chart_updates_chart(self, mock_find_charts):
-        """Test _populate_chart updates chart when found."""
+    def test_populate_security_findings_chart_updates_chart(self):
+        """Test _replace_chart_data updates chart when found."""
         from report_generator.generator.placeholders.implementations.charts.security_findings import (
-            _populate_chart,
+            _replace_chart_data,
         )
 
         mock_chart = MagicMock()
-        mock_find_charts.return_value = [mock_chart]
-        mock_presentation = MagicMock()
-
         mock_chart_data = MagicMock()
         mock_value_cb = MagicMock(return_value=mock_chart_data)
 
-        _populate_chart(mock_presentation, mock_value_cb, "TEST_CHART")
+        _replace_chart_data([mock_chart], mock_value_cb)
 
         # Should call replace_data on the chart
         mock_chart.replace_data.assert_called_once_with(mock_chart_data)
