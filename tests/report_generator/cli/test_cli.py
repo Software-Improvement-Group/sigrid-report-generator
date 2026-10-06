@@ -354,65 +354,60 @@ class TestCLIParameters:
     @patch("report_generator.cli.ReportGenerator")
     @patch("report_generator.cli.sigrid_api")
     def test_template_parameter_uses_custom_template(
-        self, mock_sigrid_api, mock_generator
+        self, mock_sigrid_api, mock_generator, tmp_path
     ):
         """Test that --template uses custom template instead of presets."""
         os.environ["SIGRID_REPORT_GENERATOR_RECORD_USAGE"] = "0"
         mock_generator_instance = MagicMock()
         mock_generator.return_value = mock_generator_instance
 
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            # Create a dummy template file
-            with open("template.pptx", "wb") as f:
-                f.write(b"dummy content")
+        template = tmp_path / "template.pptx"
+        template.write_bytes(b"dummy content")
 
-            runner.invoke(
-                run_cli,
-                [
-                    "--customer",
-                    "test-customer",
-                    "--token",
-                    "test-token",
-                    "--template",
-                    "template.pptx",
-                ],
-            )
+        CliRunner().invoke(
+            run_cli,
+            [
+                "--customer",
+                "test-customer",
+                "--token",
+                "test-token",
+                "--template",
+                str(template),
+            ],
+        )
 
-            mock_generator_instance.generate.assert_called_once_with("out")
+        mock_generator_instance.generate.assert_called_once_with("out")
 
     @patch("report_generator.cli.presets")
     @patch("report_generator.cli.sigrid_api")
     def test_layout_and_template_mutually_exclusive(
-        self, mock_sigrid_api, mock_presets
+        self, mock_sigrid_api, mock_presets, tmp_path
     ):
         """Test that --layout and --template cannot be used together."""
         os.environ["SIGRID_REPORT_GENERATOR_RECORD_USAGE"] = "0"
 
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            with open("template.pptx", "wb") as f:
-                f.write(b"dummy content")
+        template = tmp_path / "template.pptx"
+        template.write_bytes(b"dummy content")
 
-            result = runner.invoke(
-                run_cli,
-                [
-                    "--customer",
-                    "test-customer",
-                    "--token",
-                    "test-token",
-                    "--layout",
-                    "portfolio-change",
-                    "--template",
-                    "template.pptx",
-                ],
-            )
+        result = CliRunner().invoke(
+            run_cli,
+            [
+                "--customer",
+                "test-customer",
+                "--token",
+                "test-token",
+                "--layout",
+                "portfolio-change",
+                "--template",
+                str(template),
+            ],
+        )
 
-            assert result.exit_code != 0
-            assert (
-                "both" in result.output.lower()
-                or "mutually exclusive" in result.output.lower()
-            )
+        assert result.exit_code != 0
+        assert (
+            "both" in result.output.lower()
+            or "mutually exclusive" in result.output.lower()
+        )
 
     @patch("report_generator.cli.presets")
     @patch("report_generator.cli.sigrid_api")
