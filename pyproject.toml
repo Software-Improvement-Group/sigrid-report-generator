@@ -39,12 +39,12 @@ dependencies = [
     "python-docx>=1.2.0",
     "pygments>=2.20.0",
     "requests>=2.33.0",
-    "pyjwt>=2.10.0",
+    "pyjwt>=2.15.1",
     "importlib-resources>=6.5.2",
     "numpy>=2.4.6",
     "tqdm>=4.67.1",
     "pandas>=3.0.3",
-    "matplotlib>=3.11.1",
+    "matplotlib>=3.11.2",
     "squarify>=0.4.4",
     "platformdirs>=4.9.4"
 ]
@@ -58,7 +58,7 @@ report-generator = "report_generator.cli:run"
 
 [dependency-groups]
 dev = [
-    "pytest==8.3.3",
+    "pytest==9.1.1",
     "pytest-mock==3.14.0",
     "freezegun==1.5.1",
     "ruff==0.15.8",
