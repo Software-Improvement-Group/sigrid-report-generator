@@ -16,16 +16,16 @@ jobs:
       - name: "Check out repository"
         uses: actions/checkout@v6
 
-      - name: "Set up Python ${{ matrix.python-version }}"
-        uses: actions/setup-python@v6
+      - name: "Set up uv (Python ${{ matrix.python-version }})"
+        uses: astral-sh/setup-uv@v7
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'pip'
-          cache-dependency-path: '**/pylock*.toml'
+          activate-environment: true
+          cache-dependency-glob: "pylock.toml"
 
       - name: "Install dependencies"
         run: |
-          pip3 install -r pylock.toml -r pylock.dev.toml && pip3 install --no-deps -e .
+          uv pip install -r pylock.toml && uv pip install --no-deps -e .
 
       - name: "Check syntax and imports"
         run: |

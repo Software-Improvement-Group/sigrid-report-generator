@@ -20,6 +20,14 @@ provided by Sigrid. The Report Generator can be used for two "flavors" of report
 
 ## One-step installation
 
+Recommended, using [uv](https://docs.astral.sh/uv/):
+
+```
+uv tool install git+https://github.com/Software-Improvement-Group/sigrid-report-generator.git
+```
+
+Alternative, using pip:
+
 ```
 pip3 install git+https://github.com/Software-Improvement-Group/sigrid-report-generator.git
 ```
@@ -27,11 +35,12 @@ pip3 install git+https://github.com/Software-Improvement-Group/sigrid-report-gen
 ## Alternative: clone the repo and install
 
 1. Clone this repository and `cd` into it.
-2. Install the tool itself: `pip3 install -e .`.
-    - If this fails with an error message that says something like "error: can't create or remove files in install
-      directory", try adding `--user` to the above command.
-    - If this fails with an error message saying something like "error: externally-managed-environment", try installing
-      in a `venv` (Virtual environment). If you don't know how that works, ask for help.
+2. Install the tool itself:
+    - Recommended, using uv: `uv pip install -e .`.
+        - If this fails with an error message that says something like "error: can't create or remove files in install
+          directory", try adding `--user` to the above command.
+        - If this fails with an error message saying something like "error: externally-managed-environment", try
+          installing in a `venv` (Virtual environment). If you don't know how that works, ask for help.
 
 ## Usage
 

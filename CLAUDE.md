@@ -11,7 +11,7 @@ flow.
 
 ```bash
 # Should be installed already with
-pip install -e .
+uv pip install -r pylock.toml && uv pip install --no-deps -e .
 
 # Run with
 report-generator --help
