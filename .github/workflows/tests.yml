@@ -18,9 +18,9 @@ jobs:
         with:
           python-version: "3.13"
           activate-environment: true
-          cache-dependency-glob: "pylock.toml"
+          cache-dependency-glob: "pylock.dev.toml"
       - name: "Install Python dependencies"
-        run: uv pip install -r pylock.toml && uv pip install --no-deps -e .
+        run: uv pip install -r pylock.dev.toml && uv pip install --no-deps -e .
       - name: "Unit tests"
         run: pytest --junitxml=unit-results.xml
       - uses: actions/upload-artifact@v7
@@ -41,9 +41,9 @@ jobs:
         with:
           python-version: "3.13"
           activate-environment: true
-          cache-dependency-glob: "pylock.toml"
+          cache-dependency-glob: "pylock.dev.toml"
       - name: "Install Python dependencies"
-        run: uv pip install -r pylock.toml && uv pip install --no-deps -e .
+        run: uv pip install -r pylock.dev.toml && uv pip install --no-deps -e .
       - name: "Integration tests"
         run: pytest -m integration --junitxml=integration-results.xml
       - uses: actions/upload-artifact@v7

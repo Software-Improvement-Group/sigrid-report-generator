@@ -21,11 +21,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           activate-environment: true
-          cache-dependency-glob: "pylock.toml"
+          cache-dependency-glob: "pylock.dev.toml"
 
       - name: "Install dependencies"
         run: |
-          uv pip install -r pylock.toml && uv pip install --no-deps -e .
+          uv pip install -r pylock.dev.toml && uv pip install --no-deps -e .
 
       - name: "Check syntax and imports"
         run: |
