@@ -17,7 +17,7 @@ COPY --from=ghcr.io/astral-sh/uv:0.12.22 /uv /usr/local/bin/uv
 WORKDIR /build
 
 # Copy packaging metadata first (better cache reuse)
-COPY pyproject.toml setup.py README.md pylock.toml ./
+COPY pyproject.toml README.md pylock.toml ./
 # Copy only the application source
 COPY src/ src/
 
