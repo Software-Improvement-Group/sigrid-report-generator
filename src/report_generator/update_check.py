@@ -12,19 +12,19 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import configparser
 import importlib.metadata
 import json
 import os
+import tomllib
 from datetime import UTC, datetime
 from pathlib import Path
 
 import platformdirs
 import requests
 
-_REMOTE_SETUP_CFG_URL = (
+_REMOTE_PYPROJECT_URL = (
     "https://raw.githubusercontent.com/Software-Improvement-Group/"
-    "sigrid-report-generator/refs/heads/main/setup.cfg"
+    "sigrid-report-generator/refs/heads/main/pyproject.toml"
 )
 _CACHE_DIR = Path(platformdirs.user_cache_dir("report-generator"))
 _CACHE_FILE = _CACHE_DIR / "update_check.json"
@@ -89,11 +89,9 @@ def _read_cache() -> dict | None:
 
 
 def _fetch_latest_version() -> str:
-    response = requests.get(_REMOTE_SETUP_CFG_URL, timeout=_REQUEST_TIMEOUT_SECONDS)
+    response = requests.get(_REMOTE_PYPROJECT_URL, timeout=_REQUEST_TIMEOUT_SECONDS)
     response.raise_for_status()
-    parser = configparser.ConfigParser()
-    parser.read_string(response.text)
-    return parser.get("metadata", "version")
+    return tomllib.loads(response.text)["project"]["version"]
 
 
 def _get_current_version() -> str:
