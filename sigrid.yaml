@@ -18,6 +18,11 @@ thirdpartyfindings:
   enabled: true
 
 architecture:
+  component_roles:
+    - role: utility
+      include:
+        - "generator/context"
+        - "generator/placeholders/formatting"
   undesirable_dependencies:
     - source: "generator"
       target: "presets"
