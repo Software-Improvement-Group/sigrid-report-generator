@@ -12,16 +12,18 @@ RUN apk add --no-cache \
         python3-dev \
         git
 
+COPY --from=ghcr.io/astral-sh/uv:0.12.22 /uv /usr/local/bin/uv
+
 WORKDIR /build
 
 # Copy packaging metadata first (better cache reuse)
-COPY pyproject.toml setup.cfg setup.py README.md ./
+COPY pyproject.toml README.md pylock.toml ./
 # Copy only the application source
 COPY src/ src/
 
-# Install the application and all dependencies into an isolated prefix
-RUN pip install --upgrade pip \
-    && pip install --no-cache-dir --prefix=/install .
+# Install pinned dependencies from the lockfile, then the application itself, into an isolated prefix
+RUN uv pip install --no-cache --prefix=/install -r pylock.toml \
+    && uv pip install --no-cache --prefix=/install --no-deps .
 
 # =====================================
 # Runtime stage

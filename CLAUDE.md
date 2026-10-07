@@ -11,7 +11,7 @@ flow.
 
 ```bash
 # Should be installed already with
-pip install -e .
+uv pip install -r pylock.dev.toml && uv pip install --no-deps -e .
 
 # Run with
 report-generator --help
@@ -122,5 +122,5 @@ issues worth fixing:
 
 ## Version Bump
 
-Every change to production code requires a version bump in `setup.cfg` (semantic versioning). This only applies to
+Every change to production code requires a version bump in `pyproject.toml`'s `[project].version` (semantic versioning). This only applies to
 merges into `main` — commits within a branch or PR do not need to bump the version each time.

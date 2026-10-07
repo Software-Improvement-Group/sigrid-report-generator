@@ -42,6 +42,11 @@ jobs:
           push: false
           tags: softwareimprovementgroup/sigrid-report-generator:branch-${{ env.BRANCH_SLUG }}
 
+      - name: Read application version
+        if: github.ref == 'refs/heads/main'
+        run: echo "APP_VERSION=$(python3 -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')" >> $GITHUB_ENV
+
+      # One build, two tags: :latest moves to each new release, :<version> stays with the image it was built for
       - name: Build and push Docker image (main)
         if: github.ref == 'refs/heads/main'
         uses: docker/build-push-action@v6
@@ -49,4 +54,6 @@ jobs:
           file: Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: softwareimprovementgroup/sigrid-report-generator:latest
+          tags: |
+            softwareimprovementgroup/sigrid-report-generator:latest
+            softwareimprovementgroup/sigrid-report-generator:${{ env.APP_VERSION }}

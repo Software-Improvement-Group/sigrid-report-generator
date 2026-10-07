@@ -26,10 +26,10 @@ from report_generator.update_check import (
     check_for_update,
 )
 
-SAMPLE_SETUP_CFG = """\
-[metadata]
-name = report-generator
-version = 2.0.0
+SAMPLE_PYPROJECT = """\
+[project]
+name = "report-generator"
+version = "2.0.0"
 """
 
 
@@ -90,9 +90,9 @@ class TestIsNewer:
 
 
 class TestFetchLatestVersion:
-    def test_parses_setup_cfg(self, mocker):
+    def test_parses_pyproject(self, mocker):
         mock_response = mocker.Mock()
-        mock_response.text = SAMPLE_SETUP_CFG
+        mock_response.text = SAMPLE_PYPROJECT
         mock_response.raise_for_status = mocker.Mock()
         mocker.patch(
             "report_generator.update_check.requests.get", return_value=mock_response
@@ -115,7 +115,7 @@ class TestCheckForUpdate:
             "report_generator.update_check._get_current_version", return_value="1.0.0"
         )
         mock_response = mocker.Mock()
-        mock_response.text = SAMPLE_SETUP_CFG
+        mock_response.text = SAMPLE_PYPROJECT
         mock_response.raise_for_status = mocker.Mock()
         mocker.patch(
             "report_generator.update_check.requests.get", return_value=mock_response
@@ -132,7 +132,7 @@ class TestCheckForUpdate:
             "report_generator.update_check._get_current_version", return_value="2.0.0"
         )
         mock_response = mocker.Mock()
-        mock_response.text = SAMPLE_SETUP_CFG
+        mock_response.text = SAMPLE_PYPROJECT
         mock_response.raise_for_status = mocker.Mock()
         mocker.patch(
             "report_generator.update_check.requests.get", return_value=mock_response
@@ -183,7 +183,7 @@ class TestCheckForUpdate:
             "report_generator.update_check._get_current_version", return_value="1.0.0"
         )
         mock_response = mocker.Mock()
-        mock_response.text = SAMPLE_SETUP_CFG
+        mock_response.text = SAMPLE_PYPROJECT
         mock_response.raise_for_status = mocker.Mock()
         mocker.patch(
             "report_generator.update_check.requests.get", return_value=mock_response
