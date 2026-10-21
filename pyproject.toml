@@ -59,10 +59,10 @@ report-generator = "report_generator.cli:run"
 [dependency-groups]
 dev = [
     "pytest==9.1.1",
-    "pytest-mock==3.14.0",
-    "freezegun==1.5.1",
+    "pytest-mock==3.17.0",
+    "freezegun==1.5.5",
     "ruff==0.15.8",
-    "import-linter==2.1"
+    "import-linter==2.15"
 ]
 
 [tool.setuptools.packages.find]

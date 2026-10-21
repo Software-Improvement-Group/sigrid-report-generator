@@ -405,10 +405,10 @@ wheels = [
 
 [[packages]]
 name = "freezegun"
-version = "1.5.1"
+version = "1.5.5"
 index = "https://pypi.org/simple"
-sdist = { url = "https://files.pythonhosted.org/packages/2c/ef/722b8d71ddf4d48f25f6d78aa2533d505bf3eec000a7cacb8ccc8de61f2f/freezegun-1.5.1.tar.gz", upload-time = 2024-05-11T17:32:53Z, size = 33697, hashes = { sha256 = "b29dedfcda6d5e8e083ce71b2b542753ad48cfec44037b3fc79702e2980a89e9" } }
-wheels = [{ url = "https://files.pythonhosted.org/packages/51/0b/0d7fee5919bccc1fdc1c2a7528b98f65c6f69b223a3fd8f809918c142c36/freezegun-1.5.1-py3-none-any.whl", upload-time = 2024-05-11T17:32:51Z, size = 17569, hashes = { sha256 = "bf111d7138a8abe55ab48a71755673dbaa4ab87f4cff5634a4442dfec34c15f1" } }]
+sdist = { url = "https://files.pythonhosted.org/packages/95/dd/23e2f4e357f8fd3bdff613c1fe4466d21bfb00a6177f238079b17f7b1c84/freezegun-1.5.5.tar.gz", upload-time = 2025-08-09T10:39:08Z, size = 35914, hashes = { sha256 = "ac7742a6cc6c25a2c35e9292dfd554b897b517d2dec26891a2e8debf205cb94a" } }
+wheels = [{ url = "https://files.pythonhosted.org/packages/5e/2e/b41d8a1a917d6581fc27a35d05561037b048e47df50f27f8ac9c7e27a710/freezegun-1.5.5-py3-none-any.whl", upload-time = 2025-08-09T10:39:06Z, size = 19266, hashes = { sha256 = "cd557f4a75cf074e84bc374249b9dd491eaeacd61376b9eb3c423282211619d2" } }]
 
 [[packages]]
 name = "grimp"
@@ -524,10 +524,10 @@ wheels = [{ url = "https://files.pythonhosted.org/packages/58/a2/bb081bab032533a
 
 [[packages]]
 name = "import-linter"
-version = "2.1"
+version = "2.15"
 index = "https://pypi.org/simple"
-sdist = { url = "https://files.pythonhosted.org/packages/5e/d3/546d27e9390061cbc692541612bbaa3f69a3ad23f592cfbfefe0517ff5b0/import_linter-2.1.tar.gz", upload-time = 2024-10-08T14:06:26Z, size = 29160, hashes = { sha256 = "393fadb2e91304c22c5ceab575213ed2b6a794abc7bd05ab345f2430930b2eae" } }
-wheels = [{ url = "https://files.pythonhosted.org/packages/d8/38/137d5310c52c1b79d1588afa2ce5038cb3a10dbfd1a642962f3bc3ccbe61/import_linter-2.1-py3-none-any.whl", upload-time = 2024-10-08T14:06:24Z, size = 41402, hashes = { sha256 = "324d65035f0252a8e432f60256b0d0d32d8d5d6e4f8fd29716688b09d7a2217a" } }]
+sdist = { url = "https://files.pythonhosted.org/packages/3c/81/1bb414f8c8bcd024499e91f112d317c36a86bc264da1fd43f9797fc2b7b0/import_linter-2.15.tar.gz", upload-time = 2026-09-04T14:47:56Z, size = 1405973, hashes = { sha256 = "1da912bea5e172a82a3ce617b5543f75cf64dc0d8f4d9b46c5578b68ccb81590" } }
+wheels = [{ url = "https://files.pythonhosted.org/packages/08/31/4571c20652a4002ed9e500046386f3731a77e23d95a608ae8a87f1fbb2da/import_linter-2.15-py3-none-any.whl", upload-time = 2026-09-04T14:47:54Z, size = 640512, hashes = { sha256 = "9aaf16a88ac1e99d5a464cd7f66b6a05f7060bfa761162e0ed441773a267ed3b" } }]
 
 [[packages]]
 name = "importlib-resources"
@@ -806,6 +806,13 @@ wheels = [
 ]
 
 [[packages]]
+name = "markdown-it-py"
+version = "4.2.0"
+index = "https://pypi.org/simple"
+sdist = { url = "https://files.pythonhosted.org/packages/06/ff/7841249c247aa650a76b9ee4bbaeae59370dc8bfd2f6c01f3630c35eb134/markdown_it_py-4.2.0.tar.gz", upload-time = 2026-05-07T12:08:28Z, size = 82454, hashes = { sha256 = "04a21681d6fbb623de53f6f364d352309d4094dd4194040a10fd51833e418d49" } }
+wheels = [{ url = "https://files.pythonhosted.org/packages/b3/81/4da04ced5a082363ecfa159c010d200ecbd959ae410c10c0264a38cac0f5/markdown_it_py-4.2.0-py3-none-any.whl", upload-time = 2026-05-07T12:08:27Z, size = 91687, hashes = { sha256 = "9f7ebbcd14fe59494226453aed97c1070d83f8d24b6fc3a3bcf9a38092641c4a" } }]
+
+[[packages]]
 name = "matplotlib"
 version = "3.11.2"
 index = "https://pypi.org/simple"
@@ -864,6 +871,13 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/68/d7/a9fde05d87c3c853f233ec20c5b5c3a1c86035e1ed4bfa397cd54d46ec90/matplotlib-3.11.2-pp311-pypy311_pp73-macosx_11_0_arm64.whl", upload-time = 2026-09-11T19:05:24Z, size = 9287753, hashes = { sha256 = "eac4b07d4e3743b172451e122ea964f72f152879d4f9adcf3f3d33e518f12ead" } },
     { url = "https://files.pythonhosted.org/packages/ec/79/ea2ae4eab84f011c1dc8145864f78e5a63adda8efb95557ef36cc38e6da2/matplotlib-3.11.2-pp311-pypy311_pp73-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", upload-time = 2026-09-11T19:05:27Z, size = 9848259, hashes = { sha256 = "7ef7a53b66780e5d942923724f08577fbc5be1f7322da0f0f3f9dcaa45dd803d" } },
 ]
+
+[[packages]]
+name = "mdurl"
+version = "0.1.2"
+index = "https://pypi.org/simple"
+sdist = { url = "https://files.pythonhosted.org/packages/d6/54/cfe61301667036ec958cb99bd3efefba235e65cdeb9c84d24a8293ba1d90/mdurl-0.1.2.tar.gz", upload-time = 2022-08-14T12:40:10Z, size = 8729, hashes = { sha256 = "bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba" } }
+wheels = [{ url = "https://files.pythonhosted.org/packages/b3/38/89ba8ad64ae25be8de66a6d463314cf1eb366222074cfda9ee839c56a4b4/mdurl-0.1.2-py3-none-any.whl", upload-time = 2022-08-14T12:40:09Z, size = 9979, hashes = { sha256 = "84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8" } }]
 
 [[packages]]
 name = "numpy"
@@ -1225,10 +1239,10 @@ wheels = [{ url = "https://files.pythonhosted.org/packages/24/25/1de2678b631f5a4
 
 [[packages]]
 name = "pytest-mock"
-version = "3.14.0"
+version = "3.17.0"
 index = "https://pypi.org/simple"
-sdist = { url = "https://files.pythonhosted.org/packages/c6/90/a955c3ab35ccd41ad4de556596fa86685bf4fc5ffcc62d22d856cfd4e29a/pytest-mock-3.14.0.tar.gz", upload-time = 2024-03-21T22:14:04Z, size = 32814, hashes = { sha256 = "2719255a1efeceadbc056d6bf3df3d1c5015530fb40cf347c0f9afac88410bd0" } }
-wheels = [{ url = "https://files.pythonhosted.org/packages/f2/3b/b26f90f74e2986a82df6e7ac7e319b8ea7ccece1caec9f8ab6104dc70603/pytest_mock-3.14.0-py3-none-any.whl", upload-time = 2024-03-21T22:14:02Z, size = 9863, hashes = { sha256 = "0b72c38033392a5f4621342fe11e9219ac11ec9d375f8e2a0c164539e0d70f6f" } }]
+sdist = { url = "https://files.pythonhosted.org/packages/97/c2/28b9f5b955ff2bcd4727a6f768e2ca9b586cd7c37b95ea5f7b9b873ac7b3/pytest_mock-3.17.0.tar.gz", upload-time = 2026-10-17T16:21:42Z, size = 43064, hashes = { sha256 = "e36576e0985e01027e999891e7a966c67822d40c89ef1b4c8b6e22737e3590b4" } }
+wheels = [{ url = "https://files.pythonhosted.org/packages/e8/ea/47fbdc8f37410956fd445720e927589b1e2a47772c5f28109f0ce2fa26d9/pytest_mock-3.17.0-py3-none-any.whl", upload-time = 2026-10-17T16:21:41Z, size = 11248, hashes = { sha256 = "1b82aa4b37137248bd687055e109723debeb07b489de1565297dc9589c5f2d6b" } }]
 
 [[packages]]
 name = "python-dateutil"
@@ -1312,6 +1326,13 @@ version = "2.34.2"
 index = "https://pypi.org/simple"
 sdist = { url = "https://files.pythonhosted.org/packages/ac/c3/e2a2b89f2d3e2179abd6d00ebd70bff6273f37fb3e0cc209f48b39d00cbf/requests-2.34.2.tar.gz", upload-time = 2026-05-14T19:25:27Z, size = 142856, hashes = { sha256 = "f288924cae4e29463698d6d60bc6a4da69c89185ad1e0bcc4104f584e960b9ed" } }
 wheels = [{ url = "https://files.pythonhosted.org/packages/a0/f4/c67b0b3f1b9245e8d266f0f112c500d50e5b4e83cb6f3b71b6528104182a/requests-2.34.2-py3-none-any.whl", upload-time = 2026-05-14T19:25:26Z, size = 73075, hashes = { sha256 = "2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0" } }]
+
+[[packages]]
+name = "rich"
+version = "15.0.0"
+index = "https://pypi.org/simple"
+sdist = { url = "https://files.pythonhosted.org/packages/c0/8f/0722ca900cc807c13a6a0c696dacf35430f72e0ec571c4275d2371fca3e9/rich-15.0.0.tar.gz", upload-time = 2026-04-12T08:24:00Z, size = 230680, hashes = { sha256 = "edd07a4824c6b40189fb7ac9bc4c52536e9780fbbfbddf6f1e2502c31b068c36" } }
+wheels = [{ url = "https://files.pythonhosted.org/packages/82/3b/64d4899d73f91ba49a8c18a8ff3f0ea8f1c1d75481760df8c68ef5235bf5/rich-15.0.0-py3-none-any.whl", upload-time = 2026-04-12T08:24:02Z, size = 310654, hashes = { sha256 = "33bd4ef74232fb73fe9279a257718407f169c09b78a87ad3d296f548e27de0bb" } }]
 
 [[packages]]
 name = "ruff"
