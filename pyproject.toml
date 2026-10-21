@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "report-generator"
-version = "1.7.5"
+version = "1.7.6"
 description = "Generate Sigrid reports"
 readme = { file = "README.md", content-type = "text/markdown" }
 authors = [
@@ -33,7 +33,7 @@ keywords = [
 dependencies = [
     "pyyaml>=6.0.3",
     "click>=8.4.2",
-    "pillow>=12.3.0",
+    "pillow>=13.0.0",
     "lxml>=6.1.0",
     "python-pptx>=1.0.2",
     "python-docx>=1.2.0",
