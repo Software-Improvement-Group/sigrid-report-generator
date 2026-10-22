@@ -28,7 +28,9 @@ jobs:
           echo "Version on $BASE_REF: $BASE_VERSION"
           echo "Version in this PR: $CURRENT_VERSION"
 
-          if [ "$BASE_VERSION" = "$CURRENT_VERSION" ]; then
-            echo "::error file=pyproject.toml::No version bump detected. Bump [project].version in pyproject.toml, otherwise this change will not be released."
+          HIGHEST_VERSION=$(printf '%s\n%s\n' "$BASE_VERSION" "$CURRENT_VERSION" | sort -V | tail -1)
+
+          if [ "$BASE_VERSION" = "$CURRENT_VERSION" ] || [ "$HIGHEST_VERSION" != "$CURRENT_VERSION" ]; then
+            echo "::error file=pyproject.toml::Version must be higher than $BASE_VERSION. Bump [project].version in pyproject.toml, otherwise this change will not be released."
             exit 1
           fi
