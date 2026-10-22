@@ -1,0 +1,36 @@
+name: Version bump check
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - "src/**"
+      - "pyproject.toml"
+
+jobs:
+  version-bump-check:
+    name: "Version bump check"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Check out repository"
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: "Compare version with base branch"
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          version_of() { grep -m1 '^version = ' | cut -d'"' -f2; }
+          BASE_VERSION=$(git show "origin/$BASE_REF:pyproject.toml" | version_of)
+          CURRENT_VERSION=$(version_of < pyproject.toml)
+
+          echo "Version on $BASE_REF: $BASE_VERSION"
+          echo "Version in this PR: $CURRENT_VERSION"
+
+          HIGHEST_VERSION=$(printf '%s\n%s\n' "$BASE_VERSION" "$CURRENT_VERSION" | sort -V | tail -1)
+
+          if [ "$BASE_VERSION" = "$CURRENT_VERSION" ] || [ "$HIGHEST_VERSION" != "$CURRENT_VERSION" ]; then
+            echo "::error file=pyproject.toml::Version must be higher than $BASE_VERSION. Bump [project].version in pyproject.toml, otherwise this change will not be released."
+            exit 1
+          fi
