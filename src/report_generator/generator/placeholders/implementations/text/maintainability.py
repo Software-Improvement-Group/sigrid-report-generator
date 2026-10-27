@@ -137,24 +137,6 @@ def maint_date_year():
 
 
 @text_placeholder()
-def maint_size():
-    """Description of the system volume."""
-    volume_rating = maintainability_data.data.get("volume")
-    if volume_rating is None:
-        return ""
-    if volume_rating < 1.5:
-        return "very large"
-    elif volume_rating < 2.5:
-        return "large"
-    elif volume_rating < 3.5:
-        return "medium-sized"
-    elif volume_rating < 4.5:
-        return "small"
-    else:
-        return "very small"
-
-
-@text_placeholder()
 def test_code_ratio():
     """The test/code ratio of the system. Measured as a ratio of total production code against total test code. No decimals."""
     return format(maintainability_data.data["testCodeRatio"], ".0%")
@@ -226,15 +208,6 @@ def system_loc_format_dot():
         if maintainability_data.system_loc is not None
         else ""
     )
-
-
-@text_placeholder()
-def volume_relative():
-    """Relative volume remark for the system."""
-    volume_rating = maintainability_data.data.get("volume")
-    if volume_rating is None:
-        return ""
-    return smart_remarks.relative_volume(volume_rating)
 
 
 @text_placeholder()
