@@ -94,19 +94,6 @@ def relative_cost(rating):
         return "average"
 
 
-def relative_volume(volume_rating):
-    if volume_rating < 1.5:
-        return "very large"
-    elif volume_rating < 2.5:
-        return "large"
-    elif volume_rating < 3.5:
-        return "average"
-    elif volume_rating < 4.5:
-        return "small"
-    else:
-        return "very small"
-
-
 # Figure out what the lowest scoring metrics are, and say something intelligent about those
 def maint_observation(maintainability_data):
     sorted_metric_data = sort_metrics(maintainability_data, list(MaintMetric))
