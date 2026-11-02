@@ -30,7 +30,7 @@ import pytest
 
 from report_generator.generator.context import sigrid_api
 from report_generator.generator.domain.portfolio.osh_portfolio import osh_portfolio_data
-from report_generator.generator.domain.portfolio.security_portfolio import (
+from report_generator.generator.domain.portfolio.security.security_portfolio import (
     security_ratings_portfolio_data,
 )
 from report_generator.generator.domain.system.osh import osh_data

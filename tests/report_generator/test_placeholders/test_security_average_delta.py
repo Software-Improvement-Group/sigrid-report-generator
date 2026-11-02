@@ -16,7 +16,7 @@ import pytest
 from pptx import Presentation
 from pptx.util import Inches
 
-from report_generator.generator.domain.portfolio.security_portfolio import (
+from report_generator.generator.domain.portfolio.security.security_portfolio import (
     security_ratings_portfolio_data,
 )
 from report_generator.generator.placeholders.implementations.text.security_portfolio import (

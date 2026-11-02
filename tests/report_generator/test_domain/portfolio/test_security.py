@@ -17,15 +17,15 @@ from unittest.mock import patch
 import pytest
 
 from report_generator.generator.context.portfolio_filters import reset_context
-from report_generator.generator.domain.portfolio.security_dashboard_findings_portfolio import (
+from report_generator.generator.domain.portfolio.security.security_dashboard_findings_portfolio import (
     SecurityDashboardFindingsPortfolioData,
     security_dashboard_findings_portfolio_data,
 )
-from report_generator.generator.domain.portfolio.security_dashboard_resolution_times_portfolio import (
+from report_generator.generator.domain.portfolio.security.security_dashboard_resolution_times_portfolio import (
     SecurityDashboardResolutionTimesPortfolioData,
     security_dashboard_resolution_times_portfolio_data,
 )
-from report_generator.generator.domain.portfolio.security_portfolio import (
+from report_generator.generator.domain.portfolio.security.security_portfolio import (
     SecurityRatingsPortfolioData,
     security_ratings_portfolio_data,
 )
@@ -1696,7 +1696,7 @@ class TestSecurityDashboardFindingsPortfolioData:
             security_dashboard_findings_portfolio_data.__dict__.pop(attr, None)
 
     @patch(
-        "report_generator.generator.domain.portfolio.security_dashboard_findings_portfolio.sigrid_api"
+        "report_generator.generator.domain.portfolio.security.security_dashboard_findings_portfolio.sigrid_api"
     )
     def test_get_system_returns_correct_system(self, mock_sigrid_api):
         """Test that get_system returns correct system data."""
@@ -1723,7 +1723,7 @@ class TestSecurityDashboardFindingsPortfolioData:
         assert len(system["findings"]) == 1
 
     @patch(
-        "report_generator.generator.domain.portfolio.security_dashboard_findings_portfolio.sigrid_api"
+        "report_generator.generator.domain.portfolio.security.security_dashboard_findings_portfolio.sigrid_api"
     )
     def test_system_names_returns_all_systems(self, mock_sigrid_api):
         """Test that system_names property returns all system names."""
@@ -1755,7 +1755,7 @@ class TestSecurityDashboardFindingsPortfolioData:
 
     @patch("report_generator.generator.context.portfolio_filters.sigrid_api")
     @patch(
-        "report_generator.generator.domain.portfolio.security_dashboard_findings_portfolio.sigrid_api"
+        "report_generator.generator.domain.portfolio.security.security_dashboard_findings_portfolio.sigrid_api"
     )
     def test_excluded_systems_are_filtered_from_data(
         self, mock_sigrid_api, mock_filters_sigrid_api
@@ -1796,7 +1796,7 @@ class TestSecurityDashboardResolutionTimesPortfolioData:
             security_dashboard_resolution_times_portfolio_data.__dict__.pop(attr, None)
 
     @patch(
-        "report_generator.generator.domain.portfolio.security_dashboard_resolution_times_portfolio.sigrid_api"
+        "report_generator.generator.domain.portfolio.security.security_dashboard_resolution_times_portfolio.sigrid_api"
     )
     def test_get_system_returns_correct_system(self, mock_sigrid_api):
         """Test that get_system returns correct system data."""
@@ -1825,7 +1825,7 @@ class TestSecurityDashboardResolutionTimesPortfolioData:
         assert abs(system["avgResolutionTime"] - 15.5) < 0.01
 
     @patch(
-        "report_generator.generator.domain.portfolio.security_dashboard_resolution_times_portfolio.sigrid_api"
+        "report_generator.generator.domain.portfolio.security.security_dashboard_resolution_times_portfolio.sigrid_api"
     )
     def test_system_names_returns_all_systems(self, mock_sigrid_api):
         """Test that system_names property returns all system names."""
@@ -1857,7 +1857,7 @@ class TestSecurityDashboardResolutionTimesPortfolioData:
 
     @patch("report_generator.generator.context.portfolio_filters.sigrid_api")
     @patch(
-        "report_generator.generator.domain.portfolio.security_dashboard_resolution_times_portfolio.sigrid_api"
+        "report_generator.generator.domain.portfolio.security.security_dashboard_resolution_times_portfolio.sigrid_api"
     )
     def test_excluded_systems_are_filtered_from_data(
         self, mock_sigrid_api, mock_filters_sigrid_api
