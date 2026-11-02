@@ -21,6 +21,7 @@ from report_generator.generator.placeholders import context as placeholders_cont
 from report_generator.generator.placeholders.implementations.images.treemaps.utils.treemap._autofit_text import (
     _DEFAULT_LINESPACING,
     AutofitText,
+    FitOptions,
 )
 
 plt.switch_backend("Agg")
@@ -50,7 +51,7 @@ class TestAutofitText:
         """Reflow path must not choke on matplotlib's 'normal' linespacing default."""
         # Would raise ValueError: could not convert string to float: 'normal'
         # on matplotlib >= 3.11 before the fix.
-        self._draw(reflow=True, ha="center", va="center")
+        self._draw(fit=FitOptions(reflow=True), ha="center", va="center")
 
     def test_draw_without_reflow_succeeds(self):
         self._draw(ha="center", va="center")

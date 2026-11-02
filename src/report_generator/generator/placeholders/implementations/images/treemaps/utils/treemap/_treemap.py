@@ -27,7 +27,6 @@ from . import _autofit_text as _at
 from ._padding import resolve_pad
 
 _TEXTPROPS_LAYOUT_KEYS = (
-    "grow",
     "reflow",
     "xmax",
     "ymax",
@@ -253,11 +252,12 @@ def _build_autofit_text(label, rect, geometry, textprops):
         xmax * width,
         ymax * height,
         label,
-        pad=(padx1, pady1),
-        reflow=textprops.get("reflow", False),
-        grow=textprops.get("grow", False),
-        max_fontsize=textprops.get("max_fontsize", None),
-        min_fontsize=textprops.get("min_fontsize", None),
+        fit=_at.FitOptions(
+            pad=(padx1, pady1),
+            reflow=textprops.get("reflow", False),
+            max_fontsize=textprops.get("max_fontsize", None),
+            min_fontsize=textprops.get("min_fontsize", None),
+        ),
         ha=geometry.ha,
         va=geometry.va,
         **text_kwargs,
