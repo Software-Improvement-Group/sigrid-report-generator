@@ -18,14 +18,14 @@ import pytest
 
 from report_generator.generator.context.portfolio_filters import reset_context
 from report_generator.generator.domain import maintainability_portfolio_data
-
-# noinspection PyProtectedMember
-from report_generator.generator.domain.portfolio.maintainability_delta_quality_portfolio import (
-    _AbstractMaintainabilityDeltaQualityPortfolioData,
-)
 from report_generator.generator.domain.portfolio.maintainability_portfolio.data import (
     existed_at_end_date,
     parse_date,
+)
+
+# noinspection PyProtectedMember
+from report_generator.generator.domain.portfolio.maintainability_portfolio.maintainability_delta_quality_portfolio import (
+    _AbstractMaintainabilityDeltaQualityPortfolioData,
 )
 from report_generator.generator.domain.portfolio.maintainability_portfolio.statistics import (
     MaintainabilityPortfolioStats,

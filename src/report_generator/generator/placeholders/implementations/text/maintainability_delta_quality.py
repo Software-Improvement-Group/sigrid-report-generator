@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from report_generator.generator.domain.portfolio.maintainability_delta_quality_portfolio import (
+from report_generator.generator.domain.portfolio.maintainability_portfolio.maintainability_delta_quality_portfolio import (
     maintainability_delta_quality_new_code,
 )
 from report_generator.generator.placeholders.formatting.formatters import (

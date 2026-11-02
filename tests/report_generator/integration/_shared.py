@@ -49,19 +49,19 @@ _OSH_SECURITY_SINGLETON_PATHS = (
     ("report_generator.generator.domain.system.security", "security_data"),
     ("report_generator.generator.domain.portfolio.osh_portfolio", "osh_portfolio_data"),
     (
-        "report_generator.generator.domain.portfolio.security_portfolio",
+        "report_generator.generator.domain.portfolio.security.security_portfolio",
         "security_ratings_portfolio_data",
     ),
     (
-        "report_generator.generator.domain.portfolio.security_findings_portfolio",
+        "report_generator.generator.domain.portfolio.security.security_findings_portfolio",
         "security_findings_portfolio_data",
     ),
     (
-        "report_generator.generator.domain.portfolio.security_dashboard_findings_portfolio",
+        "report_generator.generator.domain.portfolio.security.security_dashboard_findings_portfolio",
         "security_dashboard_findings_portfolio_data",
     ),
     (
-        "report_generator.generator.domain.portfolio.security_dashboard_resolution_times_portfolio",
+        "report_generator.generator.domain.portfolio.security.security_dashboard_resolution_times_portfolio",
         "security_dashboard_resolution_times_portfolio_data",
     ),
     (

@@ -23,7 +23,7 @@ from report_generator.generator.domain.portfolio.maintainability_portfolio impor
 from report_generator.generator.domain.portfolio.osh_portfolio import (
     OSHRatingsPortfolioData,
 )
-from report_generator.generator.domain.portfolio.security_portfolio import (
+from report_generator.generator.domain.portfolio.security.security_portfolio import (
     SecurityRatingsPortfolioData,
 )
 
