@@ -21,13 +21,13 @@ from report_generator.generator.domain.external.epss import epss_data
 from report_generator.generator.domain.portfolio.architecture_portfolio import (
     architecture_portfolio_data,
 )
-from report_generator.generator.domain.portfolio.maintainability_delta_quality_portfolio import (
+from report_generator.generator.domain.portfolio.maintainability_portfolio import (
+    maintainability_portfolio_data,
+)
+from report_generator.generator.domain.portfolio.maintainability_portfolio.maintainability_delta_quality_portfolio import (
     maintainability_delta_quality_changed_code,
     maintainability_delta_quality_new_and_changed_code,
     maintainability_delta_quality_new_code,
-)
-from report_generator.generator.domain.portfolio.maintainability_portfolio import (
-    maintainability_portfolio_data,
 )
 from report_generator.generator.domain.portfolio.modernization import modernization_data
 from report_generator.generator.domain.portfolio.npr_5333_functional_suitability_portfolio import (
