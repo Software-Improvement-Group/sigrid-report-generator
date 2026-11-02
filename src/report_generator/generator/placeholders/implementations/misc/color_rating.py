@@ -25,9 +25,9 @@ from report_generator.generator.placeholders.implementations.base import (
     MultiParameterList,
     ParameterizedPlaceholder,
 )
-from report_generator.generator.placeholders.rendering.common import (
-    FontColor,
-    FontProperties,
+from report_generator.generator.placeholders.implementations.misc._colored_shape import (
+    ColoredShape,
+    apply_colored_shape,
 )
 from report_generator.generator.placeholders.rendering.pptx import ShapeProperties
 from report_generator.generator.utils.constants import (
@@ -38,38 +38,16 @@ from report_generator.generator.utils.constants import (
 )
 
 
-def _apply_colored_shape(
-    shapes,
-    paragraphs,
-    key: str,
-    shape_props: ShapeProperties,
-    display_value: str,
-    text_color=None,
-):
-    for shape in shapes:
-        rendering.pptx.apply_shape_properties(shape, shape_props)
-    font = (
-        FontProperties(color=FontColor(rgb=text_color))
-        if text_color is not None
-        else None
-    )
-    rendering.pptx.update_many_paragraphs(paragraphs, key, display_value, font)
-
-
 class AbstractColorRatingPlaceholder(ParameterizedPlaceholder, ABC):
     """Fills this rating value and colors the shape to correspond to the rating color (e.g. yellow for 3 stars)."""
 
     @classmethod
     def resolve_pptx(cls, presentation: Presentation, key: str, value_cb: Callable):
-        shapes = rendering.pptx.find_shapes_with_text(presentation, key)
-        paragraphs = rendering.pptx.find_text_in_presentation(presentation, key)
-        if not shapes and not paragraphs:
-            return
-        rating = value_cb()
-        _apply_colored_shape(
-            shapes,
-            paragraphs,
-            key,
+        apply_colored_shape(presentation, key, lambda: cls._colored_shape(value_cb()))
+
+    @staticmethod
+    def _colored_shape(rating) -> ColoredShape:
+        return ColoredShape(
             shape_props=ShapeProperties(
                 color=rendering.pptx.determine_rating_color(rating)
             ),

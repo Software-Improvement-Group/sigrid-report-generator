@@ -24,7 +24,6 @@ from report_generator.generator.domain import (
     security_data,
     security_findings_portfolio_data,
 )
-from report_generator.generator.placeholders import rendering
 from report_generator.generator.placeholders.formatting.urgency import (
     UrgencyColors,
     exploit_probability_colors,
@@ -35,29 +34,11 @@ from report_generator.generator.placeholders.formatting.urgency import (
     urgency_width,
 )
 from report_generator.generator.placeholders.implementations.base import Placeholder
-from report_generator.generator.placeholders.rendering.common import (
-    FontColor,
-    FontProperties,
+from report_generator.generator.placeholders.implementations.misc._colored_shape import (
+    ColoredShape,
+    apply_colored_shape,
 )
 from report_generator.generator.placeholders.rendering.pptx import ShapeProperties
-
-
-def _apply_colored_shape(
-    shapes,
-    paragraphs,
-    key: str,
-    shape_props: ShapeProperties,
-    display_value: str,
-    text_color=None,
-):
-    for shape in shapes:
-        rendering.pptx.apply_shape_properties(shape, shape_props)
-    font = (
-        FontProperties(color=FontColor(rgb=text_color))
-        if text_color is not None
-        else None
-    )
-    rendering.pptx.update_many_paragraphs(paragraphs, key, display_value, font)
 
 
 class AbstractUrgencyShapePlaceholder(Placeholder, ABC):
@@ -69,16 +50,13 @@ class AbstractUrgencyShapePlaceholder(Placeholder, ABC):
 
     @classmethod
     def resolve_pptx(cls, presentation: Presentation, key: str, value_cb: Callable):
-        shapes = rendering.pptx.find_shapes_with_text(presentation, key)
-        paragraphs = rendering.pptx.find_text_in_presentation(presentation, key)
-        if not shapes and not paragraphs:
-            return
+        apply_colored_shape(presentation, key, lambda: cls._colored_shape(value_cb))
+
+    @classmethod
+    def _colored_shape(cls, value_cb: Callable) -> ColoredShape:
         colors = cls._get_colors()
         display_value = value_cb()
-        _apply_colored_shape(
-            shapes,
-            paragraphs,
-            key,
+        return ColoredShape(
             shape_props=ShapeProperties(
                 color=colors.shape,
                 width_inches=urgency_width(display_value),

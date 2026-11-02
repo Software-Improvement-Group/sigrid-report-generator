@@ -389,7 +389,6 @@ class _AbstractPortfolioTreemapPlaceholder(_AbstractTreemapPlaceholder, ABC):
                 "fontfamily": "sans-serif",
                 "reflow": True,
                 "place": "center",
-                "grow": True,
                 "max_fontsize": 7,
                 "color": "k",
                 "pady": 1,
