@@ -37,7 +37,13 @@ OSHMetricOrSystem = OSHMetric | _SystemMetric
 class OSHData(OSHMetricsBase):
     @cached_property
     def raw_data(self):
-        return sigrid_api.get_osh_findings()
+        findings = sigrid_api.get_osh_findings()
+        if "components" not in findings:
+            raise sigrid_api.SigridAPIRequestFailedError(
+                "get_osh_findings",
+                message="No open-source health data available for this system",
+            )
+        return findings
 
     @cached_property
     def date(self) -> datetime:
