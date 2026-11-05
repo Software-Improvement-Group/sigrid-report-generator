@@ -12,20 +12,68 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from functools import lru_cache
-
-from report_generator.generator.context import sigrid_api
 from report_generator.generator.context.portfolio_filters import get_filter_values
+from report_generator.generator.domain import team_report_data
+from report_generator.generator.placeholders.formatting.formatters import (
+    Sentiment,
+    market_average_sentiment,
+    star_rating_round,
+)
 
 from .base import text_placeholder
 
+_DUTCH_MONTHS = (
+    "januari",
+    "februari",
+    "maart",
+    "april",
+    "mei",
+    "juni",
+    "juli",
+    "augustus",
+    "september",
+    "oktober",
+    "november",
+    "december",
+)
 
-@lru_cache(maxsize=1)
-def _get_filtered_systems():
-    """Get systems filtered by team, cached."""
-    portfolio_data = sigrid_api.get_portfolio_maintainability()
-    systems = portfolio_data.get("systems", []) if isinstance(portfolio_data, dict) else []
-    return systems
+
+def _dutch_date(date: str) -> str:
+    year, month, day = (int(part) for part in date.split("-"))
+    return f"{day} {_DUTCH_MONTHS[month - 1]} {year}"
+
+
+def _stars(rating: float) -> str:
+    return star_rating_round(rating) if rating > 0 else ""
+
+
+def _delta_text(was_rating: float, is_rating: float) -> str:
+    """Compare two ratings as shown (truncated to one decimal): Gelijk, Hoger or Lager."""
+    if was_rating <= 0 or is_rating <= 0:
+        return ""
+    was_shown = float(star_rating_round(was_rating))
+    is_shown = float(star_rating_round(is_rating))
+    if is_shown == was_shown:
+        return "Gelijk"
+    return "Hoger" if is_shown > was_shown else "Lager"
+
+
+def _market_text(rating: float) -> str:
+    """Compare a rating as shown (truncated to one decimal) with market average: Onder, Op or Boven."""
+    if rating <= 0:
+        return ""
+    return {
+        Sentiment.NEGATIVE: "Onder",
+        Sentiment.NEUTRAL: "Op",
+        Sentiment.POSITIVE: "Boven",
+    }[market_average_sentiment(float(star_rating_round(rating)))]
+
+
+def _objectives_text(feature: str) -> str:
+    met = team_report_data.objectives_met(feature)
+    if met is None:
+        return ""
+    return "Ja" if met else "Nee"
 
 
 @text_placeholder()
@@ -36,110 +84,94 @@ def team_name():
 
 
 @text_placeholder()
-def system_name_1():
-    """First system name in the team."""
-    systems = _get_filtered_systems()
-    return systems[0].get("systemName", "") if systems else ""
+def team_report_period():
+    """The reporting period, e.g. 1 januari 2026 - 11 november 2026."""
+    start, end = team_report_data.period
+    return f"{_dutch_date(start)} - {_dutch_date(end)}"
 
 
-@text_placeholder()
-def system_name_2():
-    """Second system name in the team."""
-    systems = _get_filtered_systems()
-    return systems[1].get("systemName", "") if len(systems) > 1 else ""
+def _placeholder(key: str, doc: str, value):
+    value.__doc__ = doc
+    return text_placeholder(custom_key=key)(value)
 
 
-@text_placeholder()
-def system_name_3():
-    """Third system name in the team."""
-    systems = _get_filtered_systems()
-    return systems[2].get("systemName", "") if len(systems) > 2 else ""
+def _module_placeholders(
+    module: str, label: str, feature: str, rating_at, has_history: bool = True
+):
+    """The Was, Is, Delta, Markt and Doel placeholders of one row of the team's rating table.
+
+    rating_at(date) is the team's average rating on that date; modules without history
+    (has_history=False) always give their current rating, and leave Was and Delta empty.
+    """
+
+    def rating_was():
+        return rating_at(team_report_data.period[0]) if has_history else 0
+
+    def rating_is():
+        return rating_at(team_report_data.period[1])
+
+    def delta():
+        was = rating_was()
+        return _delta_text(was, rating_is()) if was > 0 else ""
+
+    return {
+        _placeholder(
+            f"{module}_WAS",
+            f"The team's average {label} rating at the start of the period.",
+            lambda: _stars(rating_was()),
+        ),
+        _placeholder(
+            f"{module}_IS",
+            f"The team's average {label} rating at the end of the period.",
+            lambda: _stars(rating_is()),
+        ),
+        _placeholder(
+            f"{module}_DELTA",
+            f"Gelijk, Hoger or Lager: the team's {label} rating at the end of the period compared to the start.",
+            delta,
+        ),
+        _placeholder(
+            f"{module}_MARKT",
+            f"Onder, Op or Boven market average for the team's {label} rating at the end of the period.",
+            lambda: _market_text(rating_is()),
+        ),
+        _placeholder(
+            f"{module}_DOEL",
+            f"Ja or Nee: the team's {label} objectives are met at the end of the period.",
+            lambda: _objectives_text(feature),
+        ),
+    }
 
 
-@text_placeholder()
-def system_name_4():
-    """Fourth system name in the team."""
-    systems = _get_filtered_systems()
-    return systems[3].get("systemName", "") if len(systems) > 3 else ""
-
-
-@text_placeholder()
-def system_name_5():
-    """Fifth system name in the team."""
-    systems = _get_filtered_systems()
-    return systems[4].get("systemName", "") if len(systems) > 4 else ""
-
-
-@text_placeholder()
-def repos_1():
-    """Repos for first system (x van y format)."""
-    systems = _get_filtered_systems()
-    if not systems:
-        return ""
-    system = systems[0]
-    repos_analyzed = system.get("reposAnalyzed", 0)
-    repos_total = system.get("reposTotal", 0)
-    return f"{repos_analyzed} van {repos_total}" if repos_total > 0 else ""
-
-
-@text_placeholder()
-def repos_2():
-    """Repos for second system (x van y format)."""
-    systems = _get_filtered_systems()
-    if len(systems) < 2:
-        return ""
-    system = systems[1]
-    repos_analyzed = system.get("reposAnalyzed", 0)
-    repos_total = system.get("reposTotal", 0)
-    return f"{repos_analyzed} van {repos_total}" if repos_total > 0 else ""
-
-
-@text_placeholder()
-def repos_3():
-    """Repos for third system (x van y format)."""
-    systems = _get_filtered_systems()
-    if len(systems) < 3:
-        return ""
-    system = systems[2]
-    repos_analyzed = system.get("reposAnalyzed", 0)
-    repos_total = system.get("reposTotal", 0)
-    return f"{repos_analyzed} van {repos_total}" if repos_total > 0 else ""
-
-
-@text_placeholder()
-def repos_4():
-    """Repos for fourth system (x van y format)."""
-    systems = _get_filtered_systems()
-    if len(systems) < 4:
-        return ""
-    system = systems[3]
-    repos_analyzed = system.get("reposAnalyzed", 0)
-    repos_total = system.get("reposTotal", 0)
-    return f"{repos_analyzed} van {repos_total}" if repos_total > 0 else ""
-
-
-@text_placeholder()
-def repos_5():
-    """Repos for fifth system (x van y format)."""
-    systems = _get_filtered_systems()
-    if len(systems) < 5:
-        return ""
-    system = systems[4]
-    repos_analyzed = system.get("reposAnalyzed", 0)
-    repos_total = system.get("reposTotal", 0)
-    return f"{repos_analyzed} van {repos_total}" if repos_total > 0 else ""
-
-
-placeholders = {
-    team_name,
-    system_name_1,
-    system_name_2,
-    system_name_3,
-    system_name_4,
-    system_name_5,
-    repos_1,
-    repos_2,
-    repos_3,
-    repos_4,
-    repos_5,
+_RATING_TABLE_PLACEHOLDERS = {
+    *_module_placeholders(
+        "MAINTAINABILITY",
+        "maintainability",
+        "MAINTAINABILITY",
+        lambda date: team_report_data.maintainability_rating(date),
+    ),
+    *_module_placeholders(
+        "ARCHITECTURE",
+        "architecture",
+        "ARCHITECTURE_QUALITY",
+        lambda date: team_report_data.architecture_rating(date),
+    ),
+    *_module_placeholders(
+        "OPEN_SOURCE_HEALTH",
+        "open source health",
+        "OPEN_SOURCE_HEALTH",
+        lambda date: team_report_data.open_source_health_rating,
+        has_history=False,
+    ),
+    *_module_placeholders(
+        "SECURITY",
+        "security",
+        "SECURITY",
+        lambda date: team_report_data.security_rating(date),
+    ),
 }
+
+# Placeholders are found by scanning module attributes, so the generated ones need a name here.
+globals().update(
+    {placeholder.key.lower(): placeholder for placeholder in _RATING_TABLE_PLACEHOLDERS}
+)

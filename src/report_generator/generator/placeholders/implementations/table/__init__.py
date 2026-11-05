@@ -20,6 +20,7 @@ from . import (
     refactoring_candidates,
     reliability_findings,
     security_findings,
+    team_systems,
 )
 
 _all_implementations = {
@@ -28,6 +29,7 @@ _all_implementations = {
     **reliability_findings.__dict__,
     **maintainability_top_systems.__dict__,
     **functional_suitability_top_systems.__dict__,
+    **team_systems.__dict__,
 }
 
 _placeholders_map = {
