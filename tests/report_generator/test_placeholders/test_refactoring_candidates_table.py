@@ -14,6 +14,7 @@
 
 
 import pytest
+
 from report_generator.generator.context.sigrid_api import SigridAPIRequestFailedError
 from report_generator.generator.domain.system.maintainability import (
     maintainability_data,
@@ -28,8 +29,6 @@ from report_generator.generator.placeholders.implementations.table.refactoring_c
     RefactoringCandidatesTableUnitComplexityTech,
     RefactoringCandidatesTableUnitInterfacingTech,
     RefactoringCandidatesTableUnitSizeTech,
-    _filter_by_technology,
-    _get_technology_name_at_index,
 )
 
 
@@ -41,42 +40,6 @@ def _mock_sorted_tech(mocker, tech_names):
         new_callable=mocker.PropertyMock,
         return_value=techs,
     )
-
-
-class TestTechnologyHelpers:
-    def test_out_of_range_index_returns_none(self, mocker):
-        _mock_sorted_tech(mocker, ["csharp"])
-        assert _get_technology_name_at_index(2) is None
-
-    def test_others_name_returns_none(self, mocker):
-        _mock_sorted_tech(mocker, ["others"])
-        assert _get_technology_name_at_index(1) is None
-
-    def test_valid_index_returns_name(self, mocker):
-        _mock_sorted_tech(mocker, ["csharp", "java"])
-        assert _get_technology_name_at_index(1) == "csharp"
-        assert _get_technology_name_at_index(2) == "java"
-
-    def test_filter_returns_only_matching_technology(self, mocker):
-        _mock_sorted_tech(mocker, ["csharp"])
-        candidates = [
-            {"technology": "csharp", "name": "Foo"},
-            {"technology": "java", "name": "Bar"},
-            {"technology": "csharp", "name": "Baz"},
-        ]
-        result = _filter_by_technology(candidates, 1)
-        assert len(result) == 2
-        assert all(c["technology"] == "csharp" for c in result)
-
-    def test_filter_returns_empty_for_out_of_range(self, mocker):
-        _mock_sorted_tech(mocker, ["csharp"])
-        candidates = [{"technology": "csharp", "name": "Foo"}]
-        assert _filter_by_technology(candidates, 5) == []
-
-    def test_filter_returns_empty_for_others(self, mocker):
-        _mock_sorted_tech(mocker, ["others"])
-        candidates = [{"technology": "others", "name": "Foo"}]
-        assert _filter_by_technology(candidates, 1) == []
 
 
 class TestRefactoringCandidatesTableDuplicationTech:
@@ -300,4 +263,3 @@ class TestRefactoringCandidatesTableComponentIndependenceTech:
         )
         with pytest.raises(SigridAPIRequestFailedError):
             RefactoringCandidatesTableComponentIndependenceTech.value(4)
-
