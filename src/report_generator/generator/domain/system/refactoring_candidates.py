@@ -40,15 +40,17 @@ class RefactoringCandidatesData:
         """Candidates of the technology at rank `tech_index` in the system's technology
         ranking. Raises when there are none, so slides built on it are skipped."""
         name = _get_technology_name_at_index(tech_index)
-        candidates = [
-            candidate
-            for candidate in self.get_candidates(metric)
-            if name is not None and candidate.get("technology") == name
-        ]
+        candidates = (
+            [c for c in self.get_candidates(metric) if c.get("technology") == name]
+            if name is not None
+            else []
+        )
         if not candidates:
+            reason = f"No {metric} refactoring candidates for technology {tech_index}"
             raise sigrid_api.SigridAPIRequestFailedError(
                 "get_maintainability_refactoring_candidates",
-                message=f"No {metric} refactoring candidates for technology {tech_index}",
+                message=reason,
+                api_message=reason,
             )
         return candidates
 
