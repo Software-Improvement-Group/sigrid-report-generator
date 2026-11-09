@@ -14,6 +14,7 @@
 
 from abc import ABC, abstractmethod
 
+from report_generator.generator.context.sigrid_api import SigridAPIRequestFailedError
 from report_generator.generator.domain import refactoring_candidates_data
 from report_generator.generator.domain.system.maintainability import (
     maintainability_data,
@@ -270,6 +271,9 @@ class _AbstractRefactoringCandidatesTableTechPlaceholder(
     Parameters 1-4 correspond to ranks in the domain model's ``sorted_tech`` top-5
     list (the fifth entry is always "others" and is excluded, hence only 4 parameters
     are allowed).
+
+    Raises SigridAPIRequestFailedError when the technology has no candidates, so the
+    slide containing this table is removed instead of showing a header-only table.
     """
 
     allowed_parameters = MultiParameterList((1, 2, 3, 4))
@@ -277,7 +281,13 @@ class _AbstractRefactoringCandidatesTableTechPlaceholder(
     @classmethod
     def value(cls, tech_index: int) -> TableMatrix:
         candidates = refactoring_candidates_data.get_candidates(cls.metric)
-        return cls._to_table_matrix(_filter_by_technology(candidates, tech_index))
+        technology_candidates = _filter_by_technology(candidates, tech_index)
+        if not technology_candidates:
+            raise SigridAPIRequestFailedError(
+                "get_maintainability_refactoring_candidates",
+                message=f"No refactoring candidates for {cls.metric} of technology {tech_index}",
+            )
+        return cls._to_table_matrix(technology_candidates)
 
 
 class RefactoringCandidatesTableDuplicationTech(

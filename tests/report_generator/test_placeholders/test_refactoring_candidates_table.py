@@ -13,6 +13,8 @@
 #  limitations under the License.
 
 
+import pytest
+from report_generator.generator.context.sigrid_api import SigridAPIRequestFailedError
 from report_generator.generator.domain.system.maintainability import (
     maintainability_data,
 )
@@ -115,13 +117,13 @@ class TestRefactoringCandidatesTableDuplicationTech:
         assert result[0] == ["Description", "Redundant LOC", "Level", "Technology"]
         assert len(result) == 2  # header + 1 csharp row
 
-    def test_value_returns_header_only_for_out_of_range_tech(self, mocker):
+    def test_value_raises_for_out_of_range_tech(self, mocker):
         _mock_sorted_tech(mocker, ["csharp"])
         mocker.patch.object(
             refactoring_candidates_data, "get_candidates", return_value=[]
         )
-        result = RefactoringCandidatesTableDuplicationTech.value(4)
-        assert result == [["Description", "Redundant LOC", "Level", "Technology"]]
+        with pytest.raises(SigridAPIRequestFailedError):
+            RefactoringCandidatesTableDuplicationTech.value(4)
 
 
 class TestRefactoringCandidatesTableUnitSizeTech:
@@ -157,15 +159,13 @@ class TestRefactoringCandidatesTableUnitSizeTech:
         ]
         assert len(result) == 2  # header + 1 csharp row
 
-    def test_value_returns_header_only_for_out_of_range_tech(self, mocker):
+    def test_value_raises_for_out_of_range_tech(self, mocker):
         _mock_sorted_tech(mocker, ["csharp"])
         mocker.patch.object(
             refactoring_candidates_data, "get_candidates", return_value=[]
         )
-        result = RefactoringCandidatesTableUnitSizeTech.value(4)
-        assert result == [
-            ["Unit name", "LOC", "McCabe", "Parameters", "Component", "Technology"]
-        ]
+        with pytest.raises(SigridAPIRequestFailedError):
+            RefactoringCandidatesTableUnitSizeTech.value(4)
 
 
 class TestRefactoringCandidatesTableUnitComplexityTech:
@@ -183,15 +183,13 @@ class TestRefactoringCandidatesTableUnitComplexityTech:
             == [1, 2, 3, 4]
         )
 
-    def test_value_returns_header_only_for_others_tech(self, mocker):
+    def test_value_raises_for_others_tech(self, mocker):
         _mock_sorted_tech(mocker, ["others"])
         mocker.patch.object(
             refactoring_candidates_data, "get_candidates", return_value=[]
         )
-        result = RefactoringCandidatesTableUnitComplexityTech.value(1)
-        assert result == [
-            ["Unit name", "LOC", "McCabe", "Parameters", "Component", "Technology"]
-        ]
+        with pytest.raises(SigridAPIRequestFailedError):
+            RefactoringCandidatesTableUnitComplexityTech.value(1)
 
 
 class TestRefactoringCandidatesTableUnitInterfacingTech:
@@ -209,15 +207,13 @@ class TestRefactoringCandidatesTableUnitInterfacingTech:
             == [1, 2, 3, 4]
         )
 
-    def test_value_returns_header_only_for_out_of_range_tech(self, mocker):
+    def test_value_raises_for_out_of_range_tech(self, mocker):
         _mock_sorted_tech(mocker, ["csharp"])
         mocker.patch.object(
             refactoring_candidates_data, "get_candidates", return_value=[]
         )
-        result = RefactoringCandidatesTableUnitInterfacingTech.value(4)
-        assert result == [
-            ["Unit name", "LOC", "McCabe", "Parameters", "Component", "Technology"]
-        ]
+        with pytest.raises(SigridAPIRequestFailedError):
+            RefactoringCandidatesTableUnitInterfacingTech.value(4)
 
 
 class TestRefactoringCandidatesTableModuleCouplingTech:
@@ -259,13 +255,13 @@ class TestRefactoringCandidatesTableModuleCouplingTech:
         assert result[0] == ["File name", "LOC", "Fan-in", "Component", "Technology"]
         assert len(result) == 2  # header + 1 java row
 
-    def test_value_returns_header_only_for_out_of_range_tech(self, mocker):
+    def test_value_raises_for_out_of_range_tech(self, mocker):
         _mock_sorted_tech(mocker, ["csharp"])
         mocker.patch.object(
             refactoring_candidates_data, "get_candidates", return_value=[]
         )
-        result = RefactoringCandidatesTableModuleCouplingTech.value(4)
-        assert result == [["File name", "LOC", "Fan-in", "Component", "Technology"]]
+        with pytest.raises(SigridAPIRequestFailedError):
+            RefactoringCandidatesTableModuleCouplingTech.value(4)
 
 
 class TestRefactoringCandidatesTableComponentIndependenceTech:
@@ -297,10 +293,11 @@ class TestRefactoringCandidatesTableComponentIndependenceTech:
         assert result[0] == ["File name", "LOC", "Component", "Technology"]
         assert len(result) == 2  # header + 1 csharp row
 
-    def test_value_returns_header_only_for_out_of_range_tech(self, mocker):
+    def test_value_raises_for_out_of_range_tech(self, mocker):
         _mock_sorted_tech(mocker, ["csharp"])
         mocker.patch.object(
             refactoring_candidates_data, "get_candidates", return_value=[]
         )
-        result = RefactoringCandidatesTableComponentIndependenceTech.value(4)
-        assert result == [["File name", "LOC", "Component", "Technology"]]
+        with pytest.raises(SigridAPIRequestFailedError):
+            RefactoringCandidatesTableComponentIndependenceTech.value(4)
+
