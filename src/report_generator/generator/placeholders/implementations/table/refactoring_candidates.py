@@ -255,9 +255,6 @@ class _AbstractRefactoringCandidatesTableTechPlaceholder(
     Parameters 1-4 correspond to ranks in the domain model's ``sorted_tech`` top-5
     list (the fifth entry is always "others" and is excluded, hence only 4 parameters
     are allowed).
-
-    Raises SigridAPIRequestFailedError when the technology has no candidates, so the
-    slide containing this table is removed instead of showing a header-only table.
     """
 
     allowed_parameters = MultiParameterList((1, 2, 3, 4))
