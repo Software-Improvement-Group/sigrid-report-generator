@@ -15,9 +15,6 @@
 from abc import ABC, abstractmethod
 
 from report_generator.generator.domain import refactoring_candidates_data
-from report_generator.generator.domain.system.maintainability import (
-    maintainability_data,
-)
 from report_generator.generator.placeholders.formatting.technologies import (
     get_technology_name,
 )
@@ -247,18 +244,6 @@ class RefactoringCandidatesTableComponentIndependence(
         return rows
 
 
-def _get_technology_name_at_index(tech_index: int) -> str | None:
-    name = maintainability_data.sorted_tech_get_key(tech_index - 1, "name", None)
-    return None if name in (None, "others") else name
-
-
-def _filter_by_technology(candidates: list, tech_index: int) -> list:
-    name = _get_technology_name_at_index(tech_index)
-    if name is None:
-        return []
-    return [c for c in candidates if c.get("technology") == name]
-
-
 class _AbstractRefactoringCandidatesTableTechPlaceholder(
     ParameterizedPlaceholder, _AbstractRefactoringCandidatesTablePlaceholder, ABC
 ):
@@ -276,8 +261,11 @@ class _AbstractRefactoringCandidatesTableTechPlaceholder(
 
     @classmethod
     def value(cls, tech_index: int) -> TableMatrix:
-        candidates = refactoring_candidates_data.get_candidates(cls.metric)
-        return cls._to_table_matrix(_filter_by_technology(candidates, tech_index))
+        return cls._to_table_matrix(
+            refactoring_candidates_data.get_candidates_for_technology(
+                cls.metric, tech_index
+            )
+        )
 
 
 class RefactoringCandidatesTableDuplicationTech(
