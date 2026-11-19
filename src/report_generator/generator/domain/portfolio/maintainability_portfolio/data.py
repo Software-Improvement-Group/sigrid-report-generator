@@ -23,17 +23,9 @@ from report_generator.generator.domain.portfolio.shared import utils
 from report_generator.generator.domain.portfolio.shared.rated_mixin import (
     RatedPortfolioMixin,
 )
-
-
-def parse_date(s):
-    return datetime.strptime(s, "%Y-%m-%d")
-
-
-def existed_at_end_date(system, end_date):
-    end_dt = parse_date(end_date)
-    dates = [r["maintainabilityDate"] for r in system.get("allRatings", [])]
-    dates.append(system["maintainabilityDate"])  # head entry date
-    return any(parse_date(d) <= end_dt for d in dates)
+from report_generator.generator.domain.portfolio.shared.utils import (
+    existed_at_end_date,
+)
 
 
 class MaintainabilityPortfolioData(RatedPortfolioMixin):

@@ -28,6 +28,10 @@ class RatingsChangePortfolioBase(ABC):
     with the appropriate ``@filter_data_on_portfolio_arguments`` decorator), the per-system
     identifier key (``_system_tag``), how to read a rating out of a system (``_extract_rating``)
     and the portfolio ``metadata`` used to resolve display names.
+
+    Some endpoints report a default rating (5.5, "no findings") for systems that did not exist yet
+    at the period start. Start ratings are therefore restricted to systems that existed at the
+    period start (``_existing_start_ratings``), so systems added mid-period have no delta.
     """
 
     _system_tag: str
@@ -47,6 +51,11 @@ class RatingsChangePortfolioBase(ABC):
     @abstractmethod
     def metadata(self): ...
 
+    @property
+    def _existing_start_ratings(self):
+        existing = utils.names_of_systems_existing_at_period_start()
+        return [s for s in self._start_ratings if s[self._system_tag] in existing]
+
     @staticmethod
     def _delta(start_rating, end_rating) -> float | None:
         if start_rating is None or end_rating is None:
@@ -55,7 +64,9 @@ class RatingsChangePortfolioBase(ABC):
 
     def differences_using(self, extractor) -> dict[str, float | None]:
         """Per-system rating delta over the period, using an arbitrary rating extractor."""
-        start = {s[self._system_tag]: extractor(s) for s in self._start_ratings}
+        start = {
+            s[self._system_tag]: extractor(s) for s in self._existing_start_ratings
+        }
         end = {s[self._system_tag]: extractor(s) for s in self._end_ratings}
         return {
             name: self._delta(start.get(name), end_rating)
@@ -169,7 +180,9 @@ class RatingsChangePortfolioBase(ABC):
     @cached_property
     def start_weighted_average(self) -> float:
         """Volume-weighted average rating at the start of the reporting period."""
-        return self.weighted_average_using(self._start_ratings, self._extract_rating)
+        return self.weighted_average_using(
+            self._existing_start_ratings, self._extract_rating
+        )
 
     @cached_property
     def end_weighted_average(self) -> float:
