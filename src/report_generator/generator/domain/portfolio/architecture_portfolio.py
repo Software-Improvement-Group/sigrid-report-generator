@@ -94,7 +94,9 @@ class ArchitecturePortfolioData(RatedPortfolioMixin, RatingsChangePortfolioBase)
         return self._extract_property_rating(self.get_system(system_name), metric_key)
 
     def get_property_difference(self, system_name, metric_key):
-        start = utils.get_system_helper(system_name, self._start_ratings, "system")
+        start = utils.get_system_helper(
+            system_name, self._existing_start_ratings, "system"
+        )
         end = utils.get_system_helper(system_name, self._end_ratings, "system")
         return self._delta(
             self._extract_property_rating(start, metric_key),

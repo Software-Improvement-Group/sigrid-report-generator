@@ -17,6 +17,7 @@ from unittest.mock import ANY, patch
 import pytest
 
 from report_generator.generator.context import portfolio_filters
+from report_generator.generator.domain.portfolio.shared import utils as domain_utils
 from report_generator.generator.placeholders.rendering.pptx.index import (
     cache as traversal_cache,
 )
@@ -41,6 +42,30 @@ def _default_active_portfolio_metadata(request):
         portfolio_filters.sigrid_api,
         "get_portfolio_metadata",
         return_value=_DEFAULT_ACTIVE_METADATA,
+    ):
+        yield
+
+
+class _AllSystems:
+    """Stand-in for a set of system names that contains every system."""
+
+    def __contains__(self, _system_name) -> bool:
+        return True
+
+
+@pytest.fixture(autouse=True)
+def _all_systems_existed_at_period_start(request):
+    """Delta calculations only use start ratings of systems that existed at the period start,
+    which requires maintainability history. Unit tests treat every system as pre-existing;
+    tests of that behaviour patch the function themselves."""
+    if request.node.get_closest_marker("integration"):
+        yield
+        return
+
+    with patch.object(
+        domain_utils,
+        "names_of_systems_existing_at_period_start",
+        return_value=_AllSystems(),
     ):
         yield
 
