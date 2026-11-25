@@ -13,8 +13,27 @@
 #  limitations under the License.
 
 from collections.abc import Callable, Iterable
+from datetime import datetime
 
 from report_generator.generator.context import sigrid_api
+
+
+def parse_date(s):
+    return datetime.strptime(s, "%Y-%m-%d")
+
+
+def existed_at_end_date(system, end_date):
+    end_dt = parse_date(end_date)
+    dates = [r["maintainabilityDate"] for r in system.get("allRatings", [])]
+    dates.append(system["maintainabilityDate"])  # head entry date
+    return any(parse_date(d) <= end_dt for d in dates)
+
+
+def names_of_systems_existing_at_period_start() -> set[str]:
+    """Names of systems with maintainability history on or before the reporting period start."""
+    period_start = sigrid_api.get_period()[0]
+    systems = sigrid_api.get_portfolio_maintainability()["systems"]
+    return {s["system"] for s in systems if existed_at_end_date(s, period_start)}
 
 
 def system_names_helper(data, tag):

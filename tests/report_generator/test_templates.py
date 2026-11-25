@@ -13,6 +13,7 @@
 #  limitations under the License.
 
 import tempfile
+import zipfile
 from pathlib import Path
 
 from docx import Document
@@ -20,8 +21,57 @@ from importlib_resources import files
 from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 
+SVG_FIX_HINT = (
+    "Old PowerPoint versions show SVG pictures as a red cross, and PowerPoint for Mac drops their PNG fallback "
+    "when saving. Convert them to native shapes by right-clicking them and pressing 'convert to shape'."
+)
+
+
+def pptx_templates() -> list:
+    return sorted(
+        (
+            resource
+            for resource in files("report_generator.presets.templates").iterdir()
+            if resource.is_file()
+            and resource.name.endswith(".pptx")
+            and not resource.name.startswith(("~$", "."))
+        ),
+        key=lambda resource: resource.name,
+    )
+
+
+def svg_references(pptx) -> list[str]:
+    """The SVG files in a pptx, and the XML parts that still have an SVG picture (svgBlip) in them."""
+    with zipfile.ZipFile(pptx) as package:
+        svg_files = [
+            name for name in package.namelist() if name.lower().endswith(".svg")
+        ]
+        svg_pictures = [
+            name
+            for name in package.namelist()
+            if name.endswith(".xml") and b"svgBlip" in package.read(name)
+        ]
+    return svg_files + svg_pictures
+
 
 class TestTemplates:
+    def test_pptx_templates_should_not_contain_svg(self):
+        """
+        Test that no pptx template contains an SVG file or an SVG picture.
+
+        Use native shapes instead (click 'convert to shape' in PowerPoint).
+        """
+        templates = pptx_templates()
+        assert len(templates) > 0, "No pptx templates found"
+
+        with_svg = {
+            template.name: references
+            for template in templates
+            if (references := svg_references(template.open("rb")))
+        }
+
+        assert not with_svg, f"{SVG_FIX_HINT}\n\nTemplates containing SVG: {with_svg}"
+
     def test_templates_should_not_use_sigsterren_font(self):
         """
         Test that no templates use the Sigsterren font at any point.

@@ -29,6 +29,10 @@ from report_generator.generator.domain.portfolio.security.security_portfolio imp
     SecurityRatingsPortfolioData,
     security_ratings_portfolio_data,
 )
+from report_generator.generator.domain.portfolio.shared import utils as portfolio_utils
+from report_generator.generator.domain.portfolio.shared.utils import (
+    names_of_systems_existing_at_period_start,
+)
 from report_generator.generator.domain.shared.findings_severity import (
     FALLBACK_SEVERITY_THRESHOLD,
     count_findings_above_objective,
@@ -1367,6 +1371,40 @@ class TestSecurityRatingsPortfolioDataChange:
         ) == pytest.approx(0.5)
         assert security_ratings_portfolio_data.get_difference("new") is None
 
+    @patch.object(
+        portfolio_utils,
+        "names_of_systems_existing_at_period_start",
+        return_value={"existing"},
+    )
+    @patch(
+        "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
+    )
+    def test_system_added_mid_period_has_no_difference_despite_default_start_rating(
+        self, mock_sigrid_api, _mock_existing
+    ):
+        """The ratings endpoint reports a default 5.5 at the start for systems that did not exist yet."""
+        mock_sigrid_api.get_period.return_value = ("2025-01-01", "2025-12-31")
+        mock_sigrid_api.get_portfolio_security_ratings.side_effect = (
+            self._ratings_by_end_date(
+                {
+                    "2025-01-01": [
+                        {"systemName": "existing", "rating": 2.0},
+                        {"systemName": "new", "rating": 5.5},
+                    ],
+                    "2025-12-31": [
+                        {"systemName": "existing", "rating": 2.5},
+                        {"systemName": "new", "rating": 4.0},
+                    ],
+                }
+            )
+        )
+
+        assert security_ratings_portfolio_data.get_difference("new") is None
+        assert security_ratings_portfolio_data.get_difference(
+            "existing"
+        ) == pytest.approx(0.5)
+        assert security_ratings_portfolio_data.biggest_decrease is None
+
     @patch(
         "report_generator.generator.domain.portfolio.shared.findings_portfolio_base.sigrid_api"
     )
@@ -2100,3 +2138,32 @@ class TestFindingsAboveObjective:
             {"systemName": "sys2", "findings_above_objective": 1},
             {"systemName": "sys3", "findings_above_objective": 1},
         ]
+
+
+class TestNamesOfSystemsExistingAtPeriodStart:
+    @patch("report_generator.generator.domain.portfolio.shared.utils.sigrid_api")
+    def test_only_includes_systems_with_history_on_or_before_period_start(
+        self, mock_sigrid_api
+    ):
+        mock_sigrid_api.get_period.return_value = ("2025-01-01", "2025-12-31")
+        mock_sigrid_api.get_portfolio_maintainability.return_value = {
+            "systems": [
+                {
+                    "system": "old",
+                    "maintainabilityDate": "2025-11-01",
+                    "allRatings": [{"maintainabilityDate": "2024-06-01"}],
+                },
+                {
+                    "system": "boundary",
+                    "maintainabilityDate": "2025-01-01",
+                    "allRatings": [],
+                },
+                {
+                    "system": "new",
+                    "maintainabilityDate": "2025-06-22",
+                    "allRatings": [{"maintainabilityDate": "2025-06-22"}],
+                },
+            ]
+        }
+
+        assert names_of_systems_existing_at_period_start() == {"old", "boundary"}

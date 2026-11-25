@@ -20,9 +20,7 @@ from functools import cached_property
 from report_generator.generator.domain.portfolio.maintainability_portfolio import (
     maintainability_portfolio_data,
 )
-from report_generator.generator.domain.portfolio.maintainability_portfolio.data import (
-    parse_date,
-)
+from report_generator.generator.domain.portfolio.shared.utils import parse_date
 from report_generator.generator.utils.constants import MaintMetric
 from report_generator.generator.utils.star_rating import calculate_star_rating_integer
 
