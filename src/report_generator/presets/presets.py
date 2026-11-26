@@ -73,6 +73,10 @@ def generate_system_snapshot_whitelabel(output_path: str) -> None:
     _generate_report("system-snapshot-whitelabel.pptx", output_path)
 
 
+def generate_simple_basic_data(output_path: str) -> None:
+    _generate_report("simple-basic-data.pptx", output_path)
+
+
 _preset_reports: dict[str, Callable[[str], None]] = {
     "system-snapshot": generate_system_snapshot,
     "system-snapshot-whitelabel": generate_system_snapshot_whitelabel,
@@ -86,6 +90,7 @@ _preset_reports: dict[str, Callable[[str], None]] = {
     "hygiene-report": generate_hygiene_report,
     "portfolio-snapshot": generate_portfolio_snapshot,
     "npr-5333-overview": generate_npr_5333_overview,
+    "simple-basic-data": generate_simple_basic_data,
 }
 
 # Old preset names kept for backwards compatibility. TODO: Remove once users have migrated.

@@ -29,6 +29,7 @@ from . import (
     osh_portfolio,
     security,
     security_portfolio,
+    team_report,
 )
 from .base import parameterized_text_placeholder, text_placeholder
 
@@ -47,6 +48,7 @@ _modules_to_scan = [
     osh_portfolio,
     security,
     security_portfolio,
+    team_report,
 ]
 
 _placeholders_map = {}
