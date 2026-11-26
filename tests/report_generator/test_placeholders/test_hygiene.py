@@ -56,3 +56,18 @@ class TestPortfolioHygienePlaceholders:
 
         # Assert that warning log was produced
         assert "access denied (403)" in caplog.text
+
+    def test_users_last_login_chart_missing_role_field_returns_empty_series(
+        self, mocker
+    ):
+        """A user payload without 'role' must not crash report generation."""
+        mocker.patch.object(
+            sigrid_api,
+            "get_users",
+            return_value={"users": [{"lastLoginAt": "2026-01-01T00:00:00Z"}]},
+        )
+
+        result = UsersLastLoginChartPlaceholder.series()
+
+        assert len(result) == 3
+        assert all(x == 0 for series in result for x in series)
