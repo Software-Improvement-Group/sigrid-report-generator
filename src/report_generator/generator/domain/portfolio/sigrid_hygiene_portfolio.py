@@ -15,7 +15,7 @@
 from datetime import datetime
 from functools import cached_property
 
-from report_generator.generator.context import sigrid_api
+from report_generator.generator.context import config, sigrid_api
 from report_generator.generator.utils.time_series import parse_iso_datetime
 
 
@@ -120,6 +120,7 @@ class SigridHygienePortfolioData:
     @staticmethod
     def get_last_access_time_users(role="USER"):
         users = sigrid_api.get_users()["users"]
+        _require_role_field(users)
         time_now = datetime.now()
 
         list_freshness_days = [
@@ -129,6 +130,17 @@ class SigridHygienePortfolioData:
         ]
 
         return list_freshness_days
+
+
+def _require_role_field(users):
+    """Treat a missing ``role`` field as access denied so the slide itself is removed."""
+    if any("role" not in user for user in users):
+        raise sigrid_api.SigridAccessDeniedError(
+            url="auth/api/user-management/users",
+            customer=config._customer,
+            system=config._system,
+            api_message="User data does not contain the 'role' field.",
+        )
 
 
 sigrid_hygiene_portfolio_data = SigridHygienePortfolioData()

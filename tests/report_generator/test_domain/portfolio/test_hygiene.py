@@ -15,8 +15,10 @@
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
+import pytest
 from freezegun import freeze_time
 
+from report_generator.generator.context import sigrid_api
 from report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio import (
     sigrid_hygiene_portfolio_data,
 )
@@ -198,3 +200,15 @@ class TestSigridHygienePortfolioData:
         # Result default value (role = user): [420]
         result_default = sigrid_hygiene_portfolio_data.get_last_access_time_users()
         assert result_default == result_user
+
+
+@patch(
+    "report_generator.generator.domain.portfolio.sigrid_hygiene_portfolio.sigrid_api.get_users"
+)
+def test_missing_role_field_raises_access_denied(mock_get_users):
+    mock_get_users.return_value = {
+        "users": [{"lastLoginAt": datetime.now().isoformat()}]
+    }
+
+    with pytest.raises(sigrid_api.SigridAccessDeniedError):
+        sigrid_hygiene_portfolio_data.get_last_access_time_users(role="ADMIN")
